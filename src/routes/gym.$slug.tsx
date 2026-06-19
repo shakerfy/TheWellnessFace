@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, MapPin, Star, Clock, ArrowLeft, Check, Users
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { getGym } from "@/lib/gyms";
+import { getGym, type Gym } from "@/lib/gyms";
 
 export const Route = createFileRoute("/gym/$slug")({
   loader: ({ params }) => {
@@ -48,7 +48,7 @@ export const Route = createFileRoute("/gym/$slug")({
 const DAYS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
 function GymPage() {
-  const { gym } = Route.useLoaderData();
+  const { gym } = Route.useLoaderData() as { gym: Gym };
   const [active, setActive] = useState(0);
   const [day, setDay] = useState<number>(new Date().getDay() === 0 ? 6 : new Date().getDay() - 1);
 
