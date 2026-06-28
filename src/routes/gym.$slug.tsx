@@ -52,6 +52,7 @@ function GymPage() {
   const [active, setActive] = useState(0);
   const [day, setDay] = useState<number>(new Date().getDay() === 0 ? 6 : new Date().getDay() - 1);
   const [activeCertificationsViewer, setActiveCertificationsViewer] = useState<string[] | null>(null);
+  const [hoursOpen, setHoursOpen] = useState(false);
 
   const classesByDay = useMemo(
     () => gym.classes.filter((c) => c.day === day).sort((a, b) => a.time.localeCompare(b.time)),
@@ -110,11 +111,38 @@ function GymPage() {
             <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
               <span className="inline-flex items-center gap-1.5"><Star className="h-3.5 w-3.5 fill-foreground text-foreground" /> {gym.rating.toFixed(1)} <span className="text-muted-foreground">({gym.reviews})</span></span>
               <span className="inline-flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" /> {gym.address}</span>
-              <span className="inline-flex items-center gap-1.5">
+              <button 
+                onClick={() => setHoursOpen(!hoursOpen)}
+                className="inline-flex items-center gap-1.5 hover:text-foreground transition focus:outline-none"
+              >
                 <span className={`h-1.5 w-1.5 rounded-full ${gym.isOpen ? "bg-emerald-500" : "bg-muted-foreground"}`} />
-                {gym.isOpen ? "Abierto ahora" : "Cerrado"} · <Clock className="h-3.5 w-3.5" /> {gym.hours}
-              </span>
+                {gym.isOpen ? "Abierto ahora" : "Cerrado"} · <Clock className="h-3.5 w-3.5" /> Ver horarios semanales
+              </button>
             </div>
+
+            {/* Collapsible Weekly Hours */}
+            {hoursOpen && (
+              <div className="mt-4 border border-border bg-card p-4 rounded-2xl max-w-sm text-xs space-y-1.5 shadow-sm animate-fade-down">
+                <div className="font-bold text-foreground pb-1.5 border-b border-border flex items-center gap-1">
+                  <Clock className="h-3.5 w-3.5 text-primary" /> Detalle de Horarios Semanales
+                </div>
+                {gym.weeklyHours ? gym.weeklyHours.map((wh) => (
+                  <div key={wh.day} className="flex justify-between py-0.5">
+                    <span className="font-semibold text-foreground">{wh.day}:</span>
+                    <span className="text-muted-foreground">
+                      {wh.intervals && wh.intervals.length > 0 
+                        ? wh.intervals.map(i => `${i.from} - ${i.to}`).join(" y ") 
+                        : "Cerrado"}
+                    </span>
+                  </div>
+                )) : (
+                  <div className="flex justify-between py-0.5">
+                    <span className="font-semibold text-foreground">Todos los días:</span>
+                    <span className="text-muted-foreground">{gym.hours}</span>
+                  </div>
+                )}
+              </div>
+            )}
             <p className="mt-6 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">{gym.description}</p>
 
             {gym.requirements && gym.requirements.length > 0 && (
