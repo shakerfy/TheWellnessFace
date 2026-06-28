@@ -115,6 +115,20 @@ function GymPage() {
               </span>
             </div>
             <p className="mt-6 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">{gym.description}</p>
+
+            {gym.requirements && gym.requirements.length > 0 && (
+              <div className="mt-6">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-2">Normas de ingreso:</span>
+                <div className="flex flex-wrap gap-2">
+                  {gym.requirements.map((req) => (
+                    <span key={req} className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-500/5 px-3 py-1 text-xs text-amber-500 font-medium">
+                      <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                      {req}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <aside className="lg:col-span-1">
@@ -172,6 +186,32 @@ function GymPage() {
             ))}
           </div>
         </section>
+
+        {/* Staff / Equipo */}
+        {gym.staff && gym.staff.length > 0 && (
+          <section className="mt-16">
+            <h2 className="text-2xl font-semibold tracking-tight">Nuestro Staff</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Entrenadores certificados listos para guiar tu entrenamiento.</p>
+            <div className="mt-6 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+              {gym.staff.map((coach) => (
+                <div key={coach.id} className="rounded-2xl border border-border bg-card p-4 flex items-center gap-4 hover:border-foreground/20 transition">
+                  <img src={coach.photo} alt={coach.name} className="h-14 w-14 rounded-full object-cover border border-border" />
+                  <div>
+                    <div className="text-sm font-bold text-foreground">{coach.name}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">{coach.specialty}</div>
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {coach.certifications.map((c) => (
+                        <span key={c} className="text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-bold">
+                          {c}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Classes calendar */}
         <section className="mt-16">
