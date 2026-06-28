@@ -18,8 +18,12 @@ export function SiteHeader() {
           <a href="#como-funciona" className="transition hover:text-foreground">Cómo funciona</a>
         </nav>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" className="hidden sm:inline-flex">Iniciar sesión</Button>
-          <Button size="sm" className="rounded-full px-4">Empezar</Button>
+          <Link to="/auth">
+            <Button variant="ghost" size="sm" className="hidden sm:inline-flex">Iniciar sesión</Button>
+          </Link>
+          <Link to="/auth">
+            <Button size="sm" className="rounded-full px-4">Empezar</Button>
+          </Link>
         </div>
       </div>
     </header>
