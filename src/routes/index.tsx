@@ -105,7 +105,7 @@ function Index() {
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden pb-16 pt-24 md:pt-32">
+    <section className="relative overflow-hidden pb-24 pt-24 md:pb-36 md:pt-32">
       {/* Mesh Gradient Background */}
       <div 
         aria-hidden 
@@ -139,21 +139,13 @@ function PromptBox() {
             ]}
           />
         </div>
-        <div className="mt-4 flex items-center justify-between border-t border-border/40 pt-4">
-          <button className="grid h-8 w-8 place-items-center rounded-full border border-border bg-background text-muted-foreground transition hover:border-foreground/20 hover:text-foreground">
-            <Plus className="h-4 w-4" />
+        <div className="mt-4 flex items-center justify-end gap-3 border-t border-border/40 pt-4">
+          <button className="grid h-8 w-8 place-items-center rounded-full text-muted-foreground transition hover:text-foreground">
+            <Mic className="h-4 w-4" />
           </button>
-          <div className="flex items-center gap-4">
-            <button className="flex items-center gap-1 rounded-full text-xs text-muted-foreground transition hover:text-foreground">
-              Crear <ChevronDown className="h-3.5 w-3.5" />
-            </button>
-            <button className="grid h-8 w-8 place-items-center rounded-full text-muted-foreground transition hover:text-foreground">
-              <Mic className="h-4 w-4" />
-            </button>
-            <Button size="icon" className="h-8 w-8 rounded-full bg-foreground text-background hover:bg-foreground/90">
-              <ArrowUp className="h-4 w-4" />
-            </Button>
-          </div>
+          <Button size="icon" className="h-8 w-8 rounded-full bg-foreground text-background hover:bg-foreground/90">
+            <ArrowUp className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     </div>
