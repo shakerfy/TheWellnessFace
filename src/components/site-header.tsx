@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 
 export function SiteHeader() {
   return (
@@ -18,11 +18,11 @@ export function SiteHeader() {
           <a href="#como-funciona" className="transition hover:text-foreground">Cómo funciona</a>
         </nav>
         <div className="flex items-center gap-2">
-          <Link to="/auth">
-            <Button variant="ghost" size="sm" className="hidden sm:inline-flex">Iniciar sesión</Button>
+          <Link to="/auth" className={buttonVariants({ variant: "ghost", size: "sm" }) + " hidden sm:inline-flex"}>
+            Iniciar sesión
           </Link>
-          <Link to="/auth">
-            <Button size="sm" className="rounded-full px-4">Empezar</Button>
+          <Link to="/auth" className={buttonVariants({ size: "sm" }) + " rounded-full px-4"}>
+            Empezar
           </Link>
         </div>
       </div>

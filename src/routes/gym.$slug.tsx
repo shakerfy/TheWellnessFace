@@ -2,7 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, MapPin, Star, Clock, ArrowLeft, Check, Users } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getGym, type Gym } from "@/lib/gyms";
 
@@ -138,8 +138,8 @@ function GymPage() {
                 ${gym.priceFrom.toLocaleString("es-AR")}
                 <span className="text-sm font-normal text-muted-foreground"> / mes</span>
               </div>
-              <Link to="/auth">
-                <Button className="mt-5 w-full rounded-full">Reservar clase de prueba</Button>
+              <Link to="/auth" className={buttonVariants({ className: "mt-5 w-full rounded-full" })}>
+                Reservar clase de prueba
               </Link>
               <Button variant="outline" className="mt-2 w-full rounded-full">Contactar al gimnasio</Button>
               <div className="mt-5 border-t border-border pt-4 text-xs text-muted-foreground">
