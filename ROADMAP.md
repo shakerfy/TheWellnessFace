@@ -1,6 +1,6 @@
 # 🗺️ Hoja de Ruta (Roadmap) Detallada — Shakerfy
 
-Este documento describe la arquitectura de páginas, la estructura de la base de datos (Supabase) y el plan detallado para construir el sistema completo de Shakerfy.
+Este documento describe la arquitectura de páginas, la estructura de la base de datos (Colecciones de Firebase Firestore) y el plan detallado para construir el sistema completo de Shakerfy.
 
 ---
 
@@ -10,10 +10,11 @@ Este documento describe la arquitectura de páginas, la estructura de la base de
 | :--- | :--- | :---: |
 | **Página de Inicio (Landing Page)** | 🟢 Funcional (Mock) | 95% |
 | **Perfil del Gimnasio (`/gym/$slug`)** | 🟢 Funcional (Mock) | 100% |
-| **Autenticación (Auth / Login)** | 🔴 Pendiente | 0% |
+| **Autenticación Alumnos (`/auth`)** | 🔴 Pendiente | 0% |
+| **Autenticación Gimnasios (`/auth/gym`)**| 🔴 Pendiente | 0% |
 | **Dashboard Gimnasio (Administrador)** | 🔴 Pendiente | 0% |
 | **Dashboard Alumno (Usuario)** | 🔴 Pendiente | 0% |
-| **Modelado de BD (Tablas Supabase)** | 🟡 En progreso | 10% |
+| **Modelado de Colecciones (Firebase)** | 🟡 En progreso | 10% |
 | **Integración de API / Server Functions**| 🔴 Pendiente | 0% |
 
 ---
@@ -31,9 +32,9 @@ Este documento describe la arquitectura de páginas, la estructura de la base de
 *   **Planes y Membresías:** Grid de tarjetas comparativas mostrando los beneficios detallados y precios mensuales.
 *   **Agenda de Clases:** Calendario semanal interactivo filtrable por días que muestra horarios, instructores y cupos disponibles con confirmación inmediata de reserva.
 
-### 🔑 Autenticación (`/auth`)
-*   **Interfaz:** Tarjetas de login y registro moderna, limpia y centrada.
-*   **Roles:** Flujo unificado o diferenciado para **Alumnos** y **Administradores de Gimnasio**.
+### 🔑 Autenticación (Rutas Separadas)
+*   **Alumnos (`/auth`):** Acceso por defecto para usuarios/alumnos. Tarjeta de ingreso y registro limpia para iniciar sesión y ser redirigidos al panel del alumno.
+*   **Gimnasios (`/auth/gym`):** Acceso específico para los administradores y dueños de gimnasios. Tarjeta de ingreso adaptada a comercios para redirigir al panel del gimnasio.
 
 ### 🏢 Dashboard para Gimnasios (Vistas de Admin)
 Estructura de navegación mediante Sidebar responsivo y navegación interna por pestañas (*Tabs*):
@@ -63,129 +64,125 @@ Estructura de navegación mediante Sidebar responsivo y navegación interna por 
 
 ---
 
-## 🗄️ 2. Modelo de Datos de Supabase (Esquema de Tablas)
+## 🗄️ 2. Modelo de Datos de Firebase (Colecciones y Documentos)
 
-### 1. Tabla: `memberships`
-```sql
-CREATE TABLE memberships (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  name text NOT NULL,
-  price numeric NOT NULL,
-  duration_days integer NOT NULL,
-  benefits text[] NOT NULL, -- Array de beneficios
-  is_active boolean DEFAULT true,
-  created_at timestamp with time zone DEFAULT now()
-);
+### 1. Colección: `memberships` (Planes)
+```json
+{
+  "id": "uuid",
+  "name": "string",
+  "price": "number",
+  "duration_days": "number",
+  "benefits": "array of strings",
+  "is_active": "boolean",
+  "created_at": "timestamp"
+}
 ```
 
-### 2. Tabla: `members`
-```sql
-CREATE TABLE members (
-  id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  name text,
-  phone text UNIQUE,
-  email text UNIQUE,
-  membership_id uuid REFERENCES memberships(id) ON DELETE SET NULL,
-  start_date date,
-  end_date date,
-  status text CHECK (status IN ('active', 'expired', 'pending')),
-  created_at timestamp with time zone DEFAULT now()
-);
+### 2. Colección: `members` (Perfiles de Alumnos / Usuarios)
+```json
+{
+  "id": "uuid (referencia a Firebase Auth uid)",
+  "name": "string",
+  "phone": "string (unique)",
+  "email": "string (unique)",
+  "membership_id": "string (reference to memberships.id)",
+  "start_date": "timestamp",
+  "end_date": "timestamp",
+  "status": "string ('active' | 'expired' | 'pending')",
+  "created_at": "timestamp"
+}
 ```
 
-### 3. Tabla: `classes`
-```sql
-CREATE TABLE classes (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  name text NOT NULL,
-  instructor text NOT NULL,
-  capacity integer NOT NULL,
-  duration_minutes integer NOT NULL,
-  schedule_rules jsonb NOT NULL, -- Reglas de repetición
-  is_active boolean DEFAULT true,
-  created_at timestamp with time zone DEFAULT now()
-);
+### 3. Colección: `classes` (Modelos de Clases)
+```json
+{
+  "id": "uuid",
+  "name": "string",
+  "instructor": "string",
+  "capacity": "number",
+  "duration_minutes": "number",
+  "schedule_rules": {
+    "days": "array of numbers (0..6)",
+    "time": "string (HH:MM)"
+  },
+  "is_active": "boolean",
+  "created_at": "timestamp"
+}
 ```
 
-### 4. Tabla: `class_sessions`
-```sql
-CREATE TABLE class_sessions (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  class_id uuid REFERENCES classes(id) ON DELETE CASCADE,
-  date date NOT NULL,
-  start_time time NOT NULL,
-  instructor text NOT NULL,
-  capacity integer NOT NULL,
-  available_slots integer NOT NULL,
-  is_cancelled boolean DEFAULT false
-);
+### 4. Colección: `class_sessions` (Sesiones Reales)
+```json
+{
+  "id": "uuid",
+  "class_id": "string (reference to classes.id)",
+  "date": "string (YYYY-MM-DD)",
+  "start_time": "string (HH:MM)",
+  "instructor": "string",
+  "capacity": "number",
+  "available_slots": "number",
+  "is_cancelled": "boolean"
+}
 ```
 
-### 5. Tabla: `bookings`
-```sql
-CREATE TABLE bookings (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  member_id uuid REFERENCES members(id) ON DELETE CASCADE,
-  session_id uuid REFERENCES class_sessions(id) ON DELETE CASCADE,
-  status text CHECK (status IN ('confirmed', 'cancelled', 'attended')),
-  check_in_at timestamp with time zone,
-  created_at timestamp with time zone DEFAULT now()
-);
+### 5. Colección: `bookings` (Reservas)
+```json
+{
+  "id": "uuid",
+  "member_id": "string (reference to members.id)",
+  "session_id": "string (reference to class_sessions.id)",
+  "status": "string ('confirmed' | 'cancelled' | 'attended')",
+  "check_in_at": "timestamp (nullable)",
+  "created_at": "timestamp"
+}
 ```
 
-### 6. Tabla: `attendance_logs`
-```sql
-CREATE TABLE attendance_logs (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  member_id uuid REFERENCES members(id) ON DELETE CASCADE,
-  check_in timestamp with time zone DEFAULT now(),
-  method text CHECK (method IN ('qr_scan', 'manual_reception'))
-);
+### 6. Colección: `attendance_logs` (Asistencia General)
+```json
+{
+  "id": "uuid",
+  "member_id": "string (reference to members.id)",
+  "check_in": "timestamp",
+  "method": "string ('qr_scan' | 'manual_reception')"
+}
 ```
 
-### 7. Tabla: `payments`
-```sql
-CREATE TABLE payments (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  member_id uuid REFERENCES members(id) ON DELETE RESTRICT,
-  amount numeric NOT NULL,
-  date date NOT NULL,
-  method text CHECK (method IN ('cash', 'card', 'transfer')),
-  status text CHECK (status IN ('paid', 'pending')),
-  notes text,
-  created_at timestamp with time zone DEFAULT now()
-);
+### 7. Colección: `payments` (Finanzas)
+```json
+{
+  "id": "uuid",
+  "member_id": "string (reference to members.id)",
+  "amount": "number",
+  "date": "timestamp",
+  "method": "string ('cash' | 'card' | 'transfer')",
+  "status": "string ('paid' | 'pending')",
+  "notes": "string (nullable)",
+  "created_at": "timestamp"
+}
 ```
 
-### 8. Tabla: `messages`
-```sql
-CREATE TABLE messages (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  member_id uuid REFERENCES members(id) ON DELETE SET NULL,
-  phone_number text NOT NULL,
-  direction text CHECK (direction IN ('inbound', 'outbound')),
-  content text NOT NULL,
-  created_at timestamp with time zone DEFAULT now()
-);
+### 8. Colección: `messages` (Interacciones)
+```json
+{
+  "id": "uuid",
+  "member_id": "string (reference to members.id, nullable)",
+  "phone_number": "string",
+  "direction": "string ('inbound' | 'outbound')",
+  "content": "string",
+  "created_at": "timestamp"
+}
 ```
 
-### 9. Tabla: `gym_config`
-```sql
-CREATE TABLE gym_config (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  gym_name text NOT NULL,
-  address text NOT NULL,
-  timezone text DEFAULT 'America/Argentina/Buenos_Aires',
-  opening_time time NOT NULL,
-  closing_time time NOT NULL,
-  webhook_url text,
-  updated_at timestamp with time zone DEFAULT now()
-);
-```
-
-### ⚡ Índices de Optimización Recomendados
-```sql
-CREATE INDEX idx_class_sessions_date ON class_sessions(date);
-CREATE INDEX idx_attendance_logs_member_date ON attendance_logs(member_id, check_in);
-CREATE INDEX idx_bookings_member_status ON bookings(member_id, status);
+### 9. Colección: `gym_config` (Configuración de Comercio)
+```json
+{
+  "id": "uuid",
+  "gym_name": "string",
+  "address": "string",
+  "timezone": "string",
+  "opening_time": "string (HH:MM)",
+  "closing_time": "string (HH:MM)",
+  "webhook_url": "string (nullable)",
+  "updated_at": "timestamp"
+}
 ```
