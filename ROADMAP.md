@@ -14,7 +14,7 @@ Este documento describe la arquitectura de páginas, la estructura de la base de
 | **Autenticación Gimnasios (`/auth/gym`)**| 🟢 Maquetado (Mock) | 100% |
 | **Dashboard Gimnasio (Administrador)** | 🟡 Modificaciones | 80% |
 | **Dashboard Alumno (Usuario)** | 🟢 Maquetado (Mock) | 100% |
-| **Modelado de Colecciones (Firebase)** | 🟡 En progreso | 15% |
+| **Modelado de Colecciones (Firebase)** | 🟡 En progreso | 20% |
 | **Integración de API / Server Functions**| 🔴 Pendiente | 0% |
 
 ---
@@ -30,7 +30,7 @@ Este documento describe la arquitectura de páginas, la estructura de la base de
 *   **Multimedia:** Carrusel interactivo de imágenes del local.
 *   **Información Básica:** Nombre, dirección, calificación de estrellas, horario de atención y badge dinámico de abierto/cerrado.
 *   **Normas / Obligaciones:** Banner informativo detallando exigencias físicas y materiales de ingreso (ej: Apto médico, toalla).
-*   **Staff & Coaches:** Panel dedicado a presentar a los profesores del centro, mostrando sus fotos, certificaciones y especialidades.
+*   **Staff & Coaches:** Panel dedicado a presentar a los profesores del centro, mostrando sus fotos, certificaciones, especialidades y diplomas adjuntos.
 *   **Planes y Membresías:** Grid de tarjetas comparativas mostrando los beneficios y amenities específicos incluidos en cada plan.
 *   **Agenda de Clases:** Calendario semanal interactivo filtrable por días que muestra horarios, instructores y cupos disponibles con confirmación inmediata de reserva.
 
@@ -45,10 +45,10 @@ Estructura de navegación mediante Sidebar responsivo y navegación interna por 
 3.  **Membresías:** Grid de planes comerciales vinculando los amenities específicos que incluye cada suscripción.
 4.  **Clases:** Calendario de sesiones vinculando los instructores del Staff.
 5.  **Configuración:** Panel enriquecido para editar la información pública:
-    *   *Ficha Básica:* Datos, horarios e imágenes.
-    *   *Amenities:* WiFi, Estacionamiento, Sauna, etc.
-    *   *Requisitos / Obligaciones:* Normas de convivencia e ingreso.
-    *   *Staff:* Altas, bajas y edición de instructores (foto, nombre, especialidad, títulos).
+    *   *Ficha Básica:* Datos, horarios e imágenes cargadas (File Uploader).
+    *   *Amenities (Catálogo Marketplace):* WiFi, Estacionamiento, Sauna, etc.
+    *   *Requisitos / Obligaciones (Catálogo Marketplace):* Normas de convivencia e ingreso.
+    *   *Staff:* Altas, bajas y edición de instructores (foto de perfil, diplomas de certificaciones, nombre, especialidad, títulos).
 
 ---
 
@@ -89,9 +89,10 @@ Estructura de navegación mediante Sidebar responsivo y navegación interna por 
   "id": "uuid",
   "gym_id": "string (reference to gym_config.id)",
   "name": "string",
-  "photo_url": "string (photo path)",
+  "photo_url": "string (photo path / Firebase Storage URL)",
   "specialty": "string",
   "certifications": "array of strings",
+  "certification_images": "array of strings (Firebase Storage URLs to diplomas)",
   "is_active": "boolean",
   "created_at": "timestamp"
 }
@@ -173,9 +174,9 @@ Estructura de navegación mediante Sidebar responsivo y navegación interna por 
   "timezone": "string",
   "opening_time": "string (HH:MM)",
   "closing_time": "string (HH:MM)",
-  "photos": "array of strings (image URLs)",
-  "services": "array of objects [{ 'id': 'string', 'name': 'string', 'icon': 'string' }]", -- Amenities
-  "requirements": "array of strings", -- Obligaciones (mat, apto médico, etc.)
+  "photos": "array of strings (Firebase Storage URLs)",
+  "services": "array of objects [{ 'id': 'string', 'name': 'string', 'category': 'string', 'checked': 'boolean' }]", -- Amenities
+  "requirements": "array of objects [{ 'id': 'string', 'name': 'string', 'category': 'string', 'checked': 'boolean' }]", -- Obligaciones
   "webhook_url": "string (nullable)",
   "updated_at": "timestamp"
 }
