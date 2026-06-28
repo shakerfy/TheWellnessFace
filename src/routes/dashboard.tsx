@@ -1,9 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { 
   Building2, Users, Calendar, CreditCard, Settings, LogOut,
   Bell, CheckCircle2, AlertCircle, Search, Download, 
-  MapPin, Clock, Plus, HelpCircle, Activity
+  MapPin, Clock, Plus, HelpCircle, Activity, Trash2, Check, 
+  Dumbbell, Image as ImageIcon, FileText, Eye, X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -22,6 +23,103 @@ const TABS = [
 function GymDashboard() {
   const [activeTab, setActiveTab] = useState("asistencia");
   const navigate = useNavigate();
+
+  // STATE LIFTED UP (Models the Firebase data structure in local memory)
+  
+  // 1. Staff List (including certificationImages array)
+  const [staffList, setStaffList] = useState([
+    { 
+      id: "1", 
+      name: "Mateo Rossi", 
+      specialty: "Coach de Levantamiento Olímpico", 
+      certifications: ["CF-L2", "Coaching de Fuerza"], 
+      photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&h=80&q=80",
+      certificationImages: [
+        "https://images.unsplash.com/photo-1589330694653-ded6df53f7ec?auto=format&fit=crop&w=300&q=80",
+        "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?auto=format&fit=crop&w=300&q=80"
+      ]
+    },
+    { 
+      id: "2", 
+      name: "Valeria Soto", 
+      specialty: "Profesora de Vinyasa Yoga", 
+      certifications: ["RYT-200", "Yoga Terapéutico"], 
+      photo: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=80&h=80&q=80",
+      certificationImages: [
+        "https://images.unsplash.com/photo-1589330694653-ded6df53f7ec?auto=format&fit=crop&w=300&q=80"
+      ]
+    },
+    { 
+      id: "3", 
+      name: "Daniel Castro", 
+      specialty: "Preparador Físico Funcional", 
+      certifications: ["Prof. Educación Física", "FMS Level 1"], 
+      photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&h=80&q=80",
+      certificationImages: []
+    },
+  ]);
+
+  // 2. Expanded Amenities (Services) Marketplace catalog
+  const [amenities, setAmenities] = useState([
+    // Instalaciones
+    { id: "vestuarios", name: "Vestuarios Completos", category: "Instalaciones", checked: true },
+    { id: "duchas", name: "Duchas de Agua Caliente", category: "Instalaciones", checked: true },
+    { id: "lockers", name: "Lockers de Seguridad", category: "Instalaciones", checked: true },
+    { id: "sauna", name: "Sauna Húmedo / Seco", category: "Instalaciones", checked: false },
+    { id: "parking", name: "Estacionamiento Propio", category: "Instalaciones", checked: true },
+    { id: "cafe", name: "Cafetería / Bar Saludable", category: "Instalaciones", checked: false },
+    { id: "coworking", name: "Zona de Coworking", category: "Instalaciones", checked: false },
+    { id: "ac", name: "Aire Acondicionado", category: "Instalaciones", checked: true },
+    { id: "pool", name: "Piscina Climatizada", category: "Instalaciones", checked: false },
+    { id: "canchas", name: "Canchas (Pádel / Fútbol)", category: "Instalaciones", checked: false },
+    { id: "outdoor", name: "Área al Aire Libre", category: "Instalaciones", checked: false },
+    { id: "guarderia", name: "Guardería Infantil", category: "Instalaciones", checked: false },
+    // Servicios
+    { id: "wifi", name: "WiFi Alta Velocidad", category: "Servicios", checked: true },
+    { id: "nutrition", name: "Asesoramiento Nutricional", category: "Servicios", checked: false },
+    { id: "kinesiologia", name: "Kinesiología & Fisioterapia", category: "Servicios", checked: false },
+    { id: "masajes", name: "Gabinete de Masajes", category: "Servicios", checked: false },
+    { id: "towels", name: "Alquiler de Toallas", category: "Servicios", checked: false },
+    { id: "merch", name: "Tienda de Indumentaria / Merch", category: "Servicios", checked: false },
+  ]);
+
+  // 3. Expanded Requirements (Normas de ingreso) Marketplace catalog
+  const [requirements, setRequirements] = useState([
+    // Documentación
+    { id: "apto", name: "Apto médico obligatorio (Ficha al día)", category: "Documentación", checked: true },
+    // Higiene y Vestimenta
+    { id: "toalla", name: "Traer toalla personal obligatoria", category: "Higiene y Vestimenta", checked: true },
+    { id: "calzado", name: "Uso de calzado limpio exclusivo para la sala", category: "Higiene y Vestimenta", checked: true },
+    { id: "mat", name: "Traer mat de yoga propio", category: "Higiene y Vestimenta", checked: false },
+    { id: "indumentaria", name: "Ropa deportiva obligatoria", category: "Higiene y Vestimenta", checked: true },
+    // Normas de la Sala
+    { id: "reserva", name: "Reserva de clase con anticipación", category: "Normas de la Sala", checked: true },
+    { id: "pesos", name: "Devolver discos y mancuernas a su lugar", category: "Normas de la Sala", checked: true },
+    { id: "magnesio", name: "Prohibido el magnesio suelto (solo en bloque/líquido)", category: "Normas de la Sala", checked: false },
+    { id: "limpieza", name: "Desinfectar máquinas después de usarlas", category: "Normas de la Sala", checked: true },
+  ]);
+
+  // 4. Gym Photos State
+  const [gymPhotos, setGymPhotos] = useState([
+    "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?auto=format&fit=crop&w=500&q=80",
+    "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=500&q=80",
+    "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=500&q=80",
+    "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?auto=format&fit=crop&w=500&q=80",
+  ]);
+
+  // 5. Classes (Referencing staff ID)
+  const [classesList, setClassesList] = useState([
+    { id: "1", name: "CrossFit WOD", staffId: "1", time: "08:00 - 09:00", capacity: 15, booked: 12, enrolled: ["Agustín Gómez", "Marcos López", "Tomás Ruiz"] },
+    { id: "2", name: "Yoga Ashtanga", staffId: "2", time: "09:30 - 10:30", capacity: 10, booked: 8, enrolled: ["Paula Cáceres", "Sofía Martínez"] },
+    { id: "3", name: "Funcional", staffId: "3", time: "18:00 - 19:00", capacity: 15, booked: 15, enrolled: ["Pedro Giménez", "María del Mar"] },
+  ]);
+
+  // 6. Memberships List
+  const [membershipsList, setMembershipsList] = useState([
+    { id: "1", name: "Pase Libre", price: 18900, duration: "Mensual", activeCount: 142, includedServices: ["vestuarios", "duchas", "lockers", "wifi"] },
+    { id: "2", name: "Performance", price: 28500, duration: "Mensual", activeCount: 68, includedServices: ["vestuarios", "duchas", "lockers", "wifi", "parking"] },
+    { id: "3", name: "Elite Coached", price: 42000, duration: "Mensual", activeCount: 12, includedServices: ["vestuarios", "duchas", "lockers", "wifi", "parking", "sauna"] },
+  ]);
 
   const handleLogout = () => {
     navigate({ to: "/auth/gym" });
@@ -94,9 +192,32 @@ function GymDashboard() {
 
         {activeTab === "asistencia" && <AsistenciasTab />}
         {activeTab === "miembros" && <MiembrosTab />}
-        {activeTab === "membresias" && <MembresiasTab />}
-        {activeTab === "clases" && <ClasesTab />}
-        {activeTab === "config" && <ConfigTab />}
+        {activeTab === "membresias" && (
+          <MembresiasTab 
+            membershipsList={membershipsList} 
+            setMembershipsList={setMembershipsList} 
+            amenities={amenities} 
+          />
+        )}
+        {activeTab === "clases" && (
+          <ClasesTab 
+            classesList={classesList} 
+            setClassesList={setClassesList} 
+            staffList={staffList} 
+          />
+        )}
+        {activeTab === "config" && (
+          <ConfigTab 
+            staffList={staffList} 
+            setStaffList={setStaffList} 
+            amenities={amenities} 
+            setAmenities={setAmenities} 
+            requirements={requirements} 
+            setRequirements={setRequirements} 
+            gymPhotos={gymPhotos}
+            setGymPhotos={setGymPhotos}
+          />
+        )}
       </main>
     </div>
   );
@@ -125,7 +246,7 @@ function AsistenciasTab() {
 
   return (
     <div className="space-y-8">
-      {/* Live Feed Header / Current Attendance Counter */}
+      {/* Live Feed Header */}
       <div className="grid gap-6 md:grid-cols-3">
         <div className="rounded-3xl border border-border bg-card p-6 shadow-sm flex items-center justify-between col-span-1">
           <div>
@@ -270,39 +391,142 @@ function MiembrosTab() {
 }
 
 // Subcomponent: Membresias Tab
-function MembresiasTab() {
-  const memberships = [
-    { name: "Pase Libre", price: "$18.900", duration: "Mensual", activeCount: 142, benefits: ["Acceso ilimitado", "Musculación", "Vestuarios"] },
-    { name: "Performance", price: "$28.500", duration: "Mensual", activeCount: 68, benefits: ["Pase libre", "Plan de entrenamiento", "4 Clases coacheadas"] },
-    { name: "Elite Coached", price: "$42.000", duration: "Mensual", activeCount: 12, benefits: ["Todo Performance", "PT semanal 1:1", "Análisis postural"] },
-  ];
+interface MembresiasTabProps {
+  membershipsList: { id: string; name: string; price: number; duration: string; activeCount: number; includedServices: string[] }[];
+  setMembershipsList: React.Dispatch<React.SetStateAction<{ id: string; name: string; price: number; duration: string; activeCount: number; includedServices: string[] }[]>>;
+  amenities: { id: string; name: string; category: string; checked: boolean }[];
+}
+
+function MembresiasTab({ membershipsList, setMembershipsList, amenities }: MembresiasTabProps) {
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [name, setName] = useState("");
+  const [price, setPrice] = useState("");
+  const [duration, setDuration] = useState("Mensual");
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
+
+  // Filter only checked active amenities of the gym
+  const activeAmenities = amenities.filter(a => a.checked);
+
+  const toggleService = (id: string) => {
+    setSelectedServices(prev => 
+      prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
+    );
+  };
+
+  const handleAddMembership = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name || !price) return;
+
+    const newPlan = {
+      id: Math.random().toString(),
+      name,
+      price: parseFloat(price),
+      duration,
+      activeCount: 0,
+      includedServices: selectedServices,
+    };
+
+    setMembershipsList(prev => [...prev, newPlan]);
+    setName("");
+    setPrice("");
+    setSelectedServices([]);
+    setShowAddForm(false);
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-xl font-bold tracking-tight">Planes de Membresía</h2>
-          <p className="text-sm text-muted-foreground">Define tus tarifas y beneficios mensuales.</p>
+          <p className="text-sm text-muted-foreground">Tarifas y selección de amenities incluidos en cada plan.</p>
         </div>
-        <Button size="sm" className="rounded-xl gap-1.5"><Plus className="h-4 w-4" /> Nuevo Plan</Button>
+        <Button 
+          size="sm" 
+          className="rounded-xl gap-1.5" 
+          onClick={() => setShowAddForm(!showAddForm)}
+        >
+          <Plus className="h-4 w-4" /> {showAddForm ? "Cancelar" : "Nuevo Plan"}
+        </Button>
       </div>
 
+      {showAddForm && (
+        <form onSubmit={handleAddMembership} className="rounded-3xl border border-border bg-card p-6 shadow-sm max-w-xl space-y-4 animate-fade-up">
+          <h3 className="text-sm font-bold text-muted-foreground uppercase">Agregar Nuevo Plan</h3>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground">Nombre del Plan</label>
+              <input 
+                type="text" 
+                required 
+                value={name} 
+                onChange={(e) => setName(e.target.value)}
+                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                placeholder="Pase Libre"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground">Precio Mensual ($)</label>
+              <input 
+                type="number" 
+                required 
+                value={price} 
+                onChange={(e) => setPrice(e.target.value)}
+                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                placeholder="25000"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-muted-foreground block">Amenities y Servicios Incluidos</label>
+            {activeAmenities.length === 0 ? (
+              <p className="text-xs text-muted-foreground">No tienes amenities activos en la pestaña de Configuración.</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {activeAmenities.map((a) => (
+                  <button
+                    type="button"
+                    key={a.id}
+                    onClick={() => toggleService(a.id)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition ${
+                      selectedServices.includes(a.id)
+                        ? "bg-primary/10 border-primary text-primary"
+                        : "bg-background border-border text-muted-foreground hover:border-foreground/20"
+                    }`}
+                  >
+                    {a.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <Button type="submit" className="rounded-xl">Crear Plan</Button>
+        </form>
+      )}
+
       <div className="grid gap-6 md:grid-cols-3">
-        {memberships.map((m, i) => (
-          <div key={i} className="rounded-3xl border border-border bg-card p-6 shadow-sm flex flex-col justify-between hover:border-foreground/20 transition">
+        {membershipsList.map((m, i) => (
+          <div key={m.id} className="rounded-3xl border border-border bg-card p-6 shadow-sm flex flex-col justify-between hover:border-foreground/20 transition">
             <div>
               <div className="flex justify-between items-start">
                 <h3 className="font-bold text-lg">{m.name}</h3>
                 <span className="text-xs text-muted-foreground font-medium">{m.duration}</span>
               </div>
-              <div className="mt-4 text-3xl font-extrabold tracking-tight">{m.price}</div>
+              <div className="mt-4 text-3xl font-extrabold tracking-tight">${m.price.toLocaleString("es-AR")}</div>
               
               <ul className="mt-5 space-y-2 border-t border-border/60 pt-4">
-                {m.benefits.map((b, idx) => (
-                  <li key={idx} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-primary" /> {b}
-                  </li>
-                ))}
+                {m.includedServices.map((serviceId) => {
+                  const serviceName = amenities.find(a => a.id === serviceId)?.name || serviceId;
+                  return (
+                    <li key={serviceId} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <CheckCircle2 className="h-3.5 w-3.5 text-primary" /> {serviceName}
+                    </li>
+                  );
+                })}
+                {m.includedServices.length === 0 && (
+                  <li className="text-xs text-muted-foreground italic">Sin amenities especiales incluidos.</li>
+                )}
               </ul>
             </div>
             
@@ -318,21 +542,115 @@ function MembresiasTab() {
 }
 
 // Subcomponent: Clases Tab
-function ClasesTab() {
-  const [selectedClass, setSelectedClass] = useState<string | null>(null);
+interface ClasesTabProps {
+  classesList: { id: string; name: string; staffId: string; time: string; capacity: number; booked: number; enrolled: string[] }[];
+  setClassesList: React.Dispatch<React.SetStateAction<{ id: string; name: string; staffId: string; time: string; capacity: number; booked: number; enrolled: string[] }[]>>;
+  staffList: { id: string; name: string; specialty: string; certifications: string[]; photo: string }[];
+}
 
-  const classes = [
-    { id: "1", name: "CrossFit WOD", instructor: "Mateo", time: "08:00 - 09:00", booked: "12 / 15 cupos", enrolled: ["Agustín Gómez", "Marcos López", "Tomás Ruiz"] },
-    { id: "2", name: "Yoga Ashtanga", instructor: "Valeria", time: "09:30 - 10:30", booked: "8 / 10 cupos", enrolled: ["Paula Cáceres", "Sofía Martínez"] },
-    { id: "3", name: "Funcional", instructor: "Daniel", time: "18:00 - 19:00", booked: "15 / 15 cupos", enrolled: ["Pedro Giménez", "María del Mar"] },
-  ];
+function ClasesTab({ classesList, setClassesList, staffList }: ClasesTabProps) {
+  const [selectedClass, setSelectedClass] = useState<string | null>(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [name, setName] = useState("");
+  const [staffId, setStaffId] = useState("");
+  const [time, setTime] = useState("");
+  const [capacity, setCapacity] = useState("15");
+
+  const handleAddClass = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name || !staffId || !time) return;
+
+    const newClass = {
+      id: Math.random().toString(),
+      name,
+      staffId,
+      time,
+      capacity: parseInt(capacity),
+      booked: 0,
+      enrolled: [],
+    };
+
+    setClassesList(prev => [...prev, newClass]);
+    setName("");
+    setStaffId("");
+    setTime("");
+    setShowAddForm(false);
+  };
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-bold tracking-tight">Calendario de Clases</h2>
-        <p className="text-sm text-muted-foreground">Clases planificadas y alumnos agendados en cada horario.</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-xl font-bold tracking-tight">Calendario de Clases</h2>
+          <p className="text-sm text-muted-foreground">Clases planificadas vinculando los entrenadores de tu Staff.</p>
+        </div>
+        <Button 
+          size="sm" 
+          className="rounded-xl gap-1.5" 
+          onClick={() => setShowAddForm(!showAddForm)}
+        >
+          <Plus className="h-4 w-4" /> {showAddForm ? "Cancelar" : "Nueva Clase"}
+        </Button>
       </div>
+
+      {showAddForm && (
+        <form onSubmit={handleAddClass} className="rounded-3xl border border-border bg-card p-6 shadow-sm max-w-xl space-y-4 animate-fade-up">
+          <h3 className="text-sm font-bold text-muted-foreground uppercase">Crear Nueva Clase</h3>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground">Nombre de Clase / Disciplina</label>
+              <input 
+                type="text" 
+                required 
+                value={name} 
+                onChange={(e) => setName(e.target.value)}
+                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                placeholder="CrossFit WOD"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground">Horario (ej: 19:00 - 20:00)</label>
+              <input 
+                type="text" 
+                required 
+                value={time} 
+                onChange={(e) => setTime(e.target.value)}
+                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                placeholder="19:00 - 20:00"
+              />
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground">Instructor de Staff</label>
+              <select
+                required
+                value={staffId}
+                onChange={(e) => setStaffId(e.target.value)}
+                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              >
+                <option value="">Selecciona un entrenador...</option>
+                {staffList.map((s) => (
+                  <option key={s.id} value={s.id}>{s.name} ({s.specialty})</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground">Cupos Totales</label>
+              <input 
+                type="number" 
+                required 
+                value={capacity} 
+                onChange={(e) => setCapacity(e.target.value)}
+                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              />
+            </div>
+          </div>
+
+          <Button type="submit" className="rounded-xl">Programar Clase</Button>
+        </form>
+      )}
 
       <div className="grid gap-6 md:grid-cols-3">
         {/* Left Side: Schedule */}
@@ -340,36 +658,39 @@ function ClasesTab() {
           <div className="rounded-2xl border border-border bg-card p-4">
             <h3 className="text-xs font-bold text-muted-foreground uppercase mb-4">Hoy</h3>
             <div className="space-y-3">
-              {classes.map((c) => (
-                <div 
-                  key={c.id} 
-                  onClick={() => setSelectedClass(c.id)}
-                  className={`p-4 rounded-xl border transition cursor-pointer flex items-center justify-between ${
-                    selectedClass === c.id 
-                      ? "border-primary bg-primary/5" 
-                      : "border-border hover:border-foreground/20"
-                  }`}
-                >
-                  <div>
-                    <h4 className="font-bold text-sm">{c.name}</h4>
-                    <p className="text-xs text-muted-foreground mt-0.5">{c.instructor} · {c.time} hs</p>
+              {classesList.map((c) => {
+                const instructorName = staffList.find(s => s.id === c.staffId)?.name || "Sin asignar";
+                return (
+                  <div 
+                    key={c.id} 
+                    onClick={() => setSelectedClass(c.id)}
+                    className={`p-4 rounded-xl border transition cursor-pointer flex items-center justify-between ${
+                      selectedClass === c.id 
+                        ? "border-primary bg-primary/5" 
+                        : "border-border hover:border-foreground/20"
+                    }`}
+                  >
+                    <div>
+                      <h4 className="font-bold text-sm">{c.name}</h4>
+                      <p className="text-xs text-muted-foreground mt-0.5">{instructorName} · {c.time} hs</p>
+                    </div>
+                    <span className="text-xs font-semibold bg-secondary px-2.5 py-1 rounded-full text-foreground">
+                      {c.booked} / {c.capacity} cupos
+                    </span>
                   </div>
-                  <span className="text-xs font-semibold bg-secondary px-2.5 py-1 rounded-full text-foreground">
-                    {c.booked}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
 
-        {/* Right Side: Enrolled members view */}
+        {/* Right Side: Enrolled members */}
         <div className="col-span-1">
           <div className="rounded-2xl border border-border bg-card p-4 h-full min-h-[300px] flex flex-col">
             <h3 className="text-xs font-bold text-muted-foreground uppercase mb-4">Alumnos Inscritos</h3>
             {selectedClass ? (
               <ul className="space-y-3 flex-1">
-                {classes.find(c => c.id === selectedClass)?.enrolled.map((name, idx) => (
+                {classesList.find(c => c.id === selectedClass)?.enrolled.map((name, idx) => (
                   <li key={idx} className="flex items-center gap-2 p-2 rounded-lg bg-secondary/40 text-xs font-semibold">
                     <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-[10px]">
                       {name[0]}
@@ -377,6 +698,11 @@ function ClasesTab() {
                     {name}
                   </li>
                 ))}
+                {(classesList.find(c => c.id === selectedClass)?.enrolled.length === 0) && (
+                  <div className="flex-1 flex items-center justify-center text-center text-xs text-muted-foreground p-4">
+                    Ningún alumno inscrito todavía.
+                  </div>
+                )}
               </ul>
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center text-center p-6 text-muted-foreground">
@@ -392,49 +718,481 @@ function ClasesTab() {
 }
 
 // Subcomponent: Config Tab
-function ConfigTab() {
+interface ConfigTabProps {
+  staffList: { id: string; name: string; specialty: string; certifications: string[]; photo: string; certificationImages?: string[] }[];
+  setStaffList: React.Dispatch<React.SetStateAction<{ id: string; name: string; specialty: string; certifications: string[]; photo: string; certificationImages?: string[] }[]>>;
+  amenities: { id: string; name: string; category: string; checked: boolean }[];
+  setAmenities: React.Dispatch<React.SetStateAction<{ id: string; name: string; category: string; checked: boolean }[]>>;
+  requirements: { id: string; name: string; category: string; checked: boolean }[];
+  setRequirements: React.Dispatch<React.SetStateAction<{ id: string; name: string; category: string; checked: boolean }[]>>;
+  gymPhotos: string[];
+  setGymPhotos: React.Dispatch<React.SetStateAction<string[]>>;
+}
+
+function ConfigTab({ 
+  staffList, setStaffList, 
+  amenities, setAmenities, 
+  requirements, setRequirements,
+  gymPhotos, setGymPhotos
+}: ConfigTabProps) {
+  const [subTab, setSubTab] = useState("basico");
+
+  // Local state for photo view modals
+  const [activeCertificationsViewer, setActiveCertificationsViewer] = useState<string[] | null>(null);
+
+  // Add staff inputs
+  const [staffName, setStaffName] = useState("");
+  const [staffSpecialty, setStaffSpecialty] = useState("");
+  const [staffCerts, setStaffCerts] = useState("");
+  const [staffAvatarUrl, setStaffAvatarUrl] = useState<string | null>(null);
+  const [staffDiplomas, setStaffDiplomas] = useState<string[]>([]);
+
+  // Refs for file uploads
+  const gymFileRef = useRef<HTMLInputElement>(null);
+  const coachAvatarRef = useRef<HTMLInputElement>(null);
+  const coachCertsRef = useRef<HTMLInputElement>(null);
+
+  // 1. Gym Photos Uploader
+  const handleGymPhotosUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    const filesArray = Array.from(e.target.files);
+    const objectUrls = filesArray.map(file => URL.createObjectURL(file));
+    setGymPhotos(prev => [...prev, ...objectUrls]);
+  };
+
+  const handleRemoveGymPhoto = (index: number) => {
+    setGymPhotos(prev => prev.filter((_, idx) => idx !== index));
+  };
+
+  // 2. Coach Avatar Uploader
+  const handleCoachAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setStaffAvatarUrl(URL.createObjectURL(file));
+    }
+  };
+
+  // 3. Coach Diplomas Uploader
+  const handleCoachDiplomasUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const filesArray = Array.from(e.target.files);
+      const objectUrls = filesArray.map(file => URL.createObjectURL(file));
+      setStaffDiplomas(prev => [...prev, ...objectUrls]);
+    }
+  };
+
+  const handleRemoveDiplomaPreview = (index: number) => {
+    setStaffDiplomas(prev => prev.filter((_, idx) => idx !== index));
+  };
+
+  const handleAddStaff = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!staffName || !staffSpecialty) return;
+
+    const newStaff = {
+      id: Math.random().toString(),
+      name: staffName,
+      specialty: staffSpecialty,
+      certifications: staffCerts.split(",").map(c => c.trim()).filter(c => c),
+      photo: staffAvatarUrl || "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=150&q=80",
+      certificationImages: staffDiplomas,
+    };
+
+    setStaffList(prev => [...prev, newStaff]);
+    setStaffName("");
+    setStaffSpecialty("");
+    setStaffCerts("");
+    setStaffAvatarUrl(null);
+    setStaffDiplomas([]);
+  };
+
+  const handleRemoveStaff = (id: string) => {
+    setStaffList(prev => prev.filter(s => s.id !== id));
+  };
+
+  const handleToggleAmenity = (id: string) => {
+    setAmenities(prev => prev.map(a => a.id === id ? { ...a, checked: !a.checked } : a));
+  };
+
+  const handleToggleRequirement = (id: string) => {
+    setRequirements(prev => prev.map(r => r.id === id ? { ...r, checked: !r.checked } : r));
+  };
+
+  // Unique categories helper
+  const amenityCategories = Array.from(new Set(amenities.map(a => a.category)));
+  const requirementCategories = Array.from(new Set(requirements.map(r => r.category)));
+
   return (
-    <div className="space-y-6 max-w-2xl bg-card border border-border p-6 rounded-3xl shadow-sm">
-      <div>
-        <h2 className="text-lg font-bold">Configuración del Gimnasio</h2>
-        <p className="text-xs text-muted-foreground">Edita la ficha de información pública que ven tus miembros.</p>
+    <div className="space-y-6">
+      {/* Sub tabs navigation */}
+      <div className="border-b border-border flex gap-4 pb-0 overflow-x-auto">
+        {[
+          { id: "basico", label: "Ficha Básica" },
+          { id: "amenities", label: "Amenities & Servicios" },
+          { id: "requisitos", label: "Normas de Ingreso" },
+          { id: "staff", label: "Equipo (Staff)" },
+        ].map((sub) => (
+          <button
+            key={sub.id}
+            onClick={() => setSubTab(sub.id)}
+            className={`pb-3 text-sm font-semibold border-b-2 transition whitespace-nowrap ${
+              subTab === sub.id
+                ? "border-primary text-foreground"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {sub.label}
+          </button>
+        ))}
       </div>
 
-      <form className="space-y-4 text-sm" onSubmit={(e) => e.preventDefault()}>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-muted-foreground">Nombre Comercial</label>
-            <input type="text" className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" defaultValue="Kraft Strength Club" />
+      {/* Subtab 1: Basic Config & Photos */}
+      {subTab === "basico" && (
+        <div className="space-y-6 max-w-3xl">
+          {/* Photos Section */}
+          <div className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h3 className="font-bold text-sm">Galería de Fotos</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Sube imágenes de tus instalaciones para tu ficha pública.</p>
+              </div>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="rounded-xl gap-1.5"
+                onClick={() => gymFileRef.current?.click()}
+              >
+                <Plus className="h-4 w-4" /> Subir Fotos
+              </Button>
+              <input 
+                type="file" 
+                multiple 
+                accept="image/*" 
+                ref={gymFileRef} 
+                onChange={handleGymPhotosUpload} 
+                className="hidden" 
+              />
+            </div>
+
+            <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
+              {gymPhotos.map((photo, index) => (
+                <div key={index} className="relative aspect-video rounded-xl overflow-hidden border border-border group">
+                  <img src={photo} alt={`Gym ${index}`} className="h-full w-full object-cover" />
+                  <button 
+                    type="button"
+                    onClick={() => handleRemoveGymPhoto(index)}
+                    className="absolute top-1.5 right-1.5 bg-black/60 hover:bg-black text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+              {gymPhotos.length === 0 && (
+                <div className="col-span-full py-8 text-center text-xs text-muted-foreground border-2 border-dashed border-border rounded-xl">
+                  No hay fotos cargadas. Sube imágenes del local.
+                </div>
+              )}
+            </div>
           </div>
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-muted-foreground">Zona horaria</label>
-            <input type="text" className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" defaultValue="America/Argentina/Buenos_Aires" />
+
+          <div className="space-y-6 max-w-2xl bg-card border border-border p-6 rounded-3xl shadow-sm">
+            <div>
+              <h3 className="font-bold text-sm">Ficha de Información Pública</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Datos públicos de ubicación y horarios del comercio.</p>
+            </div>
+            <form className="space-y-4 text-sm" onSubmit={(e) => e.preventDefault()}>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground">Nombre Comercial</label>
+                  <input type="text" className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" defaultValue="Kraft Strength Club" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground">Zona horaria</label>
+                  <input type="text" className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" defaultValue="America/Argentina/Buenos_Aires" />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground">Dirección Física</label>
+                <input type="text" className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" defaultValue="Av. Santa Fe 3421, Palermo, CABA" />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground">Hora de Apertura</label>
+                  <input type="time" className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" defaultValue="06:00" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground">Hora de Cierre</label>
+                  <input type="time" className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" defaultValue="23:00" />
+                </div>
+              </div>
+              <Button className="rounded-xl">Guardar Cambios</Button>
+            </form>
           </div>
         </div>
+      )}
 
-        <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-muted-foreground">Dirección Física</label>
-          <input type="text" className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" defaultValue="Av. Santa Fe 3421, Palermo, CABA" />
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-muted-foreground">Hora de Apertura</label>
-            <input type="time" className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" defaultValue="06:00" />
+      {/* Subtab 2: Amenities (Grouped) */}
+      {subTab === "amenities" && (
+        <div className="space-y-6 max-w-3xl bg-card border border-border p-6 rounded-3xl shadow-sm">
+          <div>
+            <h3 className="font-bold text-sm">Amenities y Servicios Adicionales</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Define los servicios de infraestructura y soporte que ofrece tu centro.</p>
           </div>
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-muted-foreground">Hora de Cierre</label>
-            <input type="time" className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" defaultValue="23:00" />
+          
+          <div className="space-y-6">
+            {amenityCategories.map((category) => (
+              <div key={category} className="space-y-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-1.5">{category}</h4>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {amenities.filter(a => a.category === category).map((a) => (
+                    <div key={a.id} className="flex items-center justify-between p-3.5 rounded-2xl bg-secondary/20 hover:bg-secondary/40 transition">
+                      <div className="text-sm font-semibold">{a.name}</div>
+                      <input 
+                        type="checkbox" 
+                        checked={a.checked} 
+                        onChange={() => handleToggleAmenity(a.id)}
+                        className="h-5 w-10 accent-primary rounded-full cursor-pointer"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
+      )}
 
-        <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-muted-foreground">Webhook URL (Integraciones)</label>
-          <input type="text" className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" placeholder="https://api.tudominio.com/webhooks/payments" />
+      {/* Subtab 3: Requirements (Grouped) */}
+      {subTab === "requisitos" && (
+        <div className="space-y-6 max-w-3xl bg-card border border-border p-6 rounded-3xl shadow-sm">
+          <div>
+            <h3 className="font-bold text-sm">Normas y Requisitos de Ingreso</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Controla las exigencias de higiene y documentación que solicitas.</p>
+          </div>
+
+          <div className="space-y-6">
+            {requirementCategories.map((category) => (
+              <div key={category} className="space-y-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-1.5">{category}</h4>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {requirements.filter(r => r.category === category).map((r) => (
+                    <div key={r.id} className="flex items-center justify-between p-3.5 rounded-2xl bg-secondary/20 hover:bg-secondary/40 transition">
+                      <div className="text-sm font-semibold">{r.name}</div>
+                      <input 
+                        type="checkbox" 
+                        checked={r.checked} 
+                        onChange={() => handleToggleRequirement(r.id)}
+                        className="h-5 w-10 accent-primary rounded-full cursor-pointer"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
+      )}
 
-        <Button className="rounded-xl mt-4">Guardar cambios</Button>
-      </form>
+      {/* Subtab 4: Staff Management (Upload profiles and diplomas) */}
+      {subTab === "staff" && (
+        <div className="space-y-6">
+          {/* Add Staff form */}
+          <form onSubmit={handleAddStaff} className="rounded-3xl border border-border bg-card p-6 shadow-sm max-w-2xl space-y-4">
+            <h3 className="text-sm font-bold text-muted-foreground uppercase">Añadir Profesor / Coach</h3>
+            
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground">Nombre y Apellido</label>
+                <input 
+                  type="text" 
+                  required 
+                  value={staffName} 
+                  onChange={(e) => setStaffName(e.target.value)}
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                  placeholder="Juan Gómez"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground">Especialidad / Cargo</label>
+                <input 
+                  type="text" 
+                  required 
+                  value={staffSpecialty} 
+                  onChange={(e) => setStaffSpecialty(e.target.value)}
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                  placeholder="Entrenador de CrossFit"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground">Certificaciones y Títulos (separados por comas)</label>
+              <input 
+                type="text" 
+                value={staffCerts} 
+                onChange={(e) => setStaffCerts(e.target.value)}
+                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                placeholder="CF-L1, Prof. Educación Física, Guardavidas"
+              />
+            </div>
+
+            {/* Profile Avatar Upload */}
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-muted-foreground block">Foto de Perfil</label>
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-full overflow-hidden border border-border bg-muted flex items-center justify-center shrink-0">
+                    {staffAvatarUrl ? (
+                      <img src={staffAvatarUrl} alt="Preview" className="h-full w-full object-cover" />
+                    ) : (
+                      <Users className="h-5 w-5 text-muted-foreground" />
+                    )}
+                  </div>
+                  <Button 
+                    type="button" 
+                    size="sm" 
+                    variant="outline" 
+                    className="rounded-xl"
+                    onClick={() => coachAvatarRef.current?.click()}
+                  >
+                    Subir Foto
+                  </Button>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    ref={coachAvatarRef} 
+                    onChange={handleCoachAvatarUpload} 
+                    className="hidden" 
+                  />
+                </div>
+              </div>
+
+              {/* Diplomas/Certificates Upload */}
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-muted-foreground block">Adjuntar Diplomas / Certificaciones</label>
+                <div className="flex items-center gap-3">
+                  <Button 
+                    type="button" 
+                    size="sm" 
+                    variant="outline" 
+                    className="rounded-xl gap-1.5"
+                    onClick={() => coachCertsRef.current?.click()}
+                  >
+                    <Plus className="h-4 w-4" /> Subir Certificados
+                  </Button>
+                  <input 
+                    type="file" 
+                    multiple 
+                    accept="image/*" 
+                    ref={coachCertsRef} 
+                    onChange={handleCoachDiplomasUpload} 
+                    className="hidden" 
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Diplomas Previews */}
+            {staffDiplomas.length > 0 && (
+              <div className="space-y-1.5 border-t border-border/60 pt-3">
+                <label className="text-xs font-semibold text-muted-foreground block">Diplomas Adjuntos ({staffDiplomas.length})</label>
+                <div className="flex flex-wrap gap-2">
+                  {staffDiplomas.map((url, index) => (
+                    <div key={index} className="relative h-12 w-16 rounded-lg overflow-hidden border border-border group">
+                      <img src={url} alt="Diploma" className="h-full w-full object-cover" />
+                      <button 
+                        type="button"
+                        onClick={() => handleRemoveDiplomaPreview(index)}
+                        className="absolute top-0.5 right-0.5 bg-black/60 text-white p-0.5 rounded-full hover:bg-black transition"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <Button type="submit" className="rounded-xl">Añadir al Staff</Button>
+          </form>
+
+          {/* Staff List rendering */}
+          <div className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+            <h3 className="text-sm font-bold text-muted-foreground uppercase mb-4">Equipo Registrado</h3>
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+              {staffList.map((s) => (
+                <div key={s.id} className="relative p-4 border border-border rounded-2xl bg-secondary/10 flex flex-col justify-between min-h-[140px]">
+                  <button 
+                    onClick={() => handleRemoveStaff(s.id)}
+                    className="absolute top-2 right-2 p-1.5 rounded-full hover:bg-rose-500/10 text-rose-500 transition"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+
+                  <div className="flex items-center gap-3">
+                    <img src={s.photo} alt={s.name} className="h-12 w-12 rounded-full object-cover border border-border shrink-0" />
+                    <div className="min-w-0">
+                      <div className="text-xs font-bold text-foreground truncate">{s.name}</div>
+                      <div className="text-[10px] text-muted-foreground truncate">{s.specialty}</div>
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        {s.certifications.map((c) => (
+                          <span key={c} className="text-[8px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-bold">
+                            {c}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Ver Certificados link */}
+                  {s.certificationImages && s.certificationImages.length > 0 && (
+                    <button 
+                      onClick={() => setActiveCertificationsViewer(s.certificationImages || [])}
+                      className="mt-3 text-[10px] font-bold text-primary hover:underline self-start flex items-center gap-1"
+                    >
+                      <Eye className="h-3 w-3" /> Ver Certificados ({s.certificationImages.length})
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Diplomas Viewer Modal */}
+      {activeCertificationsViewer && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 z-50 animate-fade-in">
+          <div className="relative bg-card border border-border w-full max-w-[600px] rounded-3xl p-6 shadow-2xl flex flex-col">
+            <button 
+              onClick={() => setActiveCertificationsViewer(null)}
+              className="absolute right-4 top-4 p-2 rounded-full hover:bg-secondary transition z-10"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <h3 className="text-lg font-bold tracking-tight mb-4 flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" /> Diplomas y Certificaciones
+            </h3>
+
+            <div className="grid gap-3 grid-cols-2 overflow-y-auto max-h-[400px]">
+              {activeCertificationsViewer.map((url, index) => (
+                <div key={index} className="border border-border rounded-xl overflow-hidden aspect-video bg-muted relative group">
+                  <img src={url} alt={`Diploma ${index}`} className="h-full w-full object-cover" />
+                  <a 
+                    href={url} 
+                    target="_blank" 
+                    rel="noreferrer"
+                    className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition text-white text-xs font-bold gap-1"
+                  >
+                    <Eye className="h-4 w-4" /> Ver pantalla completa
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

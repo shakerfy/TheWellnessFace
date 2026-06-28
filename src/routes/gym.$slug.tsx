@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, MapPin, Star, Clock, ArrowLeft, Check, Users } from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin, Star, Clock, ArrowLeft, Check, Users, Eye, X, FileText } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -51,6 +51,7 @@ function GymPage() {
   const { gym } = Route.useLoaderData() as { gym: Gym };
   const [active, setActive] = useState(0);
   const [day, setDay] = useState<number>(new Date().getDay() === 0 ? 6 : new Date().getDay() - 1);
+  const [activeCertificationsViewer, setActiveCertificationsViewer] = useState<string[] | null>(null);
 
   const classesByDay = useMemo(
     () => gym.classes.filter((c) => c.day === day).sort((a, b) => a.time.localeCompare(b.time)),
@@ -194,19 +195,29 @@ function GymPage() {
             <p className="mt-1 text-sm text-muted-foreground">Entrenadores certificados listos para guiar tu entrenamiento.</p>
             <div className="mt-6 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {gym.staff.map((coach) => (
-                <div key={coach.id} className="rounded-2xl border border-border bg-card p-4 flex items-center gap-4 hover:border-foreground/20 transition">
-                  <img src={coach.photo} alt={coach.name} className="h-14 w-14 rounded-full object-cover border border-border" />
-                  <div>
-                    <div className="text-sm font-bold text-foreground">{coach.name}</div>
-                    <div className="text-xs text-muted-foreground mt-0.5">{coach.specialty}</div>
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      {coach.certifications.map((c) => (
-                        <span key={c} className="text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-bold">
-                          {c}
-                        </span>
-                      ))}
+                <div key={coach.id} className="rounded-2xl border border-border bg-card p-4 flex flex-col justify-between hover:border-foreground/20 transition min-h-[140px]">
+                  <div className="flex items-center gap-4">
+                    <img src={coach.photo} alt={coach.name} className="h-14 w-14 rounded-full object-cover border border-border shrink-0" />
+                    <div>
+                      <div className="text-sm font-bold text-foreground">{coach.name}</div>
+                      <div className="text-xs text-muted-foreground mt-0.5">{coach.specialty}</div>
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {coach.certifications.map((c) => (
+                          <span key={c} className="text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-bold">
+                            {c}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </div>
+                  {coach.certificationImages && coach.certificationImages.length > 0 && (
+                    <button 
+                      onClick={() => setActiveCertificationsViewer(coach.certificationImages || [])}
+                      className="mt-3 text-[10px] font-bold text-primary hover:underline flex items-center gap-1 self-start"
+                    >
+                      <Eye className="h-3 w-3" /> Ver Certificados ({coach.certificationImages.length})
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
@@ -274,6 +285,39 @@ function GymPage() {
             )}
           </div>
         </section>
+      {/* Diplomas Viewer Modal */}
+      {activeCertificationsViewer && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 z-50 animate-fade-in">
+          <div className="relative bg-card border border-border w-full max-w-[600px] rounded-3xl p-6 shadow-2xl flex flex-col text-foreground">
+            <button 
+              onClick={() => setActiveCertificationsViewer(null)}
+              className="absolute right-4 top-4 p-2 rounded-full hover:bg-secondary transition z-10"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <h3 className="text-lg font-bold tracking-tight mb-4 flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" /> Diplomas y Certificaciones
+            </h3>
+
+            <div className="grid gap-3 grid-cols-2 overflow-y-auto max-h-[400px]">
+              {activeCertificationsViewer.map((url, index) => (
+                <div key={index} className="border border-border rounded-xl overflow-hidden aspect-video bg-muted relative group">
+                  <img src={url} alt={`Diploma ${index}`} className="h-full w-full object-cover" />
+                  <a 
+                    href={url} 
+                    target="_blank" 
+                    rel="noreferrer"
+                    className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition text-white text-xs font-bold gap-1"
+                  >
+                    <Eye className="h-4 w-4" /> Ver pantalla completa
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
       </div>
       <SiteFooter />
     </div>
