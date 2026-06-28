@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowUpRight, Plus, Mic, ArrowUp, Star, MapPin, Sparkles } from "lucide-react";
+import { ArrowUpRight, Plus, Mic, ArrowUp, Star, MapPin, Sparkles, ChevronDown } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Typewriter } from "@/components/typewriter";
 import { Button } from "@/components/ui/button";
@@ -105,34 +105,21 @@ function Index() {
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden">
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-[-10%] -z-10 mx-auto h-[520px] max-w-5xl rounded-[100%] bg-secondary blur-3xl opacity-70" />
-      <div className="mx-auto flex max-w-5xl flex-col items-center px-6 pb-24 pt-20 text-center md:pt-28">
-        <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1 text-xs text-muted-foreground">
-          <Sparkles className="h-3.5 w-3.5" />
-          Buscador inteligente · powered by AI
-        </div>
-        <h1 className="mt-6 max-w-3xl text-balance text-5xl font-semibold tracking-tight md:text-6xl lg:text-7xl">
-          Encuentra tu próximo gimnasio<br className="hidden md:block" /> con una sola frase
+    <section className="relative overflow-hidden pb-16 pt-24 md:pt-32">
+      {/* Mesh Gradient Background */}
+      <div 
+        aria-hidden 
+        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_20%,rgba(59,130,246,0.22),transparent_40%),radial-gradient(circle_at_80%_20%,rgba(96,165,250,0.15),transparent_40%),radial-gradient(circle_at_30%_90%,rgba(244,63,94,0.35),transparent_50%),radial-gradient(circle_at_70%_90%,rgba(236,72,153,0.35),transparent_50%)] opacity-90 blur-3xl" 
+      />
+      <div className="mx-auto flex max-w-4xl flex-col items-center px-6 text-center">
+        <h1 className="text-balance text-4xl font-semibold tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl">
+          Encuentra tu próximo gimnasio con una sola frase
         </h1>
-        <p className="mt-5 max-w-xl text-balance text-base text-muted-foreground md:text-lg">
+        <p className="mt-5 max-w-xl text-balance text-sm text-muted-foreground sm:text-base md:text-lg">
           Shakerfy busca, compara y reserva en cientos de gimnasios, fitness centers y studios. Habla en lenguaje natural.
         </p>
 
         <PromptBox />
-
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-xs text-muted-foreground">
-          <span>Sugerencias:</span>
-          {[
-            "CrossFit en Palermo bajo $25.000",
-            "Yoga matutino cerca de casa",
-            "Estudio de pilates con primera clase gratis",
-          ].map((s) => (
-            <span key={s} className="rounded-full border border-border bg-background px-3 py-1">
-              {s}
-            </span>
-          ))}
-        </div>
       </div>
     </section>
   );
@@ -140,8 +127,8 @@ function Hero() {
 
 function PromptBox() {
   return (
-    <div className="mt-10 w-full max-w-2xl">
-      <div className="rounded-3xl border border-border bg-secondary p-5 text-left shadow-[0_24px_60px_-24px_rgba(0,0,0,0.18)]">
+    <div className="mt-10 w-full max-w-2xl px-2">
+      <div className="rounded-3xl border border-border/80 bg-background p-5 text-left shadow-[0_20px_50px_-20px_rgba(0,0,0,0.12)] transition-shadow hover:shadow-[0_20px_50px_-15px_rgba(0,0,0,0.16)]">
         <div className="min-h-[64px] text-[15px] leading-relaxed text-muted-foreground">
           <Typewriter
             phrases={[
@@ -152,18 +139,18 @@ function PromptBox() {
             ]}
           />
         </div>
-        <div className="mt-4 flex items-center justify-between">
-          <button className="grid h-9 w-9 place-items-center rounded-full border border-border bg-background text-muted-foreground transition hover:text-foreground">
+        <div className="mt-4 flex items-center justify-between border-t border-border/40 pt-4">
+          <button className="grid h-8 w-8 place-items-center rounded-full border border-border bg-background text-muted-foreground transition hover:border-foreground/20 hover:text-foreground">
             <Plus className="h-4 w-4" />
           </button>
-          <div className="flex items-center gap-2">
-            <button className="hidden items-center gap-1 rounded-full px-3 py-1.5 text-xs text-muted-foreground transition hover:text-foreground sm:inline-flex">
-              Crear <ArrowUpRight className="h-3 w-3" />
+          <div className="flex items-center gap-4">
+            <button className="flex items-center gap-1 rounded-full text-xs text-muted-foreground transition hover:text-foreground">
+              Crear <ChevronDown className="h-3.5 w-3.5" />
             </button>
-            <button className="grid h-9 w-9 place-items-center rounded-full text-muted-foreground transition hover:text-foreground">
+            <button className="grid h-8 w-8 place-items-center rounded-full text-muted-foreground transition hover:text-foreground">
               <Mic className="h-4 w-4" />
             </button>
-            <Button size="icon" className="h-9 w-9 rounded-full">
+            <Button size="icon" className="h-8 w-8 rounded-full bg-foreground text-background hover:bg-foreground/90">
               <ArrowUp className="h-4 w-4" />
             </Button>
           </div>
