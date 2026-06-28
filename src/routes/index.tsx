@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ArrowUpRight, Plus, Mic, ArrowUp, Star, MapPin, Sparkles, ChevronDown } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Typewriter } from "@/components/typewriter";
@@ -103,31 +103,7 @@ function Index() {
   );
 }
 
-const WORDS = [
-  { text: "gimnasio", color: "text-emerald-500" },
-  { text: "estudio de danza", color: "text-violet-500" },
-  { text: "centro deportivo", color: "text-amber-500" },
-  { text: "estudio de yoga", color: "text-sky-500" },
-  { text: "box de CrossFit", color: "text-rose-500" },
-  { text: "estudio de pilates", color: "text-pink-500" },
-];
-
 function Hero() {
-  const [index, setIndex] = useState(0);
-  const [visible, setVisible] = useState(true);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setVisible(false);
-      setTimeout(() => {
-        setIndex((prev) => (prev + 1) % WORDS.length);
-        setVisible(true);
-      }, 300);
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, []);
-
   return (
     <section className="relative overflow-hidden pb-24 pt-24 md:pb-36 md:pt-32">
       {/* Mesh Gradient Background */}
@@ -136,18 +112,11 @@ function Hero() {
         className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_20%,rgba(59,130,246,0.22),transparent_40%),radial-gradient(circle_at_80%_20%,rgba(96,165,250,0.15),transparent_40%),radial-gradient(circle_at_30%_90%,rgba(244,63,94,0.35),transparent_50%),radial-gradient(circle_at_70%_90%,rgba(236,72,153,0.35),transparent_50%)] opacity-90 blur-3xl" 
       />
       <div className="mx-auto flex max-w-4xl flex-col items-center px-6 text-center">
-        <h1 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-[44px] lg:text-[48px] min-h-[2.4em] sm:min-h-[1.2em]">
-          Encuentra tu{" "}
-          <span
-            className={`inline-block transition-all duration-300 transform ${
-              visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
-            } ${WORDS[index].color}`}
-          >
-            {WORDS[index].text}
-          </span>
+        <h1 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-[42px] lg:text-[46px]">
+          Encuentra tu gimnasio ideal con una sola frase
         </h1>
-        <p className="mt-3 max-w-xl text-balance text-[14px] text-muted-foreground/85 sm:text-[15px] md:text-[16px]">
-          Busca, compara y reserva con IA
+        <p className="mt-4 max-w-2xl text-balance text-[14px] text-muted-foreground/85 sm:text-[15px] md:text-[16px] lg:whitespace-nowrap">
+          Busca, compara y reserva en los mejores gimnasios con lenguaje natural
         </p>
 
         <PromptBox />
