@@ -112,11 +112,11 @@ function Hero() {
         className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_20%,rgba(59,130,246,0.22),transparent_40%),radial-gradient(circle_at_80%_20%,rgba(96,165,250,0.15),transparent_40%),radial-gradient(circle_at_30%_90%,rgba(244,63,94,0.35),transparent_50%),radial-gradient(circle_at_70%_90%,rgba(236,72,153,0.35),transparent_50%)] opacity-90 blur-3xl" 
       />
       <div className="mx-auto flex max-w-4xl flex-col items-center px-6 text-center">
-        <h1 className="text-balance text-4xl font-semibold tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl">
-          Encuentra tu próximo gimnasio con una sola frase
+        <h1 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-[44px] lg:text-[48px]">
+          Encuentra tu gimnasio como te lo imaginas
         </h1>
-        <p className="mt-5 max-w-xl text-balance text-sm text-muted-foreground sm:text-base md:text-lg">
-          Shakerfy busca, compara y reserva en cientos de gimnasios, fitness centers y studios. Habla en lenguaje natural.
+        <p className="mt-3 max-w-xl text-balance text-[14px] text-muted-foreground/85 sm:text-[15px] md:text-[16px]">
+          Shakerfy busca, compara y reserva en lenguaje natural
         </p>
 
         <PromptBox />
