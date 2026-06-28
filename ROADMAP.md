@@ -12,9 +12,9 @@ Este documento describe la arquitectura de páginas, la estructura de la base de
 | **Perfil del Gimnasio (`/gym/$slug`)** | 🟢 Funcional (Mock) | 100% |
 | **Autenticación Alumnos (`/auth`)** | 🟢 Maquetado (Mock) | 100% |
 | **Autenticación Gimnasios (`/auth/gym`)**| 🟢 Maquetado (Mock) | 100% |
-| **Dashboard Gimnasio (Administrador)** | 🟡 Modificaciones | 80% |
-| **Dashboard Alumno (Usuario)** | 🟢 Maquetado (Mock) | 100% |
-| **Modelado de Colecciones (Firebase)** | 🟡 En progreso | 20% |
+| **Dashboard Gimnasio (Administrador)** | 🟡 Modificaciones | 85% |
+| **Dashboard Alumno (Usuario)** | 🟡 Modificaciones | 90% |
+| **Modelado de Colecciones (Firebase)** | 🟡 En progreso | 25% |
 | **Integración de API / Server Functions**| 🔴 Pendiente | 0% |
 
 ---
@@ -28,7 +28,7 @@ Este documento describe la arquitectura de páginas, la estructura de la base de
 
 ### 🏋️‍♂️ Perfil del Gimnasio (`/gym/$slug`)
 *   **Multimedia:** Carrusel interactivo de imágenes del local.
-*   **Información Básica:** Nombre, dirección, calificación de estrellas, horario de atención y badge dinámico de abierto/cerrado.
+*   **Información Básica:** Nombre, dirección, calificación de estrellas, horario de apertura detallado por día (apoyando turnos cortados).
 *   **Normas / Obligaciones:** Banner informativo detallando exigencias físicas y materiales de ingreso (ej: Apto médico, toalla).
 *   **Staff & Coaches:** Panel dedicado a presentar a los profesores del centro, mostrando sus fotos, certificaciones, especialidades y diplomas adjuntos.
 *   **Planes y Membresías:** Grid de tarjetas comparativas mostrando los beneficios y amenities específicos incluidos en cada plan.
@@ -45,7 +45,8 @@ Estructura de navegación mediante Sidebar responsivo y navegación interna por 
 3.  **Membresías:** Grid de planes comerciales vinculando los amenities específicos que incluye cada suscripción.
 4.  **Clases:** Calendario de sesiones vinculando los instructores del Staff.
 5.  **Configuración:** Panel enriquecido para editar la información pública:
-    *   *Ficha Básica:* Datos, horarios e imágenes cargadas (File Uploader).
+    *   *Ficha Básica:* Datos, horarios detallados individuales por día con intervalos partidos (File Uploader).
+    *   *Políticas:* Horas de anticipación mínimas para cancelación de clases.
     *   *Amenities (Catálogo Marketplace):* WiFi, Estacionamiento, Sauna, etc.
     *   *Requisitos / Obligaciones (Catálogo Marketplace):* Normas de convivencia e ingreso.
     *   *Staff:* Altas, bajas y edición de instructores (foto de perfil, diplomas de certificaciones, nombre, especialidad, títulos).
@@ -172,8 +173,8 @@ Estructura de navegación mediante Sidebar responsivo y navegación interna por 
   "gym_name": "string",
   "address": "string",
   "timezone": "string",
-  "opening_time": "string (HH:MM)",
-  "closing_time": "string (HH:MM)",
+  "opening_hours": "array of objects [{ 'day': 'string', 'intervals': [{ 'from': 'string', 'to': 'string' }] }]", -- Horarios detallados por día
+  "cancellation_policy_hours": "number", -- Horas de anticipación para cancelación
   "photos": "array of strings (Firebase Storage URLs)",
   "services": "array of objects [{ 'id': 'string', 'name': 'string', 'category': 'string', 'checked': 'boolean' }]", -- Amenities
   "requirements": "array of objects [{ 'id': 'string', 'name': 'string', 'category': 'string', 'checked': 'boolean' }]", -- Obligaciones
