@@ -23,8 +23,9 @@ export type Gym = {
     booked: number;
   }[];
   requirements?: string[];
-  staff?: { id: string; name: string; specialty: string; certifications: string[]; photo: string }[];
+  staff?: { id: string; name: string; specialty: string; certifications: string[]; photo: string; certificationImages?: string[] }[];
   amenities?: string[];
+  weeklyHours?: { day: string; intervals: { from: string; to: string }[] }[];
 };
 
 const img = (id: string) =>
@@ -64,6 +65,15 @@ export const GYMS: Gym[] = [
       { id: "3", name: "Daniel Castro", specialty: "Preparador Físico Funcional", certifications: ["Prof. Educación Física", "FMS Level 1"], photo: img("photo-1500648767791-00dcc994a43e") },
     ],
     amenities: ["Duchas y Vestuarios", "Lockers de Seguridad", "WiFi Alta Velocidad", "Estacionamiento Gratuito", "Sauna Húmedo"],
+    weeklyHours: [
+      { day: "Lunes", intervals: [{ from: "07:00", to: "12:00" }, { from: "14:00", to: "21:00" }] },
+      { day: "Martes", intervals: [{ from: "07:00", to: "12:00" }, { from: "14:00", to: "21:00" }] },
+      { day: "Miércoles", intervals: [{ from: "07:00", to: "12:00" }, { from: "14:00", to: "21:00" }] },
+      { day: "Jueves", intervals: [{ from: "07:00", to: "12:00" }, { from: "14:00", to: "21:00" }] },
+      { day: "Viernes", intervals: [{ from: "07:00", to: "12:00" }, { from: "14:00", to: "21:00" }] },
+      { day: "Sábado", intervals: [{ from: "08:00", to: "14:00" }] },
+      { day: "Domingo", intervals: [] },
+    ],
   },
   {
     slug: "atelier-yoga-house",
