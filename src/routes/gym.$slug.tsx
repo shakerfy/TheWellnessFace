@@ -124,7 +124,9 @@ function GymPage() {
                 ${gym.priceFrom.toLocaleString("es-AR")}
                 <span className="text-sm font-normal text-muted-foreground"> / mes</span>
               </div>
-              <Button className="mt-5 w-full rounded-full">Reservar clase de prueba</Button>
+              <Link to="/auth">
+                <Button className="mt-5 w-full rounded-full">Reservar clase de prueba</Button>
+              </Link>
               <Button variant="outline" className="mt-2 w-full rounded-full">Contactar al gimnasio</Button>
               <div className="mt-5 border-t border-border pt-4 text-xs text-muted-foreground">
                 Cancelación gratis hasta 4 horas antes de la clase.
