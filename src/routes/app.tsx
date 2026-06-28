@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { 
   User, Calendar, BarChart3, CreditCard, Settings, 
   LogOut, QrCode, CheckCircle, Clock, AlertTriangle, 
-  MapPin, ChevronRight, X, Sparkles, Shield
+  MapPin, ChevronRight, X, Sparkles, Shield, AlertCircle, ShieldAlert
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -24,6 +24,13 @@ function StudentDashboard() {
   const [qrOpen, setQrOpen] = useState(false);
   const [qrTimer, setQrTimer] = useState(60);
   const navigate = useNavigate();
+
+  // MOCK STATE FOR RESERVATIONS & CANCELLATION VALIDATION
+  const [blockedCancellationClass, setBlockedCancellationClass] = useState<any | null>(null);
+  const [reservations, setReservations] = useState([
+    { id: "1", name: "CrossFit WOD", instructor: "Mateo Rossi", time: "19:00", timeLabel: "Hoy, 19:00 hs", cannotCancel: true, timeRemainingLabel: "45 minutos" },
+    { id: "2", name: "Yoga Vinyasa", instructor: "Valeria Soto", time: "22:00", timeLabel: "Hoy, 22:00 hs", cannotCancel: false, timeRemainingLabel: "3 horas y 45 minutos" }
+  ]);
 
   // QR Timer Countdown Simulation
   useEffect(() => {
@@ -97,7 +104,14 @@ function StudentDashboard() {
           </button>
         </header>
 
-        {activeTab === "inicio" && <InicioTab setQrOpen={setQrOpen} />}
+        {activeTab === "inicio" && (
+          <InicioTab 
+            setQrOpen={setQrOpen} 
+            reservations={reservations} 
+            setReservations={setReservations} 
+            setBlockedCancellationClass={setBlockedCancellationClass}
+          />
+        )}
         {activeTab === "clases" && <ClasesTab />}
         {activeTab === "progreso" && <ProgresoTab />}
         {activeTab === "pagos" && <PagosTab />}
@@ -142,7 +156,6 @@ function StudentDashboard() {
             {/* Simulated QR Code Visual */}
             <div className="mx-auto my-6 p-4 bg-white rounded-2xl w-48 h-48 flex flex-col items-center justify-center relative border border-border shadow-inner">
               <QrCode className="h-36 w-36 text-zinc-950" />
-              {/* Spinning Overlay representing dynamic token */}
               <div className="absolute inset-0 bg-emerald-500/5 flex items-center justify-center rounded-2xl pointer-events-none" />
             </div>
 
@@ -157,12 +170,77 @@ function StudentDashboard() {
           </div>
         </div>
       )}
+
+      {/* Cancellation Blocked Alert Modal */}
+      {blockedCancellationClass && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 z-50 animate-fade-in">
+          <div className="relative bg-card border border-border w-full max-w-[420px] rounded-3xl p-6 shadow-2xl flex flex-col text-center items-center">
+            <button 
+              onClick={() => setBlockedCancellationClass(null)}
+              className="absolute right-4 top-4 p-2 rounded-full hover:bg-secondary transition z-10"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="h-12 w-12 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center mb-4">
+              <ShieldAlert className="h-6 w-6" />
+            </div>
+
+            <h3 className="text-lg font-bold tracking-tight text-foreground">Cancelación Excedida</h3>
+            <p className="text-xs text-muted-foreground mt-1">No cumple con la política de anticipación mínima.</p>
+
+            <div className="mt-4 p-4 rounded-2xl bg-secondary/35 text-xs text-left space-y-2 border border-border w-full">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Clase:</span>
+                <span className="font-semibold text-foreground">{blockedCancellationClass.name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Comienza en:</span>
+                <span className="font-semibold text-rose-500">{blockedCancellationClass.timeRemainingLabel}</span>
+              </div>
+              <div className="flex justify-between border-t border-border/60 pt-2 mt-2">
+                <span className="text-muted-foreground">Política del Gimnasio:</span>
+                <span className="font-semibold text-foreground">Mínimo 2 horas antes</span>
+              </div>
+            </div>
+
+            <p className="text-xs text-muted-foreground mt-4 leading-relaxed">
+              De acuerdo con las normas de <strong>Kraft Strength Club</strong>, las cancelaciones deben realizarse con al menos 2 horas de antelación para permitir que otros alumnos en lista de espera tomen el cupo.
+            </p>
+
+            <div className="mt-6 flex gap-2 w-full">
+              <Button 
+                variant="secondary" 
+                className="rounded-xl flex-1"
+                onClick={() => setBlockedCancellationClass(null)}
+              >
+                Entendido
+              </Button>
+              <a 
+                href="https://wa.me/5491132421241" 
+                target="_blank" 
+                rel="noreferrer"
+                className="flex items-center justify-center rounded-xl flex-1 bg-emerald-500 text-white hover:bg-emerald-600 text-xs font-bold transition"
+              >
+                Contactar por WhatsApp
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 // Subcomponent: Inicio Tab
-function InicioTab({ setQrOpen }: { setQrOpen: (v: boolean) => void }) {
+interface InicioTabProps {
+  setQrOpen: (v: boolean) => void;
+  reservations: { id: string; name: string; instructor: string; time: string; timeLabel: string; cannotCancel: boolean; timeRemainingLabel: string }[];
+  setReservations: React.Dispatch<React.SetStateAction<{ id: string; name: string; instructor: string; time: string; timeLabel: string; cannotCancel: boolean; timeRemainingLabel: string }[]>>;
+  setBlockedCancellationClass: (v: any) => void;
+}
+
+function InicioTab({ setQrOpen, reservations, setReservations, setBlockedCancellationClass }: InicioTabProps) {
   return (
     <div className="space-y-6">
       <div>
@@ -171,8 +249,8 @@ function InicioTab({ setQrOpen }: { setQrOpen: (v: boolean) => void }) {
       </div>
 
       {/* Member State Card */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="rounded-3xl border border-border bg-card p-6 shadow-sm flex flex-col justify-between">
+      <div className="grid gap-6 md:grid-cols-2 items-start">
+        <div className="rounded-3xl border border-border bg-card p-6 shadow-sm flex flex-col justify-between h-[230px]">
           <div>
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Membresía Activa</span>
@@ -189,7 +267,7 @@ function InicioTab({ setQrOpen }: { setQrOpen: (v: boolean) => void }) {
               <span className="text-xs text-muted-foreground">días restantes (Vence el 20 de Julio)</span>
             </div>
           </div>
-          <div className="mt-6 flex gap-3">
+          <div className="mt-auto flex gap-3 pt-4">
             <Button size="sm" className="rounded-xl flex-1 gap-2" onClick={() => setQrOpen(true)}>
               <QrCode className="h-4 w-4" /> Mostrar QR
             </Button>
@@ -197,31 +275,54 @@ function InicioTab({ setQrOpen }: { setQrOpen: (v: boolean) => void }) {
           </div>
         </div>
 
-        {/* Next Class Card */}
-        <div className="rounded-3xl border border-border bg-card p-6 shadow-sm flex flex-col justify-between border-primary/20">
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-primary">Próxima Clase</span>
-              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">
-                <Sparkles className="h-3 w-3" /> Hoy
-              </span>
+        {/* Next Class Cards */}
+        <div className="space-y-4">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">Reservas para hoy</span>
+          {reservations.map((res) => (
+            <div key={res.id} className="rounded-3xl border border-border bg-card p-6 shadow-sm flex flex-col justify-between border-primary/20">
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-primary">Próxima Clase</span>
+                  <span className="inline-flex items-center gap-1 text-[11px] font-medium text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">
+                    <Sparkles className="h-3 w-3" /> Hoy
+                  </span>
+                </div>
+                <h3 className="text-lg font-bold tracking-tight mt-2">{res.name}</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Instructor: {res.instructor} · 60 min</p>
+                <div className="mt-3 flex items-center gap-2 text-xs text-foreground font-semibold">
+                  <Clock className="h-3.5 w-3.5 text-muted-foreground" /> {res.timeLabel}
+                </div>
+              </div>
+              <div className="mt-4 flex gap-2">
+                <Button 
+                  size="sm" 
+                  variant="ghost" 
+                  className="rounded-xl flex-1 text-rose-500 hover:bg-rose-500/10 hover:text-rose-500 text-xs"
+                  onClick={() => {
+                    if (res.cannotCancel) {
+                      setBlockedCancellationClass(res);
+                    } else {
+                      alert(`Tu reserva para "${res.name}" a las ${res.time} hs ha sido cancelada con éxito.`);
+                      setReservations(prev => prev.filter(r => r.id !== res.id));
+                    }
+                  }}
+                >
+                  Cancelar Reserva
+                </Button>
+                <Button size="sm" variant="outline" className="rounded-xl flex-1 text-xs">Ubicación</Button>
+              </div>
             </div>
-            <h3 className="text-xl font-bold tracking-tight mt-3">CrossFit WOD</h3>
-            <p className="text-sm text-muted-foreground mt-1">Instructor: Mateo · 60 min</p>
-            <div className="mt-4 flex items-center gap-2 text-sm text-foreground font-semibold">
-              <Clock className="h-4 w-4 text-muted-foreground" /> 19:00 hs
+          ))}
+          {reservations.length === 0 && (
+            <div className="rounded-3xl border border-dashed border-border p-6 shadow-sm text-center flex flex-col items-center justify-center py-8">
+              <Calendar className="h-6 w-6 text-muted-foreground mb-1" />
+              <p className="text-xs font-bold text-foreground">No tienes clases reservadas para hoy</p>
             </div>
-          </div>
-          <div className="mt-6 flex gap-2">
-            <Button size="sm" variant="ghost" className="rounded-xl flex-1 text-rose-500 hover:bg-rose-500/10 hover:text-rose-500">
-              Cancelar Reserva
-            </Button>
-            <Button size="sm" variant="outline" className="rounded-xl flex-1">Ver Ubicación</Button>
-          </div>
+          )}
         </div>
       </div>
       
-      {/* Alert Banner mock */}
+      {/* Alert Banner */}
       <div className="flex items-start gap-3 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 text-amber-500 text-xs">
         <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
         <div>
@@ -344,7 +445,6 @@ function ProgresoTab() {
         </div>
       </div>
 
-      {/* Dynamic HTML Bar Chart (Tailwind pure styles) */}
       <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
         <h3 className="text-sm font-bold text-muted-foreground mb-6 uppercase tracking-wider">Asistencias Mensuales</h3>
         <div className="flex items-end justify-between h-48 px-4">
@@ -352,14 +452,11 @@ function ProgresoTab() {
             const heightPercentage = `${(d.visits / 25) * 100}%`;
             return (
               <div key={d.month} className="flex flex-col items-center gap-2 h-full justify-end flex-1">
-                {/* Value tooltip on top */}
                 <span className="text-[11px] font-bold text-foreground">{d.visits}</span>
-                {/* Bar */}
                 <div 
                   className="w-8 bg-foreground rounded-t-lg transition-all duration-500 hover:opacity-80"
                   style={{ height: heightPercentage }}
                 />
-                {/* Label */}
                 <span className="text-xs text-muted-foreground">{d.month}</span>
               </div>
             );
@@ -385,7 +482,6 @@ function PagosTab() {
         <p className="text-sm text-muted-foreground">Tus recibos e información financiera.</p>
       </div>
 
-      {/* Plan Info Card */}
       <div className="rounded-2xl border border-border bg-secondary/50 p-6">
         <h3 className="text-xs font-semibold text-muted-foreground uppercase">Plan contratado</h3>
         <div className="flex justify-between items-end mt-2">
@@ -400,7 +496,6 @@ function PagosTab() {
         </div>
       </div>
 
-      {/* Billing history table */}
       <div className="rounded-2xl border border-border overflow-hidden">
         <table className="w-full text-left text-sm">
           <thead className="bg-muted text-xs font-bold text-muted-foreground border-b border-border">
@@ -444,7 +539,6 @@ function ConfigTab() {
         <p className="text-sm text-muted-foreground">Preferencias y datos personales.</p>
       </div>
 
-      {/* User profile details */}
       <div className="space-y-4 rounded-2xl border border-border bg-card p-6">
         <h3 className="text-sm font-bold text-muted-foreground uppercase mb-4">Datos Personales</h3>
         
@@ -466,7 +560,6 @@ function ConfigTab() {
         <Button size="sm" className="rounded-xl mt-2">Guardar cambios</Button>
       </div>
 
-      {/* Preferences toggles */}
       <div className="space-y-4 rounded-2xl border border-border bg-card p-6">
         <h3 className="text-sm font-bold text-muted-foreground uppercase mb-4">Notificaciones</h3>
 

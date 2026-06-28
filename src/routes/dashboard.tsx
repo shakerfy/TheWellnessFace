@@ -4,7 +4,7 @@ import {
   Building2, Users, Calendar, CreditCard, Settings, LogOut,
   Bell, CheckCircle2, AlertCircle, Search, Download, 
   MapPin, Clock, Plus, HelpCircle, Activity, Trash2, Check, 
-  Dumbbell, Image as ImageIcon, FileText, Eye, X
+  Dumbbell, Image as ImageIcon, FileText, Eye, X, ShieldAlert
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -26,7 +26,7 @@ function GymDashboard() {
 
   // STATE LIFTED UP (Models the Firebase data structure in local memory)
   
-  // 1. Staff List (including certificationImages array)
+  // 1. Staff List
   const [staffList, setStaffList] = useState([
     { 
       id: "1", 
@@ -59,9 +59,8 @@ function GymDashboard() {
     },
   ]);
 
-  // 2. Expanded Amenities (Services) Marketplace catalog
+  // 2. Expanded Amenities
   const [amenities, setAmenities] = useState([
-    // Instalaciones
     { id: "vestuarios", name: "Vestuarios Completos", category: "Instalaciones", checked: true },
     { id: "duchas", name: "Duchas de Agua Caliente", category: "Instalaciones", checked: true },
     { id: "lockers", name: "Lockers de Seguridad", category: "Instalaciones", checked: true },
@@ -74,7 +73,6 @@ function GymDashboard() {
     { id: "canchas", name: "Canchas (Pádel / Fútbol)", category: "Instalaciones", checked: false },
     { id: "outdoor", name: "Área al Aire Libre", category: "Instalaciones", checked: false },
     { id: "guarderia", name: "Guardería Infantil", category: "Instalaciones", checked: false },
-    // Servicios
     { id: "wifi", name: "WiFi Alta Velocidad", category: "Servicios", checked: true },
     { id: "nutrition", name: "Asesoramiento Nutricional", category: "Servicios", checked: false },
     { id: "kinesiologia", name: "Kinesiología & Fisioterapia", category: "Servicios", checked: false },
@@ -83,16 +81,13 @@ function GymDashboard() {
     { id: "merch", name: "Tienda de Indumentaria / Merch", category: "Servicios", checked: false },
   ]);
 
-  // 3. Expanded Requirements (Normas de ingreso) Marketplace catalog
+  // 3. Expanded Requirements
   const [requirements, setRequirements] = useState([
-    // Documentación
     { id: "apto", name: "Apto médico obligatorio (Ficha al día)", category: "Documentación", checked: true },
-    // Higiene y Vestimenta
     { id: "toalla", name: "Traer toalla personal obligatoria", category: "Higiene y Vestimenta", checked: true },
     { id: "calzado", name: "Uso de calzado limpio exclusivo para la sala", category: "Higiene y Vestimenta", checked: true },
     { id: "mat", name: "Traer mat de yoga propio", category: "Higiene y Vestimenta", checked: false },
     { id: "indumentaria", name: "Ropa deportiva obligatoria", category: "Higiene y Vestimenta", checked: true },
-    // Normas de la Sala
     { id: "reserva", name: "Reserva de clase con anticipación", category: "Normas de la Sala", checked: true },
     { id: "pesos", name: "Devolver discos y mancuernas a su lugar", category: "Normas de la Sala", checked: true },
     { id: "magnesio", name: "Prohibido el magnesio suelto (solo en bloque/líquido)", category: "Normas de la Sala", checked: false },
@@ -107,14 +102,28 @@ function GymDashboard() {
     "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?auto=format&fit=crop&w=500&q=80",
   ]);
 
-  // 5. Classes (Referencing staff ID)
+  // 5. 7-Day Business Hours with Split Intervals State
+  const [weeklyHours, setWeeklyHours] = useState([
+    { day: "Lunes", intervals: [{ from: "07:00", to: "12:00" }, { from: "14:00", to: "21:00" }] },
+    { day: "Martes", intervals: [{ from: "07:00", to: "12:00" }, { from: "14:00", to: "21:00" }] },
+    { day: "Miércoles", intervals: [{ from: "07:00", to: "12:00" }, { from: "14:00", to: "21:00" }] },
+    { day: "Jueves", intervals: [{ from: "07:00", to: "12:00" }, { from: "14:00", to: "21:00" }] },
+    { day: "Viernes", intervals: [{ from: "07:00", to: "12:00" }, { from: "14:00", to: "21:00" }] },
+    { day: "Sábado", intervals: [{ from: "08:00", to: "14:00" }] },
+    { day: "Domingo", intervals: [] }, // Closed
+  ]);
+
+  // 6. Reservation Cancellation Policy State (cancellation limit in hours)
+  const [cancellationPolicyHours, setCancellationPolicyHours] = useState(2);
+
+  // 7. Classes List
   const [classesList, setClassesList] = useState([
     { id: "1", name: "CrossFit WOD", staffId: "1", time: "08:00 - 09:00", capacity: 15, booked: 12, enrolled: ["Agustín Gómez", "Marcos López", "Tomás Ruiz"] },
     { id: "2", name: "Yoga Ashtanga", staffId: "2", time: "09:30 - 10:30", capacity: 10, booked: 8, enrolled: ["Paula Cáceres", "Sofía Martínez"] },
     { id: "3", name: "Funcional", staffId: "3", time: "18:00 - 19:00", capacity: 15, booked: 15, enrolled: ["Pedro Giménez", "María del Mar"] },
   ]);
 
-  // 6. Memberships List
+  // 8. Memberships List
   const [membershipsList, setMembershipsList] = useState([
     { id: "1", name: "Pase Libre", price: 18900, duration: "Mensual", activeCount: 142, includedServices: ["vestuarios", "duchas", "lockers", "wifi"] },
     { id: "2", name: "Performance", price: 28500, duration: "Mensual", activeCount: 68, includedServices: ["vestuarios", "duchas", "lockers", "wifi", "parking"] },
@@ -216,6 +225,10 @@ function GymDashboard() {
             setRequirements={setRequirements} 
             gymPhotos={gymPhotos}
             setGymPhotos={setGymPhotos}
+            weeklyHours={weeklyHours}
+            setWeeklyHours={setWeeklyHours}
+            cancellationPolicyHours={cancellationPolicyHours}
+            setCancellationPolicyHours={setCancellationPolicyHours}
           />
         )}
       </main>
@@ -404,7 +417,6 @@ function MembresiasTab({ membershipsList, setMembershipsList, amenities }: Membr
   const [duration, setDuration] = useState("Mensual");
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
 
-  // Filter only checked active amenities of the gym
   const activeAmenities = amenities.filter(a => a.checked);
 
   const toggleService = (id: string) => {
@@ -727,32 +739,36 @@ interface ConfigTabProps {
   setRequirements: React.Dispatch<React.SetStateAction<{ id: string; name: string; category: string; checked: boolean }[]>>;
   gymPhotos: string[];
   setGymPhotos: React.Dispatch<React.SetStateAction<string[]>>;
+  weeklyHours: { day: string; intervals: { from: string; to: string }[] }[];
+  setWeeklyHours: React.Dispatch<React.SetStateAction<{ day: string; intervals: { from: string; to: string }[] }[]>>;
+  cancellationPolicyHours: number;
+  setCancellationPolicyHours: (v: number) => void;
 }
 
 function ConfigTab({ 
   staffList, setStaffList, 
   amenities, setAmenities, 
   requirements, setRequirements,
-  gymPhotos, setGymPhotos
+  gymPhotos, setGymPhotos,
+  weeklyHours, setWeeklyHours,
+  cancellationPolicyHours, setCancellationPolicyHours
 }: ConfigTabProps) {
   const [subTab, setSubTab] = useState("basico");
 
-  // Local state for photo view modals
+  // Local states
   const [activeCertificationsViewer, setActiveCertificationsViewer] = useState<string[] | null>(null);
-
-  // Add staff inputs
   const [staffName, setStaffName] = useState("");
   const [staffSpecialty, setStaffSpecialty] = useState("");
   const [staffCerts, setStaffCerts] = useState("");
   const [staffAvatarUrl, setStaffAvatarUrl] = useState<string | null>(null);
   const [staffDiplomas, setStaffDiplomas] = useState<string[]>([]);
 
-  // Refs for file uploads
+  // Refs
   const gymFileRef = useRef<HTMLInputElement>(null);
   const coachAvatarRef = useRef<HTMLInputElement>(null);
   const coachCertsRef = useRef<HTMLInputElement>(null);
 
-  // 1. Gym Photos Uploader
+  // Gym Photos
   const handleGymPhotosUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     const filesArray = Array.from(e.target.files);
@@ -764,15 +780,53 @@ function ConfigTab({
     setGymPhotos(prev => prev.filter((_, idx) => idx !== index));
   };
 
-  // 2. Coach Avatar Uploader
+  // 7-Day Split Hours Handlers
+  const handleAddHourInterval = (dayIndex: number) => {
+    setWeeklyHours(prev => {
+      const copy = [...prev];
+      copy[dayIndex] = {
+        ...copy[dayIndex],
+        intervals: [...copy[dayIndex].intervals, { from: "09:00", to: "13:00" }]
+      };
+      return copy;
+    });
+  };
+
+  const handleRemoveHourInterval = (dayIndex: number, intervalIndex: number) => {
+    setWeeklyHours(prev => {
+      const copy = [...prev];
+      copy[dayIndex] = {
+        ...copy[dayIndex],
+        intervals: copy[dayIndex].intervals.filter((_, idx) => idx !== intervalIndex)
+      };
+      return copy;
+    });
+  };
+
+  const handleUpdateHourInterval = (dayIndex: number, intervalIndex: number, field: "from" | "to", value: string) => {
+    setWeeklyHours(prev => {
+      const copy = [...prev];
+      const intervals = [...copy[dayIndex].intervals];
+      intervals[intervalIndex] = {
+        ...intervals[intervalIndex],
+        [field]: value
+      };
+      copy[dayIndex] = {
+        ...copy[dayIndex],
+        intervals
+      };
+      return copy;
+    });
+  };
+
+  // Staff Avatar
   const handleCoachAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setStaffAvatarUrl(URL.createObjectURL(file));
+      setStaffAvatarUrl(URL.createObjectURL(e.target.files[0]));
     }
   };
 
-  // 3. Coach Diplomas Uploader
+  // Staff Diplomas
   const handleCoachDiplomasUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const filesArray = Array.from(e.target.files);
@@ -818,7 +872,6 @@ function ConfigTab({
     setRequirements(prev => prev.map(r => r.id === id ? { ...r, checked: !r.checked } : r));
   };
 
-  // Unique categories helper
   const amenityCategories = Array.from(new Set(amenities.map(a => a.category)));
   const requirementCategories = Array.from(new Set(requirements.map(r => r.category)));
 
@@ -828,6 +881,7 @@ function ConfigTab({
       <div className="border-b border-border flex gap-4 pb-0 overflow-x-auto">
         {[
           { id: "basico", label: "Ficha Básica" },
+          { id: "politicas", label: "Políticas" },
           { id: "amenities", label: "Amenities & Servicios" },
           { id: "requisitos", label: "Normas de Ingreso" },
           { id: "staff", label: "Equipo (Staff)" },
@@ -846,15 +900,15 @@ function ConfigTab({
         ))}
       </div>
 
-      {/* Subtab 1: Basic Config & Photos */}
+      {/* Subtab 1: Basic Config & 7-Day Scheduler */}
       {subTab === "basico" && (
         <div className="space-y-6 max-w-3xl">
-          {/* Photos Section */}
+          {/* Photos */}
           <div className="rounded-3xl border border-border bg-card p-6 shadow-sm">
             <div className="flex justify-between items-center mb-4">
               <div>
                 <h3 className="font-bold text-sm">Galería de Fotos</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">Sube imágenes de tus instalaciones para tu ficha pública.</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Sube imágenes de tu centro.</p>
               </div>
               <Button 
                 size="sm" 
@@ -864,14 +918,7 @@ function ConfigTab({
               >
                 <Plus className="h-4 w-4" /> Subir Fotos
               </Button>
-              <input 
-                type="file" 
-                multiple 
-                accept="image/*" 
-                ref={gymFileRef} 
-                onChange={handleGymPhotosUpload} 
-                className="hidden" 
-              />
+              <input type="file" multiple accept="image/*" ref={gymFileRef} onChange={handleGymPhotosUpload} className="hidden" />
             </div>
 
             <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
@@ -887,19 +934,67 @@ function ConfigTab({
                   </button>
                 </div>
               ))}
-              {gymPhotos.length === 0 && (
-                <div className="col-span-full py-8 text-center text-xs text-muted-foreground border-2 border-dashed border-border rounded-xl">
-                  No hay fotos cargadas. Sube imágenes del local.
+            </div>
+          </div>
+
+          {/* 7-Day Daily Hours Scheduler */}
+          <div className="rounded-3xl border border-border bg-card p-6 shadow-sm space-y-4">
+            <div>
+              <h3 className="font-bold text-sm">Horarios Semanales (7 Días)</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Configura individualmente cada día, soportando horarios cortados/partidos.</p>
+            </div>
+            
+            <div className="space-y-4 divide-y divide-border/60">
+              {weeklyHours.map((dayHour, dayIdx) => (
+                <div key={dayHour.day} className="flex flex-col sm:flex-row sm:items-center justify-between py-3 gap-3 first:pt-0">
+                  <div className="w-24 text-sm font-bold text-foreground">{dayHour.day}</div>
+                  
+                  <div className="flex-1 space-y-2">
+                    {dayHour.intervals.map((interval, intervalIdx) => (
+                      <div key={intervalIdx} className="flex items-center gap-2">
+                        <input 
+                          type="time" 
+                          value={interval.from}
+                          onChange={(e) => handleUpdateHourInterval(dayIdx, intervalIdx, "from", e.target.value)}
+                          className="px-2 py-1 rounded-lg border border-border bg-background text-xs focus-visible:outline-none"
+                        />
+                        <span className="text-xs text-muted-foreground">a</span>
+                        <input 
+                          type="time" 
+                          value={interval.to}
+                          onChange={(e) => handleUpdateHourInterval(dayIdx, intervalIdx, "to", e.target.value)}
+                          className="px-2 py-1 rounded-lg border border-border bg-background text-xs focus-visible:outline-none"
+                        />
+                        <button 
+                          type="button" 
+                          onClick={() => handleRemoveHourInterval(dayIdx, intervalIdx)}
+                          className="p-1.5 text-rose-500 hover:bg-rose-500/10 rounded-lg transition"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                    {dayHour.intervals.length === 0 && (
+                      <span className="text-xs text-muted-foreground italic bg-secondary/40 px-2.5 py-1 rounded-md inline-block">Cerrado</span>
+                    )}
+                  </div>
+
+                  <Button 
+                    type="button" 
+                    size="sm" 
+                    variant="ghost" 
+                    className="self-start sm:self-center text-xs gap-1 py-1 h-8 rounded-lg"
+                    onClick={() => handleAddHourInterval(dayIdx)}
+                  >
+                    <Plus className="h-3.5 w-3.5" /> Turno
+                  </Button>
                 </div>
-              )}
+              ))}
             </div>
           </div>
 
           <div className="space-y-6 max-w-2xl bg-card border border-border p-6 rounded-3xl shadow-sm">
-            <div>
-              <h3 className="font-bold text-sm">Ficha de Información Pública</h3>
-              <p className="text-xs text-muted-foreground mt-0.5">Datos públicos de ubicación y horarios del comercio.</p>
-            </div>
+            <h3 className="font-bold text-sm">Ficha Básica</h3>
             <form className="space-y-4 text-sm" onSubmit={(e) => e.preventDefault()}>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">
@@ -907,22 +1002,8 @@ function ConfigTab({
                   <input type="text" className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" defaultValue="Kraft Strength Club" />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">Zona horaria</label>
-                  <input type="text" className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" defaultValue="America/Argentina/Buenos_Aires" />
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">Dirección Física</label>
-                <input type="text" className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" defaultValue="Av. Santa Fe 3421, Palermo, CABA" />
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">Hora de Apertura</label>
-                  <input type="time" className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" defaultValue="06:00" />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">Hora de Cierre</label>
-                  <input type="time" className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" defaultValue="23:00" />
+                  <label className="text-xs font-semibold text-muted-foreground">Dirección Física</label>
+                  <input type="text" className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" defaultValue="Av. Santa Fe 3421, Palermo, CABA" />
                 </div>
               </div>
               <Button className="rounded-xl">Guardar Cambios</Button>
@@ -931,12 +1012,47 @@ function ConfigTab({
         </div>
       )}
 
-      {/* Subtab 2: Amenities (Grouped) */}
+      {/* Subtab 2: Reservation & Cancellation Policies */}
+      {subTab === "politicas" && (
+        <div className="space-y-6 max-w-2xl bg-card border border-border p-6 rounded-3xl shadow-sm">
+          <div>
+            <h3 className="font-bold text-sm flex items-center gap-2">
+              <ShieldAlert className="h-5 w-5 text-primary" /> Políticas de Reservas
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Define los límites y restricciones para cancelaciones por parte de los alumnos.</p>
+          </div>
+          
+          <div className="space-y-4 text-sm">
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-muted-foreground block">Tiempo límite de cancelación anticipada (Horas)</label>
+              <div className="flex items-center gap-3">
+                <input 
+                  type="number" 
+                  min="0"
+                  max="48"
+                  value={cancellationPolicyHours} 
+                  onChange={(e) => setCancellationPolicyHours(parseInt(e.target.value) || 0)}
+                  className="flex h-10 w-24 rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                />
+                <span className="text-xs text-muted-foreground">
+                  Los alumnos sólo podrán cancelar la clase hasta {cancellationPolicyHours} horas antes del inicio sin penalización.
+                </span>
+              </div>
+            </div>
+
+            <Button type="button" className="rounded-xl" onClick={() => alert("Políticas actualizadas correctamente en base de datos.")}>
+              Guardar Políticas
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Subtab 3: Amenities */}
       {subTab === "amenities" && (
         <div className="space-y-6 max-w-3xl bg-card border border-border p-6 rounded-3xl shadow-sm">
           <div>
             <h3 className="font-bold text-sm">Amenities y Servicios Adicionales</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">Define los servicios de infraestructura y soporte que ofrece tu centro.</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Define los servicios de infraestructura que ofrece tu centro.</p>
           </div>
           
           <div className="space-y-6">
@@ -962,12 +1078,12 @@ function ConfigTab({
         </div>
       )}
 
-      {/* Subtab 3: Requirements (Grouped) */}
+      {/* Subtab 4: Requirements */}
       {subTab === "requisitos" && (
         <div className="space-y-6 max-w-3xl bg-card border border-border p-6 rounded-3xl shadow-sm">
           <div>
             <h3 className="font-bold text-sm">Normas y Requisitos de Ingreso</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">Controla las exigencias de higiene y documentación que solicitas.</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Controla las exigencias de higiene y documentación.</p>
           </div>
 
           <div className="space-y-6">
@@ -993,10 +1109,9 @@ function ConfigTab({
         </div>
       )}
 
-      {/* Subtab 4: Staff Management (Upload profiles and diplomas) */}
+      {/* Subtab 5: Staff */}
       {subTab === "staff" && (
         <div className="space-y-6">
-          {/* Add Staff form */}
           <form onSubmit={handleAddStaff} className="rounded-3xl border border-border bg-card p-6 shadow-sm max-w-2xl space-y-4">
             <h3 className="text-sm font-bold text-muted-foreground uppercase">Añadir Profesor / Coach</h3>
             
@@ -1036,7 +1151,6 @@ function ConfigTab({
               />
             </div>
 
-            {/* Profile Avatar Upload */}
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-muted-foreground block">Foto de Perfil</label>
@@ -1048,51 +1162,24 @@ function ConfigTab({
                       <Users className="h-5 w-5 text-muted-foreground" />
                     )}
                   </div>
-                  <Button 
-                    type="button" 
-                    size="sm" 
-                    variant="outline" 
-                    className="rounded-xl"
-                    onClick={() => coachAvatarRef.current?.click()}
-                  >
+                  <Button type="button" size="sm" variant="outline" className="rounded-xl" onClick={() => coachAvatarRef.current?.click()}>
                     Subir Foto
                   </Button>
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    ref={coachAvatarRef} 
-                    onChange={handleCoachAvatarUpload} 
-                    className="hidden" 
-                  />
+                  <input type="file" accept="image/*" ref={coachAvatarRef} onChange={handleCoachAvatarUpload} className="hidden" />
                 </div>
               </div>
 
-              {/* Diplomas/Certificates Upload */}
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-muted-foreground block">Adjuntar Diplomas / Certificaciones</label>
                 <div className="flex items-center gap-3">
-                  <Button 
-                    type="button" 
-                    size="sm" 
-                    variant="outline" 
-                    className="rounded-xl gap-1.5"
-                    onClick={() => coachCertsRef.current?.click()}
-                  >
+                  <Button type="button" size="sm" variant="outline" className="rounded-xl gap-1.5" onClick={() => coachCertsRef.current?.click()}>
                     <Plus className="h-4 w-4" /> Subir Certificados
                   </Button>
-                  <input 
-                    type="file" 
-                    multiple 
-                    accept="image/*" 
-                    ref={coachCertsRef} 
-                    onChange={handleCoachDiplomasUpload} 
-                    className="hidden" 
-                  />
+                  <input type="file" multiple accept="image/*" ref={coachCertsRef} onChange={handleCoachDiplomasUpload} className="hidden" />
                 </div>
               </div>
             </div>
 
-            {/* Diplomas Previews */}
             {staffDiplomas.length > 0 && (
               <div className="space-y-1.5 border-t border-border/60 pt-3">
                 <label className="text-xs font-semibold text-muted-foreground block">Diplomas Adjuntos ({staffDiplomas.length})</label>
@@ -1116,7 +1203,6 @@ function ConfigTab({
             <Button type="submit" className="rounded-xl">Añadir al Staff</Button>
           </form>
 
-          {/* Staff List rendering */}
           <div className="rounded-3xl border border-border bg-card p-6 shadow-sm">
             <h3 className="text-sm font-bold text-muted-foreground uppercase mb-4">Equipo Registrado</h3>
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
@@ -1144,7 +1230,6 @@ function ConfigTab({
                     </div>
                   </div>
 
-                  {/* Ver Certificados link */}
                   {s.certificationImages && s.certificationImages.length > 0 && (
                     <button 
                       onClick={() => setActiveCertificationsViewer(s.certificationImages || [])}
