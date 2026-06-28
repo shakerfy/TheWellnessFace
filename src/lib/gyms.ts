@@ -12,7 +12,7 @@ export type Gym = {
   hours: string;
   description: string;
   images: string[];
-  memberships: { name: string; price: number; duration: string; benefits: string[] }[];
+  memberships: { name: string; price: number; duration: string; benefits: string[]; includedServices?: string[] }[];
   classes: {
     day: number; // 0..6, lunes = 0
     name: string;
@@ -22,6 +22,9 @@ export type Gym = {
     capacity: number;
     booked: number;
   }[];
+  requirements?: string[];
+  staff?: { id: string; name: string; specialty: string; certifications: string[]; photo: string }[];
+  amenities?: string[];
 };
 
 const img = (id: string) =>
@@ -49,11 +52,18 @@ export const GYMS: Gym[] = [
       img("photo-1540497077202-7c8a3999166f"),
     ],
     memberships: [
-      { name: "Pase Libre", price: 18900, duration: "Mensual", benefits: ["Acceso ilimitado", "Sala de musculación", "Vestuario premium"] },
-      { name: "Performance", price: 28500, duration: "Mensual", benefits: ["Pase libre", "4 clases coacheadas", "Plan de entrenamiento"] },
-      { name: "Elite", price: 42000, duration: "Mensual", benefits: ["Todo Performance", "PT semanal 1:1", "Análisis postural"] },
+      { name: "Pase Libre", price: 18900, duration: "Mensual", benefits: ["Acceso ilimitado", "Sala de musculación", "Vestuario premium"], includedServices: ["showers", "lockers", "wifi"] },
+      { name: "Performance", price: 28500, duration: "Mensual", benefits: ["Pase libre", "4 clases coacheadas", "Plan de entrenamiento"], includedServices: ["showers", "lockers", "wifi", "parking"] },
+      { name: "Elite", price: 42000, duration: "Mensual", benefits: ["Todo Performance", "PT semanal 1:1", "Análisis postural"], includedServices: ["showers", "lockers", "wifi", "parking", "sauna"] },
     ],
     classes: defaultSchedule(),
+    requirements: ["Apto médico obligatorio", "Traer toalla personal"],
+    staff: [
+      { id: "1", name: "Mateo Rossi", specialty: "Coach de Levantamiento Olímpico", certifications: ["CF-L2", "Coaching de Fuerza"], photo: img("photo-1507003211169-0a1dd7228f2d") },
+      { id: "2", name: "Valeria Soto", specialty: "Profesora de Vinyasa Yoga", certifications: ["RYT-200", "Yoga Terapéutico"], photo: img("photo-1544005313-94ddf0286df2") },
+      { id: "3", name: "Daniel Castro", specialty: "Preparador Físico Funcional", certifications: ["Prof. Educación Física", "FMS Level 1"], photo: img("photo-1500648767791-00dcc994a43e") },
+    ],
+    amenities: ["Duchas y Vestuarios", "Lockers de Seguridad", "WiFi Alta Velocidad", "Estacionamiento Gratuito", "Sauna Húmedo"],
   },
   {
     slug: "atelier-yoga-house",
