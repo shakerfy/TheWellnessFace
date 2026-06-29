@@ -79,6 +79,9 @@ function GymDashboard() {
     { id: "masajes", name: "Gabinete de Masajes", category: "Servicios", checked: false },
     { id: "towels", name: "Alquiler de Toallas", category: "Servicios", checked: false },
     { id: "merch", name: "Tienda de Indumentaria / Merch", category: "Servicios", checked: false },
+    { id: "bike", name: "Bicicletero / Estacionamiento de Bici", category: "Instalaciones", checked: true },
+    { id: "water", name: "Dispensador de Agua / Bebedero", category: "Instalaciones", checked: true },
+    { id: "supplements", name: "Venta de Suplementos / Bebidas", category: "Servicios", checked: true },
   ]);
 
   // 3. Expanded Requirements
@@ -785,6 +788,9 @@ function ConfigTab({
   const [staffCerts, setStaffCerts] = useState("");
   const [staffAvatarUrl, setStaffAvatarUrl] = useState<string | null>(null);
   const [staffDiplomas, setStaffDiplomas] = useState<string[]>([]);
+  const [instagram, setInstagram] = useState("kraft.strength");
+  const [tiktok, setTiktok] = useState("kraft.strength");
+  const [whatsapp, setWhatsapp] = useState("5491132421241");
 
   // Refs
   const gymFileRef = useRef<HTMLInputElement>(null);
@@ -1029,7 +1035,44 @@ function ConfigTab({
                   <input type="text" className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" defaultValue="Av. Santa Fe 3421, Palermo, CABA" />
                 </div>
               </div>
-              <Button className="rounded-xl">Guardar Cambios</Button>
+
+              {/* Social Media Inputs */}
+              <div className="grid gap-4 sm:grid-cols-3 border-t border-border/60 pt-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground">Instagram (Usuario)</label>
+                  <input 
+                    type="text" 
+                    value={instagram}
+                    onChange={(e) => setInstagram(e.target.value)}
+                    className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none" 
+                    placeholder="kraft.strength" 
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground">TikTok (Usuario)</label>
+                  <input 
+                    type="text" 
+                    value={tiktok}
+                    onChange={(e) => setTiktok(e.target.value)}
+                    className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none" 
+                    placeholder="kraft.strength" 
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground">WhatsApp (Número)</label>
+                  <input 
+                    type="text" 
+                    value={whatsapp}
+                    onChange={(e) => setWhatsapp(e.target.value)}
+                    className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none" 
+                    placeholder="5491132421241" 
+                  />
+                </div>
+              </div>
+
+              <Button type="button" className="rounded-xl" onClick={() => alert("Ficha básica y redes sociales actualizadas correctamente.")}>
+                Guardar Cambios
+              </Button>
             </form>
           </div>
         </div>
