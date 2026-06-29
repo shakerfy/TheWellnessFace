@@ -467,34 +467,76 @@ function GymPage() {
             {filteredMemberships.map((m, idx) => (
               <div
                 key={m.name}
-                className={`rounded-2xl border p-6 transition ${
+                className={`rounded-2xl border p-6 transition flex flex-col justify-between ${
                   idx === 1 ? "border-foreground bg-foreground text-background" : "border-border bg-background hover:border-foreground/40"
                 }`}
               >
-                <div className="flex items-baseline justify-between">
-                  <div>
-                    <div className="text-base font-semibold tracking-tight">{m.name}</div>
-                    {m.tag && (
-                      <span className={`inline-block mt-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
-                        idx === 1 ? "bg-background/20 text-background" : "bg-primary/10 text-primary"
-                      }`}>
-                        {m.tag}
-                      </span>
-                    )}
+                <div>
+                  <div className="flex items-baseline justify-between">
+                    <div>
+                      <div className="text-base font-semibold tracking-tight">{m.name}</div>
+                      {m.tag && (
+                        <span className={`inline-block mt-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
+                          idx === 1 ? "bg-background/20 text-background" : "bg-primary/10 text-primary"
+                        }`}>
+                          {m.tag}
+                        </span>
+                      )}
+                    </div>
+                    <div className={`text-xs ${idx === 1 ? "text-background/70" : "text-muted-foreground"}`}>{m.duration}</div>
                   </div>
-                  <div className={`text-xs ${idx === 1 ? "text-background/70" : "text-muted-foreground"}`}>{m.duration}</div>
+                  <div className="mt-4 text-3xl font-semibold tracking-tight">
+                    ${m.price.toLocaleString("es-AR")}
+                  </div>
+
+                  {/* Advanced access details (pass type, hours, activities) */}
+                  <div className={`mt-4 space-y-1.5 border-t pt-3 text-xs ${
+                    idx === 1 ? "border-background/20 text-background/80" : "border-border/60 text-muted-foreground"
+                  }`}>
+                    <div className="flex items-center gap-1.5">
+                      <span>🎟️</span>
+                      <span>
+                        {m.passType === "Por Créditos" 
+                          ? `${m.creditsCount} clases / créditos` 
+                          : "Pase Libre (Ilimitado)"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span>🕒</span>
+                      <span>
+                        {m.accessHoursType === "Off-Peak" 
+                          ? `Franja Off-Peak (${m.offPeakStart} - ${m.offPeakEnd} hs)` 
+                          : "Acceso Completo (Todo Horario)"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Included activities */}
+                  {m.includedActivities && m.includedActivities.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-1">
+                      {m.includedActivities.map((act) => (
+                        <span 
+                          key={act} 
+                          className={`text-[8.5px] px-2 py-0.5 rounded-full font-medium ${
+                            idx === 1 ? "bg-background/25 text-background" : "bg-secondary text-secondary-foreground"
+                          }`}
+                        >
+                          {act}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  <ul className="mt-4 space-y-2 border-t border-border/60 pt-3 text-sm">
+                    {m.benefits.map((b) => (
+                      <li key={b} className="flex items-start gap-2">
+                        <Check className={`mt-0.5 h-4 w-4 shrink-0 ${idx === 1 ? "text-background" : "text-foreground"}`} />
+                        <span className={idx === 1 ? "text-background/90" : "text-muted-foreground"}>{b}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <div className="mt-4 text-3xl font-semibold tracking-tight">
-                  ${m.price.toLocaleString("es-AR")}
-                </div>
-                <ul className="mt-5 space-y-2 text-sm">
-                  {m.benefits.map((b) => (
-                    <li key={b} className="flex items-start gap-2">
-                      <Check className={`mt-0.5 h-4 w-4 ${idx === 1 ? "text-background" : "text-foreground"}`} />
-                      <span className={idx === 1 ? "text-background/90" : "text-muted-foreground"}>{b}</span>
-                    </li>
-                  ))}
-                </ul>
+
                 <Button
                   variant={idx === 1 ? "secondary" : "outline"}
                   className="mt-6 w-full rounded-full"
