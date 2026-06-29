@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import { 
   Building2, Users, Calendar, CreditCard, Settings, LogOut,
   Bell, CheckCircle2, AlertCircle, Search, Download, 
@@ -20,9 +20,21 @@ const TABS = [
   { id: "config", label: "Configuración", icon: Settings },
 ];
 
+type UserRole = "superadmin" | "manager" | "receptionist" | "coach";
+interface CurrentUser {
+  name: string;
+  role: UserRole;
+  branchId?: string;
+  staffId?: string;
+}
+
 function GymDashboard() {
   const [activeTab, setActiveTab] = useState("asistencia");
   const navigate = useNavigate();
+  const [currentUser, setCurrentUser] = useState<CurrentUser>({
+    name: "Alan Kraft (SuperAdmin)",
+    role: "superadmin"
+  });
 
   // STATE LIFTED UP (Models the Firebase data structure in local memory)
   
@@ -140,11 +152,43 @@ function GymDashboard() {
     { id: "3", name: "Elite Coached", price: 42000, duration: "Mensual", activeCount: 12, includedServices: ["vestuarios", "duchas", "lockers", "wifi", "parking", "sauna"] },
   ]);
 
+  useEffect(() => {
+    if (currentUser.role === "superadmin") {
+      setSelectedBranchId("all");
+      setActiveTab("asistencia");
+    } else if (currentUser.role === "coach") {
+      setSelectedBranchId("all");
+      setActiveTab("clases"); // Coaches should open directly in Clases
+    } else if (currentUser.branchId) {
+      setSelectedBranchId(currentUser.branchId);
+      setActiveTab("asistencia");
+    } else {
+      setSelectedBranchId("matriz");
+      setActiveTab("asistencia");
+    }
+  }, [currentUser]);
+
   const visibleClasses = useMemo(() => {
-    if (selectedBranchId === "all") return classesList;
-    if (selectedBranchId === "matriz") return classesList.filter(c => !c.branchId);
-    return classesList.filter(c => c.branchId === selectedBranchId);
-  }, [classesList, selectedBranchId]);
+    let list = classesList;
+    if (currentUser.role === "coach" && currentUser.staffId) {
+      list = list.filter(c => c.staffId === currentUser.staffId);
+    }
+    if (selectedBranchId === "all") return list;
+    if (selectedBranchId === "matriz") return list.filter(c => !c.branchId);
+    return list.filter(c => c.branchId === selectedBranchId);
+  }, [classesList, selectedBranchId, currentUser]);
+
+  const visibleTabs = useMemo(() => {
+    return TABS.filter(tab => {
+      if (currentUser.role === "coach") {
+        return tab.id === "clases";
+      }
+      if (currentUser.role === "manager" || currentUser.role === "receptionist") {
+        return tab.id !== "config" && tab.id !== "membresias";
+      }
+      return true;
+    });
+  }, [currentUser]);
 
   const handleLogout = () => {
     navigate({ to: "/auth/gym" });
@@ -170,7 +214,7 @@ function GymDashboard() {
         </div>
 
         <nav className="space-y-1.5 flex-1">
-          {TABS.map((tab) => {
+          {visibleTabs.map((tab) => {
             const Icon = tab.icon;
             return (
               <button
@@ -210,7 +254,8 @@ function GymDashboard() {
             <select
               value={selectedBranchId}
               onChange={(e) => setSelectedBranchId(e.target.value)}
-              className="h-9 rounded-xl border border-border bg-card px-3 text-xs font-semibold focus-visible:outline-none cursor-pointer hover:bg-secondary/40 transition shadow-sm text-foreground"
+              disabled={currentUser.role !== "superadmin" && currentUser.role !== "coach"}
+              className="h-9 rounded-xl border border-border bg-card px-3 text-xs font-semibold focus-visible:outline-none cursor-pointer hover:bg-secondary/40 transition shadow-sm text-foreground disabled:opacity-70 disabled:cursor-not-allowed"
             >
               <option value="all">Sedes: Consolidado (Todas)</option>
               <option value="matriz">Sede Principal (Palermo)</option>
@@ -223,7 +268,16 @@ function GymDashboard() {
               <Bell className="h-4 w-4" />
               <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-rose-500" />
             </div>
-            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="Admin" className="h-9 w-9 rounded-full border border-border" />
+            
+            <div className="flex items-center gap-2">
+              <div className="text-right hidden sm:block">
+                <div className="text-xs font-bold text-foreground">{currentUser.name}</div>
+                <div className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">
+                  {currentUser.role === "superadmin" ? "👑 Global HQ" : currentUser.role === "manager" ? "👤 Gerente" : currentUser.role === "receptionist" ? "🔑 Recepción" : "💪 Coach"}
+                </div>
+              </div>
+              <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="Admin" className="h-9 w-9 rounded-full border border-border" />
+            </div>
           </div>
         </header>
 
@@ -263,6 +317,44 @@ function GymDashboard() {
           />
         )}
       </main>
+
+      {/* Floating Role Simulator for testing permissions */}
+      <div className="fixed bottom-4 right-4 bg-card border border-border shadow-2xl p-3.5 rounded-2xl z-50 max-w-sm flex flex-col gap-2 animate-fade-in text-foreground">
+        <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+          Simulador de Permisos (RBAC)
+        </div>
+        <div className="flex flex-col gap-1">
+          <label className="text-[10px] text-muted-foreground font-semibold">Seleccionar Rol Simulado:</label>
+          <select
+            value={`${currentUser.role}-${currentUser.branchId || ""}-${currentUser.staffId || ""}`}
+            onChange={(e) => {
+              const [role, branchId, staffId] = e.target.value.split("-");
+              if (role === "superadmin") {
+                setCurrentUser({ name: "Alan Kraft (SuperAdmin)", role: "superadmin" });
+              } else if (role === "manager") {
+                setCurrentUser({ name: "Marcos Pérez (Gerente)", role: "manager", branchId: branchId || undefined });
+              } else if (role === "receptionist") {
+                setCurrentUser({ name: "Camila Díaz (Recepción)", role: "receptionist", branchId: branchId || undefined });
+              } else if (role === "coach") {
+                setCurrentUser({ name: "Mateo Rossi (Coach)", role: "coach", staffId: staffId || undefined });
+              }
+            }}
+            className="h-8 rounded-lg border border-border bg-background px-2 text-xs font-semibold cursor-pointer focus-visible:outline-none"
+          >
+            <option value="superadmin--">Alan Kraft (👑 HQ SuperAdmin)</option>
+            <option value="manager-1-">Marcos Pérez (👤 Gerente - Sede Belgrano)</option>
+            <option value="receptionist-2-">Camila Díaz (🔑 Recepcionista - Sede Las Cañitas)</option>
+            <option value="coach--1">Mateo Rossi (💪 Coach / Profesor)</option>
+          </select>
+        </div>
+        <p className="text-[9px] text-muted-foreground leading-relaxed mt-0.5">
+          {currentUser.role === "superadmin" && "Permisos globales HQ. Puede ver todo, cambiar de sede libremente y editar la configuración y membresías."}
+          {currentUser.role === "manager" && "Permisos limitados a Sede Belgrano. No puede acceder a pestañas de Membresías ni Configuración Global."}
+          {currentUser.role === "receptionist" && "Permisos limitados a Sede Las Cañitas. Solo gestiona la lista de asistencia de la sucursal asignada."}
+          {currentUser.role === "coach" && "Permisos limitados a profesor. Solo puede ver y listar los alumnos inscritos en sus clases particulares."}
+        </p>
+      </div>
     </div>
   );
 }
