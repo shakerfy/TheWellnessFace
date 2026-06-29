@@ -118,6 +118,10 @@ function GymPage() {
                 <span className={`h-1.5 w-1.5 rounded-full ${gym.isOpen ? "bg-emerald-500" : "bg-muted-foreground"}`} />
                 {gym.isOpen ? "Abierto ahora" : "Cerrado"} · <Clock className="h-3.5 w-3.5" /> Ver horarios semanales
               </button>
+              <span className="inline-flex items-center gap-1.5">
+                <Users className="h-3.5 w-3.5 text-primary" />
+                <span>Aforo: <strong className="text-foreground font-semibold">42 / 80</strong> <span className="text-xs text-muted-foreground">(52%)</span></span>
+              </span>
             </div>
 
             {/* Collapsible Weekly Hours */}
