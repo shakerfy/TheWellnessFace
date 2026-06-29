@@ -2493,7 +2493,7 @@ function ConfigTab({
                       <Users className="h-5 w-5 text-muted-foreground" />
                     )}
                   </div>
-                  <Button type="button" size="xs" variant="outline" className="rounded-xl text-[10px]" onClick={() => editCoachAvatarRef.current?.click()}>
+                  <Button type="button" size="sm" variant="outline" className="rounded-xl text-[10px]" onClick={() => editCoachAvatarRef.current?.click()}>
                     Cambiar
                   </Button>
                   <input type="file" accept="image/*" ref={editCoachAvatarRef} onChange={handleEditCoachAvatarUpload} className="hidden" />
@@ -2502,7 +2502,7 @@ function ConfigTab({
 
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-muted-foreground block">Diplomas / Certificaciones</label>
-                <Button type="button" size="xs" variant="outline" className="rounded-xl text-[10px] gap-1" onClick={() => editCoachCertsRef.current?.click()}>
+                <Button type="button" size="sm" variant="outline" className="rounded-xl text-[10px] gap-1" onClick={() => editCoachCertsRef.current?.click()}>
                   <Plus className="h-3 w-3" /> Añadir
                 </Button>
                 <input type="file" multiple accept="image/*" ref={editCoachCertsRef} onChange={handleEditCoachDiplomasUpload} className="hidden" />
