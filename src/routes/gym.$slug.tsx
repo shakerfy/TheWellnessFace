@@ -66,6 +66,7 @@ function GymPage() {
   const [day, setDay] = useState<number>(new Date().getDay() === 0 ? 6 : new Date().getDay() - 1);
   const [activeCertificationsViewer, setActiveCertificationsViewer] = useState<string[] | null>(null);
   const [hoursOpen, setHoursOpen] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   const classesByDay = useMemo(
     () => gym.classes.filter((c) => c.day === day).sort((a, b) => a.time.localeCompare(b.time)),
@@ -83,17 +84,22 @@ function GymPage() {
         {/* Carousel */}
         <div className="mt-5 grid gap-3 md:grid-cols-4 md:grid-rows-2">
           <div className="relative col-span-1 row-span-2 aspect-[4/3] overflow-hidden rounded-2xl bg-muted md:col-span-2 md:aspect-auto">
-            <img src={gym.images[active]} alt={gym.name} className="h-full w-full object-cover transition-opacity duration-500" />
+            <img 
+              src={gym.images[active]} 
+              alt={gym.name} 
+              onClick={() => setLightboxOpen(true)}
+              className="h-full w-full object-cover transition-opacity duration-500 cursor-zoom-in hover:opacity-95 transition-all" 
+            />
             <div className="absolute inset-x-0 bottom-0 flex items-center justify-between p-4">
               <button
                 onClick={() => setActive((v) => (v - 1 + gym.images.length) % gym.images.length)}
-                className="grid h-9 w-9 place-items-center rounded-full bg-background/90 backdrop-blur transition hover:bg-background"
+                className="grid h-9 w-9 place-items-center rounded-full bg-background/90 backdrop-blur transition hover:bg-background shadow-md text-foreground"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
               <button
                 onClick={() => setActive((v) => (v + 1) % gym.images.length)}
-                className="grid h-9 w-9 place-items-center rounded-full bg-background/90 backdrop-blur transition hover:bg-background"
+                className="grid h-9 w-9 place-items-center rounded-full bg-background/90 backdrop-blur transition hover:bg-background shadow-md text-foreground"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
@@ -102,9 +108,15 @@ function GymPage() {
           {gym.images.slice(0, 4).map((src, i) => (
             <button
               key={src + i}
-              onClick={() => setActive(i)}
-              className={`relative aspect-[4/3] overflow-hidden rounded-2xl bg-muted transition ${
-                active === i ? "ring-2 ring-foreground" : "hover:opacity-90"
+              onClick={() => {
+                if (active === i) {
+                  setLightboxOpen(true);
+                } else {
+                  setActive(i);
+                }
+              }}
+              className={`relative aspect-[4/3] overflow-hidden rounded-2xl bg-muted transition cursor-zoom-in ${
+                active === i ? "ring-2 ring-primary" : "opacity-80 hover:opacity-100"
               }`}
             >
               <img src={src} alt="" className="h-full w-full object-cover" />
@@ -598,6 +610,64 @@ function GymPage() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Immersive Fullscreen Lightbox Modal */}
+      {lightboxOpen && (
+        <div className="fixed inset-0 bg-black/95 flex flex-col justify-between p-6 z-50 animate-fade-in text-white">
+          {/* Top Bar */}
+          <div className="flex justify-between items-center w-full max-w-7xl mx-auto">
+            <span className="text-xs font-mono text-zinc-400">
+              Foto {active + 1} de {gym.images.length}
+            </span>
+            <button 
+              onClick={() => setLightboxOpen(false)}
+              className="p-2.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 text-white transition shadow-lg border border-zinc-800"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          {/* Main Large Image view */}
+          <div className="flex-1 flex items-center justify-between w-full max-w-7xl mx-auto relative my-4">
+            <button
+              onClick={() => setActive((v) => (v - 1 + gym.images.length) % gym.images.length)}
+              className="p-3.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 text-white transition shrink-0 shadow-lg border border-zinc-800 mr-2"
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </button>
+            
+            <div className="flex-1 h-full max-h-[72vh] flex items-center justify-center p-2">
+              <img 
+                src={gym.images[active]} 
+                alt={gym.name} 
+                className="max-w-full max-h-full object-contain rounded-xl shadow-2xl select-none" 
+              />
+            </div>
+
+            <button
+              onClick={() => setActive((v) => (v + 1) % gym.images.length)}
+              className="p-3.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 text-white transition shrink-0 shadow-lg border border-zinc-800 ml-2"
+            >
+              <ChevronRight className="h-6 w-6" />
+            </button>
+          </div>
+
+          {/* Bottom Thumbnails strip */}
+          <div className="w-full max-w-4xl mx-auto overflow-x-auto py-2 flex justify-center gap-2">
+            {gym.images.map((src, i) => (
+              <button
+                key={src + i}
+                onClick={() => setActive(i)}
+                className={`relative h-12 w-16 rounded-lg overflow-hidden shrink-0 transition ${
+                  active === i ? "ring-2 ring-primary opacity-100" : "opacity-40 hover:opacity-100"
+                }`}
+              >
+                <img src={src} alt="" className="h-full w-full object-cover" />
+              </button>
+            ))}
           </div>
         </div>
       )}
