@@ -516,6 +516,34 @@ function GymPage() {
                           : "Acceso Completo (Todo Horario)"}
                       </span>
                     </div>
+                    <div className="flex items-center gap-1.5">
+                      <span>💵</span>
+                      <span>
+                        {m.registrationFee && m.registrationFee > 0 
+                          ? `Matrícula: $${m.registrationFee.toLocaleString("es-AR")}` 
+                          : "Matrícula Bonificada 🎉"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span>🏢</span>
+                      <span>
+                        {m.isMultisede 
+                          ? "Acceso Multisede (Toda la red)" 
+                          : "Solo Sede Matriz (Palermo)"}
+                      </span>
+                    </div>
+                    {m.freezeDays && m.freezeDays > 0 ? (
+                      <div className="flex items-center gap-1.5">
+                        <span>❄️</span>
+                        <span>Congelamiento: {m.freezeDays} días/año</span>
+                      </div>
+                    ) : null}
+                    {m.dailyClassLimit && m.dailyClassLimit !== "Ilimitado" ? (
+                      <div className="flex items-center gap-1.5">
+                        <span>🛡️</span>
+                        <span>Límite: {m.dailyClassLimit}</span>
+                      </div>
+                    ) : null}
                   </div>
 
                   {/* Included activities */}
