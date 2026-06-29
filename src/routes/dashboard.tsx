@@ -1747,6 +1747,8 @@ function ConfigTab({
   const gymFileRef = useRef<HTMLInputElement>(null);
   const coachAvatarRef = useRef<HTMLInputElement>(null);
   const coachCertsRef = useRef<HTMLInputElement>(null);
+  const editCoachAvatarRef = useRef<HTMLInputElement>(null);
+  const editCoachCertsRef = useRef<HTMLInputElement>(null);
 
   // Gym Photos
   const handleGymPhotosUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1817,6 +1819,24 @@ function ConfigTab({
 
   const handleRemoveDiplomaPreview = (index: number) => {
     setStaffDiplomas(prev => prev.filter((_, idx) => idx !== index));
+  };
+
+  const handleEditCoachAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setEditStaffAvatarUrl(URL.createObjectURL(e.target.files[0]));
+    }
+  };
+
+  const handleEditCoachDiplomasUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const filesArray = Array.from(e.target.files);
+      const objectUrls = filesArray.map(file => URL.createObjectURL(file));
+      setEditStaffDiplomas(prev => [...prev, ...objectUrls]);
+    }
+  };
+
+  const handleRemoveEditDiploma = (index: number) => {
+    setEditStaffDiplomas(prev => prev.filter((_, idx) => idx !== index));
   };
 
   const handleAddStaff = (e: React.FormEvent) => {
@@ -2460,6 +2480,56 @@ function ConfigTab({
                 </div>
               </div>
             </div>
+
+            {/* Photo & Diplomas in Edit Modal */}
+            <div className="grid gap-4 grid-cols-2 border-t border-border/40 pt-3">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-muted-foreground block">Foto de Perfil</label>
+                <div className="flex items-center gap-2">
+                  <div className="h-10 w-10 rounded-full overflow-hidden border border-border bg-muted flex items-center justify-center shrink-0">
+                    {editStaffAvatarUrl ? (
+                      <img src={editStaffAvatarUrl} alt="Edit Preview" className="h-full w-full object-cover" />
+                    ) : (
+                      <Users className="h-5 w-5 text-muted-foreground" />
+                    )}
+                  </div>
+                  <Button type="button" size="xs" variant="outline" className="rounded-xl text-[10px]" onClick={() => editCoachAvatarRef.current?.click()}>
+                    Cambiar
+                  </Button>
+                  <input type="file" accept="image/*" ref={editCoachAvatarRef} onChange={handleEditCoachAvatarUpload} className="hidden" />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-muted-foreground block">Diplomas / Certificaciones</label>
+                <Button type="button" size="xs" variant="outline" className="rounded-xl text-[10px] gap-1" onClick={() => editCoachCertsRef.current?.click()}>
+                  <Plus className="h-3 w-3" /> Añadir
+                </Button>
+                <input type="file" multiple accept="image/*" ref={editCoachCertsRef} onChange={handleEditCoachDiplomasUpload} className="hidden" />
+              </div>
+            </div>
+
+            {/* List of editStaffDiplomas */}
+            {editStaffDiplomas.length > 0 && (
+              <div className="space-y-1 border-t border-border/40 pt-3">
+                <label className="text-xs font-semibold text-muted-foreground block">Diplomas Guardados ({editStaffDiplomas.length})</label>
+                <div className="flex flex-wrap gap-2 max-h-[100px] overflow-y-auto">
+                  {editStaffDiplomas.map((url, index) => (
+                    <div key={index} className="relative h-10 w-14 rounded-lg overflow-hidden border border-border group shrink-0">
+                      <img src={url} alt="Diploma" className="h-full w-full object-cover" />
+                      <button 
+                        type="button"
+                        onClick={() => handleRemoveEditDiploma(index)}
+                        className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition text-rose-500 hover:text-rose-600"
+                        title="Quitar diploma"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="pt-2 flex gap-3">
               <Button type="submit" className="rounded-xl flex-1 font-bold text-xs">Guardar Cambios</Button>
