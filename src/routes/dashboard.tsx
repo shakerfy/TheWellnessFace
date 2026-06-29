@@ -3,7 +3,7 @@ import { useState, useRef } from "react";
 import { 
   Building2, Users, Calendar, CreditCard, Settings, LogOut,
   Bell, CheckCircle2, AlertCircle, Search, Download, 
-  MapPin, Clock, Plus, HelpCircle, Activity, Trash2, Check, 
+  MapPin, Clock, Plus, HelpCircle, Activity, Trash2, Check, Edit2, 
   Dumbbell, Image as ImageIcon, FileText, Eye, X, ShieldAlert
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -411,6 +411,7 @@ interface Membership {
   id: string;
   name: string;
   price: number;
+  originalPrice?: number | null;
   duration: string;
   activeCount: number;
   includedServices: string[];
@@ -433,24 +434,41 @@ const FITNESS_ACTIVITIES = [
   "Musculación / Sala de Máquinas",
   "CrossFit WOD",
   "Levantamiento Olímpico",
-  "Yoga Ashtanga / Vinyasa",
+  "Yoga Vinyasa / Ashtanga",
+  "Yoga Hatha / Iyengar",
+  "Yoga Bikram / Caliente",
   "Entrenamiento Funcional",
   "Pilates Reformer",
+  "Pilates de Suelo (Mat)",
   "Spinning / Ciclismo Indoor",
-  "Natación Libre / Coacheada",
-  "Calistenia / Gimnasia",
+  "Natación Libre",
+  "Natación Escuela (Niños/Adultos)",
+  "Acuagym / Fitness Acuático",
+  "Calistenia / Street Workout",
   "Boxeo Recreativo",
-  "Zumba / Ritmos",
-  "Kickboxing / Muay Thai",
-  "Jiu Jitsu / MMA",
-  "HIIT / Cardio Alta Intensidad",
-  "Estiramiento & Movilidad"
+  "Boxeo de Competición",
+  "Kickboxing / K1",
+  "Muay Thai / Boxeo Tailandés",
+  "Jiu Jitsu Brasileño (BJJ)",
+  "MMA (Artes Marciales Mixtas)",
+  "Zumba / Ritmos Latinos",
+  "Gap (Glúteos, Abdomen, Piernas)",
+  "HIIT / Circuitos de Alta Intensidad",
+  "Running Club / Running Outdoor",
+  "Kettlebells (Pesas Rusas)",
+  "Fuerza de Powerlifting",
+  "Estiramiento & Flexibilidad",
+  "Gimnasia Artística",
+  "Taekwondo WT/ITF",
+  "Karate-Do",
+  "Fisioterapia y Kinesiología"
 ];
 
 function MembresiasTab({ membershipsList, setMembershipsList, amenities }: MembresiasTabProps) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
+  const [originalPrice, setOriginalPrice] = useState("");
   const [periodicity, setPeriodicity] = useState("Mensual");
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [tag, setTag] = useState("Pase Libre");
@@ -464,10 +482,36 @@ function MembresiasTab({ membershipsList, setMembershipsList, amenities }: Membr
   const [searchActivity, setSearchActivity] = useState("");
   const [includedActivities, setIncludedActivities] = useState<string[]>([]);
 
+  // Edit / Delete states
+  const [editingPlan, setEditingPlan] = useState<Membership | null>(null);
+  const [deletingPlan, setDeletingPlan] = useState<Membership | null>(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+
+  // Temporary Edit Form States
+  const [editName, setEditName] = useState("");
+  const [editPrice, setEditPrice] = useState("");
+  const [editOriginalPrice, setEditOriginalPrice] = useState("");
+  const [editPeriodicity, setEditPeriodicity] = useState("Mensual");
+  const [editTag, setEditTag] = useState("Pase Libre");
+  const [editPassType, setEditPassType] = useState("Pase Libre");
+  const [editCreditsCount, setEditCreditsCount] = useState("12");
+  const [editAccessHoursType, setEditAccessHoursType] = useState("Todo Horario");
+  const [editOffPeakStart, setEditOffPeakStart] = useState("12:00");
+  const [editOffPeakEnd, setEditOffPeakEnd] = useState("16:00");
+  const [editSearchActivity, setEditSearchActivity] = useState("");
+  const [editIncludedActivities, setEditIncludedActivities] = useState<string[]>([]);
+  const [editSelectedServices, setEditSelectedServices] = useState<string[]>([]);
+
   const activeAmenities = amenities.filter(a => a.checked);
 
   const toggleService = (id: string) => {
     setSelectedServices(prev => 
+      prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
+    );
+  };
+
+  const toggleEditService = (id: string) => {
+    setEditSelectedServices(prev => 
       prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
     );
   };
@@ -480,6 +524,7 @@ function MembresiasTab({ membershipsList, setMembershipsList, amenities }: Membr
       id: Math.random().toString(),
       name,
       price: parseFloat(price),
+      originalPrice: originalPrice ? parseFloat(originalPrice) : null,
       duration: periodicity,
       activeCount: 0,
       includedServices: selectedServices,
@@ -495,6 +540,7 @@ function MembresiasTab({ membershipsList, setMembershipsList, amenities }: Membr
     setMembershipsList(prev => [...prev, newPlan]);
     setName("");
     setPrice("");
+    setOriginalPrice("");
     setPeriodicity("Mensual");
     setSelectedServices([]);
     setTag("Pase Libre");
@@ -506,11 +552,70 @@ function MembresiasTab({ membershipsList, setMembershipsList, amenities }: Membr
     setShowAddForm(false);
   };
 
+  const openEditModal = (m: Membership) => {
+    setEditingPlan(m);
+    setEditName(m.name);
+    setEditPrice(m.price.toString());
+    setEditOriginalPrice(m.originalPrice ? m.originalPrice.toString() : "");
+    setEditPeriodicity(m.duration);
+    setEditTag(m.tag || "Pase Libre");
+    setEditPassType(m.passType || "Pase Libre");
+    setEditCreditsCount(m.creditsCount ? m.creditsCount.toString() : "12");
+    setEditAccessHoursType(m.accessHoursType || "Todo Horario");
+    setEditOffPeakStart(m.offPeakStart || "12:00");
+    setEditOffPeakEnd(m.offPeakEnd || "16:00");
+    setEditIncludedActivities(m.includedActivities || []);
+    setEditSelectedServices(m.includedServices || []);
+  };
+
+  const handleSaveEditMembership = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingPlan) return;
+
+    setMembershipsList(prev => prev.map(m => {
+      if (m.id === editingPlan.id) {
+        return {
+          ...m,
+          name: editName,
+          price: parseFloat(editPrice),
+          originalPrice: editOriginalPrice ? parseFloat(editOriginalPrice) : null,
+          duration: editPeriodicity,
+          tag: editTag,
+          passType: editPassType,
+          creditsCount: editPassType === "Por Créditos" ? parseInt(editCreditsCount) : null,
+          accessHoursType: editAccessHoursType,
+          offPeakStart: editAccessHoursType === "Off-Peak" ? editOffPeakStart : null,
+          offPeakEnd: editAccessHoursType === "Off-Peak" ? editOffPeakEnd : null,
+          includedActivities: editIncludedActivities,
+          includedServices: editSelectedServices
+        };
+      }
+      return m;
+    }));
+
+    setEditingPlan(null);
+  };
+
+  const handleDeletePlan = () => {
+    if (!deletingPlan) return;
+    if (deleteConfirmText !== "ELIMINAR") return;
+    setMembershipsList(prev => prev.filter(x => x.id !== deletingPlan.id));
+    setDeletingPlan(null);
+    setDeleteConfirmText("");
+  };
+
   const filteredActivities = searchActivity.trim() === ""
     ? []
     : FITNESS_ACTIVITIES.filter(act => 
         act.toLowerCase().includes(searchActivity.toLowerCase()) && 
         !includedActivities.includes(act)
+      );
+
+  const editFilteredActivities = editSearchActivity.trim() === ""
+    ? []
+    : FITNESS_ACTIVITIES.filter(act => 
+        act.toLowerCase().includes(editSearchActivity.toLowerCase()) && 
+        !editIncludedActivities.includes(act)
       );
 
   return (
@@ -533,15 +638,15 @@ function MembresiasTab({ membershipsList, setMembershipsList, amenities }: Membr
         <form onSubmit={handleAddMembership} className="rounded-3xl border border-border bg-card p-6 shadow-sm max-w-xl space-y-4 animate-fade-up">
           <h3 className="text-sm font-bold text-muted-foreground uppercase">Agregar Nuevo Plan</h3>
           
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div className="space-y-1.5 sm:col-span-1">
               <label className="text-xs font-semibold text-muted-foreground">Nombre del Plan</label>
               <input 
                 type="text" 
                 required 
                 value={name} 
                 onChange={(e) => setName(e.target.value)}
-                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
                 placeholder="Pase Libre"
               />
             </div>
@@ -552,8 +657,18 @@ function MembresiasTab({ membershipsList, setMembershipsList, amenities }: Membr
                 required 
                 value={price} 
                 onChange={(e) => setPrice(e.target.value)}
-                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
                 placeholder="25000"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground">Original/Tachado ($)</label>
+              <input 
+                type="number" 
+                value={originalPrice} 
+                onChange={(e) => setOriginalPrice(e.target.value)}
+                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                placeholder="Opcional"
               />
             </div>
           </div>
@@ -608,7 +723,7 @@ function MembresiasTab({ membershipsList, setMembershipsList, amenities }: Membr
                   required 
                   value={creditsCount} 
                   onChange={(e) => setCreditsCount(e.target.value)}
-                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
                   placeholder="12"
                 />
               </div>
@@ -675,7 +790,7 @@ function MembresiasTab({ membershipsList, setMembershipsList, amenities }: Membr
               type="text" 
               value={searchActivity}
               onChange={(e) => setSearchActivity(e.target.value)}
-              className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
               placeholder="Buscar actividades a restringir/incluir..."
             />
 
@@ -741,7 +856,14 @@ function MembresiasTab({ membershipsList, setMembershipsList, amenities }: Membr
                 </div>
                 <span className="text-xs text-muted-foreground font-medium">{m.duration}</span>
               </div>
-              <div className="mt-4 text-3xl font-extrabold tracking-tight">${m.price.toLocaleString("es-AR")}</div>
+              <div className="mt-4 text-3xl font-extrabold tracking-tight">
+                {m.originalPrice && (
+                  <span className="text-sm font-normal text-muted-foreground line-through mr-2">
+                    ${m.originalPrice.toLocaleString("es-AR")}
+                  </span>
+                )}
+                ${m.price.toLocaleString("es-AR")}
+              </div>
 
               {/* Pass Type & Hours Badges */}
               <div className="mt-4 space-y-1.5 border-t border-border/60 pt-3">
@@ -767,7 +889,7 @@ function MembresiasTab({ membershipsList, setMembershipsList, amenities }: Membr
               {m.includedActivities && m.includedActivities.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-1">
                   {m.includedActivities.map((act) => (
-                    <span key={act} className="text-[9px] bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full font-medium">
+                    <span key={act} className="text-[9.5px] bg-secondary text-secondary-foreground px-2.5 py-0.5 rounded-full font-medium">
                       {act}
                     </span>
                   ))}
@@ -789,13 +911,303 @@ function MembresiasTab({ membershipsList, setMembershipsList, amenities }: Membr
               </ul>
             </div>
             
-            <div className="mt-6 border-t border-border/60 pt-4 flex items-center justify-between text-xs text-muted-foreground">
-              <span>Miembros activos:</span>
-              <span className="font-bold text-foreground bg-secondary px-2.5 py-0.5 rounded-full">{m.activeCount}</span>
+            <div className="space-y-4 mt-6">
+              <div className="border-t border-border/60 pt-4 flex items-center justify-between text-xs text-muted-foreground">
+                <span>Miembros activos:</span>
+                <span className="font-bold text-foreground bg-secondary px-2.5 py-0.5 rounded-full">{m.activeCount}</span>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => openEditModal(m)}
+                  className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl border border-border bg-background hover:bg-secondary text-xs text-muted-foreground hover:text-foreground font-semibold flex-1 transition"
+                >
+                  <Edit2 className="h-3.5 w-3.5" /> Editar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (m.activeCount > 0) {
+                      alert(`No se puede eliminar el plan "${m.name}" porque tiene ${m.activeCount} alumnos activos. Debes migrarlos a otro plan antes de poder eliminarlo.`);
+                    } else {
+                      setDeletingPlan(m);
+                      setDeleteConfirmText("");
+                    }
+                  }}
+                  className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-500/20 bg-rose-500/5 hover:bg-rose-500 hover:text-white text-xs text-rose-500 font-semibold flex-1 transition"
+                >
+                  <Trash2 className="h-3.5 w-3.5" /> Eliminar
+                </button>
+              </div>
             </div>
           </div>
         ))}
       </div>
+
+      {/* Edit Membership Modal */}
+      {editingPlan && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 z-50 animate-fade-in text-foreground">
+          <form 
+            onSubmit={handleSaveEditMembership}
+            className="relative bg-card border border-border w-full max-w-xl rounded-3xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto"
+          >
+            <button 
+              type="button"
+              onClick={() => setEditingPlan(null)}
+              className="absolute right-4 top-4 p-2 rounded-full hover:bg-secondary transition"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <h3 className="text-base font-bold tracking-tight">Editar Plan de Membresía</h3>
+
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="space-y-1.5 sm:col-span-1">
+                <label className="text-xs font-semibold text-muted-foreground">Nombre del Plan</label>
+                <input 
+                  type="text" 
+                  required 
+                  value={editName} 
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground">Precio ($)</label>
+                <input 
+                  type="number" 
+                  required 
+                  value={editPrice} 
+                  onChange={(e) => setEditPrice(e.target.value)}
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground">Original/Tachado ($)</label>
+                <input 
+                  type="number" 
+                  value={editOriginalPrice} 
+                  onChange={(e) => setEditOriginalPrice(e.target.value)}
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                  placeholder="Opcional"
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground block">Periodicidad del Cobro</label>
+                <select
+                  value={editPeriodicity}
+                  onChange={(e) => setEditPeriodicity(e.target.value)}
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                >
+                  <option value="Semanal">Semanal</option>
+                  <option value="Mensual">Mensual</option>
+                  <option value="Trimestral">Trimestral</option>
+                  <option value="Semestral">Semestral</option>
+                  <option value="Anual">Anual</option>
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground block">Etiqueta/Categoría del Plan</label>
+                <select
+                  value={editTag}
+                  onChange={(e) => setEditTag(e.target.value)}
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                >
+                  <option value="Pase Libre">Pase Libre</option>
+                  <option value="Planes Premium">Planes Premium</option>
+                  <option value="Solo Clases">Solo Clases</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Pass Type & Credits configuration */}
+            <div className="grid gap-4 sm:grid-cols-2 border-t border-border/40 pt-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground block">Tipo de Acceso</label>
+                <select
+                  value={editPassType}
+                  onChange={(e) => setEditPassType(e.target.value)}
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                >
+                  <option value="Pase Libre">Pase Libre (Acceso ilimitado)</option>
+                  <option value="Por Créditos">Por Créditos (Límite de clases)</option>
+                </select>
+              </div>
+              {editPassType === "Por Créditos" && (
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground">Créditos/Clases Incluidas</label>
+                  <input 
+                    type="number" 
+                    required 
+                    value={editCreditsCount} 
+                    onChange={(e) => setEditCreditsCount(e.target.value)}
+                    className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Time access restrictions */}
+            <div className="grid gap-4 sm:grid-cols-2 border-t border-border/40 pt-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground block">Horario de Acceso</label>
+                <select
+                  value={editAccessHoursType}
+                  onChange={(e) => setEditAccessHoursType(e.target.value)}
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                >
+                  <option value="Todo Horario">Todo Horario (Full Access)</option>
+                  <option value="Off-Peak">Off-Peak (Franja horaria especial)</option>
+                </select>
+              </div>
+              {editAccessHoursType === "Off-Peak" && (
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-semibold text-muted-foreground">Desde</label>
+                    <input 
+                      type="text" 
+                      value={editOffPeakStart} 
+                      onChange={(e) => setEditOffPeakStart(e.target.value)}
+                      className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-semibold text-muted-foreground">Hasta</label>
+                    <input 
+                      type="text" 
+                      value={editOffPeakEnd} 
+                      onChange={(e) => setEditOffPeakEnd(e.target.value)}
+                      className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Activities Multi-select Search Box */}
+            <div className="space-y-2 border-t border-border/40 pt-3 relative">
+              <label className="text-xs font-semibold text-muted-foreground block">Actividades Incluidas</label>
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {editIncludedActivities.map((act) => (
+                  <span key={act} className="inline-flex items-center gap-1 bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full">
+                    {act}
+                    <button type="button" onClick={() => setEditIncludedActivities(prev => prev.filter(x => x !== act))} className="hover:text-foreground">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+                {editIncludedActivities.length === 0 && (
+                  <span className="text-xs text-muted-foreground italic">Todas las actividades del centro incluidas por defecto.</span>
+                )}
+              </div>
+
+              <input 
+                type="text" 
+                value={editSearchActivity}
+                onChange={(e) => setEditSearchActivity(e.target.value)}
+                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                placeholder="Buscar actividades a restringir/incluir..."
+              />
+
+              {editFilteredActivities.length > 0 && (
+                <div className="absolute left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-lg max-h-48 overflow-y-auto z-10 p-1 space-y-0.5">
+                  {editFilteredActivities.map((act) => (
+                    <button
+                      type="button"
+                      key={act}
+                      onClick={() => {
+                        setEditIncludedActivities(prev => [...prev, act]);
+                        setEditSearchActivity("");
+                      }}
+                      className="w-full text-left px-3 py-2 text-xs hover:bg-secondary rounded-lg transition"
+                    >
+                      {act}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Amenities in Edit modal */}
+            <div className="space-y-2 border-t border-border/40 pt-3">
+              <label className="text-xs font-semibold text-muted-foreground block">Amenities y Servicios Incluidos</label>
+              <div className="flex flex-wrap gap-2">
+                {activeAmenities.map((a) => (
+                  <button
+                    type="button"
+                    key={a.id}
+                    onClick={() => toggleEditService(a.id)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition ${
+                      editSelectedServices.includes(a.id)
+                        ? "bg-primary/10 border-primary text-primary"
+                        : "bg-background border-border text-muted-foreground hover:border-foreground/20"
+                    }`}
+                  >
+                    {a.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="pt-2 flex gap-3">
+              <Button type="submit" className="rounded-xl flex-1">Guardar Cambios</Button>
+              <Button type="button" variant="outline" className="rounded-xl flex-1" onClick={() => setEditingPlan(null)}>Cancelar</Button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Delete Membership Modal */}
+      {deletingPlan && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 z-50 animate-fade-in text-foreground">
+          <div className="relative bg-card border border-border w-full max-w-[420px] rounded-3xl p-6 shadow-2xl text-center flex flex-col items-center">
+            <button 
+              onClick={() => setDeletingPlan(null)}
+              className="absolute right-4 top-4 p-2 rounded-full hover:bg-secondary transition"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="h-12 w-12 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center mb-4">
+              <ShieldAlert className="h-6 w-6" />
+            </div>
+
+            <h3 className="text-lg font-bold tracking-tight text-foreground">¿Eliminar Plan de Membresía?</h3>
+            <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+              Esta acción es irreversible. Para confirmar la eliminación definitiva del plan <strong>"{deletingPlan.name}"</strong>, escribe la palabra clave en mayúsculas a continuación:
+            </p>
+
+            <div className="w-full mt-4 space-y-3">
+              <input 
+                type="text" 
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-center focus-visible:outline-none font-bold placeholder:font-normal"
+                placeholder="Escribe ELIMINAR para confirmar"
+              />
+              <div className="flex gap-2">
+                <Button 
+                  onClick={handleDeletePlan}
+                  disabled={deleteConfirmText !== "ELIMINAR"}
+                  className="rounded-xl flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs"
+                >
+                  Confirmar Eliminación
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setDeletingPlan(null)}
+                  className="rounded-xl flex-1 text-xs"
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
