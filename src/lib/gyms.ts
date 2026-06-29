@@ -39,10 +39,21 @@ export type Gym = {
     duration: number;
     capacity: number;
     booked: number;
+    branchId?: string;
   }[];
   requirements?: string[];
   staff?: { id: string; name: string; specialty: string; certifications: string[]; photo: string; certificationImages?: string[] }[];
   amenities?: string[];
+  branches?: {
+    id: string;
+    name: string;
+    address: string;
+    manager?: string;
+    lat?: number;
+    lng?: number;
+    creditCostMultiplier?: number;
+    roamingStaffIds?: string[];
+  }[];
   weeklyHours?: { day: string; intervals: { from: string; to: string }[] }[];
   occupancyData?: Record<string, number[]>;
   instagram?: string;
@@ -99,6 +110,10 @@ export const GYMS: Gym[] = [
     instagram: "kraft.strength",
     tiktok: "kraft.strength",
     whatsapp: "5491132421241",
+    branches: [
+      { id: "1", name: "Sede Belgrano", address: "Av. Cabildo 1820, Belgrano, CABA", manager: "Marcos Pérez", lat: -34.5612, lng: -58.4568, creditCostMultiplier: 1.0, roamingStaffIds: ["1", "3"] },
+      { id: "2", name: "Sede Las Cañitas", address: "Ortega y Gasset 1520, Las Cañitas, CABA", manager: "Sofía Rodríguez", lat: -34.5715, lng: -58.4352, creditCostMultiplier: 1.2, roamingStaffIds: ["2", "3"] }
+    ],
   },
   {
     slug: "atelier-yoga-house",
@@ -249,6 +264,10 @@ function defaultSchedule(): Gym["classes"] {
   for (let d = 0; d < 7; d++) {
     base.forEach((c, i) => {
       if ((d + i) % 5 === 2 && d === 6) return; // gap on sunday
+      let branchId: string | undefined = undefined;
+      if ((d + i) % 3 === 0) branchId = "1";
+      else if ((d + i) % 3 === 1) branchId = "2";
+
       out.push({
         day: d,
         name: c.name,
@@ -257,6 +276,7 @@ function defaultSchedule(): Gym["classes"] {
         duration: c.duration,
         capacity: c.capacity,
         booked: Math.max(0, Math.min(c.capacity, Math.round((Math.sin(d * 7 + i * 3) + 1) * (c.capacity / 2)))),
+        branchId,
       });
     });
   }
