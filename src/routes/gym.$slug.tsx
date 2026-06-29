@@ -68,10 +68,37 @@ function GymPage() {
   const [hoursOpen, setHoursOpen] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
-  const classesByDay = useMemo(
-    () => gym.classes.filter((c) => c.day === day).sort((a, b) => a.time.localeCompare(b.time)),
-    [gym, day],
-  );
+  const [membershipFilter, setMembershipFilter] = useState("Todos");
+  const [disciplineFilter, setDisciplineFilter] = useState("Todos");
+
+  const membershipTags = useMemo(() => {
+    const tagsSet = new Set<string>();
+    gym.memberships.forEach(m => {
+      if (m.tag) tagsSet.add(m.tag);
+    });
+    return ["Todos", ...Array.from(tagsSet)];
+  }, [gym.memberships]);
+
+  const filteredMemberships = useMemo(() => {
+    if (membershipFilter === "Todos") return gym.memberships;
+    return gym.memberships.filter(m => m.tag === membershipFilter);
+  }, [gym.memberships, membershipFilter]);
+
+  const disciplines = useMemo(() => {
+    const discSet = new Set<string>();
+    gym.classes.forEach(c => {
+      discSet.add(c.name);
+    });
+    return ["Todos", ...Array.from(discSet)];
+  }, [gym.classes]);
+
+  const classesByDay = useMemo(() => {
+    let list = gym.classes.filter((c) => c.day === day);
+    if (disciplineFilter !== "Todos") {
+      list = list.filter(c => c.name === disciplineFilter);
+    }
+    return list.sort((a, b) => a.time.localeCompare(b.time));
+  }, [gym.classes, day, disciplineFilter]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -361,8 +388,26 @@ function GymPage() {
         <section className="mt-16">
           <h2 className="text-2xl font-semibold tracking-tight">Membresías y planes</h2>
           <p className="mt-1 text-sm text-muted-foreground">Elegí el plan que mejor se adapta a tu ritmo.</p>
+          
+          {/* Memberships Filters */}
+          <div className="mt-4 flex gap-1.5 overflow-x-auto pb-1">
+            {membershipTags.map((t) => (
+              <button
+                key={t}
+                onClick={() => setMembershipFilter(t)}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition ${
+                  membershipFilter === t
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-border text-muted-foreground hover:border-foreground/40 hover:text-foreground"
+                }`}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+
           <div className="mt-6 grid gap-4 md:grid-cols-3">
-            {gym.memberships.map((m, idx) => (
+            {filteredMemberships.map((m, idx) => (
               <div
                 key={m.name}
                 className={`rounded-2xl border p-6 transition ${
@@ -370,7 +415,16 @@ function GymPage() {
                 }`}
               >
                 <div className="flex items-baseline justify-between">
-                  <div className="text-base font-semibold tracking-tight">{m.name}</div>
+                  <div>
+                    <div className="text-base font-semibold tracking-tight">{m.name}</div>
+                    {m.tag && (
+                      <span className={`inline-block mt-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
+                        idx === 1 ? "bg-background/20 text-background" : "bg-primary/10 text-primary"
+                      }`}>
+                        {m.tag}
+                      </span>
+                    )}
+                  </div>
                   <div className={`text-xs ${idx === 1 ? "text-background/70" : "text-muted-foreground"}`}>{m.duration}</div>
                 </div>
                 <div className="mt-4 text-3xl font-semibold tracking-tight">
@@ -453,6 +507,23 @@ function GymPage() {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Discipline/Activity Filters */}
+          <div className="mt-4 flex gap-1.5 overflow-x-auto pb-1 border-t border-border/40 pt-3">
+            {disciplines.map((d) => (
+              <button
+                key={d}
+                onClick={() => setDisciplineFilter(d)}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition ${
+                  disciplineFilter === d
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground"
+                }`}
+              >
+                {d}
+              </button>
+            ))}
           </div>
 
           <div className="mt-6 overflow-hidden rounded-2xl border border-border">
