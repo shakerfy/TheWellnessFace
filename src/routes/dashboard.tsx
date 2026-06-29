@@ -39,7 +39,19 @@ function GymDashboard() {
   // STATE LIFTED UP (Models the Firebase data structure in local memory)
   
   // 1. Staff List
-  const [staffList, setStaffList] = useState<{ id: string; name: string; specialty: string; certifications: string[]; photo: string; certificationImages?: string[]; role?: string; branchId?: string }[]>([
+  const [staffList, setStaffList] = useState<{ 
+    id: string; 
+    name: string; 
+    specialty: string; 
+    certifications: string[]; 
+    photo: string; 
+    certificationImages?: string[]; 
+    role?: string; 
+    branchId?: string;
+    linkingCode: string | null;
+    status: "pending" | "linked";
+    availability?: { day: string; hours: string }[];
+  }[]>([
     { 
       id: "1", 
       name: "Mateo Rossi", 
@@ -51,7 +63,14 @@ function GymDashboard() {
         "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?auto=format&fit=crop&w=300&q=80"
       ],
       role: "coach",
-      branchId: undefined
+      branchId: undefined,
+      linkingCode: null,
+      status: "linked",
+      availability: [
+        { day: "Lunes", hours: "08:00 - 12:00" },
+        { day: "Miércoles", hours: "08:00 - 12:00" },
+        { day: "Viernes", hours: "08:00 - 12:00" }
+      ]
     },
     { 
       id: "2", 
@@ -63,7 +82,13 @@ function GymDashboard() {
         "https://images.unsplash.com/photo-1589330694653-ded6df53f7ec?auto=format&fit=crop&w=300&q=80"
       ],
       role: "coach",
-      branchId: undefined
+      branchId: undefined,
+      linkingCode: "7821",
+      status: "pending",
+      availability: [
+        { day: "Martes", hours: "09:00 - 15:00" },
+        { day: "Jueves", hours: "09:00 - 15:00" }
+      ]
     },
     { 
       id: "3", 
@@ -73,7 +98,13 @@ function GymDashboard() {
       photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&h=80&q=80",
       certificationImages: [],
       role: "manager",
-      branchId: "1"
+      branchId: "1",
+      linkingCode: "4310",
+      status: "pending",
+      availability: [
+        { day: "Lunes", hours: "14:00 - 20:00" },
+        { day: "Viernes", hours: "14:00 - 20:00" }
+      ]
     },
   ]);
 
@@ -158,6 +189,20 @@ function GymDashboard() {
     { id: "3", name: "Elite Coached", price: 42000, duration: "Mensual", activeCount: 12, includedServices: ["vestuarios", "duchas", "lockers", "wifi", "parking", "sauna"] },
   ]);
 
+  // 9. Blackout Days (Días de Cierre)
+  const [blackoutDays, setBlackoutDays] = useState<{ id: string; date: string; reason: string }[]>([
+    { id: "1", date: "2026-06-29", reason: "Feriado Nacional (Día de Prueba)" }
+  ]);
+
+  // 10. No-Show & Late Cancel Penalties State
+  const [penaltySettings, setPenaltySettings] = useState({
+    enabled: true,
+    type: "deduct_credit", // "deduct_credit" | "block_reservations"
+    maxAbsences: 2,
+  });
+
+  const [otpInput, setOtpInput] = useState("");
+
   useEffect(() => {
     if (currentUser.role === "superadmin") {
       setSelectedBranchId("all");
@@ -195,6 +240,29 @@ function GymDashboard() {
       return true;
     });
   }, [currentUser]);
+
+  const handleLinkStaffByOtp = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!otpInput) return;
+
+    // Find staff with that code and status pending
+    const match = staffList.find(s => s.linkingCode === otpInput && s.status === "pending");
+    if (match) {
+      // Consume OTP (set linkingCode to null) and set status to linked
+      setStaffList(prev => prev.map(s => s.id === match.id ? { ...s, status: "linked", linkingCode: null } : s));
+      // Log in as that staff member
+      setCurrentUser({
+        name: `${match.name} (${match.role === "manager" ? "Gerente" : match.role === "receptionist" ? "Recepción" : "Coach"})`,
+        role: (match.role || "coach") as any,
+        branchId: match.branchId,
+        staffId: match.id
+      });
+      setOtpInput("");
+      alert(`🎉 ¡Dispositivo vinculado con éxito para ${match.name}! El código de un solo uso ha sido consumido.`);
+    } else {
+      alert("❌ Código OTP incorrecto, ya utilizado o no asignado a ningún empleado pendiente.");
+    }
+  };
 
   const handleLogout = () => {
     navigate({ to: "/auth/gym" });
@@ -287,7 +355,7 @@ function GymDashboard() {
           </div>
         </header>
 
-        {activeTab === "asistencia" && <AsistenciasTab selectedBranchId={selectedBranchId} />}
+        {activeTab === "asistencia" && <AsistenciasTab selectedBranchId={selectedBranchId} blackoutDays={blackoutDays} />}
         {activeTab === "miembros" && <MiembrosTab />}
         {activeTab === "membresias" && (
           <MembresiasTab 
@@ -303,6 +371,7 @@ function GymDashboard() {
             setClassesList={setClassesList} 
             staffList={staffList} 
             canManageClasses={currentUser.role === "superadmin" || currentUser.role === "manager"}
+            blackoutDays={blackoutDays}
           />
         )}
         {activeTab === "config" && (
@@ -321,6 +390,10 @@ function GymDashboard() {
             setCancellationPolicyHours={setCancellationPolicyHours}
             branchesList={branchesList}
             setBranchesList={setBranchesList}
+            blackoutDays={blackoutDays}
+            setBlackoutDays={setBlackoutDays}
+            penaltySettings={penaltySettings}
+            setPenaltySettings={setPenaltySettings}
           />
         )}
       </main>
@@ -355,6 +428,25 @@ function GymDashboard() {
             <option value="coach--1">Mateo Rossi (💪 Coach / Profesor)</option>
           </select>
         </div>
+
+        {/* OTP Linkage Form */}
+        <form onSubmit={handleLinkStaffByOtp} className="border-t border-border/40 pt-2 flex flex-col gap-1.5">
+          <label className="text-[10px] text-muted-foreground font-semibold">📲 Vincular App Staff (Código 4-dig):</label>
+          <div className="flex gap-1.5">
+            <input 
+              type="text"
+              maxLength={4}
+              placeholder="Ej: 7821"
+              value={otpInput}
+              onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, ""))}
+              className="h-7 w-24 rounded-lg border border-border bg-background px-2 text-xs font-mono text-center focus-visible:outline-none text-foreground"
+            />
+            <Button type="submit" size="sm" className="h-7 rounded-lg text-[10px] py-0 px-3 font-bold">
+              Vincular
+            </Button>
+          </div>
+        </form>
+
         <p className="text-[9px] text-muted-foreground leading-relaxed mt-0.5">
           {currentUser.role === "superadmin" && "Permisos globales HQ. Puede ver todo, cambiar de sede libremente y editar la configuración y membresías."}
           {currentUser.role === "manager" && "Permisos limitados a Sede Belgrano. No puede acceder a pestañas de Membresías ni Configuración Global."}
@@ -367,7 +459,7 @@ function GymDashboard() {
 }
 
 // Subcomponent: Asistencias Tab
-function AsistenciasTab({ selectedBranchId }: { selectedBranchId: string }) {
+function AsistenciasTab({ selectedBranchId, blackoutDays }: { selectedBranchId: string; blackoutDays: { id: string; date: string; reason: string }[] }) {
   const [historySearch, setHistorySearch] = useState("");
   
   const recentCheckins = [
@@ -387,8 +479,19 @@ function AsistenciasTab({ selectedBranchId }: { selectedBranchId: string }) {
     alert("Exportando registros de asistencia a CSV...");
   };
 
+  const activeBlackout = blackoutDays.find(b => b.date === "2026-06-29");
+
   return (
     <div className="space-y-8">
+      {activeBlackout && (
+        <div className="p-4 bg-rose-500/10 border border-rose-500/20 text-rose-600 rounded-3xl text-xs font-semibold flex items-center gap-3">
+          <AlertCircle className="h-5 w-5 shrink-0" />
+          <div>
+            <div className="font-bold">⚠️ Sede Cerrada por Día de Cierre / Feriado</div>
+            <div className="text-[11px] text-rose-500/80 mt-0.5">Motivo: {activeBlackout.reason}. Los check-ins de hoy están inhabilitados.</div>
+          </div>
+        </div>
+      )}
       {/* Live Feed Header */}
       <div className="grid gap-6 md:grid-cols-3">
         <div className="rounded-3xl border border-border bg-card p-6 shadow-sm flex items-center justify-between col-span-1">
@@ -1507,7 +1610,14 @@ function MembresiasTab({ membershipsList, setMembershipsList, amenities, branche
 interface ClasesTabProps {
   classesList: { id: string; name: string; staffId: string; time: string; capacity: number; booked: number; enrolled: string[]; branchId?: string }[];
   setClassesList: React.Dispatch<React.SetStateAction<{ id: string; name: string; staffId: string; time: string; capacity: number; booked: number; enrolled: string[]; branchId?: string }[]>>;
-  staffList: { id: string; name: string; specialty: string; certifications: string[]; photo: string }[];
+  staffList: { 
+    id: string; 
+    name: string; 
+    specialty: string; 
+    certifications: string[]; 
+    photo: string;
+    availability?: { day: string; hours: string }[];
+  }[];
   canManageClasses: boolean;
 }
 
@@ -1518,6 +1628,35 @@ function ClasesTab({ classesList, setClassesList, staffList, canManageClasses }:
   const [staffId, setStaffId] = useState("");
   const [time, setTime] = useState("");
   const [capacity, setCapacity] = useState("15");
+
+  const availabilityWarning = useMemo(() => {
+    if (!staffId || !time) return null;
+    const coach = staffList.find(s => s.id === staffId);
+    if (!coach || !coach.availability || coach.availability.length === 0) return null;
+
+    // We assume class runs on Monday/Lunes (today in mock dashboard context)
+    const MondayAvail = coach.availability.find(a => a.day === "Lunes");
+    if (!MondayAvail) {
+      return `⚠️ Alerta: El instructor no tiene disponibilidad los Lunes. (Disp: ${coach.availability.map(a => `${a.day} ${a.hours}`).join(", ")})`;
+    }
+
+    try {
+      const [classFrom, classTo] = time.split("-").map(t => t.trim());
+      const [availFrom, availTo] = MondayAvail.hours.split("-").map(t => t.trim());
+
+      const toMinutes = (h: string) => {
+        const [hh, mm] = h.split(":").map(Number);
+        return hh * 60 + mm;
+      };
+
+      if (toMinutes(classFrom) < toMinutes(availFrom) || toMinutes(classTo) > toMinutes(availTo)) {
+        return `⚠️ Alerta: El horario de la clase (${time}) excede la disponibilidad del instructor (${MondayAvail.hours} los Lunes).`;
+      }
+    } catch (e) {
+      // ignore
+    }
+    return null;
+  }, [staffId, time, staffList]);
 
   const handleAddClass = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1613,8 +1752,25 @@ function ClasesTab({ classesList, setClassesList, staffList, canManageClasses }:
             </div>
           </div>
 
+          {availabilityWarning && (
+            <div className="p-3 bg-amber-500/10 border border-amber-500/20 text-amber-600 rounded-xl text-xs font-semibold animate-fade-in flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>{availabilityWarning}</span>
+            </div>
+          )}
+
           <Button type="submit" className="rounded-xl">Programar Clase</Button>
         </form>
+      )}
+
+      {activeBlackout && (
+        <div className="p-4 bg-rose-500/10 border border-rose-500/20 text-rose-600 rounded-3xl text-xs font-semibold flex items-center gap-3">
+          <AlertCircle className="h-5 w-5 shrink-0" />
+          <div>
+            <div className="font-bold">⚠️ Sede Cerrada por Día de Cierre / Feriado</div>
+            <div className="text-[11px] text-rose-500/80 mt-0.5">Motivo: {activeBlackout.reason}. Todas las actividades están suspendidas por hoy.</div>
+          </div>
+        </div>
       )}
 
       <div className="grid gap-6 md:grid-cols-3">
@@ -1628,20 +1784,30 @@ function ClasesTab({ classesList, setClassesList, staffList, canManageClasses }:
                 return (
                   <div 
                     key={c.id} 
-                    onClick={() => setSelectedClass(c.id)}
-                    className={`p-4 rounded-xl border transition cursor-pointer flex items-center justify-between ${
-                      selectedClass === c.id 
-                        ? "border-primary bg-primary/5" 
-                        : "border-border hover:border-foreground/20"
+                    onClick={() => {
+                      if (!activeBlackout) setSelectedClass(c.id);
+                    }}
+                    className={`p-4 rounded-xl border transition flex items-center justify-between ${
+                      activeBlackout
+                        ? "border-border opacity-50 cursor-not-allowed bg-secondary/10"
+                        : selectedClass === c.id 
+                          ? "border-primary bg-primary/5 cursor-pointer" 
+                          : "border-border hover:border-foreground/20 cursor-pointer"
                     }`}
                   >
                     <div>
                       <h4 className="font-bold text-sm">{c.name}</h4>
                       <p className="text-xs text-muted-foreground mt-0.5">{instructorName} · {c.time} hs</p>
                     </div>
-                    <span className="text-xs font-semibold bg-secondary px-2.5 py-1 rounded-full text-foreground">
-                      {c.booked} / {c.capacity} cupos
-                    </span>
+                    {activeBlackout ? (
+                      <span className="text-[9px] bg-rose-500/10 text-rose-600 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+                        ❌ Suspendida
+                      </span>
+                    ) : (
+                      <span className="text-xs font-semibold bg-secondary px-2.5 py-1 rounded-full text-foreground">
+                        {c.booked} / {c.capacity} cupos
+                      </span>
+                    )}
                   </div>
                 );
               })}
@@ -1698,6 +1864,10 @@ interface ConfigTabProps {
   setCancellationPolicyHours: (v: number) => void;
   branchesList: { id: string; name: string; address: string; manager?: string; lat?: number; lng?: number; creditCostMultiplier?: number }[];
   setBranchesList: React.Dispatch<React.SetStateAction<{ id: string; name: string; address: string; manager?: string; lat?: number; lng?: number; creditCostMultiplier?: number }[]>>;
+  blackoutDays: { id: string; date: string; reason: string }[];
+  setBlackoutDays: React.Dispatch<React.SetStateAction<{ id: string; date: string; reason: string }[]>>;
+  penaltySettings: { enabled: boolean; type: string; maxAbsences: number };
+  setPenaltySettings: React.Dispatch<React.SetStateAction<{ enabled: boolean; type: string; maxAbsences: number }>>;
 }
 
 function ConfigTab({ 
@@ -1707,7 +1877,9 @@ function ConfigTab({
   gymPhotos, setGymPhotos,
   weeklyHours, setWeeklyHours,
   cancellationPolicyHours, setCancellationPolicyHours,
-  branchesList, setBranchesList
+  branchesList, setBranchesList,
+  blackoutDays, setBlackoutDays,
+  penaltySettings, setPenaltySettings
 }: ConfigTabProps) {
   const [subTab, setSubTab] = useState("basico");
 
@@ -1742,6 +1914,14 @@ function ConfigTab({
   const [newBranchLat, setNewBranchLat] = useState("");
   const [newBranchLng, setNewBranchLng] = useState("");
   const [newBranchMultiplier, setNewBranchMultiplier] = useState("1.0");
+
+  const [newBlackoutDate, setNewBlackoutDate] = useState("");
+  const [newBlackoutReason, setNewBlackoutReason] = useState("");
+
+  const [newStaffAvailDay, setNewStaffAvailDay] = useState("Lunes");
+  const [newStaffAvailHours, setNewStaffAvailHours] = useState("08:00 - 12:00");
+  const [editStaffAvailDay, setEditStaffAvailDay] = useState("Lunes");
+  const [editStaffAvailHours, setEditStaffAvailHours] = useState("08:00 - 12:00");
 
   // Refs
   const gymFileRef = useRef<HTMLInputElement>(null);
@@ -1843,6 +2023,8 @@ function ConfigTab({
     e.preventDefault();
     if (!staffName || !staffSpecialty) return;
 
+    const generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
+
     const newStaff = {
       id: Math.random().toString(),
       name: staffName,
@@ -1852,6 +2034,9 @@ function ConfigTab({
       certificationImages: staffDiplomas,
       role: newStaffRole,
       branchId: newStaffBranchId === "matriz" ? undefined : newStaffBranchId,
+      linkingCode: generatedOtp,
+      status: "pending" as const,
+      availability: [{ day: newStaffAvailDay, hours: newStaffAvailHours }]
     };
 
     setStaffList(prev => [...prev, newStaff]);
@@ -1862,6 +2047,8 @@ function ConfigTab({
     setStaffDiplomas([]);
     setNewStaffRole("coach");
     setNewStaffBranchId("matriz");
+    setNewStaffAvailDay("Lunes");
+    setNewStaffAvailHours("08:00 - 12:00");
   };
 
   const handleStartEditStaff = (staff: any) => {
@@ -1873,6 +2060,13 @@ function ConfigTab({
     setEditStaffBranchId(staff.branchId || "matriz");
     setEditStaffAvatarUrl(staff.photo);
     setEditStaffDiplomas(staff.certificationImages || []);
+    if (staff.availability && staff.availability.length > 0) {
+      setEditStaffAvailDay(staff.availability[0].day);
+      setEditStaffAvailHours(staff.availability[0].hours);
+    } else {
+      setEditStaffAvailDay("Lunes");
+      setEditStaffAvailHours("08:00 - 12:00");
+    }
   };
 
   const handleSaveEditStaff = (e: React.FormEvent) => {
@@ -1888,6 +2082,7 @@ function ConfigTab({
       certificationImages: editStaffDiplomas,
       role: editStaffRole,
       branchId: editStaffBranchId === "matriz" ? undefined : editStaffBranchId,
+      availability: [{ day: editStaffAvailDay, hours: editStaffAvailHours }]
     } : s));
 
     setEditingStaff(null);
@@ -1922,6 +2117,7 @@ function ConfigTab({
           { id: "requisitos", label: "Normas de Ingreso" },
           { id: "staff", label: "Equipo (Staff)" },
           { id: "sedes", label: "Sucursales (Sedes)" },
+          { id: "cierres", label: "Días de Cierre" },
         ].map((sub) => (
           <button
             key={sub.id}
@@ -2088,15 +2284,16 @@ function ConfigTab({
 
       {/* Subtab 2: Reservation & Cancellation Policies */}
       {subTab === "politicas" && (
-        <div className="space-y-6 max-w-2xl bg-card border border-border p-6 rounded-3xl shadow-sm">
+        <div className="space-y-6 max-w-2xl bg-card border border-border p-6 rounded-3xl shadow-sm text-foreground">
           <div>
             <h3 className="font-bold text-sm flex items-center gap-2">
-              <ShieldAlert className="h-5 w-5 text-primary" /> Políticas de Reservas
+              <ShieldAlert className="h-5 w-5 text-primary" /> Políticas de Reservas e Inasistencias
             </h3>
-            <p className="text-xs text-muted-foreground mt-0.5">Define los límites y restricciones para cancelaciones por parte de los alumnos.</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Define los límites y restricciones para cancelaciones y penalizaciones por faltas.</p>
           </div>
           
-          <div className="space-y-4 text-sm">
+          <div className="space-y-6 text-sm">
+            {/* Cancellation hours input */}
             <div className="space-y-2">
               <label className="text-xs font-semibold text-muted-foreground block">Tiempo límite de cancelación anticipada (Horas)</label>
               <div className="flex items-center gap-3">
@@ -2114,7 +2311,50 @@ function ConfigTab({
               </div>
             </div>
 
-            <Button type="button" className="rounded-xl" onClick={() => alert("Políticas actualizadas correctamente en base de datos.")}>
+            {/* No-show Penalties configuration */}
+            <div className="border-t border-border/40 pt-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-bold text-xs">Penalización por Inasistencias (No-Shows)</h4>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Sanciona automáticamente a alumnos que no asistan o cancelen fuera de término.</p>
+                </div>
+                <input 
+                  type="checkbox"
+                  checked={penaltySettings.enabled}
+                  onChange={(e) => setPenaltySettings(prev => ({ ...prev, enabled: e.target.checked }))}
+                  className="h-5 w-10 accent-primary rounded-full cursor-pointer shrink-0"
+                />
+              </div>
+
+              {penaltySettings.enabled && (
+                <div className="grid gap-4 sm:grid-cols-2 bg-secondary/10 p-4 rounded-2xl animate-fade-in space-y-2 sm:space-y-0">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-muted-foreground block">Tipo de Castigo / Penalidad</label>
+                    <select
+                      value={penaltySettings.type}
+                      onChange={(e) => setPenaltySettings(prev => ({ ...prev, type: e.target.value }))}
+                      className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none text-foreground"
+                    >
+                      <option value="deduct_credit">💵 Descontar crédito de clase igualmente</option>
+                      <option value="block_reservations">🚫 Bloquear reservas por 48 horas (Pase Libre)</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-muted-foreground block">Cantidad de Inasistencias Toleradas</label>
+                    <input 
+                      type="number"
+                      min="1"
+                      max="5"
+                      value={penaltySettings.maxAbsences}
+                      onChange={(e) => setPenaltySettings(prev => ({ ...prev, maxAbsences: parseInt(e.target.value) || 2 }))}
+                      className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none text-foreground"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <Button type="button" className="rounded-xl" onClick={() => alert("Políticas e inasistencias de alumnos actualizadas correctamente en la base de datos.")}>
               Guardar Políticas
             </Button>
           </div>
@@ -2253,6 +2493,35 @@ function ConfigTab({
               </div>
             </div>
 
+            <div className="grid gap-4 sm:grid-cols-2 border-t border-border/40 pt-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground block">Día de Disponibilidad Principal</label>
+                <select
+                  value={newStaffAvailDay}
+                  onChange={(e) => setNewStaffAvailDay(e.target.value)}
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground"
+                >
+                  <option value="Lunes">Lunes</option>
+                  <option value="Martes">Martes</option>
+                  <option value="Miércoles">Miércoles</option>
+                  <option value="Jueves">Jueves</option>
+                  <option value="Viernes">Viernes</option>
+                  <option value="Sábado">Sábado</option>
+                  <option value="Domingo">Domingo</option>
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground block">Rango Horario de Disponibilidad</label>
+                <input 
+                  type="text" 
+                  value={newStaffAvailHours}
+                  onChange={(e) => setNewStaffAvailHours(e.target.value)}
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground"
+                  placeholder="08:00 - 12:00"
+                />
+              </div>
+            </div>
+
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-muted-foreground block">Foto de Perfil</label>
@@ -2353,6 +2622,40 @@ function ConfigTab({
                           </span>
                         ))}
                       </div>
+                    </div>
+                  </div>
+
+                  {/* Availability & OTP Linking details */}
+                  <div className="mt-3.5 border-t border-border/40 pt-2 text-[10px] space-y-1 bg-secondary/5 p-2 rounded-xl">
+                    {s.availability && s.availability.length > 0 && (
+                      <div className="text-muted-foreground font-medium">
+                        ⏰ <span className="font-bold text-foreground">Disp:</span> {s.availability[0].day} ({s.availability[0].hours})
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center justify-between gap-1.5 mt-1 border-t border-border/20 pt-1">
+                      {s.status === "linked" ? (
+                        <span className="text-[9px] text-emerald-500 font-bold flex items-center gap-1">
+                          🟢 Disp. Vinculado
+                        </span>
+                      ) : (
+                        <>
+                          <span className="text-[9px] text-amber-500 font-bold flex items-center gap-1" title="Dispositivo pendiente de vinculación">
+                            🟡 Pendiente OTP: <span className="bg-amber-500/10 px-1 py-0.5 rounded text-amber-600 font-mono text-[10px]">{s.linkingCode}</span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newOtp = Math.floor(1000 + Math.random() * 9000).toString();
+                              setStaffList(prev => prev.map(item => item.id === s.id ? { ...item, linkingCode: newOtp } : item));
+                              alert(`Nuevo código OTP de un solo uso generado: ${newOtp}`);
+                            }}
+                            className="text-[9px] text-primary font-bold hover:underline"
+                          >
+                            Regenerar
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
 
@@ -2477,6 +2780,34 @@ function ConfigTab({
                       <option key={b.id} value={b.id}>{b.name}</option>
                     ))}
                   </select>
+                </div>
+              </div>
+
+              <div className="grid gap-4 grid-cols-2 border-t border-border/40 pt-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-muted-foreground block">Día de Disponibilidad</label>
+                  <select
+                    value={editStaffAvailDay}
+                    onChange={(e) => setEditStaffAvailDay(e.target.value)}
+                    className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground"
+                  >
+                    <option value="Lunes">Lunes</option>
+                    <option value="Martes">Martes</option>
+                    <option value="Miércoles">Miércoles</option>
+                    <option value="Jueves">Jueves</option>
+                    <option value="Viernes">Viernes</option>
+                    <option value="Sábado">Sábado</option>
+                    <option value="Domingo">Domingo</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-muted-foreground block">Rango Horario</label>
+                  <input 
+                    type="text" 
+                    value={editStaffAvailHours}
+                    onChange={(e) => setEditStaffAvailHours(e.target.value)}
+                    className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground"
+                  />
                 </div>
               </div>
             </div>
@@ -2739,6 +3070,89 @@ function ConfigTab({
               ))}
               {branchesList.length === 0 && (
                 <p className="text-xs text-muted-foreground italic py-3">No hay sucursales secundarias registradas.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Subtab 7: Días de Cierre (Blackout Days) */}
+      {subTab === "cierres" && (
+        <div className="space-y-6 max-w-2xl bg-card border border-border p-6 rounded-3xl shadow-sm animate-fade-up text-foreground">
+          <div>
+            <h3 className="font-bold text-sm">Calendario de Días de Cierre</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Establece feriados, festivos o jornadas de mantenimiento técnico/edilicio para suspender reservas automáticamente.</p>
+          </div>
+
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!newBlackoutDate || !newBlackoutReason) return;
+              setBlackoutDays(prev => [
+                ...prev,
+                {
+                  id: Math.random().toString(),
+                  date: newBlackoutDate,
+                  reason: newBlackoutReason
+                }
+              ]);
+              setNewBlackoutDate("");
+              setNewBlackoutReason("");
+            }}
+            className="space-y-4 border-b border-border/40 pb-6 text-sm"
+          >
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground font-semibold">Fecha de Cierre</label>
+                <input 
+                  type="date"
+                  required
+                  value={newBlackoutDate}
+                  onChange={(e) => setNewBlackoutDate(e.target.value)}
+                  className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none text-foreground"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground font-semibold">Motivo del Cierre</label>
+                <input 
+                  type="text"
+                  required
+                  placeholder="Navidad, Desinfección, etc."
+                  value={newBlackoutReason}
+                  onChange={(e) => setNewBlackoutReason(e.target.value)}
+                  className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none text-foreground"
+                  placeholder="Ej: Feriado Nacional"
+                />
+              </div>
+            </div>
+
+            <Button type="submit" size="sm" className="rounded-xl font-bold text-xs gap-1">
+              <Plus className="h-4 w-4" /> Agregar Día de Cierre
+            </Button>
+          </form>
+
+          {/* Closures list */}
+          <div className="space-y-3">
+            <h4 className="text-xs font-bold text-muted-foreground uppercase">Fechas de Cierre Programadas</h4>
+            <div className="divide-y divide-border">
+              {blackoutDays.map((b) => (
+                <div key={b.id} className="py-3.5 flex items-center justify-between">
+                  <div>
+                    <div className="text-sm font-semibold text-foreground">{b.reason}</div>
+                    <div className="text-xs text-muted-foreground">📅 {b.date} {b.date === "2026-06-29" && <span className="text-[10px] bg-rose-500/10 text-rose-500 font-bold px-1.5 py-0.5 rounded ml-1.5 uppercase">Hoy</span>}</div>
+                  </div>
+                  <button 
+                    type="button"
+                    onClick={() => setBlackoutDays(prev => prev.filter(item => item.id !== b.id))}
+                    className="p-1.5 text-rose-500 hover:bg-rose-500/10 rounded-lg transition"
+                    title="Eliminar día de cierre"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+              {blackoutDays.length === 0 && (
+                <p className="text-xs text-muted-foreground italic py-3">No hay días de cierre configurados.</p>
               )}
             </div>
           </div>
