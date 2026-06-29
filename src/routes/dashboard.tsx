@@ -119,6 +119,12 @@ function GymDashboard() {
   // 6. Reservation Cancellation Policy State (cancellation limit in hours)
   const [cancellationPolicyHours, setCancellationPolicyHours] = useState(2);
 
+  // 7. Branches / Sedes list
+  const [branchesList, setBranchesList] = useState([
+    { id: "1", name: "Sede Belgrano", address: "Av. Cabildo 1820, Belgrano, CABA" },
+    { id: "2", name: "Sede Las Cañitas", address: "Ortega y Gasset 1520, Las Cañitas, CABA" }
+  ]);
+
   // 7. Classes List
   const [classesList, setClassesList] = useState([
     { id: "1", name: "CrossFit WOD", staffId: "1", time: "08:00 - 09:00", capacity: 15, booked: 12, enrolled: ["Agustín Gómez", "Marcos López", "Tomás Ruiz"] },
@@ -209,6 +215,7 @@ function GymDashboard() {
             membershipsList={membershipsList} 
             setMembershipsList={setMembershipsList} 
             amenities={amenities} 
+            branchesList={branchesList}
           />
         )}
         {activeTab === "clases" && (
@@ -232,6 +239,8 @@ function GymDashboard() {
             setWeeklyHours={setWeeklyHours}
             cancellationPolicyHours={cancellationPolicyHours}
             setCancellationPolicyHours={setCancellationPolicyHours}
+            branchesList={branchesList}
+            setBranchesList={setBranchesList}
           />
         )}
       </main>
