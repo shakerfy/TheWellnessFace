@@ -296,6 +296,7 @@ function GymDashboard() {
             classesList={visibleClasses} 
             setClassesList={setClassesList} 
             staffList={staffList} 
+            canManageClasses={currentUser.role === "superadmin" || currentUser.role === "manager"}
           />
         )}
         {activeTab === "config" && (
@@ -1501,9 +1502,10 @@ interface ClasesTabProps {
   classesList: { id: string; name: string; staffId: string; time: string; capacity: number; booked: number; enrolled: string[]; branchId?: string }[];
   setClassesList: React.Dispatch<React.SetStateAction<{ id: string; name: string; staffId: string; time: string; capacity: number; booked: number; enrolled: string[]; branchId?: string }[]>>;
   staffList: { id: string; name: string; specialty: string; certifications: string[]; photo: string }[];
+  canManageClasses: boolean;
 }
 
-function ClasesTab({ classesList, setClassesList, staffList }: ClasesTabProps) {
+function ClasesTab({ classesList, setClassesList, staffList, canManageClasses }: ClasesTabProps) {
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [name, setName] = useState("");
@@ -1539,13 +1541,15 @@ function ClasesTab({ classesList, setClassesList, staffList }: ClasesTabProps) {
           <h2 className="text-xl font-bold tracking-tight">Calendario de Clases</h2>
           <p className="text-sm text-muted-foreground">Clases planificadas vinculando los entrenadores de tu Staff.</p>
         </div>
-        <Button 
-          size="sm" 
-          className="rounded-xl gap-1.5" 
-          onClick={() => setShowAddForm(!showAddForm)}
-        >
-          <Plus className="h-4 w-4" /> {showAddForm ? "Cancelar" : "Nueva Clase"}
-        </Button>
+        {canManageClasses && (
+          <Button 
+            size="sm" 
+            className="rounded-xl gap-1.5" 
+            onClick={() => setShowAddForm(!showAddForm)}
+          >
+            <Plus className="h-4 w-4" /> {showAddForm ? "Cancelar" : "Nueva Clase"}
+          </Button>
+        )}
       </div>
 
       {showAddForm && (
