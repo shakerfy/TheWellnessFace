@@ -405,8 +405,8 @@ function MiembrosTab() {
 
 // Subcomponent: Membresias Tab
 interface MembresiasTabProps {
-  membershipsList: { id: string; name: string; price: number; duration: string; activeCount: number; includedServices: string[] }[];
-  setMembershipsList: React.Dispatch<React.SetStateAction<{ id: string; name: string; price: number; duration: string; activeCount: number; includedServices: string[] }[]>>;
+  membershipsList: { id: string; name: string; price: number; duration: string; activeCount: number; includedServices: string[]; tag?: string }[];
+  setMembershipsList: React.Dispatch<React.SetStateAction<{ id: string; name: string; price: number; duration: string; activeCount: number; includedServices: string[]; tag?: string }[]>>;
   amenities: { id: string; name: string; category: string; checked: boolean }[];
 }
 
@@ -416,6 +416,7 @@ function MembresiasTab({ membershipsList, setMembershipsList, amenities }: Membr
   const [price, setPrice] = useState("");
   const [duration, setDuration] = useState("Mensual");
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [tag, setTag] = useState("Pase Libre");
 
   const activeAmenities = amenities.filter(a => a.checked);
 
@@ -436,12 +437,14 @@ function MembresiasTab({ membershipsList, setMembershipsList, amenities }: Membr
       duration,
       activeCount: 0,
       includedServices: selectedServices,
+      tag: tag,
     };
 
     setMembershipsList(prev => [...prev, newPlan]);
     setName("");
     setPrice("");
     setSelectedServices([]);
+    setTag("Pase Libre");
     setShowAddForm(false);
   };
 
@@ -489,6 +492,19 @@ function MembresiasTab({ membershipsList, setMembershipsList, amenities }: Membr
             </div>
           </div>
 
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-muted-foreground block">Etiqueta/Categoría del Plan</label>
+            <select
+              value={tag}
+              onChange={(e) => setTag(e.target.value)}
+              className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+            >
+              <option value="Pase Libre">Pase Libre</option>
+              <option value="Planes Premium">Planes Premium</option>
+              <option value="Solo Clases">Solo Clases</option>
+            </select>
+          </div>
+
           <div className="space-y-2">
             <label className="text-xs font-semibold text-muted-foreground block">Amenities y Servicios Incluidos</label>
             {activeAmenities.length === 0 ? (
@@ -522,7 +538,14 @@ function MembresiasTab({ membershipsList, setMembershipsList, amenities }: Membr
           <div key={m.id} className="rounded-3xl border border-border bg-card p-6 shadow-sm flex flex-col justify-between hover:border-foreground/20 transition">
             <div>
               <div className="flex justify-between items-start">
-                <h3 className="font-bold text-lg">{m.name}</h3>
+                <div>
+                  <h3 className="font-bold text-lg">{m.name}</h3>
+                  {m.tag && (
+                    <span className="inline-block mt-1.5 text-[9px] font-bold bg-primary/10 text-primary px-1.5 py-0.5 rounded uppercase tracking-wider">
+                      {m.tag}
+                    </span>
+                  )}
+                </div>
                 <span className="text-xs text-muted-foreground font-medium">{m.duration}</span>
               </div>
               <div className="mt-4 text-3xl font-extrabold tracking-tight">${m.price.toLocaleString("es-AR")}</div>
