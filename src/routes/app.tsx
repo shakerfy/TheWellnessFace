@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { 
   User, Calendar, BarChart3, CreditCard, Settings, 
   LogOut, QrCode, CheckCircle, Clock, AlertTriangle, 
-  MapPin, ChevronRight, X, Sparkles, Shield, AlertCircle, ShieldAlert
+  MapPin, ChevronRight, X, Sparkles, Shield, AlertCircle, ShieldAlert, Star
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -31,6 +31,15 @@ function StudentDashboard() {
     { id: "1", name: "CrossFit WOD", instructor: "Mateo Rossi", time: "19:00", timeLabel: "Hoy, 19:00 hs", cannotCancel: true, timeRemainingLabel: "45 minutos" },
     { id: "2", name: "Yoga Vinyasa", instructor: "Valeria Soto", time: "22:00", timeLabel: "Hoy, 22:00 hs", cannotCancel: false, timeRemainingLabel: "3 horas y 45 minutos" }
   ]);
+
+  // REVIEWS LATEST USER REQUEST STATE
+  const [showReviewPrompt, setShowReviewPrompt] = useState(true);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [ratingCleanliness, setRatingCleanliness] = useState(5);
+  const [ratingEquipment, setRatingEquipment] = useState(5);
+  const [ratingStaff, setRatingStaff] = useState(5);
+  const [ratingPrice, setRatingPrice] = useState(5);
+  const [reviewComment, setReviewComment] = useState("");
 
   // QR Timer Countdown Simulation
   useEffect(() => {
@@ -110,6 +119,8 @@ function StudentDashboard() {
             reservations={reservations} 
             setReservations={setReservations} 
             setBlockedCancellationClass={setBlockedCancellationClass}
+            showReviewPrompt={showReviewPrompt}
+            setReviewModalOpen={setReviewModalOpen}
           />
         )}
         {activeTab === "clases" && <ClasesTab />}
@@ -228,6 +239,80 @@ function StudentDashboard() {
           </div>
         </div>
       )}
+
+      {/* Immersive Verified Review Form Modal */}
+      {reviewModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 z-50 animate-fade-in text-foreground">
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              alert("¡Gracias por tu opinión! Tu reseña ha sido verificada con tus check-ins de asistencia por QR y fue publicada exitosamente.");
+              setShowReviewPrompt(false);
+              setReviewModalOpen(false);
+            }}
+            className="relative bg-card border border-border w-full max-w-[450px] rounded-3xl p-6 shadow-2xl flex flex-col"
+          >
+            <button 
+              type="button"
+              onClick={() => setReviewModalOpen(false)}
+              className="absolute right-4 top-4 p-2 rounded-full hover:bg-secondary transition z-10"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="text-center mb-4">
+              <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center mx-auto mb-2">
+                <Sparkles className="h-5 w-5" />
+              </div>
+              <h3 className="text-base font-bold tracking-tight">Califica tu Centro</h3>
+              <p className="text-xs text-muted-foreground">Miembro Verificado: Agustín Gómez</p>
+            </div>
+
+            <div className="space-y-4">
+              {/* Category Sliders / Star Pickers */}
+              {[
+                { label: "Limpieza", value: ratingCleanliness, setter: setRatingCleanliness },
+                { label: "Equipamiento", value: ratingEquipment, setter: setRatingEquipment },
+                { label: "Atención del Staff", value: ratingStaff, setter: setRatingStaff },
+                { label: "Relación Calidad/Precio", value: ratingPrice, setter: setRatingPrice }
+              ].map((cat) => (
+                <div key={cat.label} className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-muted-foreground">{cat.label}</span>
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        type="button"
+                        key={star}
+                        onClick={() => cat.setter(star)}
+                        className="p-0.5 hover:scale-110 transition"
+                      >
+                        <Star className={`h-4.5 w-4.5 ${star <= cat.value ? "fill-amber-500 text-amber-500" : "text-zinc-300 dark:text-zinc-700"}`} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+
+              {/* Textarea for comments */}
+              <div className="space-y-1.5 mt-2">
+                <label className="text-xs font-semibold text-muted-foreground">Escribe tu opinión</label>
+                <textarea
+                  required
+                  rows={3}
+                  value={reviewComment}
+                  onChange={(e) => setReviewComment(e.target.value)}
+                  placeholder="Cuéntale a otros qué tal tu experiencia con los coaches, la limpieza del lugar, etc..."
+                  className="flex w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                />
+              </div>
+            </div>
+
+            <Button type="submit" className="rounded-xl mt-6">
+              Enviar Reseña Verificada
+            </Button>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
@@ -238,9 +323,11 @@ interface InicioTabProps {
   reservations: { id: string; name: string; instructor: string; time: string; timeLabel: string; cannotCancel: boolean; timeRemainingLabel: string }[];
   setReservations: React.Dispatch<React.SetStateAction<{ id: string; name: string; instructor: string; time: string; timeLabel: string; cannotCancel: boolean; timeRemainingLabel: string }[]>>;
   setBlockedCancellationClass: (v: any) => void;
+  showReviewPrompt: boolean;
+  setReviewModalOpen: (v: boolean) => void;
 }
 
-function InicioTab({ setQrOpen, reservations, setReservations, setBlockedCancellationClass }: InicioTabProps) {
+function InicioTab({ setQrOpen, reservations, setReservations, setBlockedCancellationClass, showReviewPrompt, setReviewModalOpen }: InicioTabProps) {
   return (
     <div className="space-y-6">
       <div>
@@ -329,6 +416,26 @@ function InicioTab({ setQrOpen, reservations, setReservations, setBlockedCancell
           <span className="font-semibold">Recomendación médica:</span> Tu ficha tiene agendada una molestia de rodilla izquierda. Recuerda avisar a tu coach antes del inicio del WOD para adaptar los movimientos de carga.
         </div>
       </div>
+
+      {/* Verified Review Trigger Card */}
+      {showReviewPrompt && (
+        <div className="rounded-3xl border border-primary/20 bg-primary/5 p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="space-y-1 text-center sm:text-left">
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full uppercase tracking-wider">
+              <Sparkles className="h-3 w-3" /> Reseña Verificada (Estilo Airbnb)
+            </span>
+            <h4 className="font-bold text-sm text-foreground">¿Te gusta entrenar en Kraft Strength Club?</h4>
+            <p className="text-xs text-muted-foreground">Como miembro activo con check-ins de asistencia registrados, tu opinión ayuda a la comunidad.</p>
+          </div>
+          <Button 
+            size="sm" 
+            className="rounded-xl shrink-0"
+            onClick={() => setReviewModalOpen(true)}
+          >
+            Calificar Experiencia
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
@@ -446,7 +553,7 @@ function ProgresoTab() {
       </div>
 
       <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-        <h3 className="text-sm font-bold text-muted-foreground mb-6 uppercase tracking-wider">Asistencias Mensuales</h3>
+        <h3 className="text-sm font-bold text-muted-foreground mb-6 uppercase tracking-wider">Asistencias Conversión</h3>
         <div className="flex items-end justify-between h-48 px-4">
           {chartData.map((d) => {
             const heightPercentage = `${(d.visits / 25) * 100}%`;
