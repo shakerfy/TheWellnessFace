@@ -57,7 +57,7 @@ export const GYMS: Gym[] = [
       img("photo-1540497077202-7c8a3999166f"),
     ],
     memberships: [
-      { name: "Pase Libre", price: 18900, duration: "Mensual", benefits: ["Acceso ilimitado", "Sala de musculación", "Vestuario premium"], includedServices: ["showers", "lockers", "wifi"], tag: "Pase Libre" },
+      { name: "Pase Libre", price: 18900, originalPrice: 24000, duration: "Mensual", benefits: ["Acceso ilimitado", "Sala de musculación", "Vestuario premium"], includedServices: ["showers", "lockers", "wifi"], tag: "Pase Libre" },
       { name: "Performance", price: 28500, duration: "Mensual", benefits: ["Pase libre", "4 clases coacheadas", "Plan de entrenamiento"], includedServices: ["showers", "lockers", "wifi", "parking"], tag: "Pase Libre" },
       { name: "Elite", price: 42000, duration: "Mensual", benefits: ["Todo Performance", "PT semanal 1:1", "Análisis postural"], includedServices: ["showers", "lockers", "wifi", "parking", "sauna"], tag: "Planes Premium" },
     ],
