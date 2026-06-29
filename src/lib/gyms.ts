@@ -12,7 +12,25 @@ export type Gym = {
   hours: string;
   description: string;
   images: string[];
-  memberships: { name: string; price: number; duration: string; benefits: string[]; includedServices?: string[]; tag?: string }[];
+  memberships: {
+    name: string;
+    price: number;
+    originalPrice?: number | null;
+    duration: string;
+    benefits: string[];
+    includedServices?: string[];
+    tag?: string;
+    passType?: string;
+    creditsCount?: number | null;
+    accessHoursType?: string;
+    offPeakStart?: string | null;
+    offPeakEnd?: string | null;
+    includedActivities?: string[];
+    registrationFee?: number | null;
+    isMultisede?: boolean;
+    freezeDays?: number | null;
+    dailyClassLimit?: string | null;
+  }[];
   classes: {
     day: number; // 0..6, lunes = 0
     name: string;
