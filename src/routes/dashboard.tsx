@@ -27,7 +27,7 @@ function GymDashboard() {
   // STATE LIFTED UP (Models the Firebase data structure in local memory)
   
   // 1. Staff List
-  const [staffList, setStaffList] = useState([
+  const [staffList, setStaffList] = useState<{ id: string; name: string; specialty: string; certifications: string[]; photo: string; certificationImages?: string[] }[]>([
     { 
       id: "1", 
       name: "Mateo Rossi", 
@@ -1559,6 +1559,8 @@ interface ConfigTabProps {
   setWeeklyHours: React.Dispatch<React.SetStateAction<{ day: string; intervals: { from: string; to: string }[] }[]>>;
   cancellationPolicyHours: number;
   setCancellationPolicyHours: (v: number) => void;
+  branchesList: { id: string; name: string; address: string }[];
+  setBranchesList: React.Dispatch<React.SetStateAction<{ id: string; name: string; address: string }[]>>;
 }
 
 function ConfigTab({ 
@@ -1567,7 +1569,8 @@ function ConfigTab({
   requirements, setRequirements,
   gymPhotos, setGymPhotos,
   weeklyHours, setWeeklyHours,
-  cancellationPolicyHours, setCancellationPolicyHours
+  cancellationPolicyHours, setCancellationPolicyHours,
+  branchesList, setBranchesList
 }: ConfigTabProps) {
   const [subTab, setSubTab] = useState("basico");
 
@@ -1581,6 +1584,8 @@ function ConfigTab({
   const [instagram, setInstagram] = useState("kraft.strength");
   const [tiktok, setTiktok] = useState("kraft.strength");
   const [whatsapp, setWhatsapp] = useState("5491132421241");
+  const [newBranchName, setNewBranchName] = useState("");
+  const [newBranchAddress, setNewBranchAddress] = useState("");
 
   // Refs
   const gymFileRef = useRef<HTMLInputElement>(null);
@@ -2132,6 +2137,8 @@ function ConfigTab({
               ))}
             </div>
           </div>
+        </div>
+      )}
       {/* Subtab 6: Sucursales / Sedes */}
       {subTab === "sedes" && (
         <div className="space-y-6 max-w-2xl bg-card border border-border p-6 rounded-3xl shadow-sm animate-fade-up">
