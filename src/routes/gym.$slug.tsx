@@ -85,6 +85,13 @@ function GymPage() {
 
   const [membershipFilter, setMembershipFilter] = useState("Todos");
   const [disciplineFilter, setDisciplineFilter] = useState("Todos");
+  const [selectedBranchId, setSelectedBranchId] = useState("matriz");
+
+  const activeBranch = useMemo(() => {
+    return gym.branches?.find(b => b.id === selectedBranchId);
+  }, [gym.branches, selectedBranchId]);
+
+  const activeAddress = activeBranch ? activeBranch.address : gym.address;
 
   const membershipTags = useMemo(() => {
     const tagsSet = new Set<string>();
@@ -107,13 +114,19 @@ function GymPage() {
     return ["Todos", ...Array.from(discSet)];
   }, [gym.classes]);
 
-  const classesByDay = useMemo(() => {
-    let list = gym.classes.filter((c) => c.day === day);
+  const classesByBranchAndDay = useMemo(() => {
+    let list = gym.classes;
+    if (selectedBranchId === "matriz") {
+      list = list.filter(c => !c.branchId);
+    } else {
+      list = list.filter(c => c.branchId === selectedBranchId);
+    }
+    list = list.filter((c) => c.day === day);
     if (disciplineFilter !== "Todos") {
       list = list.filter(c => c.name === disciplineFilter);
     }
     return list.sort((a, b) => a.time.localeCompare(b.time));
-  }, [gym.classes, day, disciplineFilter]);
+  }, [gym.classes, day, disciplineFilter, selectedBranchId]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -175,9 +188,40 @@ function GymPage() {
               ))}
             </div>
             <h1 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">{gym.name}</h1>
-            <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+
+            {/* Branch / Sede selector */}
+            {gym.branches && gym.branches.length > 0 && (
+              <div className="mt-4 flex items-center gap-2 flex-wrap">
+                <span className="text-[11px] font-bold text-muted-foreground uppercase mr-1">📍 Sede Activa:</span>
+                <button
+                  onClick={() => setSelectedBranchId("matriz")}
+                  className={`px-3 py-1 rounded-full text-xs font-semibold border transition ${
+                    selectedBranchId === "matriz"
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Palermo (Matriz)
+                </button>
+                {gym.branches.map(b => (
+                  <button
+                    key={b.id}
+                    onClick={() => setSelectedBranchId(b.id)}
+                    className={`px-3 py-1 rounded-full text-xs font-semibold border transition ${
+                      selectedBranchId === b.id
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {b.name.replace("Sede ", "")}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
               <span className="inline-flex items-center gap-1.5"><Star className="h-3.5 w-3.5 fill-foreground text-foreground" /> {gym.rating.toFixed(1)} <span className="text-muted-foreground">({gym.reviews})</span></span>
-              <span className="inline-flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" /> {gym.address}</span>
+              <span className="inline-flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" /> {activeAddress}</span>
               <button 
                 onClick={() => setHoursOpen(!hoursOpen)}
                 className="inline-flex items-center gap-1.5 hover:text-foreground transition focus:outline-none"
@@ -187,7 +231,17 @@ function GymPage() {
               </button>
               <span className="inline-flex items-center gap-1.5">
                 <Users className="h-3.5 w-3.5 text-primary" />
-                <span>Aforo: <strong className="text-foreground font-semibold">42 / 80</strong> <span className="text-xs text-muted-foreground">(52%)</span></span>
+                <span>
+                  Aforo:{" "}
+                  <strong className="text-foreground font-semibold">
+                    {selectedBranchId === "matriz" && "42 / 80"}
+                    {selectedBranchId === "1" && "24 / 50"}
+                    {selectedBranchId === "2" && "18 / 40"}
+                  </strong>{" "}
+                  <span className="text-xs text-muted-foreground">
+                    ({selectedBranchId === "matriz" ? "52%" : selectedBranchId === "1" ? "48%" : "45%"})
+                  </span>
+                </span>
               </span>
             </div>
 
@@ -661,11 +715,11 @@ function GymPage() {
           </div>
 
           <div className="mt-6 overflow-hidden rounded-2xl border border-border">
-            {classesByDay.length === 0 ? (
+            {classesByBranchAndDay.length === 0 ? (
               <div className="p-10 text-center text-sm text-muted-foreground">No hay clases programadas este día.</div>
             ) : (
               <ul className="divide-y divide-border">
-                {classesByDay.map((c, i) => {
+                {classesByBranchAndDay.map((c, i) => {
                   const available = c.capacity - c.booked;
                   return (
                     <li key={i} className="flex flex-col gap-3 px-5 py-4 md:flex-row md:items-center md:justify-between">

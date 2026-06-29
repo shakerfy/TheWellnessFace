@@ -120,16 +120,17 @@ function GymDashboard() {
   const [cancellationPolicyHours, setCancellationPolicyHours] = useState(2);
 
   // 7. Branches / Sedes list
-  const [branchesList, setBranchesList] = useState([
-    { id: "1", name: "Sede Belgrano", address: "Av. Cabildo 1820, Belgrano, CABA" },
-    { id: "2", name: "Sede Las Cañitas", address: "Ortega y Gasset 1520, Las Cañitas, CABA" }
+  const [branchesList, setBranchesList] = useState<{ id: string; name: string; address: string; manager?: string; lat?: number; lng?: number; creditCostMultiplier?: number }[]>([
+    { id: "1", name: "Sede Belgrano", address: "Av. Cabildo 1820, Belgrano, CABA", manager: "Marcos Pérez", lat: -34.5612, lng: -58.4568, creditCostMultiplier: 1.0 },
+    { id: "2", name: "Sede Las Cañitas", address: "Ortega y Gasset 1520, Las Cañitas, CABA", manager: "Sofía Rodríguez", lat: -34.5715, lng: -58.4352, creditCostMultiplier: 1.2 }
   ]);
+  const [selectedBranchId, setSelectedBranchId] = useState("all");
 
   // 7. Classes List
   const [classesList, setClassesList] = useState([
-    { id: "1", name: "CrossFit WOD", staffId: "1", time: "08:00 - 09:00", capacity: 15, booked: 12, enrolled: ["Agustín Gómez", "Marcos López", "Tomás Ruiz"] },
-    { id: "2", name: "Yoga Ashtanga", staffId: "2", time: "09:30 - 10:30", capacity: 10, booked: 8, enrolled: ["Paula Cáceres", "Sofía Martínez"] },
-    { id: "3", name: "Funcional", staffId: "3", time: "18:00 - 19:00", capacity: 15, booked: 15, enrolled: ["Pedro Giménez", "María del Mar"] },
+    { id: "1", name: "CrossFit WOD", staffId: "1", time: "08:00 - 09:00", capacity: 15, booked: 12, enrolled: ["Agustín Gómez", "Marcos López", "Tomás Ruiz"], branchId: "1" },
+    { id: "2", name: "Yoga Ashtanga", staffId: "2", time: "09:30 - 10:30", capacity: 10, booked: 8, enrolled: ["Paula Cáceres", "Sofía Martínez"], branchId: "2" },
+    { id: "3", name: "Funcional", staffId: "3", time: "18:00 - 19:00", capacity: 15, booked: 15, enrolled: ["Pedro Giménez", "María del Mar"], branchId: undefined },
   ]);
 
   // 8. Memberships List
@@ -138,6 +139,12 @@ function GymDashboard() {
     { id: "2", name: "Performance", price: 28500, duration: "Mensual", activeCount: 68, includedServices: ["vestuarios", "duchas", "lockers", "wifi", "parking"] },
     { id: "3", name: "Elite Coached", price: 42000, duration: "Mensual", activeCount: 12, includedServices: ["vestuarios", "duchas", "lockers", "wifi", "parking", "sauna"] },
   ]);
+
+  const visibleClasses = useMemo(() => {
+    if (selectedBranchId === "all") return classesList;
+    if (selectedBranchId === "matriz") return classesList.filter(c => !c.branchId);
+    return classesList.filter(c => c.branchId === selectedBranchId);
+  }, [classesList, selectedBranchId]);
 
   const handleLogout = () => {
     navigate({ to: "/auth/gym" });
@@ -200,6 +207,18 @@ function GymDashboard() {
             <p className="text-sm text-muted-foreground">Panel de Control de Recepción y Administración.</p>
           </div>
           <div className="flex items-center gap-3">
+            <select
+              value={selectedBranchId}
+              onChange={(e) => setSelectedBranchId(e.target.value)}
+              className="h-9 rounded-xl border border-border bg-card px-3 text-xs font-semibold focus-visible:outline-none cursor-pointer hover:bg-secondary/40 transition shadow-sm text-foreground"
+            >
+              <option value="all">Sedes: Consolidado (Todas)</option>
+              <option value="matriz">Sede Principal (Palermo)</option>
+              {branchesList.map(b => (
+                <option key={b.id} value={b.id}>{b.name}</option>
+              ))}
+            </select>
+
             <div className="h-9 w-9 rounded-full bg-secondary flex items-center justify-center relative cursor-pointer">
               <Bell className="h-4 w-4" />
               <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-rose-500" />
@@ -208,7 +227,7 @@ function GymDashboard() {
           </div>
         </header>
 
-        {activeTab === "asistencia" && <AsistenciasTab />}
+        {activeTab === "asistencia" && <AsistenciasTab selectedBranchId={selectedBranchId} />}
         {activeTab === "miembros" && <MiembrosTab />}
         {activeTab === "membresias" && (
           <MembresiasTab 
@@ -220,7 +239,7 @@ function GymDashboard() {
         )}
         {activeTab === "clases" && (
           <ClasesTab 
-            classesList={classesList} 
+            classesList={visibleClasses} 
             setClassesList={setClassesList} 
             staffList={staffList} 
           />
@@ -249,7 +268,7 @@ function GymDashboard() {
 }
 
 // Subcomponent: Asistencias Tab
-function AsistenciasTab() {
+function AsistenciasTab({ selectedBranchId }: { selectedBranchId: string }) {
   const [historySearch, setHistorySearch] = useState("");
   
   const recentCheckins = [
@@ -276,8 +295,15 @@ function AsistenciasTab() {
         <div className="rounded-3xl border border-border bg-card p-6 shadow-sm flex items-center justify-between col-span-1">
           <div>
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Aforo Actual</span>
-            <div className="text-4xl font-extrabold tracking-tight mt-2">42 <span className="text-lg font-medium text-muted-foreground">/ 80</span></div>
-            <p className="text-xs text-muted-foreground mt-1">Capacidad segura al 52%</p>
+            <div className="text-4xl font-extrabold tracking-tight mt-2">
+              {selectedBranchId === "all" && <>84 <span className="text-lg font-medium text-muted-foreground">/ 170</span></>}
+              {selectedBranchId === "matriz" && <>42 <span className="text-lg font-medium text-muted-foreground">/ 80</span></>}
+              {selectedBranchId === "1" && <>24 <span className="text-lg font-medium text-muted-foreground">/ 50</span></>}
+              {selectedBranchId === "2" && <>18 <span className="text-lg font-medium text-muted-foreground">/ 40</span></>}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Capacidad segura al {selectedBranchId === "all" ? "49%" : selectedBranchId === "matriz" ? "52%" : selectedBranchId === "1" ? "48%" : "45%"}
+            </p>
           </div>
           <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
             <CheckCircle2 className="h-6 w-6" />
@@ -1568,8 +1594,8 @@ interface ConfigTabProps {
   setWeeklyHours: React.Dispatch<React.SetStateAction<{ day: string; intervals: { from: string; to: string }[] }[]>>;
   cancellationPolicyHours: number;
   setCancellationPolicyHours: (v: number) => void;
-  branchesList: { id: string; name: string; address: string }[];
-  setBranchesList: React.Dispatch<React.SetStateAction<{ id: string; name: string; address: string }[]>>;
+  branchesList: { id: string; name: string; address: string; manager?: string; lat?: number; lng?: number; creditCostMultiplier?: number }[];
+  setBranchesList: React.Dispatch<React.SetStateAction<{ id: string; name: string; address: string; manager?: string; lat?: number; lng?: number; creditCostMultiplier?: number }[]>>;
 }
 
 function ConfigTab({ 
@@ -1595,6 +1621,10 @@ function ConfigTab({
   const [whatsapp, setWhatsapp] = useState("5491132421241");
   const [newBranchName, setNewBranchName] = useState("");
   const [newBranchAddress, setNewBranchAddress] = useState("");
+  const [newBranchManager, setNewBranchManager] = useState("");
+  const [newBranchLat, setNewBranchLat] = useState("");
+  const [newBranchLng, setNewBranchLng] = useState("");
+  const [newBranchMultiplier, setNewBranchMultiplier] = useState("1.0");
 
   // Refs
   const gymFileRef = useRef<HTMLInputElement>(null);
@@ -2162,11 +2192,26 @@ function ConfigTab({
             onSubmit={(e) => {
               e.preventDefault();
               if (!newBranchName || !newBranchAddress) return;
-              setBranchesList(prev => [...prev, { id: Math.random().toString(), name: newBranchName, address: newBranchAddress }]);
+              setBranchesList(prev => [
+                ...prev, 
+                { 
+                  id: Math.random().toString(), 
+                  name: newBranchName, 
+                  address: newBranchAddress,
+                  manager: newBranchManager || undefined,
+                  lat: newBranchLat ? parseFloat(newBranchLat) : undefined,
+                  lng: newBranchLng ? parseFloat(newBranchLng) : undefined,
+                  creditCostMultiplier: newBranchMultiplier ? parseFloat(newBranchMultiplier) : 1.0
+                }
+              ]);
               setNewBranchName("");
               setNewBranchAddress("");
+              setNewBranchManager("");
+              setNewBranchLat("");
+              setNewBranchLng("");
+              setNewBranchMultiplier("1.0");
             }}
-            className="p-4 border border-border bg-secondary/20 rounded-2xl space-y-3"
+            className="p-4 border border-border bg-secondary/20 rounded-2xl space-y-4 animate-fade-up"
           >
             <h4 className="text-xs font-bold text-muted-foreground uppercase">Agregar Sucursal</h4>
             <div className="grid gap-4 sm:grid-cols-2">
@@ -2193,6 +2238,58 @@ function ConfigTab({
                 />
               </div>
             </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground font-semibold">Responsable de Sede (Manager)</label>
+                <input 
+                  type="text" 
+                  value={newBranchManager}
+                  onChange={(e) => setNewBranchManager(e.target.value)}
+                  className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none"
+                  placeholder="Carlos Gómez"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground font-semibold">Multiplicador de Créditos (Wellhub / ClassPass)</label>
+                <input 
+                  type="number" 
+                  step="0.1" 
+                  min="0.5" 
+                  max="3.0"
+                  value={newBranchMultiplier}
+                  onChange={(e) => setNewBranchMultiplier(e.target.value)}
+                  className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none"
+                  placeholder="1.2"
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground font-semibold">Coordenada Latitud (GPS)</label>
+                <input 
+                  type="number" 
+                  step="0.0001" 
+                  value={newBranchLat}
+                  onChange={(e) => setNewBranchLat(e.target.value)}
+                  className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none"
+                  placeholder="-34.5612"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground font-semibold">Coordenada Longitud (GPS)</label>
+                <input 
+                  type="number" 
+                  step="0.0001" 
+                  value={newBranchLng}
+                  onChange={(e) => setNewBranchLng(e.target.value)}
+                  className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none"
+                  placeholder="-58.4568"
+                />
+              </div>
+            </div>
+            
             <Button size="sm" type="submit" className="rounded-xl">Agregar Sede</Button>
           </form>
 
@@ -2200,23 +2297,33 @@ function ConfigTab({
           <div className="space-y-2">
             <h4 className="text-xs font-bold text-muted-foreground uppercase">Sedes Registradas</h4>
             <div className="divide-y divide-border">
-              <div className="py-2.5 flex items-center justify-between">
+              <div className="py-3 flex items-center justify-between">
                 <div>
                   <div className="text-sm font-semibold text-foreground">Sede Principal (Palermo)</div>
                   <div className="text-xs text-muted-foreground">Av. Santa Fe 3421, Palermo, CABA</div>
+                  <div className="flex gap-3 mt-1 text-[10px] text-muted-foreground">
+                    <span>👤 Manager: Alan Kraft</span>
+                    <span>📍 GPS: -34.5829, -58.4115</span>
+                    <span>💎 Multiplicador: 1.0x</span>
+                  </div>
                 </div>
-                <span className="text-[10px] bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-bold uppercase">Matriz</span>
+                <span className="text-[10px] bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-bold uppercase shrink-0">Matriz</span>
               </div>
               {branchesList.map((branch) => (
-                <div key={branch.id} className="py-2.5 flex items-center justify-between">
+                <div key={branch.id} className="py-3 flex items-center justify-between">
                   <div>
                     <div className="text-sm font-semibold text-foreground">{branch.name}</div>
                     <div className="text-xs text-muted-foreground">{branch.address}</div>
+                    <div className="flex gap-3 mt-1 text-[10px] text-muted-foreground flex-wrap">
+                      {branch.manager && <span>👤 Manager: {branch.manager}</span>}
+                      {branch.lat && branch.lng && <span>📍 GPS: {branch.lat.toFixed(4)}, {branch.lng.toFixed(4)}</span>}
+                      {branch.creditCostMultiplier && <span>💎 Multiplicador: {branch.creditCostMultiplier.toFixed(1)}x</span>}
+                    </div>
                   </div>
                   <button 
                     type="button" 
                     onClick={() => setBranchesList(prev => prev.filter(x => x.id !== branch.id))}
-                    className="p-1.5 text-rose-500 hover:bg-rose-500/10 rounded-lg transition"
+                    className="p-1.5 text-rose-500 hover:bg-rose-500/10 rounded-lg transition shrink-0"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
