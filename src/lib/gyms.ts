@@ -57,9 +57,9 @@ export const GYMS: Gym[] = [
       img("photo-1540497077202-7c8a3999166f"),
     ],
     memberships: [
-      { name: "Pase Libre", price: 18900, originalPrice: 24000, duration: "Mensual", benefits: ["Acceso ilimitado", "Sala de musculación", "Vestuario premium"], includedServices: ["showers", "lockers", "wifi"], tag: "Pase Libre" },
-      { name: "Performance", price: 28500, duration: "Mensual", benefits: ["Pase libre", "4 clases coacheadas", "Plan de entrenamiento"], includedServices: ["showers", "lockers", "wifi", "parking"], tag: "Pase Libre" },
-      { name: "Elite", price: 42000, duration: "Mensual", benefits: ["Todo Performance", "PT semanal 1:1", "Análisis postural"], includedServices: ["showers", "lockers", "wifi", "parking", "sauna"], tag: "Planes Premium" },
+      { name: "Pase Libre", price: 18900, originalPrice: 24000, duration: "Mensual", benefits: ["Acceso ilimitado", "Sala de musculación", "Vestuario premium"], includedServices: ["showers", "lockers", "wifi"], tag: "Pase Libre", registrationFee: 0, isMultisede: false, freezeDays: 7, dailyClassLimit: "1 clase por día" },
+      { name: "Performance", price: 28500, duration: "Mensual", benefits: ["Pase libre", "4 clases coacheadas", "Plan de entrenamiento"], includedServices: ["showers", "lockers", "wifi", "parking"], tag: "Pase Libre", registrationFee: 2500, isMultisede: true, freezeDays: 15, dailyClassLimit: "2 clases por día" },
+      { name: "Elite", price: 42000, duration: "Mensual", benefits: ["Todo Performance", "PT semanal 1:1", "Análisis postural"], includedServices: ["showers", "lockers", "wifi", "parking", "sauna"], tag: "Planes Premium", registrationFee: 0, isMultisede: true, freezeDays: 30, dailyClassLimit: "Ilimitado" },
     ],
     classes: defaultSchedule(),
     requirements: ["Apto médico obligatorio", "Traer toalla personal"],
