@@ -27,6 +27,9 @@ export type Gym = {
   amenities?: string[];
   weeklyHours?: { day: string; intervals: { from: string; to: string }[] }[];
   occupancyData?: Record<string, number[]>;
+  instagram?: string;
+  tiktok?: string;
+  whatsapp?: string;
 };
 
 const img = (id: string) =>
@@ -65,7 +68,7 @@ export const GYMS: Gym[] = [
       { id: "2", name: "Valeria Soto", specialty: "Profesora de Vinyasa Yoga", certifications: ["RYT-200", "Yoga Terapéutico"], photo: img("photo-1544005313-94ddf0286df2"), certificationImages: [img("photo-1589330694653-ded6df53f7ec")] },
       { id: "3", name: "Daniel Castro", specialty: "Preparador Físico Funcional", certifications: ["Prof. Educación Física", "FMS Level 1"], photo: img("photo-1500648767791-00dcc994a43e") },
     ],
-    amenities: ["Duchas y Vestuarios", "Lockers de Seguridad", "WiFi Alta Velocidad", "Estacionamiento Gratuito", "Sauna Húmedo"],
+    amenities: ["Duchas y Vestuarios", "Lockers de Seguridad", "WiFi Alta Velocidad", "Estacionamiento Gratuito", "Sauna Húmedo", "Bicicletero / Estacionamiento de Bici", "Dispensador de Agua / Bebedero", "Venta de Suplementos / Bebidas"],
     weeklyHours: [
       { day: "Lunes", intervals: [{ from: "07:00", to: "12:00" }, { from: "14:00", to: "21:00" }] },
       { day: "Martes", intervals: [{ from: "07:00", to: "12:00" }, { from: "14:00", to: "21:00" }] },
@@ -75,6 +78,9 @@ export const GYMS: Gym[] = [
       { day: "Sábado", intervals: [{ from: "08:00", to: "14:00" }] },
       { day: "Domingo", intervals: [] },
     ],
+    instagram: "kraft.strength",
+    tiktok: "kraft.strength",
+    whatsapp: "5491132421241",
   },
   {
     slug: "atelier-yoga-house",
