@@ -422,12 +422,17 @@ interface Membership {
   offPeakStart?: string | null;
   offPeakEnd?: string | null;
   includedActivities?: string[];
+  registrationFee?: number | null;
+  isMultisede?: boolean;
+  freezeDays?: number | null;
+  dailyClassLimit?: string | null;
 }
 
 interface MembresiasTabProps {
   membershipsList: Membership[];
   setMembershipsList: React.Dispatch<React.SetStateAction<Membership[]>>;
   amenities: { id: string; name: string; category: string; checked: boolean }[];
+  branchesList: { id: string; name: string; address: string }[];
 }
 
 const FITNESS_ACTIVITIES = [
@@ -464,7 +469,7 @@ const FITNESS_ACTIVITIES = [
   "Fisioterapia y Kinesiología"
 ];
 
-function MembresiasTab({ membershipsList, setMembershipsList, amenities }: MembresiasTabProps) {
+function MembresiasTab({ membershipsList, setMembershipsList, amenities, branchesList }: MembresiasTabProps) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
@@ -481,6 +486,10 @@ function MembresiasTab({ membershipsList, setMembershipsList, amenities }: Membr
   const [offPeakEnd, setOffPeakEnd] = useState("16:00");
   const [searchActivity, setSearchActivity] = useState("");
   const [includedActivities, setIncludedActivities] = useState<string[]>([]);
+  const [registrationFee, setRegistrationFee] = useState("0");
+  const [isMultisede, setIsMultisede] = useState(false);
+  const [freezeDays, setFreezeDays] = useState("0");
+  const [dailyClassLimit, setDailyClassLimit] = useState("Ilimitado");
 
   // Edit / Delete states
   const [editingPlan, setEditingPlan] = useState<Membership | null>(null);
@@ -501,6 +510,10 @@ function MembresiasTab({ membershipsList, setMembershipsList, amenities }: Membr
   const [editSearchActivity, setEditSearchActivity] = useState("");
   const [editIncludedActivities, setEditIncludedActivities] = useState<string[]>([]);
   const [editSelectedServices, setEditSelectedServices] = useState<string[]>([]);
+  const [editRegistrationFee, setEditRegistrationFee] = useState("0");
+  const [editIsMultisede, setEditIsMultisede] = useState(false);
+  const [editFreezeDays, setEditFreezeDays] = useState("0");
+  const [editDailyClassLimit, setEditDailyClassLimit] = useState("Ilimitado");
 
   const activeAmenities = amenities.filter(a => a.checked);
 
@@ -535,6 +548,10 @@ function MembresiasTab({ membershipsList, setMembershipsList, amenities }: Membr
       offPeakStart: accessHoursType === "Off-Peak" ? offPeakStart : null,
       offPeakEnd: accessHoursType === "Off-Peak" ? offPeakEnd : null,
       includedActivities,
+      registrationFee: registrationFee ? parseFloat(registrationFee) : 0,
+      isMultisede: isMultisede,
+      freezeDays: freezeDays ? parseInt(freezeDays) : 0,
+      dailyClassLimit: dailyClassLimit,
     };
 
     setMembershipsList(prev => [...prev, newPlan]);
@@ -549,6 +566,10 @@ function MembresiasTab({ membershipsList, setMembershipsList, amenities }: Membr
     setAccessHoursType("Todo Horario");
     setSearchActivity("");
     setIncludedActivities([]);
+    setRegistrationFee("0");
+    setIsMultisede(false);
+    setFreezeDays("0");
+    setDailyClassLimit("Ilimitado");
     setShowAddForm(false);
   };
 
@@ -566,6 +587,10 @@ function MembresiasTab({ membershipsList, setMembershipsList, amenities }: Membr
     setEditOffPeakEnd(m.offPeakEnd || "16:00");
     setEditIncludedActivities(m.includedActivities || []);
     setEditSelectedServices(m.includedServices || []);
+    setEditRegistrationFee(m.registrationFee ? m.registrationFee.toString() : "0");
+    setEditIsMultisede(!!m.isMultisede);
+    setEditFreezeDays(m.freezeDays ? m.freezeDays.toString() : "0");
+    setEditDailyClassLimit(m.dailyClassLimit || "Ilimitado");
   };
 
   const handleSaveEditMembership = (e: React.FormEvent) => {
@@ -587,7 +612,11 @@ function MembresiasTab({ membershipsList, setMembershipsList, amenities }: Membr
           offPeakStart: editAccessHoursType === "Off-Peak" ? editOffPeakStart : null,
           offPeakEnd: editAccessHoursType === "Off-Peak" ? editOffPeakEnd : null,
           includedActivities: editIncludedActivities,
-          includedServices: editSelectedServices
+          includedServices: editSelectedServices,
+          registrationFee: editRegistrationFee ? parseFloat(editRegistrationFee) : 0,
+          isMultisede: editIsMultisede,
+          freezeDays: editFreezeDays ? parseInt(editFreezeDays) : 0,
+          dailyClassLimit: editDailyClassLimit,
         };
       }
       return m;
@@ -769,6 +798,56 @@ function MembresiasTab({ membershipsList, setMembershipsList, amenities }: Membr
             )}
           </div>
 
+          {/* Advanced business settings */}
+          <div className="grid gap-4 sm:grid-cols-2 border-t border-border/40 pt-3">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground block">Costo de Matrícula ($)</label>
+              <input 
+                type="number" 
+                value={registrationFee} 
+                onChange={(e) => setRegistrationFee(e.target.value)}
+                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                placeholder="0 = Sin matrícula"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground block">Días de Congelamiento por Año</label>
+              <input 
+                type="number" 
+                value={freezeDays} 
+                onChange={(e) => setFreezeDays(e.target.value)}
+                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                placeholder="Ej: 15 días"
+              />
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 border-t border-border/40 pt-3">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground block">Límite Diario de Reservas</label>
+              <select
+                value={dailyClassLimit}
+                onChange={(e) => setDailyClassLimit(e.target.value)}
+                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+              >
+                <option value="Ilimitado">Ilimitado</option>
+                <option value="1 clase por día">1 clase por día</option>
+                <option value="2 clases por día">2 clases por día</option>
+              </select>
+            </div>
+            <div className="space-y-1.5 flex flex-col justify-end">
+              <label className="text-xs font-semibold text-muted-foreground flex items-center gap-2 cursor-pointer pb-2.5">
+                <input 
+                  type="checkbox" 
+                  checked={isMultisede} 
+                  onChange={(e) => setIsMultisede(e.target.checked)}
+                  className="rounded border-border text-primary focus:ring-primary h-4 w-4 bg-background"
+                />
+                <span>Acceso Multisede (Habilitar en otras sedes)</span>
+              </label>
+            </div>
+          </div>
+
           {/* Activities Multi-select Search Box */}
           <div className="space-y-2 border-t border-border/40 pt-3 relative">
             <label className="text-xs font-semibold text-muted-foreground block">Actividades Incluidas</label>
@@ -883,6 +962,34 @@ function MembresiasTab({ membershipsList, setMembershipsList, amenities }: Membr
                       : "Acceso Completo (Todo Horario)"}
                   </span>
                 </div>
+                <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+                  <span>💵</span>
+                  <span>
+                    {m.registrationFee && m.registrationFee > 0 
+                      ? `Matrícula: $${m.registrationFee.toLocaleString("es-AR")}` 
+                      : "Matrícula Bonificada 🎉"}
+                  </span>
+                </div>
+                <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+                  <span>🏢</span>
+                  <span>
+                    {m.isMultisede 
+                      ? "Acceso Multisede (Toda la red)" 
+                      : "Solo Sede Matriz (Palermo)"}
+                  </span>
+                </div>
+                {m.freezeDays && m.freezeDays > 0 ? (
+                  <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+                    <span>❄️</span>
+                    <span>Congelamiento: {m.freezeDays} días/año</span>
+                  </div>
+                ) : null}
+                {m.dailyClassLimit && m.dailyClassLimit !== "Ilimitado" ? (
+                  <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+                    <span>🛡️</span>
+                    <span>Límite: {m.dailyClassLimit}</span>
+                  </div>
+                ) : null}
               </div>
 
               {/* Included Activities badges */}
@@ -1085,6 +1192,56 @@ function MembresiasTab({ membershipsList, setMembershipsList, amenities }: Membr
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* Advanced business settings */}
+            <div className="grid gap-4 sm:grid-cols-2 border-t border-border/40 pt-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground block">Costo de Matrícula ($)</label>
+                <input 
+                  type="number" 
+                  value={editRegistrationFee} 
+                  onChange={(e) => setEditRegistrationFee(e.target.value)}
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                  placeholder="0 = Sin matrícula"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground block">Días de Congelamiento por Año</label>
+                <input 
+                  type="number" 
+                  value={editFreezeDays} 
+                  onChange={(e) => setEditFreezeDays(e.target.value)}
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                  placeholder="Ej: 15 días"
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2 border-t border-border/40 pt-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground block">Límite Diario de Reservas</label>
+                <select
+                  value={editDailyClassLimit}
+                  onChange={(e) => setEditDailyClassLimit(e.target.value)}
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                >
+                  <option value="Ilimitado">Ilimitado</option>
+                  <option value="1 clase por día">1 clase por día</option>
+                  <option value="2 clases por día">2 clases por día</option>
+                </select>
+              </div>
+              <div className="space-y-1.5 flex flex-col justify-end">
+                <label className="text-xs font-semibold text-muted-foreground flex items-center gap-2 cursor-pointer pb-2.5">
+                  <input 
+                    type="checkbox" 
+                    checked={editIsMultisede} 
+                    onChange={(e) => setEditIsMultisede(e.target.checked)}
+                    className="rounded border-border text-primary focus:ring-primary h-4 w-4 bg-background"
+                  />
+                  <span>Acceso Multisede (Habilitar en otras sedes)</span>
+                </label>
+              </div>
             </div>
 
             {/* Activities Multi-select Search Box */}
@@ -1973,6 +2130,84 @@ function ConfigTab({
                   </a>
                 </div>
               ))}
+            </div>
+          </div>
+      {/* Subtab 6: Sucursales / Sedes */}
+      {subTab === "sedes" && (
+        <div className="space-y-6 max-w-2xl bg-card border border-border p-6 rounded-3xl shadow-sm animate-fade-up">
+          <div>
+            <h3 className="font-bold text-sm">Sucursales y Sedes</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Administra las ubicaciones físicas asociadas a tu red de gimnasios.</p>
+          </div>
+
+          {/* Add branch form */}
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!newBranchName || !newBranchAddress) return;
+              setBranchesList(prev => [...prev, { id: Math.random().toString(), name: newBranchName, address: newBranchAddress }]);
+              setNewBranchName("");
+              setNewBranchAddress("");
+            }}
+            className="p-4 border border-border bg-secondary/20 rounded-2xl space-y-3"
+          >
+            <h4 className="text-xs font-bold text-muted-foreground uppercase">Agregar Sucursal</h4>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground font-semibold">Nombre de la Sede</label>
+                <input 
+                  type="text" 
+                  required 
+                  value={newBranchName}
+                  onChange={(e) => setNewBranchName(e.target.value)}
+                  className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none"
+                  placeholder="Sede Belgrano"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground font-semibold">Dirección Física</label>
+                <input 
+                  type="text" 
+                  required 
+                  value={newBranchAddress}
+                  onChange={(e) => setNewBranchAddress(e.target.value)}
+                  className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none"
+                  placeholder="Av. Cabildo 1820, CABA"
+                />
+              </div>
+            </div>
+            <Button size="sm" type="submit" className="rounded-xl">Agregar Sede</Button>
+          </form>
+
+          {/* Branches list */}
+          <div className="space-y-2">
+            <h4 className="text-xs font-bold text-muted-foreground uppercase">Sedes Registradas</h4>
+            <div className="divide-y divide-border">
+              <div className="py-2.5 flex items-center justify-between">
+                <div>
+                  <div className="text-sm font-semibold text-foreground">Sede Principal (Palermo)</div>
+                  <div className="text-xs text-muted-foreground">Av. Santa Fe 3421, Palermo, CABA</div>
+                </div>
+                <span className="text-[10px] bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-bold uppercase">Matriz</span>
+              </div>
+              {branchesList.map((branch) => (
+                <div key={branch.id} className="py-2.5 flex items-center justify-between">
+                  <div>
+                    <div className="text-sm font-semibold text-foreground">{branch.name}</div>
+                    <div className="text-xs text-muted-foreground">{branch.address}</div>
+                  </div>
+                  <button 
+                    type="button" 
+                    onClick={() => setBranchesList(prev => prev.filter(x => x.id !== branch.id))}
+                    className="p-1.5 text-rose-500 hover:bg-rose-500/10 rounded-lg transition"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+              {branchesList.length === 0 && (
+                <p className="text-xs text-muted-foreground italic py-3">No hay sucursales secundarias registradas.</p>
+              )}
             </div>
           </div>
         </div>
