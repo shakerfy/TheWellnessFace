@@ -486,6 +486,13 @@ function GymPage() {
                     <div className={`text-xs ${idx === 1 ? "text-background/70" : "text-muted-foreground"}`}>{m.duration}</div>
                   </div>
                   <div className="mt-4 text-3xl font-semibold tracking-tight">
+                    {m.originalPrice && (
+                      <span className={`text-sm font-normal line-through mr-2 ${
+                        idx === 1 ? "text-background/60" : "text-muted-foreground"
+                      }`}>
+                        ${m.originalPrice.toLocaleString("es-AR")}
+                      </span>
+                    )}
                     ${m.price.toLocaleString("es-AR")}
                   </div>
 
