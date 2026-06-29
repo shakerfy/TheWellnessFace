@@ -1718,6 +1718,7 @@ function ConfigTab({
           { id: "amenities", label: "Amenities & Servicios" },
           { id: "requisitos", label: "Normas de Ingreso" },
           { id: "staff", label: "Equipo (Staff)" },
+          { id: "sedes", label: "Sucursales (Sedes)" },
         ].map((sub) => (
           <button
             key={sub.id}
