@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, MapPin, Star, Clock, ArrowLeft, Check, Users, Eye, X, FileText } from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin, Star, Clock, ArrowLeft, Check, Users, Eye, X, FileText, Wifi, Car, Coffee, Flame, Lock, Bath, HelpCircle, Navigation, Map } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -48,6 +48,17 @@ export const Route = createFileRoute("/gym/$slug")({
 const DAYS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 const WEEKDAYS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 const HOURS = ["07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21"];
+
+function getAmenityIcon(name: string) {
+  const lowercase = name.toLowerCase();
+  if (lowercase.includes("wifi")) return Wifi;
+  if (lowercase.includes("estacionamiento") || lowercase.includes("parking")) return Car;
+  if (lowercase.includes("cafeteria") || lowercase.includes("bar") || lowercase.includes("café")) return Coffee;
+  if (lowercase.includes("sauna")) return Flame;
+  if (lowercase.includes("ducha") || lowercase.includes("vestuario") || lowercase.includes("baño")) return Bath;
+  if (lowercase.includes("locker") || lowercase.includes("seguridad")) return Lock;
+  return HelpCircle;
+}
 
 function GymPage() {
   const { gym } = Route.useLoaderData() as { gym: Gym };
@@ -164,9 +175,29 @@ function GymPage() {
                 </div>
               </div>
             )}
+
+            {/* Visual Amenities Grid */}
+            {gym.amenities && gym.amenities.length > 0 && (
+              <div className="mt-8">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-3">Servicios y Amenities:</span>
+                <div className="grid gap-3 grid-cols-2 sm:grid-cols-3">
+                  {gym.amenities.map((amenity) => {
+                    const Icon = getAmenityIcon(amenity);
+                    return (
+                      <div key={amenity} className="flex items-center gap-2.5 p-3 rounded-2xl border border-border bg-card/45 shadow-sm text-xs font-medium text-foreground">
+                        <div className="h-7 w-7 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <span>{amenity}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
-          <aside className="lg:col-span-1">
+          <aside className="lg:col-span-1 space-y-6">
             <div className="rounded-2xl border border-border bg-secondary p-6">
               <div className="text-xs uppercase tracking-wider text-muted-foreground">Desde</div>
               <div className="mt-1 text-3xl font-semibold tracking-tight">
@@ -179,6 +210,47 @@ function GymPage() {
               <Button variant="outline" className="mt-2 w-full rounded-full">Contactar al gimnasio</Button>
               <div className="mt-5 border-t border-border pt-4 text-xs text-muted-foreground">
                 Cancelación gratis hasta 4 horas antes de la clase.
+              </div>
+            </div>
+
+            {/* Stylized Google Maps Placeholder */}
+            <div className="border border-border bg-card rounded-2xl overflow-hidden shadow-sm">
+              <div 
+                id="google-maps-container" 
+                className="w-full h-40 bg-secondary/50 relative flex items-center justify-center overflow-hidden"
+              >
+                {/* Simulated map grid */}
+                <div 
+                  className="absolute inset-0 opacity-20 pointer-events-none" 
+                  style={{ 
+                    backgroundImage: "radial-gradient(var(--border) 1px, transparent 1px)", 
+                    backgroundSize: "16px 16px" 
+                  }} 
+                />
+                
+                {/* Pulsing gym pin */}
+                <div className="relative flex items-center justify-center">
+                  <div className="absolute h-8 w-8 rounded-full bg-primary/20 animate-ping" />
+                  <div className="h-4 w-4 rounded-full bg-primary border-2 border-background shadow-lg" />
+                </div>
+                
+                <span className="absolute bottom-2 left-2 text-[9px] bg-background/80 border border-border px-2 py-0.5 rounded-md font-mono text-muted-foreground">
+                  Google Maps SDK (Ready)
+                </span>
+              </div>
+              
+              <div className="p-4">
+                <div className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                  <MapPin className="h-3.5 w-3.5 text-primary" /> {gym.address}
+                </div>
+                <a 
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(gym.name + " " + gym.address)}`}
+                  target="_blank" 
+                  rel="noreferrer"
+                  className={buttonVariants({ variant: "outline", size: "sm", className: "mt-3 w-full rounded-xl text-xs gap-1.5" })}
+                >
+                  <Navigation className="h-3.5 w-3.5" /> Cómo llegar
+                </a>
               </div>
             </div>
           </aside>
