@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { 
   Building2, Users, Calendar, CreditCard, Settings, LogOut,
   Bell, CheckCircle2, AlertCircle, Search, Download, 
@@ -1406,8 +1406,8 @@ function MembresiasTab({ membershipsList, setMembershipsList, amenities, branche
 
 // Subcomponent: Clases Tab
 interface ClasesTabProps {
-  classesList: { id: string; name: string; staffId: string; time: string; capacity: number; booked: number; enrolled: string[] }[];
-  setClassesList: React.Dispatch<React.SetStateAction<{ id: string; name: string; staffId: string; time: string; capacity: number; booked: number; enrolled: string[] }[]>>;
+  classesList: { id: string; name: string; staffId: string; time: string; capacity: number; booked: number; enrolled: string[]; branchId?: string }[];
+  setClassesList: React.Dispatch<React.SetStateAction<{ id: string; name: string; staffId: string; time: string; capacity: number; booked: number; enrolled: string[]; branchId?: string }[]>>;
   staffList: { id: string; name: string; specialty: string; certifications: string[]; photo: string }[];
 }
 
