@@ -61,8 +61,8 @@ export const GYMS: Gym[] = [
     classes: defaultSchedule(),
     requirements: ["Apto médico obligatorio", "Traer toalla personal"],
     staff: [
-      { id: "1", name: "Mateo Rossi", specialty: "Coach de Levantamiento Olímpico", certifications: ["CF-L2", "Coaching de Fuerza"], photo: img("photo-1507003211169-0a1dd7228f2d") },
-      { id: "2", name: "Valeria Soto", specialty: "Profesora de Vinyasa Yoga", certifications: ["RYT-200", "Yoga Terapéutico"], photo: img("photo-1544005313-94ddf0286df2") },
+      { id: "1", name: "Mateo Rossi", specialty: "Coach de Levantamiento Olímpico", certifications: ["CF-L2", "Coaching de Fuerza"], photo: img("photo-1507003211169-0a1dd7228f2d"), certificationImages: [img("photo-1589330694653-ded6df53f7ec"), img("photo-1606326608606-aa0b62935f2b")] },
+      { id: "2", name: "Valeria Soto", specialty: "Profesora de Vinyasa Yoga", certifications: ["RYT-200", "Yoga Terapéutico"], photo: img("photo-1544005313-94ddf0286df2"), certificationImages: [img("photo-1589330694653-ded6df53f7ec")] },
       { id: "3", name: "Daniel Castro", specialty: "Preparador Físico Funcional", certifications: ["Prof. Educación Física", "FMS Level 1"], photo: img("photo-1500648767791-00dcc994a43e") },
     ],
     amenities: ["Duchas y Vestuarios", "Lockers de Seguridad", "WiFi Alta Velocidad", "Estacionamiento Gratuito", "Sauna Húmedo"],
