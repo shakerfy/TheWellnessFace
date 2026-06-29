@@ -407,19 +407,62 @@ function MiembrosTab() {
 }
 
 // Subcomponent: Membresias Tab
+interface Membership {
+  id: string;
+  name: string;
+  price: number;
+  duration: string;
+  activeCount: number;
+  includedServices: string[];
+  tag?: string;
+  passType?: string;
+  creditsCount?: number | null;
+  accessHoursType?: string;
+  offPeakStart?: string | null;
+  offPeakEnd?: string | null;
+  includedActivities?: string[];
+}
+
 interface MembresiasTabProps {
-  membershipsList: { id: string; name: string; price: number; duration: string; activeCount: number; includedServices: string[]; tag?: string }[];
-  setMembershipsList: React.Dispatch<React.SetStateAction<{ id: string; name: string; price: number; duration: string; activeCount: number; includedServices: string[]; tag?: string }[]>>;
+  membershipsList: Membership[];
+  setMembershipsList: React.Dispatch<React.SetStateAction<Membership[]>>;
   amenities: { id: string; name: string; category: string; checked: boolean }[];
 }
+
+const FITNESS_ACTIVITIES = [
+  "Musculación / Sala de Máquinas",
+  "CrossFit WOD",
+  "Levantamiento Olímpico",
+  "Yoga Ashtanga / Vinyasa",
+  "Entrenamiento Funcional",
+  "Pilates Reformer",
+  "Spinning / Ciclismo Indoor",
+  "Natación Libre / Coacheada",
+  "Calistenia / Gimnasia",
+  "Boxeo Recreativo",
+  "Zumba / Ritmos",
+  "Kickboxing / Muay Thai",
+  "Jiu Jitsu / MMA",
+  "HIIT / Cardio Alta Intensidad",
+  "Estiramiento & Movilidad"
+];
 
 function MembresiasTab({ membershipsList, setMembershipsList, amenities }: MembresiasTabProps) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
-  const [duration, setDuration] = useState("Mensual");
+  const [periodicity, setPeriodicity] = useState("Mensual");
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [tag, setTag] = useState("Pase Libre");
+
+  // Advanced configurations
+  const [passType, setPassType] = useState("Pase Libre");
+  const [creditsCount, setCreditsCount] = useState("12");
+  const [accessHoursType, setAccessHoursType] = useState("Todo Horario");
+  const [offPeakStart, setOffPeakStart] = useState("12:00");
+  const [offPeakEnd, setOffPeakEnd] = useState("16:00");
+  const [searchActivity, setSearchActivity] = useState("");
+  const [includedActivities, setIncludedActivities] = useState<string[]>([]);
 
   const activeAmenities = amenities.filter(a => a.checked);
 
@@ -433,23 +476,42 @@ function MembresiasTab({ membershipsList, setMembershipsList, amenities }: Membr
     e.preventDefault();
     if (!name || !price) return;
 
-    const newPlan = {
+    const newPlan: Membership = {
       id: Math.random().toString(),
       name,
       price: parseFloat(price),
-      duration,
+      duration: periodicity,
       activeCount: 0,
       includedServices: selectedServices,
       tag: tag,
+      passType,
+      creditsCount: passType === "Por Créditos" ? parseInt(creditsCount) : null,
+      accessHoursType,
+      offPeakStart: accessHoursType === "Off-Peak" ? offPeakStart : null,
+      offPeakEnd: accessHoursType === "Off-Peak" ? offPeakEnd : null,
+      includedActivities,
     };
 
     setMembershipsList(prev => [...prev, newPlan]);
     setName("");
     setPrice("");
+    setPeriodicity("Mensual");
     setSelectedServices([]);
     setTag("Pase Libre");
+    setPassType("Pase Libre");
+    setCreditsCount("12");
+    setAccessHoursType("Todo Horario");
+    setSearchActivity("");
+    setIncludedActivities([]);
     setShowAddForm(false);
   };
+
+  const filteredActivities = searchActivity.trim() === ""
+    ? []
+    : FITNESS_ACTIVITIES.filter(act => 
+        act.toLowerCase().includes(searchActivity.toLowerCase()) && 
+        !includedActivities.includes(act)
+      );
 
   return (
     <div className="space-y-6">
@@ -470,6 +532,7 @@ function MembresiasTab({ membershipsList, setMembershipsList, amenities }: Membr
       {showAddForm && (
         <form onSubmit={handleAddMembership} className="rounded-3xl border border-border bg-card p-6 shadow-sm max-w-xl space-y-4 animate-fade-up">
           <h3 className="text-sm font-bold text-muted-foreground uppercase">Agregar Nuevo Plan</h3>
+          
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-muted-foreground">Nombre del Plan</label>
@@ -483,7 +546,7 @@ function MembresiasTab({ membershipsList, setMembershipsList, amenities }: Membr
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">Precio Mensual ($)</label>
+              <label className="text-xs font-semibold text-muted-foreground">Precio ($)</label>
               <input 
                 type="number" 
                 required 
@@ -495,20 +558,147 @@ function MembresiasTab({ membershipsList, setMembershipsList, amenities }: Membr
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-muted-foreground block">Etiqueta/Categoría del Plan</label>
-            <select
-              value={tag}
-              onChange={(e) => setTag(e.target.value)}
-              className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
-            >
-              <option value="Pase Libre">Pase Libre</option>
-              <option value="Planes Premium">Planes Premium</option>
-              <option value="Solo Clases">Solo Clases</option>
-            </select>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground block">Periodicidad del Cobro</label>
+              <select
+                value={periodicity}
+                onChange={(e) => setPeriodicity(e.target.value)}
+                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+              >
+                <option value="Semanal">Semanal</option>
+                <option value="Mensual">Mensual</option>
+                <option value="Trimestral">Trimestral</option>
+                <option value="Semestral">Semestral</option>
+                <option value="Anual">Anual</option>
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground block">Etiqueta/Categoría del Plan</label>
+              <select
+                value={tag}
+                onChange={(e) => setTag(e.target.value)}
+                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+              >
+                <option value="Pase Libre">Pase Libre</option>
+                <option value="Planes Premium">Planes Premium</option>
+                <option value="Solo Clases">Solo Clases</option>
+              </select>
+            </div>
           </div>
 
-          <div className="space-y-2">
+          {/* Pass Type & Credits configuration */}
+          <div className="grid gap-4 sm:grid-cols-2 border-t border-border/40 pt-3">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground block">Tipo de Acceso</label>
+              <select
+                value={passType}
+                onChange={(e) => setPassType(e.target.value)}
+                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+              >
+                <option value="Pase Libre">Pase Libre (Acceso ilimitado)</option>
+                <option value="Por Créditos">Por Créditos (Límite de clases)</option>
+              </select>
+            </div>
+            {passType === "Por Créditos" && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground">Créditos/Clases Incluidas</label>
+                <input 
+                  type="number" 
+                  required 
+                  value={creditsCount} 
+                  onChange={(e) => setCreditsCount(e.target.value)}
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  placeholder="12"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Time access restrictions */}
+          <div className="grid gap-4 sm:grid-cols-2 border-t border-border/40 pt-3">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground block">Horario de Acceso</label>
+              <select
+                value={accessHoursType}
+                onChange={(e) => setAccessHoursType(e.target.value)}
+                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+              >
+                <option value="Todo Horario">Todo Horario (Full Access)</option>
+                <option value="Off-Peak">Off-Peak (Franja horaria especial)</option>
+              </select>
+            </div>
+            {accessHoursType === "Off-Peak" && (
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-semibold text-muted-foreground">Desde</label>
+                  <input 
+                    type="text" 
+                    value={offPeakStart} 
+                    onChange={(e) => setOffPeakStart(e.target.value)}
+                    className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none"
+                    placeholder="12:00"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-semibold text-muted-foreground">Hasta</label>
+                  <input 
+                    type="text" 
+                    value={offPeakEnd} 
+                    onChange={(e) => setOffPeakEnd(e.target.value)}
+                    className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none"
+                    placeholder="16:00"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Activities Multi-select Search Box */}
+          <div className="space-y-2 border-t border-border/40 pt-3 relative">
+            <label className="text-xs font-semibold text-muted-foreground block">Actividades Incluidas</label>
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {includedActivities.map((act) => (
+                <span key={act} className="inline-flex items-center gap-1 bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  {act}
+                  <button type="button" onClick={() => setIncludedActivities(prev => prev.filter(x => x !== act))} className="hover:text-foreground">
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              ))}
+              {includedActivities.length === 0 && (
+                <span className="text-xs text-muted-foreground italic">Todas las actividades del centro incluidas por defecto.</span>
+              )}
+            </div>
+
+            <input 
+              type="text" 
+              value={searchActivity}
+              onChange={(e) => setSearchActivity(e.target.value)}
+              className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              placeholder="Buscar actividades a restringir/incluir..."
+            />
+
+            {filteredActivities.length > 0 && (
+              <div className="absolute left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-lg max-h-48 overflow-y-auto z-10 p-1 space-y-0.5">
+                {filteredActivities.map((act) => (
+                  <button
+                    type="button"
+                    key={act}
+                    onClick={() => {
+                      setIncludedActivities(prev => [...prev, act]);
+                      setSearchActivity("");
+                    }}
+                    className="w-full text-left px-3 py-2 text-xs hover:bg-secondary rounded-lg transition"
+                  >
+                    {act}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-2 border-t border-border/40 pt-3">
             <label className="text-xs font-semibold text-muted-foreground block">Amenities y Servicios Incluidos</label>
             {activeAmenities.length === 0 ? (
               <p className="text-xs text-muted-foreground">No tienes amenities activos en la pestaña de Configuración.</p>
@@ -552,8 +742,39 @@ function MembresiasTab({ membershipsList, setMembershipsList, amenities }: Membr
                 <span className="text-xs text-muted-foreground font-medium">{m.duration}</span>
               </div>
               <div className="mt-4 text-3xl font-extrabold tracking-tight">${m.price.toLocaleString("es-AR")}</div>
+
+              {/* Pass Type & Hours Badges */}
+              <div className="mt-4 space-y-1.5 border-t border-border/60 pt-3">
+                <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+                  <span>🎟️</span>
+                  <span>
+                    {m.passType === "Por Créditos" 
+                      ? `${m.creditsCount} clases / créditos` 
+                      : "Pase Libre (Ilimitado)"}
+                  </span>
+                </div>
+                <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+                  <span>🕒</span>
+                  <span>
+                    {m.accessHoursType === "Off-Peak" 
+                      ? `Franja Off-Peak (${m.offPeakStart} - ${m.offPeakEnd} hs)` 
+                      : "Acceso Completo (Todo Horario)"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Included Activities badges */}
+              {m.includedActivities && m.includedActivities.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-1">
+                  {m.includedActivities.map((act) => (
+                    <span key={act} className="text-[9px] bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full font-medium">
+                      {act}
+                    </span>
+                  ))}
+                </div>
+              )}
               
-              <ul className="mt-5 space-y-2 border-t border-border/60 pt-4">
+              <ul className="mt-4 space-y-2 border-t border-border/60 pt-3">
                 {m.includedServices.map((serviceId) => {
                   const serviceName = amenities.find(a => a.id === serviceId)?.name || serviceId;
                   return (
