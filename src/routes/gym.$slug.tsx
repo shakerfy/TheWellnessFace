@@ -220,24 +220,26 @@ function GymPage() {
                   const isCurrentHour = isToday && parseInt(hour) === new Date().getHours();
                   
                   return (
-                    <div key={hour} className="flex flex-col items-center gap-1.5 flex-1 group relative">
+                    <div key={hour} className="flex-1 group relative h-full flex flex-col justify-end items-center">
                       {/* Tooltip on hover */}
                       <span className="absolute -top-7 scale-0 group-hover:scale-100 transition-all bg-foreground text-background text-[10px] font-bold px-2 py-0.5 rounded shadow z-10 whitespace-nowrap">
                         {percent}% concurrencia
                       </span>
                       
-                      {/* Bar */}
-                      <div 
-                        className={`w-full rounded-t-sm transition-all duration-300 ${
-                          isCurrentHour
-                            ? "bg-primary animate-pulse"
-                            : "bg-muted-foreground/35 group-hover:bg-muted-foreground/50"
-                        }`}
-                        style={{ height: `${percent}%` }}
-                      />
+                      {/* Bar container that occupies the available height for bars */}
+                      <div className="w-full h-[80%] flex items-end">
+                        <div 
+                          className={`w-full rounded-t-sm transition-all duration-300 ${
+                            isCurrentHour
+                              ? "bg-primary animate-pulse"
+                              : "bg-muted-foreground/35 group-hover:bg-muted-foreground/50"
+                          }`}
+                          style={{ height: `${percent}%` }}
+                        />
+                      </div>
                       
                       {/* Label for hours (show every 2 hours or in desktop) */}
-                      <span className="text-[10px] font-mono text-muted-foreground tracking-tighter mt-1">
+                      <span className="text-[10px] font-mono text-muted-foreground tracking-tighter mt-1 block h-[20%] text-center">
                         {hour === "07" || hour === "11" || hour === "15" || hour === "18" || hour === "21" ? `${hour}h` : ""}
                       </span>
                     </div>
