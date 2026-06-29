@@ -39,7 +39,7 @@ function GymDashboard() {
   // STATE LIFTED UP (Models the Firebase data structure in local memory)
   
   // 1. Staff List
-  const [staffList, setStaffList] = useState<{ id: string; name: string; specialty: string; certifications: string[]; photo: string; certificationImages?: string[] }[]>([
+  const [staffList, setStaffList] = useState<{ id: string; name: string; specialty: string; certifications: string[]; photo: string; certificationImages?: string[]; role?: string; branchId?: string }[]>([
     { 
       id: "1", 
       name: "Mateo Rossi", 
@@ -49,7 +49,9 @@ function GymDashboard() {
       certificationImages: [
         "https://images.unsplash.com/photo-1589330694653-ded6df53f7ec?auto=format&fit=crop&w=300&q=80",
         "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?auto=format&fit=crop&w=300&q=80"
-      ]
+      ],
+      role: "coach",
+      branchId: undefined
     },
     { 
       id: "2", 
@@ -59,7 +61,9 @@ function GymDashboard() {
       photo: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=80&h=80&q=80",
       certificationImages: [
         "https://images.unsplash.com/photo-1589330694653-ded6df53f7ec?auto=format&fit=crop&w=300&q=80"
-      ]
+      ],
+      role: "coach",
+      branchId: undefined
     },
     { 
       id: "3", 
@@ -67,7 +71,9 @@ function GymDashboard() {
       specialty: "Preparador Físico Funcional", 
       certifications: ["Prof. Educación Física", "FMS Level 1"], 
       photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&h=80&q=80",
-      certificationImages: []
+      certificationImages: [],
+      role: "manager",
+      branchId: "1"
     },
   ]);
 
@@ -1678,8 +1684,8 @@ function ClasesTab({ classesList, setClassesList, staffList, canManageClasses }:
 
 // Subcomponent: Config Tab
 interface ConfigTabProps {
-  staffList: { id: string; name: string; specialty: string; certifications: string[]; photo: string; certificationImages?: string[] }[];
-  setStaffList: React.Dispatch<React.SetStateAction<{ id: string; name: string; specialty: string; certifications: string[]; photo: string; certificationImages?: string[] }[]>>;
+  staffList: { id: string; name: string; specialty: string; certifications: string[]; photo: string; certificationImages?: string[]; role?: string; branchId?: string }[];
+  setStaffList: React.Dispatch<React.SetStateAction<{ id: string; name: string; specialty: string; certifications: string[]; photo: string; certificationImages?: string[]; role?: string; branchId?: string }[]>>;
   amenities: { id: string; name: string; category: string; checked: boolean }[];
   setAmenities: React.Dispatch<React.SetStateAction<{ id: string; name: string; category: string; checked: boolean }[]>>;
   requirements: { id: string; name: string; category: string; checked: boolean }[];
@@ -1712,6 +1718,8 @@ function ConfigTab({
   const [staffCerts, setStaffCerts] = useState("");
   const [staffAvatarUrl, setStaffAvatarUrl] = useState<string | null>(null);
   const [staffDiplomas, setStaffDiplomas] = useState<string[]>([]);
+  const [newStaffRole, setNewStaffRole] = useState("coach");
+  const [newStaffBranchId, setNewStaffBranchId] = useState("matriz");
   const [instagram, setInstagram] = useState("kraft.strength");
   const [tiktok, setTiktok] = useState("kraft.strength");
   const [whatsapp, setWhatsapp] = useState("5491132421241");
@@ -1809,6 +1817,8 @@ function ConfigTab({
       certifications: staffCerts.split(",").map(c => c.trim()).filter(c => c),
       photo: staffAvatarUrl || "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=150&q=80",
       certificationImages: staffDiplomas,
+      role: newStaffRole,
+      branchId: newStaffBranchId === "matriz" ? undefined : newStaffBranchId,
     };
 
     setStaffList(prev => [...prev, newStaff]);
@@ -1817,6 +1827,8 @@ function ConfigTab({
     setStaffCerts("");
     setStaffAvatarUrl(null);
     setStaffDiplomas([]);
+    setNewStaffRole("coach");
+    setNewStaffBranchId("matriz");
   };
 
   const handleRemoveStaff = (id: string) => {
@@ -2149,6 +2161,34 @@ function ConfigTab({
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground block">Rol de Acceso al Sistema</label>
+                <select
+                  value={newStaffRole}
+                  onChange={(e) => setNewStaffRole(e.target.value)}
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground"
+                >
+                  <option value="coach">💪 Coach / Profesor</option>
+                  <option value="receptionist">🔑 Recepcionista</option>
+                  <option value="manager">👤 Gerente de Sede</option>
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground block">Sede / Sucursal de Trabajo</label>
+                <select
+                  value={newStaffBranchId}
+                  onChange={(e) => setNewStaffBranchId(e.target.value)}
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground"
+                >
+                  <option value="matriz">Sede Principal (Palermo)</option>
+                  {branchesList.map(b => (
+                    <option key={b.id} value={b.id}>{b.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-muted-foreground block">Foto de Perfil</label>
                 <div className="flex items-center gap-3">
@@ -2218,6 +2258,18 @@ function ConfigTab({
                       <div className="text-xs font-bold text-foreground truncate">{s.name}</div>
                       <div className="text-[10px] text-muted-foreground truncate">{s.specialty}</div>
                       <div className="mt-1 flex flex-wrap gap-1">
+                        {s.role && (
+                          <span className="text-[8px] bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+                            {s.role === "coach" ? "💪 Coach" : s.role === "receptionist" ? "🔑 Recep" : "👤 Manager"}
+                          </span>
+                        )}
+                        {s.role && (
+                          <span className="text-[8px] bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+                            📍 {s.branchId ? (branchesList.find(b => b.id === s.branchId)?.name.replace("Sede ", "") || s.branchId) : "Palermo"}
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-1.5 flex flex-wrap gap-1">
                         {s.certifications.map((c) => (
                           <span key={c} className="text-[8px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-bold">
                             {c}
