@@ -1,27 +1,33 @@
 import { Link } from "@tanstack/react-router";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="grid h-7 w-7 place-items-center rounded-md bg-foreground text-background">
-            <span className="text-[13px] font-bold">S</span>
-          </div>
-          <span className="text-[17px] font-semibold tracking-tight">Shakerfy</span>
-        </Link>
-        <nav className="hidden items-center gap-8 text-sm text-muted-foreground md:flex">
-          <a href="#descubrir" className="transition hover:text-foreground">Descubrir</a>
-          <a href="#disciplinas" className="transition hover:text-foreground">Disciplinas</a>
-          <a href="#para-gimnasios" className="transition hover:text-foreground">Para gimnasios</a>
-          <a href="#como-funciona" className="transition hover:text-foreground">Cómo funciona</a>
-        </nav>
-        <div className="flex items-center gap-2">
-          <Link to="/auth" className={buttonVariants({ variant: "ghost", size: "sm" }) + " hidden sm:inline-flex"}>
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 relative">
+        {/* Left: Navigation links */}
+        <div className="flex items-center flex-1 justify-start">
+          <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
+            <a href="#como-funciona" className="transition hover:text-foreground">Cómo funciona</a>
+            <a href="#blog" className="transition hover:text-foreground">Blog</a>
+            <a href="#para-gimnasios" className="transition hover:text-foreground">Partners</a>
+          </nav>
+        </div>
+
+        {/* Center: Logo (Gymshark style) */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
+          <Link to="/" onClick={() => window.scrollTo(0, 0)} className="text-2xl sm:text-3xl font-bebas tracking-wider text-foreground uppercase select-none">
+            Shakerfy
+          </Link>
+        </div>
+
+        {/* Right: Actions */}
+        <div className="flex items-center flex-1 justify-end gap-2">
+          <Link to="/auth" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "hidden sm:inline-flex")}>
             Iniciar sesión
           </Link>
-          <Link to="/auth" className={buttonVariants({ size: "sm" }) + " rounded-full px-4"}>
+          <Link to="/auth" className={cn(buttonVariants({ size: "sm" }), "rounded-full px-4")}>
             Empezar
           </Link>
         </div>
@@ -35,12 +41,9 @@ export function SiteFooter() {
     <footer className="border-t border-border/60 bg-background">
       <div className="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-6 py-12 md:grid-cols-4">
         <div>
-          <div className="flex items-center gap-2">
-            <div className="grid h-7 w-7 place-items-center rounded-md bg-foreground text-background">
-              <span className="text-[13px] font-bold">S</span>
-            </div>
-            <span className="text-base font-semibold tracking-tight">Shakerfy</span>
-          </div>
+          <Link to="/" className="flex items-center gap-2">
+            <span className="text-xl sm:text-2xl font-bebas tracking-wider text-foreground uppercase select-none">Shakerfy</span>
+          </Link>
           <p className="mt-4 max-w-xs text-sm text-muted-foreground">
             El buscador con IA de gimnasios, fitness centers y studios. Encuentra, reserva y gestiona tu entrenamiento.
           </p>

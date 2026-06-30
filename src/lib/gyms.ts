@@ -42,7 +42,17 @@ export type Gym = {
     branchId?: string;
   }[];
   requirements?: string[];
-  staff?: { id: string; name: string; specialty: string; certifications: string[]; photo: string; certificationImages?: string[] }[];
+  staff?: { 
+    id: string; 
+    name: string; 
+    specialty: string; 
+    certifications: string[]; 
+    photo: string; 
+    certificationImages?: string[];
+    linkingCode?: string | null;
+    status?: "pending" | "linked";
+    availability?: { day: string; intervals: { from: string; to: string }[] }[];
+  }[];
   amenities?: string[];
   branches?: {
     id: string;
@@ -53,6 +63,10 @@ export type Gym = {
     lng?: number;
     creditCostMultiplier?: number;
     roamingStaffIds?: string[];
+    weeklyHours?: { day: string; intervals: { from: string; to: string }[] }[];
+    images?: string[];
+    requirements?: string[];
+    amenities?: string[];
   }[];
   weeklyHours?: { day: string; intervals: { from: string; to: string }[] }[];
   occupancyData?: Record<string, number[]>;
@@ -93,9 +107,51 @@ export const GYMS: Gym[] = [
     classes: defaultSchedule(),
     requirements: ["Apto médico obligatorio", "Traer toalla personal"],
     staff: [
-      { id: "1", name: "Mateo Rossi", specialty: "Coach de Levantamiento Olímpico", certifications: ["CF-L2", "Coaching de Fuerza"], photo: img("photo-1507003211169-0a1dd7228f2d"), certificationImages: [img("photo-1589330694653-ded6df53f7ec"), img("photo-1606326608606-aa0b62935f2b")] },
-      { id: "2", name: "Valeria Soto", specialty: "Profesora de Vinyasa Yoga", certifications: ["RYT-200", "Yoga Terapéutico"], photo: img("photo-1544005313-94ddf0286df2"), certificationImages: [img("photo-1589330694653-ded6df53f7ec")] },
-      { id: "3", name: "Daniel Castro", specialty: "Preparador Físico Funcional", certifications: ["Prof. Educación Física", "FMS Level 1"], photo: img("photo-1500648767791-00dcc994a43e") },
+      { 
+        id: "1", 
+        name: "Mateo Rossi", 
+        specialty: "Coach de Levantamiento Olímpico", 
+        certifications: ["CF-L2", "Coaching de Fuerza"], 
+        photo: img("photo-1507003211169-0a1dd7228f2d"), 
+        certificationImages: [img("photo-1589330694653-ded6df53f7ec"), img("photo-1606326608606-aa0b62935f2b")],
+        linkingCode: "1234",
+        status: "pending",
+        availability: [
+          { day: "Lunes", intervals: [{ from: "08:00", to: "12:00" }] },
+          { day: "Miércoles", intervals: [{ from: "08:00", to: "12:00" }] },
+          { day: "Viernes", intervals: [{ from: "08:00", to: "12:00" }] }
+        ]
+      },
+      { 
+        id: "2", 
+        name: "Valeria Soto", 
+        specialty: "Profesora de Vinyasa Yoga", 
+        certifications: ["RYT-200", "Yoga Terapéutico"], 
+        photo: img("photo-1544005313-94ddf0286df2"), 
+        certificationImages: [img("photo-1589330694653-ded6df53f7ec")],
+        linkingCode: "5678",
+        status: "pending",
+        availability: [
+          { day: "Martes", intervals: [{ from: "09:00", to: "13:00" }] },
+          { day: "Jueves", intervals: [{ from: "09:00", to: "13:00" }] }
+        ]
+      },
+      { 
+        id: "3", 
+        name: "Daniel Castro", 
+        specialty: "Preparador Físico Funcional", 
+        certifications: ["Prof. Educación Física", "FMS Level 1"], 
+        photo: img("photo-1500648767791-00dcc994a43e"),
+        linkingCode: "9012",
+        status: "pending",
+        availability: [
+          { day: "Lunes", intervals: [{ from: "14:00", to: "20:00" }] },
+          { day: "Martes", intervals: [{ from: "14:00", to: "20:00" }] },
+          { day: "Miércoles", intervals: [{ from: "14:00", to: "20:00" }] },
+          { day: "Jueves", intervals: [{ from: "14:00", to: "20:00" }] },
+          { day: "Viernes", intervals: [{ from: "14:00", to: "20:00" }] }
+        ]
+      },
     ],
     amenities: ["Duchas y Vestuarios", "Lockers de Seguridad", "WiFi Alta Velocidad", "Estacionamiento Gratuito", "Sauna Húmedo", "Bicicletero / Estacionamiento de Bici", "Dispensador de Agua / Bebedero", "Venta de Suplementos / Bebidas"],
     weeklyHours: [
@@ -111,8 +167,56 @@ export const GYMS: Gym[] = [
     tiktok: "kraft.strength",
     whatsapp: "5491132421241",
     branches: [
-      { id: "1", name: "Sede Belgrano", address: "Av. Cabildo 1820, Belgrano, CABA", manager: "Marcos Pérez", lat: -34.5612, lng: -58.4568, creditCostMultiplier: 1.0, roamingStaffIds: ["1", "3"] },
-      { id: "2", name: "Sede Las Cañitas", address: "Ortega y Gasset 1520, Las Cañitas, CABA", manager: "Sofía Rodríguez", lat: -34.5715, lng: -58.4352, creditCostMultiplier: 1.2, roamingStaffIds: ["2", "3"] }
+      { 
+        id: "1", 
+        name: "Sede Belgrano", 
+        address: "Av. Cabildo 1820, Belgrano, CABA", 
+        manager: "Marcos Pérez", 
+        lat: -34.5612, 
+        lng: -58.4568, 
+        creditCostMultiplier: 1.0, 
+        roamingStaffIds: ["1", "3"],
+        weeklyHours: [
+          { day: "Lunes", intervals: [{ from: "07:00", to: "21:00" }] },
+          { day: "Martes", intervals: [{ from: "07:00", to: "21:00" }] },
+          { day: "Miércoles", intervals: [{ from: "07:00", to: "21:00" }] },
+          { day: "Jueves", intervals: [{ from: "07:00", to: "21:00" }] },
+          { day: "Viernes", intervals: [{ from: "07:00", to: "21:00" }] },
+          { day: "Sábado", intervals: [] },
+          { day: "Domingo", intervals: [] },
+        ],
+        images: [
+          img("photo-1540496905036-5937c10647cc"),
+          img("photo-1534258936925-c58bed479fcb"),
+        ],
+        requirements: ["Apto médico obligatorio", "Toalla de mano", "Solo mayores de 16 años"],
+        amenities: ["Duchas y Vestuarios", "Lockers de Seguridad", "Estacionamiento Gratuito", "Sauna Húmedo"]
+      },
+      { 
+        id: "2", 
+        name: "Sede Las Cañitas", 
+        address: "Ortega y Gasset 1520, Las Cañitas, CABA", 
+        manager: "Sofía Rodríguez", 
+        lat: -34.5715, 
+        lng: -58.4352, 
+        creditCostMultiplier: 1.2, 
+        roamingStaffIds: ["2", "3"],
+        weeklyHours: [
+          { day: "Lunes", intervals: [{ from: "08:00", to: "12:00" }, { from: "16:00", to: "20:00" }] },
+          { day: "Martes", intervals: [{ from: "08:00", to: "12:00" }, { from: "16:00", to: "20:00" }] },
+          { day: "Miércoles", intervals: [{ from: "08:00", to: "12:00" }, { from: "16:00", to: "20:00" }] },
+          { day: "Jueves", intervals: [{ from: "08:00", to: "12:00" }, { from: "16:00", to: "20:00" }] },
+          { day: "Viernes", intervals: [{ from: "08:00", to: "12:00" }, { from: "16:00", to: "20:00" }] },
+          { day: "Sábado", intervals: [{ from: "09:00", to: "13:00" }] },
+          { day: "Domingo", intervals: [] },
+        ],
+        images: [
+          img("photo-1545205597-3d9d02c29597"),
+          img("photo-1518611012118-696072aa579a"),
+        ],
+        requirements: ["Apto médico obligatorio", "Uso obligatorio de gorro en pileta", "Calzado limpio de recambio"],
+        amenities: ["Duchas y Vestuarios", "Lockers de Seguridad", "Pileta Climatizada", "Cafetería"]
+      }
     ],
   },
   {

@@ -25,12 +25,8 @@ Este skill documenta los flujos de desarrollo, patrones comunes y comandos neces
 * **Animaciones:** Habilita transiciones con `transition-all duration-300` o clases de entrada como `animate-fade-up` (implementadas en el listado de gimnasios).
 * **Fuentes:** La tipografía principal es Inter, importada globalmente en `__root.tsx` a través de `@fontsource/inter`.
 
-### 3. Integración con Supabase (Base de Datos)
-* **Cliente de Base de Datos:** Para interactuar con la base de datos de Supabase, importa el cliente y realiza consultas directamente:
-  ```tsx
-  import { supabase } from "@/lib/supabase";
-  ```
-* **Seguridad:** Todas las consultas desde el cliente deben respetar las reglas de Row Level Security (RLS) configuradas en las tablas.
+### 3. Integración con Base de Datos (Futuro)
+* **Firebase:** En el futuro se integrará Firebase como base de datos para almacenar colecciones y documentos (ver detalles de las colecciones en [ROADMAP.md](file:///c:/Users/shake/.gemini/antigravity/scratch/studio-pulse-smart/ROADMAP.md)). Por ahora, los datos están simulados localmente en [gyms.ts](file:///c:/Users/shake/.gemini/antigravity/scratch/studio-pulse-smart/src/lib/gyms.ts).
 
 ---
 

@@ -8,7 +8,7 @@ Este documento está diseñado para orientar a cualquier agente de IA o desarrol
 
 *   **Commit Actual:** `8a707dbc` ("Añadido perfil de gimnasio").
 *   **Servidor de Desarrollo:** Activo localmente en `http://localhost:8080/`.
-*   **Supabase:** Proyecto configurado en Supabase (`ivqaquyudmcitzgvmkik`). SDK y cliente instalados.
+*   **Firebase:** Integración planificada a futuro para la base de datos.
 
 ---
 
@@ -18,7 +18,7 @@ Este documento está diseñado para orientar a cualquier agente de IA o desarrol
 2.  **Routing:** [TanStack Router](https://tanstack.com/router) (Enrutamiento basado en archivos).
 3.  **Manejo de Estado:** [TanStack Query](https://tanstack.com/query) (React Query).
 4.  **Estilos:** [TailwindCSS v4](https://tailwindcss.com/) (Sin `tailwind.config.js`, tokens definidos en `src/styles.css`).
-5.  **Base de Datos:** Supabase (`@supabase/supabase-js` para operaciones en tiempo real).
+5.  **Base de Datos:** Firebase (integración planificada a futuro; por ahora se utilizan datos simulados).
 6.  **Componentes:** shadcn/ui + Radix UI + Lucide React.
 
 ---
@@ -35,11 +35,9 @@ Este documento está diseñado para orientar a cualquier agente de IA o desarrol
 *   El tema oscuro y las clases se gestionan a nivel global mediante variables CSS en [styles.css](file:///C:/Users/shake/.gemini/antigravity/scratch/studio-pulse-smart/src/styles.css).
 *   No intentes agregar un archivo de configuración `tailwind.config.js`. Utiliza variables inline `@theme` dentro del archivo de estilos si necesitas ampliar el tema.
 
-### 3. Supabase
-*   Las variables de conexión están configuradas en `.env`:
-    *   `VITE_SUPABASE_URL`
-    *   `VITE_SUPABASE_PUBLISHABLE_KEY`
-*   Usa el cliente oficial para realizar consultas en lugar de mocks cuando la base de datos esté lista.
+### 3. Firebase (Futuro)
+*   La integración con Firebase está planificada para más adelante.
+*   Utiliza los datos locales mockeados de [gyms.ts](file:///c:/Users/shake/.gemini/antigravity/scratch/studio-pulse-smart/src/lib/gyms.ts) para el desarrollo de componentes y páginas.
 
 ---
 

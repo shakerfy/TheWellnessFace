@@ -106,17 +106,26 @@ function Index() {
 function Hero() {
   return (
     <section className="relative overflow-hidden pb-24 pt-24 md:pb-36 md:pt-32">
-      {/* Mesh Gradient Background */}
-      <div 
-        aria-hidden 
-        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_20%,rgba(59,130,246,0.22),transparent_40%),radial-gradient(circle_at_80%_20%,rgba(96,165,250,0.15),transparent_40%),radial-gradient(circle_at_30%_90%,rgba(244,63,94,0.35),transparent_50%),radial-gradient(circle_at_70%_90%,rgba(236,72,153,0.35),transparent_50%)] opacity-90 blur-3xl" 
-      />
-      <div className="mx-auto flex max-w-4xl flex-col items-center px-6 text-center">
+      {/* Pastel Floating Orbs Background */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        {/* Orb 1: Red/Pink (Top Right) */}
+        <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full bg-[#FF3B5C]/45 blur-[50px]" />
+        
+        {/* Orb 2: Green (Center Left) */}
+        <div className="absolute -left-24 top-[35%] h-96 w-96 rounded-full bg-[#A3E635]/55 blur-[50px]" />
+        
+        {/* Orb 3: Cyan/Blue (Bottom Right) */}
+        <div className="absolute bottom-[-60px] right-[10%] h-96 w-96 rounded-full bg-[#00D2FF]/45 blur-[60px]" />
+        
+        {/* Smooth fade to background color at the bottom edge */}
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-background to-transparent" />
+      </div>
+      <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center px-6 text-center">
         <h1 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-[42px] lg:text-[46px]">
-          Encuentra tu gimnasio ideal con una sola frase
+          Encuentra donde entrenar como te lo imaginas
         </h1>
         <p className="mt-4 max-w-2xl text-balance text-[14px] text-muted-foreground/85 sm:text-[15px] md:text-[16px] lg:whitespace-nowrap">
-          Busca, compara y reserva en los mejores gimnasios con lenguaje natural
+          Busca, compara y reserva en los mejores gimnasios, fitness centers y studios con IA.
         </p>
 
         <PromptBox />
@@ -156,10 +165,10 @@ function ValueSection() {
   const items = [
     { k: "01", t: "Búsqueda con IA", d: "Describe lo que querés en lenguaje natural y nuestra IA filtra por ubicación, presupuesto, disciplina y horarios." },
     { k: "02", t: "Reserva sin fricción", d: "Bookings de clases y pases de prueba con confirmación instantánea, sin llamados ni formularios." },
-    { k: "03", t: "Gestión para gimnasios", d: "Panel para administrar membresías, clases, pagos y asistencias en un solo lugar." },
+    { k: "03", t: "Control de tu rutina", d: "Administra tus membresías, historial de clases y pagos desde un panel centralizado para ti." },
   ];
   return (
-    <section id="para-gimnasios" className="border-t border-border bg-secondary/40">
+    <section id="como-funciona" className="border-t border-border bg-secondary/40 scroll-mt-24">
       <div className="mx-auto max-w-7xl px-6 py-24">
         <div className="grid gap-12 md:grid-cols-3">
           {items.map((i) => (
@@ -170,11 +179,49 @@ function ValueSection() {
             </div>
           ))}
         </div>
-        <div className="mt-16 flex flex-col items-start justify-between gap-6 rounded-3xl border border-border bg-background p-8 md:flex-row md:items-center md:p-12">
+
+        {/* Blog Section */}
+        <div id="blog" className="mt-32 scroll-mt-24">
+          <div className="mb-10">
+            <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">Blog & Novedades</h2>
+            <p className="mt-2 text-sm text-muted-foreground">Últimas tendencias, consejos y noticias del mundo fitness.</p>
+          </div>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="group cursor-pointer space-y-3">
+              <div className="aspect-[16/9] overflow-hidden rounded-2xl bg-muted">
+                <img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=800&q=80" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" alt="Blog 1" />
+              </div>
+              <div>
+                <div className="text-xs font-medium text-muted-foreground">Tendencias · 3 min</div>
+                <h3 className="mt-1 font-semibold tracking-tight group-hover:underline">El auge del fitness híbrido</h3>
+              </div>
+            </div>
+            <div className="group cursor-pointer space-y-3 hidden sm:block">
+              <div className="aspect-[16/9] overflow-hidden rounded-2xl bg-muted">
+                <img src="https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=800&q=80" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" alt="Blog 2" />
+              </div>
+              <div>
+                <div className="text-xs font-medium text-muted-foreground">Nutrición · 5 min</div>
+                <h3 className="mt-1 font-semibold tracking-tight group-hover:underline">Alimentación pre-entrenamiento</h3>
+              </div>
+            </div>
+            <div className="group cursor-pointer space-y-3 hidden lg:block">
+              <div className="aspect-[16/9] overflow-hidden rounded-2xl bg-muted">
+                <img src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=800&q=80" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" alt="Blog 3" />
+              </div>
+              <div>
+                <div className="text-xs font-medium text-muted-foreground">Entrenamiento · 4 min</div>
+                <h3 className="mt-1 font-semibold tracking-tight group-hover:underline">CrossFit vs Funcional: ¿Cuál elegir?</h3>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="para-gimnasios" className="mt-32 flex flex-col items-start justify-between gap-6 rounded-3xl border border-border bg-background p-8 md:flex-row md:items-center md:p-12 scroll-mt-24">
           <div>
-            <Badge variant="secondary" className="rounded-full">Para gimnasios</Badge>
+            <Badge variant="secondary" className="rounded-full">Para partners</Badge>
             <h3 className="mt-3 max-w-xl text-2xl font-semibold tracking-tight md:text-3xl">
-              Llevá tu estudio o gimnasio al próximo nivel con Shakerfy.
+              Llevá tu Centro al próximo nivel con Shakerfy.
             </h3>
             <p className="mt-2 max-w-xl text-sm text-muted-foreground">
               Aparecé en miles de búsquedas, gestioná membresías y digitalizá tus clases.
@@ -182,7 +229,7 @@ function ValueSection() {
           </div>
           <div className="flex gap-3">
             <Button variant="outline" className="rounded-full">Ver demo</Button>
-            <Button className="rounded-full">Sumar mi gimnasio</Button>
+            <Button className="rounded-full">Sumar mi centro</Button>
           </div>
         </div>
       </div>
