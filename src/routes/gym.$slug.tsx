@@ -1,9 +1,10 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, MapPin, Star, Clock, ArrowLeft, Check, Users, Eye, X, FileText, Wifi, Car, Coffee, Flame, Lock, Bath, HelpCircle, Navigation, Map, Bike, Droplet, ShoppingBag, Instagram } from "lucide-react";
+import { useMemo, useState, useRef, useEffect } from "react";
+import { ChevronLeft, ChevronRight, ChevronDown, MapPin, Star, Clock, ArrowLeft, Check, Users, Eye, X, FileText, Wifi, Car, Coffee, Flame, Lock, Bath, HelpCircle, Navigation, Map, Bike, Droplet, ShoppingBag, Instagram, Sparkles, Heart, Search } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { getGym, type Gym } from "@/lib/gyms";
 
 export const Route = createFileRoute("/gym/$slug")({
@@ -83,7 +84,37 @@ function GymPage() {
   const [hoursOpen, setHoursOpen] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("shakerfy_favorites");
+    if (saved) {
+      try {
+        const list = JSON.parse(saved);
+        setIsFavorite(list.includes(gym.slug));
+      } catch (e) {}
+    }
+  }, [gym.slug]);
+
+  const toggleFavorite = () => {
+    const saved = localStorage.getItem("shakerfy_favorites");
+    let list: string[] = [];
+    if (saved) {
+      try {
+        list = JSON.parse(saved);
+      } catch (e) {}
+    }
+    const next = list.includes(gym.slug)
+      ? list.filter((s: string) => s !== gym.slug)
+      : [...list, gym.slug];
+    setIsFavorite(next.includes(gym.slug));
+    localStorage.setItem("shakerfy_favorites", JSON.stringify(next));
+  };
+
   const [membershipFilter, setMembershipFilter] = useState("Todos");
+  const [accessHoursFilter, setAccessHoursFilter] = useState("Todos");
+  const [passTypeFilter, setPassTypeFilter] = useState("Todos");
+  const [coverageFilter, setCoverageFilter] = useState("Todos");
   const [disciplineFilter, setDisciplineFilter] = useState("Todos");
   const [selectedBranchId, setSelectedBranchId] = useState("matriz");
 
@@ -102,9 +133,23 @@ function GymPage() {
   }, [gym.memberships]);
 
   const filteredMemberships = useMemo(() => {
-    if (membershipFilter === "Todos") return gym.memberships;
-    return gym.memberships.filter(m => m.tag === membershipFilter);
-  }, [gym.memberships, membershipFilter]);
+    return gym.memberships.filter(m => {
+      const matchesTag = membershipFilter === "Todos" || m.tag === membershipFilter;
+      
+      const matchesHours = accessHoursFilter === "Todos" || 
+        (accessHoursFilter === "Full-Time" && m.accessHoursType === "Full-Time") ||
+        (accessHoursFilter === "Off-Peak" && m.accessHoursType === "Off-Peak");
+      
+      const matchesPass = passTypeFilter === "Todos" ||
+        (passTypeFilter === "Ilimitado" && m.passType === "Pase Libre") ||
+        (passTypeFilter === "Creditos" && m.passType === "Por Créditos");
+        
+      const matchesCoverage = coverageFilter === "Todos" ||
+        (coverageFilter === "Multisede" && m.isMultisede);
+
+      return matchesTag && matchesHours && matchesPass && matchesCoverage;
+    });
+  }, [gym.memberships, membershipFilter, accessHoursFilter, passTypeFilter, coverageFilter]);
 
   const disciplines = useMemo(() => {
     const discSet = new Set<string>();
@@ -148,13 +193,13 @@ function GymPage() {
             <div className="absolute inset-x-0 bottom-0 flex items-center justify-between p-4">
               <button
                 onClick={() => setActive((v) => (v - 1 + gym.images.length) % gym.images.length)}
-                className="grid h-9 w-9 place-items-center rounded-full bg-background/90 backdrop-blur transition hover:bg-background shadow-md text-foreground"
+                className="grid h-9 w-9 place-items-center rounded-full bg-background/90 backdrop-blur transition hover:bg-background  text-foreground"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
               <button
                 onClick={() => setActive((v) => (v + 1) % gym.images.length)}
-                className="grid h-9 w-9 place-items-center rounded-full bg-background/90 backdrop-blur transition hover:bg-background shadow-md text-foreground"
+                className="grid h-9 w-9 place-items-center rounded-full bg-background/90 backdrop-blur transition hover:bg-background  text-foreground"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
@@ -187,7 +232,20 @@ function GymPage() {
                 <Badge key={t} variant="secondary" className="rounded-full">{t}</Badge>
               ))}
             </div>
-            <h1 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">{gym.name}</h1>
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-4">
+              <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">{gym.name}</h1>
+              <button 
+                onClick={toggleFavorite}
+                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border text-xs font-semibold transition-all duration-300 ${
+                  isFavorite 
+                    ? "border-primary bg-primary/10 text-primary hover:bg-primary/20" 
+                    : "border-border hover:border-foreground/30 hover:bg-secondary/25 text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Heart className={`h-3.5 w-3.5 ${isFavorite ? "fill-primary text-primary" : ""}`} />
+                {isFavorite ? "Guardado en Favoritos" : "Guardar en Favoritos"}
+              </button>
+            </div>
 
             {/* Branch / Sede selector */}
             {gym.branches && gym.branches.length > 0 && (
@@ -197,7 +255,7 @@ function GymPage() {
                   onClick={() => setSelectedBranchId("matriz")}
                   className={`px-3 py-1 rounded-full text-xs font-semibold border transition ${
                     selectedBranchId === "matriz"
-                      ? "border-primary bg-primary/10 text-primary"
+                      ? "border-foreground bg-foreground text-background"
                       : "border-border text-muted-foreground hover:text-foreground"
                   }`}
                 >
@@ -209,7 +267,7 @@ function GymPage() {
                     onClick={() => setSelectedBranchId(b.id)}
                     className={`px-3 py-1 rounded-full text-xs font-semibold border transition ${
                       selectedBranchId === b.id
-                        ? "border-primary bg-primary/10 text-primary"
+                        ? "border-foreground bg-foreground text-background"
                         : "border-border text-muted-foreground hover:text-foreground"
                     }`}
                   >
@@ -247,7 +305,7 @@ function GymPage() {
 
             {/* Collapsible Weekly Hours */}
             {hoursOpen && (
-              <div className="mt-4 border border-border bg-card p-4 rounded-2xl max-w-sm text-xs space-y-1.5 shadow-sm animate-fade-down">
+              <div className="mt-4 border border-border bg-card p-4 rounded-2xl max-w-sm text-xs space-y-1.5 hover:border-foreground/20 transition duration-300 animate-fade-down">
                 <div className="font-bold text-foreground pb-1.5 border-b border-border flex items-center gap-1">
                   <Clock className="h-3.5 w-3.5 text-primary" /> Detalle de Horarios Semanales
                 </div>
@@ -292,7 +350,7 @@ function GymPage() {
                   {gym.amenities.map((amenity) => {
                     const Icon = getAmenityIcon(amenity);
                     return (
-                      <div key={amenity} className="flex items-center gap-2.5 p-3 rounded-2xl border border-border bg-card/45 shadow-sm text-xs font-medium text-foreground">
+                      <div key={amenity} className="flex items-center gap-2.5 p-3 rounded-2xl border border-border bg-card/45 text-xs font-medium text-foreground hover:border-foreground/30 hover:bg-secondary/10 transition duration-300">
                         <div className="h-7 w-7 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
                           <Icon className="h-4 w-4" />
                         </div>
@@ -322,7 +380,7 @@ function GymPage() {
             </div>
 
             {/* Stylized Google Maps Placeholder */}
-            <div className="border border-border bg-card rounded-2xl overflow-hidden shadow-sm">
+            <div className="border border-border bg-card rounded-2xl overflow-hidden hover:border-foreground/20 transition duration-300">
               <div 
                 id="google-maps-container" 
                 className="w-full h-40 bg-secondary/50 relative flex items-center justify-center overflow-hidden"
@@ -339,7 +397,7 @@ function GymPage() {
                 {/* Pulsing gym pin */}
                 <div className="relative flex items-center justify-center">
                   <div className="absolute h-8 w-8 rounded-full bg-primary/20 animate-ping" />
-                  <div className="h-4 w-4 rounded-full bg-primary border-2 border-background shadow-lg" />
+                  <div className="h-4 w-4 rounded-full bg-primary border-2 border-background " />
                 </div>
                 
                 <span className="absolute bottom-2 left-2 text-[9px] bg-background/80 border border-border px-2 py-0.5 rounded-md font-mono text-muted-foreground">
@@ -364,7 +422,7 @@ function GymPage() {
 
             {/* Social Networks Links */}
             {(gym.instagram || gym.tiktok || gym.whatsapp) && (
-              <div className="border border-border bg-card rounded-2xl p-4 shadow-sm space-y-3">
+              <div className="border border-border bg-card rounded-2xl p-4 space-y-3 hover:border-foreground/20 transition duration-300">
                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Redes Sociales</span>
                 <div className="flex gap-2">
                   {gym.instagram && (
@@ -408,7 +466,7 @@ function GymPage() {
 
         {/* Horarios Populares / Concurrencia en Tiempo Real */}
         {gym.occupancyData && (
-          <section className="mt-16 rounded-3xl border border-border bg-card p-6 shadow-sm">
+          <section className="mt-16 rounded-3xl border border-border bg-card p-6 hover:border-foreground/20 transition duration-300">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-xl font-bold tracking-tight">Horarios Populares</h2>
@@ -423,7 +481,7 @@ function GymPage() {
                     onClick={() => setDay(idx)}
                     className={`px-3.5 py-1 rounded-full text-xs font-semibold border transition ${
                       day === idx
-                        ? "border-primary bg-primary/10 text-primary"
+                        ? "border-foreground bg-foreground text-background"
                         : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground"
                     }`}
                   >
@@ -444,7 +502,7 @@ function GymPage() {
                   return (
                     <div key={hour} className="flex-1 group relative h-full flex flex-col justify-end items-center">
                       {/* Tooltip on hover */}
-                      <span className="absolute -top-7 scale-0 group-hover:scale-100 transition-all bg-foreground text-background text-[10px] font-bold px-2 py-0.5 rounded shadow z-10 whitespace-nowrap">
+                      <span className="absolute -top-7 scale-0 group-hover:scale-100 transition-all bg-foreground text-background text-[10px] font-bold px-2 py-0.5 rounded  z-10 whitespace-nowrap">
                         {percent}% concurrencia
                       </span>
                       
@@ -495,146 +553,240 @@ function GymPage() {
           </section>
         )}
 
+        <EquipmentSection slug={gym.slug} />
+
         {/* Memberships */}
         <section className="mt-16">
           <h2 className="text-2xl font-semibold tracking-tight">Membresías y planes</h2>
           <p className="mt-1 text-sm text-muted-foreground">Elegí el plan que mejor se adapta a tu ritmo.</p>
           
           {/* Memberships Filters */}
-          <div className="mt-4 flex gap-1.5 overflow-x-auto pb-1">
-            {membershipTags.map((t) => (
-              <button
-                key={t}
-                onClick={() => setMembershipFilter(t)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition ${
-                  membershipFilter === t
-                    ? "border-foreground bg-foreground text-background"
-                    : "border-border text-muted-foreground hover:border-foreground/40 hover:text-foreground"
-                }`}
-              >
-                {t}
-              </button>
-            ))}
+          <div className="mt-4 flex flex-col gap-4 border-b border-border/40 pb-4">
+            <div className="flex gap-1.5 overflow-x-auto pb-1">
+              {membershipTags.map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setMembershipFilter(t)}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition ${
+                    membershipFilter === t
+                      ? "border-foreground bg-foreground text-background"
+                      : "border-border text-muted-foreground hover:border-foreground/40 hover:text-foreground"
+                  }`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+
+            {/* Advanced Filters */}
+            <div className="flex flex-wrap gap-x-6 gap-y-3 items-center text-xs">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Tipo:</span>
+                <div className="flex gap-1 bg-secondary/35 p-0.5 rounded-lg border border-border/40">
+                  {[
+                    { label: "Todos", value: "Todos" },
+                    { label: "Pase Libre", value: "Ilimitado" },
+                    { label: "Por Clases", value: "Creditos" }
+                  ].map((item) => (
+                    <button
+                      key={item.value}
+                      onClick={() => setPassTypeFilter(item.value)}
+                      className={`px-2.5 py-1 rounded-md transition text-[11px] font-medium ${
+                        passTypeFilter === item.value
+                          ? "bg-background text-foreground "
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Horario:</span>
+                <div className="flex gap-1 bg-secondary/35 p-0.5 rounded-lg border border-border/40">
+                  {[
+                    { label: "Todos", value: "Todos" },
+                    { label: "Todo Horario", value: "Full-Time" },
+                    { label: "Off-Peak", value: "Off-Peak" }
+                  ].map((item) => (
+                    <button
+                      key={item.value}
+                      onClick={() => setAccessHoursFilter(item.value)}
+                      className={`px-2.5 py-1 rounded-md transition text-[11px] font-medium ${
+                        accessHoursFilter === item.value
+                          ? "bg-background text-foreground "
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Sede:</span>
+                <div className="flex gap-1 bg-secondary/35 p-0.5 rounded-lg border border-border/40">
+                  {[
+                    { label: "Cualquiera", value: "Todos" },
+                    { label: "Multisede", value: "Multisede" }
+                  ].map((item) => (
+                    <button
+                      key={item.value}
+                      onClick={() => setCoverageFilter(item.value)}
+                      className={`px-2.5 py-1 rounded-md transition text-[11px] font-medium ${
+                        coverageFilter === item.value
+                          ? "bg-background text-foreground "
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
-            {filteredMemberships.map((m, idx) => (
-              <div
-                key={m.name}
-                className={`rounded-2xl border p-6 transition flex flex-col justify-between ${
-                  idx === 1 ? "border-foreground bg-foreground text-background" : "border-border bg-background hover:border-foreground/40"
-                }`}
+          {filteredMemberships.length === 0 ? (
+            <div className="mt-6 py-12 text-center border border-dashed border-border rounded-3xl bg-secondary/10">
+              <p className="text-sm font-semibold text-foreground">No encontramos planes que coincidan con estos filtros.</p>
+              <button 
+                onClick={() => {
+                  setMembershipFilter("Todos");
+                  setPassTypeFilter("Todos");
+                  setAccessHoursFilter("Todos");
+                  setCoverageFilter("Todos");
+                }}
+                className="mt-3 text-xs font-semibold text-primary hover:underline"
               >
-                <div>
-                  <div className="flex items-baseline justify-between">
-                    <div>
-                      <div className="text-base font-semibold tracking-tight">{m.name}</div>
-                      {m.tag && (
-                        <span className={`inline-block mt-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
-                          idx === 1 ? "bg-background/20 text-background" : "bg-primary/10 text-primary"
+                Restablecer filtros de búsqueda
+              </button>
+            </div>
+          ) : (
+            <div className="mt-6 grid gap-4 md:grid-cols-3">
+              {filteredMemberships.map((m, idx) => (
+                <div
+                  key={m.name}
+                  className={`rounded-2xl border p-6 transition-all duration-300 flex flex-col justify-between ${
+                    idx === 1 
+                      ? "border-foreground bg-foreground text-background hover:scale-[1.01]" 
+                      : "border-border bg-background hover:border-foreground/40 hover:scale-[1.01] hover:bg-secondary/10"
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-baseline justify-between">
+                      <div>
+                        <div className="text-base font-semibold tracking-tight">{m.name}</div>
+                        {m.tag && (
+                          <span className={`inline-block mt-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
+                            idx === 1 ? "bg-background/20 text-background" : "bg-primary/10 text-primary"
+                          }`}>
+                            {m.tag}
+                          </span>
+                        )}
+                      </div>
+                      <div className={`text-xs ${idx === 1 ? "text-background/70" : "text-muted-foreground"}`}>{m.duration}</div>
+                    </div>
+                    <div className="mt-4 text-3xl font-semibold tracking-tight">
+                      {m.originalPrice && (
+                        <span className={`text-sm font-normal line-through mr-2 ${
+                          idx === 1 ? "text-background/60" : "text-muted-foreground"
                         }`}>
-                          {m.tag}
+                          ${m.originalPrice.toLocaleString("es-AR")}
                         </span>
                       )}
+                      ${m.price.toLocaleString("es-AR")}
                     </div>
-                    <div className={`text-xs ${idx === 1 ? "text-background/70" : "text-muted-foreground"}`}>{m.duration}</div>
-                  </div>
-                  <div className="mt-4 text-3xl font-semibold tracking-tight">
-                    {m.originalPrice && (
-                      <span className={`text-sm font-normal line-through mr-2 ${
-                        idx === 1 ? "text-background/60" : "text-muted-foreground"
-                      }`}>
-                        ${m.originalPrice.toLocaleString("es-AR")}
-                      </span>
-                    )}
-                    ${m.price.toLocaleString("es-AR")}
-                  </div>
 
-                  {/* Advanced access details (pass type, hours, activities) */}
-                  <div className={`mt-4 space-y-1.5 border-t pt-3 text-xs ${
-                    idx === 1 ? "border-background/20 text-background/80" : "border-border/60 text-muted-foreground"
-                  }`}>
-                    <div className="flex items-center gap-1.5">
-                      <span>🎟️</span>
-                      <span>
-                        {m.passType === "Por Créditos" 
-                          ? `${m.creditsCount} clases / créditos` 
-                          : "Pase Libre (Ilimitado)"}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <span>🕒</span>
-                      <span>
-                        {m.accessHoursType === "Off-Peak" 
-                          ? `Franja Off-Peak (${m.offPeakStart} - ${m.offPeakEnd} hs)` 
-                          : "Acceso Completo (Todo Horario)"}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <span>💵</span>
-                      <span>
-                        {m.registrationFee && m.registrationFee > 0 
-                          ? `Matrícula: $${m.registrationFee.toLocaleString("es-AR")}` 
-                          : "Matrícula Bonificada 🎉"}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <span>🏢</span>
-                      <span>
-                        {m.isMultisede 
-                          ? "Acceso Multisede (Toda la red)" 
-                          : "Solo Sede Matriz (Palermo)"}
-                      </span>
-                    </div>
-                    {m.freezeDays && m.freezeDays > 0 ? (
+                    {/* Advanced access details (pass type, hours, activities) */}
+                    <div className={`mt-4 space-y-1.5 border-t pt-3 text-xs ${
+                      idx === 1 ? "border-background/20 text-background/80" : "border-border/60 text-muted-foreground"
+                    }`}>
                       <div className="flex items-center gap-1.5">
-                        <span>❄️</span>
-                        <span>Congelamiento: {m.freezeDays} días/año</span>
-                      </div>
-                    ) : null}
-                    {m.dailyClassLimit && m.dailyClassLimit !== "Ilimitado" ? (
-                      <div className="flex items-center gap-1.5">
-                        <span>🛡️</span>
-                        <span>Límite: {m.dailyClassLimit}</span>
-                      </div>
-                    ) : null}
-                  </div>
-
-                  {/* Included activities */}
-                  {m.includedActivities && m.includedActivities.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-1">
-                      {m.includedActivities.map((act) => (
-                        <span 
-                          key={act} 
-                          className={`text-[8.5px] px-2 py-0.5 rounded-full font-medium ${
-                            idx === 1 ? "bg-background/25 text-background" : "bg-secondary text-secondary-foreground"
-                          }`}
-                        >
-                          {act}
+                        <span>🎟️</span>
+                        <span>
+                          {m.passType === "Por Créditos" 
+                            ? `${m.creditsCount} clases / créditos` 
+                            : "Pase Libre (Ilimitado)"}
                         </span>
-                      ))}
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span>🕒</span>
+                        <span>
+                          {m.accessHoursType === "Off-Peak" 
+                            ? `Franja Off-Peak (${m.offPeakStart} - ${m.offPeakEnd} hs)` 
+                            : "Acceso Completo (Todo Horario)"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span>💵</span>
+                        <span>
+                          {m.registrationFee && m.registrationFee > 0 
+                            ? `Matrícula: $${m.registrationFee.toLocaleString("es-AR")}` 
+                            : "Matrícula Bonificada 🎉"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span>🏢</span>
+                        <span>
+                          {m.isMultisede 
+                            ? "Acceso Multisede (Toda la red)" 
+                            : "Solo Sede Matriz (Palermo)"}
+                        </span>
+                      </div>
+                      {m.freezeDays && m.freezeDays > 0 ? (
+                        <div className="flex items-center gap-1.5">
+                          <span>❄️</span>
+                          <span>Congelamiento: {m.freezeDays} días/año</span>
+                        </div>
+                      ) : null}
+                      {m.dailyClassLimit && m.dailyClassLimit !== "Ilimitado" ? (
+                        <div className="flex items-center gap-1.5">
+                          <span>🛡️</span>
+                          <span>Límite: {m.dailyClassLimit}</span>
+                        </div>
+                      ) : null}
                     </div>
-                  )}
 
-                  <ul className="mt-4 space-y-2 border-t border-border/60 pt-3 text-sm">
-                    {m.benefits.map((b) => (
-                      <li key={b} className="flex items-start gap-2">
-                        <Check className={`mt-0.5 h-4 w-4 shrink-0 ${idx === 1 ? "text-background" : "text-foreground"}`} />
-                        <span className={idx === 1 ? "text-background/90" : "text-muted-foreground"}>{b}</span>
-                      </li>
-                    ))}
-                  </ul>
+                    {/* Included activities */}
+                    {m.includedActivities && m.includedActivities.length > 0 && (
+                      <div className="mt-3 flex flex-wrap gap-1">
+                        {m.includedActivities.map((act) => (
+                          <span 
+                            key={act} 
+                            className={`text-[8.5px] px-2 py-0.5 rounded-full font-medium ${
+                              idx === 1 ? "bg-background/25 text-background" : "bg-secondary text-secondary-foreground"
+                            }`}
+                          >
+                            {act}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    <ul className="mt-4 space-y-2 border-t border-border/60 pt-3 text-sm">
+                      {m.benefits.map((b) => (
+                        <li key={b} className="flex items-start gap-2">
+                          <Check className={`mt-0.5 h-4 w-4 shrink-0 ${idx === 1 ? "text-background" : "text-foreground"}`} />
+                          <span className={idx === 1 ? "text-background/90" : "text-muted-foreground"}>{b}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <Button
+                    variant={idx === 1 ? "secondary" : "outline"}
+                    className="mt-6 w-full rounded-full"
+                  >
+                    Elegir plan
+                  </Button>
                 </div>
-
-                <Button
-                  variant={idx === 1 ? "secondary" : "outline"}
-                  className="mt-6 w-full rounded-full"
-                >
-                  Elegir plan
-                </Button>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* Staff / Equipo */}
@@ -644,7 +796,7 @@ function GymPage() {
             <p className="mt-1 text-sm text-muted-foreground">Entrenadores certificados listos para guiar tu entrenamiento.</p>
             <div className="mt-6 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {gym.staff.map((coach) => (
-                <div key={coach.id} className="rounded-2xl border border-border bg-card p-4 flex flex-col justify-between hover:border-foreground/20 transition min-h-[140px]">
+                <div key={coach.id} className="rounded-2xl border border-border bg-card p-4 flex flex-col justify-between hover:border-foreground/30 hover:bg-secondary/10 transition duration-300 min-h-[140px]">
                   <div className="flex items-center gap-4">
                     <img src={coach.photo} alt={coach.name} className="h-14 w-14 rounded-full object-cover border border-border shrink-0" />
                     <div>
@@ -705,7 +857,7 @@ function GymPage() {
                 onClick={() => setDisciplineFilter(d)}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition ${
                   disciplineFilter === d
-                    ? "border-primary bg-primary/10 text-primary"
+                    ? "border-foreground bg-foreground text-background"
                     : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground"
                 }`}
               >
@@ -820,7 +972,7 @@ function GymPage() {
                   photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80"
                 }
               ].map((review, i) => (
-                <div key={i} className="space-y-2 p-4 border border-border bg-card/25 rounded-2xl">
+                <div key={i} className="space-y-2 p-4 border border-border bg-card/25 rounded-2xl hover:border-foreground/20 transition duration-300">
                   <div className="flex items-center gap-3">
                     <img src={review.photo} alt={review.name} className="h-9 w-9 rounded-full object-cover border border-border" />
                     <div>
@@ -839,10 +991,13 @@ function GymPage() {
             </div>
           </div>
         </section>
+
+        <GymFAQSection gym={gym} />
+
       {/* Diplomas Viewer Modal */}
       {activeCertificationsViewer && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 z-50 animate-fade-in">
-          <div className="relative bg-card border border-border w-full max-w-[600px] rounded-3xl p-6 shadow-2xl flex flex-col text-foreground">
+          <div className="relative bg-card border border-border w-full max-w-[600px] rounded-3xl p-6  flex flex-col text-foreground">
             <button 
               onClick={() => setActiveCertificationsViewer(null)}
               className="absolute right-4 top-4 p-2 rounded-full hover:bg-secondary transition z-10"
@@ -883,7 +1038,7 @@ function GymPage() {
             </span>
             <button 
               onClick={() => setLightboxOpen(false)}
-              className="p-2.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 text-white transition shadow-lg border border-zinc-800"
+              className="p-2.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 text-white transition  border border-zinc-800"
             >
               <X className="h-5 w-5" />
             </button>
@@ -893,7 +1048,7 @@ function GymPage() {
           <div className="flex-1 flex items-center justify-between w-full max-w-7xl mx-auto relative my-4">
             <button
               onClick={() => setActive((v) => (v - 1 + gym.images.length) % gym.images.length)}
-              className="p-3.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 text-white transition shrink-0 shadow-lg border border-zinc-800 mr-2"
+              className="p-3.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 text-white transition shrink-0  border border-zinc-800 mr-2"
             >
               <ChevronLeft className="h-6 w-6" />
             </button>
@@ -902,13 +1057,13 @@ function GymPage() {
               <img 
                 src={gym.images[active]} 
                 alt={gym.name} 
-                className="max-w-full max-h-full object-contain rounded-xl shadow-2xl select-none" 
+                className="max-w-full max-h-full object-contain rounded-xl  select-none" 
               />
             </div>
 
             <button
               onClick={() => setActive((v) => (v + 1) % gym.images.length)}
-              className="p-3.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 text-white transition shrink-0 shadow-lg border border-zinc-800 ml-2"
+              className="p-3.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 text-white transition shrink-0  border border-zinc-800 ml-2"
             >
               <ChevronRight className="h-6 w-6" />
             </button>
@@ -930,8 +1085,224 @@ function GymPage() {
           </div>
         </div>
       )}
+
       </div>
       <SiteFooter />
     </div>
+  );
+}
+
+function getGymEquipment(slug: string) {
+  const defaultImg = (id: string) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=400&q=80`;
+  
+  if (slug === "kraft-strength-club") {
+    return [
+      { name: "Poleas Ajustables Dobles", image: "/cable-crossover.png", desc: "Estación de poleas cruzadas regulable en altura para entrenamiento de fuerza." },
+      { name: "Polea Alta para Espalda (Lat Pulldown)", image: "/lat-pulldown.png", desc: "Máquina profesional con polea superior y rodillos de fijación ajustables." },
+      { name: "Camilla de Femorales Tumbado", image: "/prone-leg-curl.png", desc: "Aislamiento perfecto de isquiotibiales en posición prona." },
+      { name: "Sillón de Flexión de Piernas Sentado", image: "/seated-leg-curl.png", desc: "Trabajo biomecánico guiado para flexores de rodilla y cuádriceps." },
+      { name: "Camilla de Isquiotibiales Sentado", image: "/seated-hamstring-curl.png", desc: "Máquina de aislamiento para la cadena posterior con rango de movimiento controlado." },
+    ];
+  }
+  
+  if (slug.includes("yoga") || slug.includes("pilates") || slug.includes("studio") || slug.includes("zen")) {
+    return [
+      { name: "Camas de Pilates Reformer", image: defaultImg("photo-1518611012118-696072aa579a"), desc: "Reformers de madera con resortes regulables." },
+      { name: "Mats de Yoga de Corcho", image: defaultImg("photo-1544367567-0f2fcb009e0b"), desc: "Mats ecológicos antideslizantes de alta densidad." },
+      { name: "Bloques y Correas de Soporte", image: defaultImg("photo-1600880292203-757bb62b4baf"), desc: "Accesorios para alineación y estiramientos." },
+      { name: "Pelotas de Pilates (Fitballs)", image: defaultImg("photo-1518310383802-640c2de311b2"), desc: "Diferentes tamaños para fortalecimiento de core." },
+      { name: "Rodillos de Espuma (Foam Rollers)", image: defaultImg("photo-1600880292089-90a7e086ee0c"), desc: "Para liberación miofascial y masajes." },
+    ];
+  }
+
+  if (slug.includes("crossfit") || slug.includes("box") || slug.includes("concept")) {
+    return [
+      { name: "Estructura Rigs para Pull-Ups", image: defaultImg("photo-1517838277536-f5f99be501cd"), desc: "Rigs multiestación para calistenia y gimnasia." },
+      { name: "Remos Concept2", image: defaultImg("photo-1517963879433-6ad2b056d712"), desc: "Ergómetros Concept2 con monitor PM5." },
+      { name: "Kettlebells de Competición", image: defaultImg("photo-1541534741688-6078c6bfb5c5"), desc: "Pesas rusas de acero de 8kg a 32kg." },
+      { name: "Med Balls de Lanzamiento", image: defaultImg("photo-1601422407692-ec4eeec1d9b3"), desc: "Wall balls con costuras reforzadas." },
+      { name: "Cajones Pliométricos", image: defaultImg("photo-1517838277536-f5f99be501cd"), desc: "Cajones de madera de 3 alturas regulables." },
+    ];
+  }
+
+  return [
+    { name: "Poleas Ajustables Dobles", image: "/cable-crossover.png", desc: "Estación de poleas cruzadas regulable en altura para entrenamiento funcional y de fuerza." },
+    { name: "Polea Alta para Espalda (Lat Pulldown)", image: "/lat-pulldown.png", desc: "Máquina profesional con polea superior y rodillos de fijación ajustables para dorsales." },
+    { name: "Camilla de Femorales Tumbado", image: "/prone-leg-curl.png", desc: "Aislamiento perfecto de isquiotibiales en posición prona con rodillo acolchado autorregulable." },
+    { name: "Sillón de Flexión de Piernas Sentado", image: "/seated-leg-curl.png", desc: "Trabajo biomecánico guiado para flexores de rodilla y cuádriceps en posición sentada." },
+    { name: "Camilla de Isquiotibiales Sentado", image: "/seated-hamstring-curl.png", desc: "Máquina de aislamiento para la cadena posterior con rango de movimiento controlado." },
+  ];
+}
+
+function EquipmentSection({ slug }: { slug: string }) {
+  const equipment = getGymEquipment(slug);
+  const [searchQuery, setSearchQuery] = useState("");
+  
+  const filteredEquipment = equipment.filter(item => 
+    item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    item.desc?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isDownRef = useRef(false);
+  const startXRef = useRef(0);
+  const scrollLeftRef = useRef(0);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    const slider = containerRef.current;
+    if (!slider) return;
+    isDownRef.current = true;
+    slider.style.cursor = "grabbing";
+    startXRef.current = e.pageX - slider.offsetLeft;
+    scrollLeftRef.current = slider.scrollLeft;
+  };
+
+  const handleMouseLeave = () => {
+    isDownRef.current = false;
+    const slider = containerRef.current;
+    if (slider) {
+      slider.style.cursor = "grab";
+    }
+  };
+
+  const handleMouseUp = () => {
+    isDownRef.current = false;
+    const slider = containerRef.current;
+    if (slider) {
+      slider.style.cursor = "grab";
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDownRef.current) return;
+    const slider = containerRef.current;
+    if (!slider) return;
+    e.preventDefault();
+    const x = e.pageX - slider.offsetLeft;
+    const walk = (x - startXRef.current) * 1.5; // speed multiplier
+    slider.scrollLeft = scrollLeftRef.current - walk;
+  };
+
+  return (
+    <section className="mt-16 border-t border-border pt-16 select-none">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-semibold tracking-tight">Equipamiento disponible</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Maquinaria, accesorios y herramientas disponibles en este centro.</p>
+          <p className="mt-1.5 text-[10px] text-muted-foreground/70 italic">* Las imágenes son de carácter ilustrativo y representativo del equipamiento del centro.</p>
+        </div>
+        <div className="relative w-full sm:w-64 shrink-0">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input 
+            placeholder="Buscar equipamiento..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 bg-card"
+          />
+        </div>
+      </div>
+
+      <div 
+        ref={containerRef}
+        onMouseDown={handleMouseDown}
+        onMouseLeave={handleMouseLeave}
+        onMouseUp={handleMouseUp}
+        onMouseMove={handleMouseMove}
+        style={{ cursor: "grab" }}
+        className="mt-6 flex gap-4 overflow-x-auto pb-4 no-scrollbar snap-x snap-mandatory min-h-[200px]"
+      >
+        {filteredEquipment.length > 0 ? (
+          filteredEquipment.map((item, idx) => (
+            <div 
+              key={idx} 
+              className="w-[240px] sm:w-[260px] shrink-0 snap-start bg-card/25 rounded-3xl p-3 hover:bg-secondary/10 hover:scale-[1.01] transition-all duration-300"
+            >
+              <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted">
+                <img 
+                  src={item.image} 
+                  alt={item.name} 
+                  draggable="false"
+                  className="h-full w-full object-cover hover:scale-[1.03] transition duration-500 select-none" 
+                />
+              </div>
+              <div className="mt-3 px-1">
+                <h3 className="font-semibold text-sm tracking-tight text-foreground">{item.name}</h3>
+                {item.desc && <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{item.desc}</p>}
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="flex w-full items-center justify-center p-8 text-center text-muted-foreground bg-secondary/20 rounded-2xl border border-border border-dashed">
+            No se encontró equipamiento con ese nombre.
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function GymFAQSection({ gym }: { gym: Gym }) {
+  const [openIdx, setOpenIdx] = useState<number | null>(null);
+
+  const faqs = [
+    {
+      q: "¿Cómo reservo una clase de prueba o pase diario?",
+      a: `Puedes reservar directamente presionando el botón 'Reservar clase de prueba'. Completas tus datos en 30 segundos, eliges el día y horario, y recibirás la confirmación inmediata. Si es tu primera vez en ${gym.name}, ¡la clase de prueba es gratuita!`
+    },
+    {
+      q: "¿Cuál es la política de cancelación de clases?",
+      a: "Puedes cancelar cualquier clase reservada sin penalización hasta 4 horas antes del horario de inicio directamente desde tu panel de usuario. Si cancelas fuera de término, el crédito no será reembolsado."
+    },
+    {
+      q: "¿Qué necesito presentar para ingresar el primer día?",
+      a: `${gym.requirements?.join(" y ") || "Apto médico físico y toalla personal"}. Además, deberás presentar el código QR que se genera en tu cuenta desde la app de Shakerfy al ingresar al centro.`
+    },
+    {
+      q: "¿Cómo funcionan las membresías y la renovación?",
+      a: "Nuestras membresías se facturan mensualmente de forma automática. No tienen contratos de permanencia mínima, por lo que puedes pausar, cambiar de plan o cancelar tu suscripción en cualquier momento sin cargos adicionales."
+    },
+    {
+      q: "¿Puedo congelar mi membresía por viaje o enfermedad?",
+      a: `Sí. Según el plan que elijas, cuentas con días de congelamiento (por ejemplo, 7, 15 o 30 días anuales). Puedes solicitar el congelamiento desde tu panel de usuario antes de la fecha en que dejes de asistir.`
+    },
+    {
+      q: "¿El acceso a las sedes y vestuarios está incluido?",
+      a: `¡Sí! Todas las membresías contratadas en ${gym.name} incluyen el uso libre de los vestuarios, duchas con agua caliente, lockers de seguridad (debes traer tu propio candado) y WiFi de alta velocidad.`
+    }
+  ];
+
+  return (
+    <section className="mt-16 border-t border-border pt-16">
+      <div className="mb-10 text-center max-w-2xl mx-auto">
+        <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">Preguntas Frecuentes</h2>
+        <p className="mt-2 text-sm text-muted-foreground">Despeja tus dudas sobre el funcionamiento de {gym.name}, reservas y membresías.</p>
+      </div>
+
+      <div className="space-y-4 max-w-3xl mx-auto">
+        {faqs.map((faq, idx) => {
+          const isOpen = openIdx === idx;
+          return (
+            <div key={idx} className={`border rounded-2xl overflow-hidden transition-all duration-300 ${
+              isOpen ? "border-foreground bg-card" : "border-border bg-card hover:border-foreground/30"
+            }`}>
+              <button
+                onClick={() => setOpenIdx(isOpen ? null : idx)}
+                className="flex w-full items-center justify-between p-5 text-left font-medium text-sm text-foreground hover:bg-secondary/45 transition-colors"
+              >
+                <span>{faq.q}</span>
+                <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+              </button>
+              <div
+                className={`transition-all duration-200 ease-in-out overflow-hidden ${
+                  isOpen ? "max-h-[200px] border-t border-border p-5 bg-secondary/15" : "max-h-0"
+                }`}
+              >
+                <p className="text-xs sm:text-sm leading-relaxed text-muted-foreground">{faq.a}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }

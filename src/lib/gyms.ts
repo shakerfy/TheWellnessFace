@@ -73,6 +73,12 @@ export type Gym = {
   instagram?: string;
   tiktok?: string;
   whatsapp?: string;
+  trialClass?: {
+    offered: boolean;
+    price: number;
+    description?: string;
+  };
+  videoUrl?: string;
 };
 
 const img = (id: string) =>
@@ -91,6 +97,7 @@ export const GYMS: Gym[] = [
     tags: ["Powerlifting", "Sala de musculación", "Coaching"],
     isOpen: true,
     hours: "06:00 — 23:00",
+    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-man-working-out-in-the-gym-4856-large.mp4",
     description:
       "Un club de fuerza con plataformas olímpicas, racks calibrados y entrenadores certificados. Pensado para quienes priorizan técnica, progresión y resultados medibles.",
     images: [
@@ -166,6 +173,11 @@ export const GYMS: Gym[] = [
     instagram: "kraft.strength",
     tiktok: "kraft.strength",
     whatsapp: "5491132421241",
+    trialClass: {
+      offered: true,
+      price: 0, // gratis por defecto
+      description: "Clase introductoria para evaluar nivel y conocer las instalaciones.",
+    },
     branches: [
       { 
         id: "1", 

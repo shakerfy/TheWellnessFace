@@ -9,9 +9,9 @@ export function SiteHeader() {
         {/* Left: Navigation links */}
         <div className="flex items-center flex-1 justify-start">
           <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
-            <a href="#como-funciona" className="transition hover:text-foreground">Cómo funciona</a>
-            <a href="#blog" className="transition hover:text-foreground">Blog</a>
-            <a href="#para-gimnasios" className="transition hover:text-foreground">Partners</a>
+            <a href="/#como-funciona" className="transition hover:text-foreground">Cómo funciona</a>
+            <Link to="/blog" className="transition hover:text-foreground">Blog</Link>
+            <a href="/#para-gimnasios" className="transition hover:text-foreground">Partners</a>
           </nav>
         </div>
 

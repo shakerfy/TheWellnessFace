@@ -33,7 +33,7 @@ function GymAuthPage() {
         <ArrowLeft className="h-4 w-4" /> Volver a Alumnos
       </Link>
 
-      <div className="w-full max-w-[400px] rounded-3xl border border-border bg-card p-8 shadow-xl">
+      <div className="w-full max-w-[400px] rounded-3xl border border-border bg-card p-8 ">
         <div className="flex flex-col items-center text-center">
           <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary text-primary-foreground mb-4">
             <Building2 className="h-5 w-5" />
@@ -56,7 +56,7 @@ function GymAuthPage() {
                   required
                   value={gymName}
                   onChange={(e) => setGymName(e.target.value)}
-                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm  transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                   placeholder="Kraft Strength Club"
                 />
               </div>
@@ -67,7 +67,7 @@ function GymAuthPage() {
                   required
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
-                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm  transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                   placeholder="Av. Santa Fe 3421, Palermo"
                 />
               </div>
@@ -80,7 +80,7 @@ function GymAuthPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm  transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               placeholder="admin@gimnasio.com"
             />
           </div>
@@ -96,7 +96,7 @@ function GymAuthPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm  transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               placeholder="••••••••"
             />
           </div>
