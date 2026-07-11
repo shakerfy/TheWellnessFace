@@ -9,6 +9,10 @@ import {
   Play, Pause, RotateCcw, Search, ChevronUp, ChevronDown, Trash2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { 
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine 
+} from "recharts";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
 export const Route = createFileRoute("/app")({
   component: StudentDashboard,
@@ -1298,7 +1302,7 @@ function ExerciseDetailModal({ exercise, onClose }: { exercise: any, onClose: ()
               <Sparkles className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
               <div>
                 <h5 className="text-xs font-bold text-foreground mb-1">Consejo del Coach</h5>
-                <p className="text-xs text-muted-foreground font-semibold leading-relaxed">
+                <p className="text-xs text-muted-foreground font-medium leading-relaxed">
                   {exercise.tips}
                 </p>
               </div>
@@ -1747,7 +1751,7 @@ function ManualWorkoutCreatorModal({
                       {/* Params inputs */}
                       <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 pt-3 border-t border-border/50">
                         <div>
-                          <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Métrica</label>
+                          <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Métrica</label>
                           <select
                             value={exerciseParams[ex.id]?.type || "reps"}
                             onChange={(e) => updateParam(ex.id, "type", e.target.value as any)}
@@ -1759,7 +1763,7 @@ function ManualWorkoutCreatorModal({
                         </div>
 
                         <div>
-                          <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
+                          <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
                             {(exerciseParams[ex.id]?.type || "reps") === "reps" ? "Reps" : "Segs"}
                           </label>
                           <input
@@ -1772,7 +1776,7 @@ function ManualWorkoutCreatorModal({
                         </div>
 
                         <div>
-                          <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Peso (kg)</label>
+                          <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Peso (kg)</label>
                           <input
                             type="text"
                             placeholder="Cuerpo"
@@ -1783,7 +1787,7 @@ function ManualWorkoutCreatorModal({
                         </div>
 
                         <div>
-                          <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Descanso (segs)</label>
+                          <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Descanso (segs)</label>
                           <input
                             type="number"
                             min="0"
@@ -2064,7 +2068,7 @@ function WorkoutFeedbackModal({
               <h1 className="text-3xl font-black text-foreground leading-tight tracking-tight">
                 {workoutTitle || "Fuerza Funcional & Core"}
               </h1>
-              <p className="text-sm text-muted-foreground font-semibold">
+              <p className="text-sm text-muted-foreground font-medium">
                 Enfoque: Cuerpo Completo • Equipamiento: Mancuernas y Pesas Libres • Estimado: 40 min
               </p>
             </div>
@@ -2415,7 +2419,117 @@ function DiarioTab() {
   const [mood, setMood] = useState(75);
   const [hunger, setHunger] = useState(40);
   const [energy, setEnergy] = useState(60);
+  const [checkinPage, setCheckinPage] = useState(0);
+  const [swipeStartX, setSwipeStartX] = useState<number | null>(null);
+  const [swipeCurrentX, setSwipeCurrentX] = useState<number | null>(null);
+  const [isSwiping, setIsSwiping] = useState(false);
+
+  const handleSwipeStart = (clientX: number, target: HTMLElement) => {
+    if (
+      target.closest('.cursor-pointer') || 
+      target.closest('.cursor-col-resize') || 
+      target.closest('button') ||
+      target.closest('input') ||
+      target.closest('select')
+    ) {
+      return;
+    }
+    setSwipeStartX(clientX);
+    setIsSwiping(true);
+  };
+
+  const handleSwipeMove = (clientX: number) => {
+    if (!isSwiping || swipeStartX === null) return;
+    setSwipeCurrentX(clientX);
+  };
+
+  const handleSwipeEnd = () => {
+    if (!isSwiping || swipeStartX === null || swipeCurrentX === null) {
+      setIsSwiping(false);
+      setSwipeStartX(null);
+      setSwipeCurrentX(null);
+      return;
+    }
+    const diff = swipeStartX - swipeCurrentX;
+    const threshold = 60;
+    if (diff > threshold && checkinPage === 0) {
+      setCheckinPage(1);
+    } else if (diff < -threshold && checkinPage === 1) {
+      setCheckinPage(0);
+    }
+    setIsSwiping(false);
+    setSwipeStartX(null);
+    setSwipeCurrentX(null);
+  };
+
   const [hydrationLevel, setHydrationLevel] = useState(5);
+
+  const activityData = [
+    { day: "Lun", puntos: 180 },
+    { day: "Mar", puntos: 160 },
+    { day: "Mié", puntos: 175 },
+    { day: "Jue", puntos: 140 },
+    { day: "Vie", puntos: 155 },
+    { day: "Sáb", puntos: 190 },
+    { day: "Dom", puntos: 168 }
+  ];
+
+  const chartConfig = {
+    puntos: {
+      label: "Puntos de Actividad",
+      color: "hsl(var(--primary))",
+    },
+  };
+
+  // States and data for page 2 (Racha de Actividad & MET Calculator)
+  const MET_ACTIVITIES = [
+    { name: "Aeróbica", low: 3.5, med: 5.0, high: 7.3 },
+    { name: "Artes marciales", low: 5.3, med: 7.0, high: 10.3 },
+    { name: "Baile", low: 3.3, med: 5.0, high: 7.0 },
+    { name: "Básquetbol", low: 4.5, med: 6.0, high: 8.0 },
+    { name: "Bicicleta", low: 4.0, med: 8.0, high: 10.0 },
+    { name: "Boxeo", low: 5.5, med: 7.0, high: 12.8 },
+    { name: "Calistenia", low: 3.5, med: 5.0, high: 8.0 },
+    { name: "Caminata", low: 2.5, med: 3.5, high: 4.5 },
+    { name: "Caminata rápida", low: 3.8, med: 5.0, high: 6.5 },
+    { name: "Ciclismo urbano", low: 4.0, med: 6.8, high: 10.0 },
+    { name: "Correr", low: 7.0, med: 10.0, high: 15.0 },
+    { name: "Crossfit", low: 5.0, med: 8.0, high: 12.0 },
+    { name: "Elíptico", low: 4.5, med: 7.0, high: 10.0 },
+    { name: "Entrenamiento de fuerza", low: 3.0, med: 5.0, high: 6.0 },
+    { name: "Fútbol", low: 5.0, med: 7.0, high: 10.0 },
+    { name: "Natación", low: 5.3, med: 8.0, high: 10.0 },
+    { name: "Pilates", low: 2.5, med: 3.5, high: 5.0 },
+    { name: "Saltar la cuerda", low: 8.0, med: 11.0, high: 14.0 },
+    { name: "Senderismo", low: 3.5, med: 6.0, high: 9.0 },
+    { name: "Yoga", low: 2.0, med: 3.0, high: 4.0 },
+    { name: "Zumba", low: 4.0, med: 6.5, high: 8.5 }
+  ];
+
+  const STREAK_FAQ = [
+    {
+      q: "¿Qué es la racha y cómo se mide?",
+      a: "La Racha de Actividad ayuda a mantener tu constancia física a largo plazo. En lugar de evaluar día a día, la app calcula un promedio ponderado de 7 días de tu actividad física (caminar, correr, gimnasio, etc.), donde las actividades más recientes tienen mayor peso."
+    },
+    {
+      q: "¿Cómo se mantiene y cuándo se pierde?",
+      a: "Para mantener tu racha, tu promedio de 7 días debe estar en el nivel Saludable (150 Puntos o más). Si cae por debajo de este límite, tu racha vuelve a cero. No obstante, ¡se permite descansar! Si te saltas un día pero tu promedio sigue arriba de 150, tu racha no se romperá."
+    },
+    {
+      q: "¿Qué es la Curva de Actividad y la Línea Base?",
+      a: "La Curva de Actividad grafica tu promedio de Puntos de Actividad de los últimos 7 días. La Línea Base Saludable (150 puntos) combina las pautas de actividad física diaria de la Organización Mundial de la Salud (OMS) con el MET."
+    },
+    {
+      q: "¿Cómo se calculan los Puntos de Actividad?",
+      a: "Los puntos diarios son el promedio ponderado de los minutos MET. El MET (Equivalente Metabólico) mide la energía que consume una actividad comparada con el reposo. Los minutos MET de cada ejercicio se calculan multiplicando el valor MET de la actividad (según su intensidad) por los minutos entrenados."
+    }
+  ];
+
+  const [calcActivityIdx, setCalcActivityIdx] = useState(7); // default to Caminata
+  const [calcIntensity, setCalcIntensity] = useState<"low" | "med" | "high">("med");
+  const [calcDuration, setCalcDuration] = useState(30);
+  const [activeFaq, setActiveFaq] = useState<number | null>(null);
+  const [showStreakInfo, setShowStreakInfo] = useState(false);
 
   const [muscleRecovery, setMuscleRecovery] = useState<Record<string, number>>({
     "pecho": 95,
@@ -2646,37 +2760,226 @@ function DiarioTab() {
 
       {subTab === "diario" && (
         <>
-          {/* Status Check-in (Mood, Hunger, Fatigue) */}
-          <section className="bg-card border border-border rounded-2xl p-5 md:p-6 space-y-5">
+          {/* Status Check-in Page View */}
+          <section className="bg-card border border-border rounded-2xl p-5 md:p-6 space-y-5 relative overflow-hidden">
+            {/* Header */}
             <div className="flex items-center justify-between border-b border-border/40 pb-3">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">Estado Actual</h2>
-              <span className="text-[10px] text-muted-foreground font-semibold">Actualizado hace 20m</span>
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
+                  {checkinPage === 0 ? (
+                    "Estado Actual"
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      Racha de Actividad
+                      <span className="inline-flex items-center gap-1 text-[11px] font-black px-2.5 py-0.5 rounded-full bg-orange-500/10 text-orange-500 border border-orange-500/20">
+                        <Flame className="w-3.5 h-3.5 fill-orange-500 animate-pulse text-orange-500" />
+                        12 días
+                      </span>
+                    </span>
+                  )}
+                </h2>
+                {checkinPage === 1 && (
+                  <button 
+                    onClick={() => setShowStreakInfo(true)}
+                    className="text-muted-foreground hover:text-primary transition-colors p-1 rounded-full hover:bg-secondary/40 focus:outline-none cursor-pointer"
+                    title="¿Cómo funciona mi racha?"
+                  >
+                    <Info className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              <CustomSlider 
-                value={mood} 
-                onChange={setMood} 
-                labelLeft="Ansioso" 
-                labelRight="Calmo" 
-                colorClass="from-[#e1d5f5] to-[#7f20df] dark:from-[#2e1d47] dark:to-[#7f20df]"
+            {/* Page content with smooth swipe/drag and fade animation */}
+            <div 
+              className="relative min-h-[100px] cursor-grab active:cursor-grabbing select-none touch-pan-y"
+              onTouchStart={(e) => handleSwipeStart(e.touches[0].clientX, e.target as HTMLElement)}
+              onTouchMove={(e) => handleSwipeMove(e.touches[0].clientX)}
+              onTouchEnd={handleSwipeEnd}
+              onMouseDown={(e) => handleSwipeStart(e.clientX, e.target as HTMLElement)}
+              onMouseMove={(e) => handleSwipeMove(e.clientX)}
+              onMouseUp={handleSwipeEnd}
+              onMouseLeave={() => {
+                if (isSwiping) handleSwipeEnd();
+              }}
+            >
+              {checkinPage === 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 animate-in fade-in slide-in-from-left-4 duration-300">
+                  <CustomSlider 
+                    value={mood} 
+                    onChange={setMood} 
+                    labelLeft="Ansioso" 
+                    labelRight="Calmo" 
+                    colorClass="from-[#150a21] to-[#7f20df] dark:from-[#0a0410] dark:to-[#7f20df]"
+                  />
+                  <CustomSlider 
+                    value={hunger} 
+                    onChange={setHunger} 
+                    labelLeft="Hambriento" 
+                    labelRight="Saciado" 
+                    colorClass="from-[#041f14] to-[#10b981] dark:from-[#020f0a] dark:to-[#10b981]"
+                  />
+                  <CustomSlider 
+                    value={energy} 
+                    onChange={setEnergy} 
+                    labelLeft="Cansado" 
+                    labelRight="Enérgico" 
+                    colorClass="from-[#221a05] to-[#f59e0b] dark:from-[#181203] dark:to-[#f59e0b]"
+                  />
+                </div>
+              ) : (
+                <div className="w-full animate-in fade-in slide-in-from-right-4 duration-300">
+                  <div className="flex justify-between items-center text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-3 px-0.5">
+                    <span>Curva de Actividad (7 días)</span>
+                    <span className="text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Base: 150 ptos</span>
+                  </div>
+
+                  <ChartContainer config={chartConfig} className="h-36 w-full aspect-auto select-none">
+                    <AreaChart
+                      data={activityData}
+                      margin={{ top: 5, right: 5, left: -25, bottom: 0 }}
+                    >
+                      <defs>
+                        <linearGradient id="recharts-activity-grad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.25} />
+                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border/40" />
+                      <XAxis 
+                        dataKey="day" 
+                        tickLine={false} 
+                        axisLine={false} 
+                        tickMargin={6}
+                        className="text-[10px] font-bold fill-muted-foreground"
+                      />
+                      <YAxis 
+                        tickLine={false} 
+                        axisLine={false} 
+                        tickMargin={4}
+                        domain={[100, 200]}
+                        className="text-[9px] font-semibold fill-muted-foreground"
+                      />
+                      <ReferenceLine 
+                        y={150} 
+                        stroke="#10b981" 
+                        strokeDasharray="4 4" 
+                        strokeWidth={2}
+                        label={{ 
+                          value: "Mínimo Saludable (150)", 
+                          position: "insideBottomRight", 
+                          offset: 8,
+                          fill: "#10b981",
+                          fontSize: 9,
+                          fontWeight: "bold"
+                        }} 
+                      />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <Area 
+                        type="monotone" 
+                        dataKey="puntos" 
+                        stroke="hsl(var(--primary))" 
+                        strokeWidth={2.5} 
+                        fillOpacity={1} 
+                        fill="url(#recharts-activity-grad)" 
+                      />
+                    </AreaChart>
+                  </ChartContainer>
+                </div>
+              )}
+            </div>
+
+            {/* FAQ Info Modal Overlay */}
+            {showStreakInfo && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                <div className="bg-card border border-border w-full max-w-md rounded-2xl shadow-xl p-5 relative overflow-hidden space-y-4 animate-in zoom-in-95 duration-200">
+                  <button
+                    onClick={() => setShowStreakInfo(false)}
+                    className="absolute top-4 right-4 size-8 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-all cursor-pointer"
+                    aria-label="Cerrar"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+
+                  <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-foreground">
+                    <Info className="w-4 h-4 text-primary" />
+                    <span>¿Cómo funciona mi Racha?</span>
+                  </div>
+
+                  <div className="space-y-2 max-h-[350px] overflow-y-auto pr-1">
+                    {STREAK_FAQ.map((faq, idx) => {
+                      const isOpen = activeFaq === idx;
+                      return (
+                        <div key={idx} className="border-b border-border/40 last:border-b-0 pb-1.5 last:pb-0">
+                          <button
+                            onClick={() => setActiveFaq(isOpen ? null : idx)}
+                            className="w-full flex items-center justify-between text-left py-1 text-[11px] font-bold text-foreground hover:text-primary transition-colors focus:outline-none cursor-pointer"
+                          >
+                            <span>{faq.q}</span>
+                            {isOpen ? (
+                              <ChevronUp className="w-3.5 h-3.5 shrink-0 ml-1 text-muted-foreground" />
+                            ) : (
+                              <ChevronDown className="w-3.5 h-3.5 shrink-0 ml-1 text-muted-foreground" />
+                            )}
+                          </button>
+                          
+                          {isOpen && (
+                            <p className="text-[10px] text-muted-foreground leading-relaxed mt-1 animate-in fade-in slide-in-from-top-1 duration-200 select-text">
+                              {faq.a}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <Button 
+                    onClick={() => setShowStreakInfo(false)}
+                    className="w-full text-xs font-bold py-2"
+                  >
+                    Entendido
+                  </Button>
+                </div>
+              </div>
+            )}
+          </section>
+
+          {/* Page View Indicators & Navigation Controls (Below & Outside the card) */}
+          <div className="flex items-center justify-between px-2 pt-2.5">
+            {/* Dots Indicator */}
+            <div className="flex items-center gap-1.5">
+              <button 
+                onClick={() => setCheckinPage(0)}
+                className={`size-2 rounded-full transition-all duration-300 ${checkinPage === 0 ? "bg-primary scale-125" : "bg-muted hover:bg-muted-foreground/40"} cursor-pointer`}
+                aria-label="Página 1"
               />
-              <CustomSlider 
-                value={hunger} 
-                onChange={setHunger} 
-                labelLeft="Hambriento" 
-                labelRight="Saciado" 
-                colorClass="from-[#d1f4e6] to-[#10b981] dark:from-[#0c3527] dark:to-[#10b981]"
-              />
-              <CustomSlider 
-                value={energy} 
-                onChange={setEnergy} 
-                labelLeft="Cansado" 
-                labelRight="Enérgico" 
-                colorClass="from-[#fef2d9] to-[#f59e0b] dark:from-[#3a2813] dark:to-[#f59e0b]"
+              <button 
+                onClick={() => setCheckinPage(1)}
+                className={`size-2 rounded-full transition-all duration-300 ${checkinPage === 1 ? "bg-primary scale-125" : "bg-muted hover:bg-muted-foreground/40"} cursor-pointer`}
+                aria-label="Página 2"
               />
             </div>
-          </section>
+            
+            {/* Chevrons Navigation */}
+            <div className="flex items-center gap-2">
+              <button
+                disabled={checkinPage === 0}
+                onClick={() => setCheckinPage(0)}
+                className="size-7 rounded-lg border border-border flex items-center justify-center text-foreground hover:bg-secondary disabled:opacity-40 disabled:pointer-events-none transition-all duration-200 cursor-pointer"
+                title="Página Anterior"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+              </button>
+              <button
+                disabled={checkinPage === 1}
+                onClick={() => setCheckinPage(1)}
+                className="size-7 rounded-lg border border-border flex items-center justify-center text-foreground hover:bg-secondary disabled:opacity-40 disabled:pointer-events-none transition-all duration-200 cursor-pointer"
+                title="Siguiente Página"
+              >
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
 
           {/* Timeline */}
           <div className="relative pl-6 md:pl-0">
@@ -2802,7 +3105,7 @@ function DiarioTab() {
                         <div className="p-4 bg-secondary/20 border-t border-border">
                           <div className="flex items-start gap-2.5">
                             <Sparkles className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                            <p className="text-xs text-muted-foreground leading-relaxed font-semibold">
+                            <p className="text-xs text-muted-foreground leading-relaxed font-medium">
                               {item.coachFeedback}
                             </p>
                           </div>
@@ -2886,32 +3189,32 @@ function DiarioTab() {
               <div className="flex flex-col items-center">
                 <div className="relative size-40 mb-6">
                   <svg className="size-full" viewBox="0 0 36 36">
-                    <circle cx="18" cy="18" fill="transparent" r="15.9" stroke="var(--border)" strokeWidth="2"></circle>
-                    {/* Hunger (45%) - Deep Violet */}
-                    <circle cx="18" cy="18" fill="transparent" r="15.9" stroke="currentColor" strokeDasharray="45 55" strokeDashoffset="25" strokeLinecap="round" strokeWidth="2.5" className="text-violet-600 dark:text-violet-500"></circle>
-                    {/* Stress (20%) - Medium Purple */}
-                    <circle cx="18" cy="18" fill="transparent" r="15.9" stroke="currentColor" strokeDasharray="20 80" strokeDashoffset="80" strokeLinecap="round" strokeWidth="2.5" className="text-purple-500 dark:text-purple-400"></circle>
-                    {/* Social (15%) - Periwinkle */}
-                    <circle cx="18" cy="18" fill="transparent" r="15.9" stroke="currentColor" strokeDasharray="15 85" strokeDashoffset="100" strokeLinecap="round" strokeWidth="2.5" className="text-indigo-400 dark:text-indigo-500"></circle>
-                    {/* Time (20%) - Lavender/Fuchsia */}
-                    <circle cx="18" cy="18" fill="transparent" r="15.9" stroke="currentColor" strokeDasharray="20 80" strokeDashoffset="115" strokeLinecap="round" strokeWidth="2.5" className="text-fuchsia-400 dark:text-fuchsia-500"></circle>
+                    <circle cx="18" cy="18" fill="transparent" r="15.9" stroke="var(--border)" strokeOpacity="0.2" strokeWidth="2"></circle>
+                    {/* Hunger (45%) */}
+                    <circle cx="18" cy="18" fill="transparent" r="15.9" stroke="currentColor" strokeDasharray="45 55" strokeDashoffset="85" strokeWidth="2.5" className="text-violet-600 dark:text-violet-500"></circle>
+                    {/* Stress (20%) */}
+                    <circle cx="18" cy="18" fill="transparent" r="15.9" stroke="currentColor" strokeDasharray="20 80" strokeDashoffset="40" strokeWidth="2.5" className="text-purple-500 dark:text-purple-400"></circle>
+                    {/* Social (15%) */}
+                    <circle cx="18" cy="18" fill="transparent" r="15.9" stroke="currentColor" strokeDasharray="15 85" strokeDashoffset="100" strokeWidth="2.5" className="text-indigo-400 dark:text-indigo-500"></circle>
+                    {/* Time (20%) */}
+                    <circle cx="18" cy="18" fill="transparent" r="15.9" stroke="currentColor" strokeDasharray="20 80" strokeDashoffset="20" strokeWidth="2.5" className="text-fuchsia-400 dark:text-fuchsia-500"></circle>
                   </svg>
                 </div>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2 w-full mt-2">
                   <div className="flex items-center gap-2">
-                    <div className="size-2 rounded-full bg-violet-600 dark:bg-violet-500"></div>
+                    <div className="size-2.5 rounded-full bg-violet-600 dark:bg-violet-500"></div>
                     <span className="text-[11px] text-foreground font-bold">Hambre (45%)</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="size-2 rounded-full bg-purple-500 dark:bg-purple-400"></div>
+                    <div className="size-2.5 rounded-full bg-purple-500 dark:bg-purple-400"></div>
                     <span className="text-[11px] text-foreground font-bold">Estrés (20%)</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="size-2 rounded-full bg-indigo-400 dark:bg-indigo-500"></div>
+                    <div className="size-2.5 rounded-full bg-indigo-400 dark:bg-indigo-500"></div>
                     <span className="text-[11px] text-foreground font-bold">Social (15%)</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="size-2 rounded-full bg-fuchsia-400 dark:bg-fuchsia-500"></div>
+                    <div className="size-2.5 rounded-full bg-fuchsia-400 dark:bg-fuchsia-500"></div>
                     <span className="text-[11px] text-foreground font-bold">Tiempo (20%)</span>
                   </div>
                 </div>
@@ -2953,7 +3256,7 @@ function DiarioTab() {
                     <span className="text-5xl font-black tracking-tighter text-foreground">85</span>
                     <span className="text-muted-foreground text-lg font-bold">/ 100</span>
                   </div>
-                  <p className="text-muted-foreground text-sm leading-relaxed font-semibold">
+                  <p className="text-muted-foreground text-sm leading-relaxed">
                     Tu índice de estabilidad es un 12% mayor que la semana pasada. Esto indica una mejor sincronización entre las necesidades reales de tu cuerpo y los horarios de tus comidas.
                   </p>
                   <div className="flex flex-wrap gap-2 pt-2">
@@ -3004,7 +3307,7 @@ function DiarioTab() {
                     <span className="text-[11px] font-bold text-foreground">Verde</span>
                   </div>
                   <span className="text-lg font-black text-foreground mt-1.5">35%</span>
-                  <span className="text-[9px] text-muted-foreground font-semibold">Vegetales y hojas</span>
+                  <span className="text-[11px] text-muted-foreground font-medium">Vegetales y hojas</span>
                 </div>
 
                 <div className="p-3 bg-secondary/20 rounded-xl border border-border/40 flex flex-col justify-between hover:border-foreground/20 transition-all duration-300">
@@ -3013,7 +3316,7 @@ function DiarioTab() {
                     <span className="text-[11px] font-bold text-foreground">Rojo</span>
                   </div>
                   <span className="text-lg font-black text-foreground mt-1.5">15%</span>
-                  <span className="text-[9px] text-muted-foreground font-semibold">Tomates y frutos rojos</span>
+                  <span className="text-[11px] text-muted-foreground font-medium">Tomates y frutos rojos</span>
                 </div>
 
                 <div className="p-3 bg-secondary/20 rounded-xl border border-border/40 flex flex-col justify-between hover:border-foreground/20 transition-all duration-300">
@@ -3022,7 +3325,7 @@ function DiarioTab() {
                     <span className="text-[11px] font-bold text-foreground">Amarillo/Nar</span>
                   </div>
                   <span className="text-lg font-black text-foreground mt-1.5">20%</span>
-                  <span className="text-[9px] text-muted-foreground font-semibold">Cítricos y zanahorias</span>
+                  <span className="text-[11px] text-muted-foreground font-medium">Cítricos y zanahorias</span>
                 </div>
 
                 <div className="p-3 bg-secondary/20 rounded-xl border border-border/40 flex flex-col justify-between hover:border-foreground/20 transition-all duration-300">
@@ -3031,7 +3334,7 @@ function DiarioTab() {
                     <span className="text-[11px] font-bold text-foreground">Blanco</span>
                   </div>
                   <span className="text-lg font-black text-foreground mt-1.5">12%</span>
-                  <span className="text-[9px] text-muted-foreground font-semibold">Ajo, cebolla y hongos</span>
+                  <span className="text-[11px] text-muted-foreground font-medium">Ajo, cebolla y hongos</span>
                 </div>
 
                 <div className="p-3 bg-secondary/20 rounded-xl border border-border/40 flex flex-col justify-between hover:border-foreground/20 transition-all duration-300">
@@ -3040,7 +3343,7 @@ function DiarioTab() {
                     <span className="text-[11px] font-bold text-foreground">Marrón</span>
                   </div>
                   <span className="text-lg font-black text-foreground mt-1.5">13%</span>
-                  <span className="text-[9px] text-muted-foreground font-semibold">Granos y proteínas</span>
+                  <span className="text-[11px] text-muted-foreground font-medium">Granos y proteínas</span>
                 </div>
 
                 <div className="p-3 bg-secondary/20 rounded-xl border border-border/40 flex flex-col justify-between hover:border-foreground/20 transition-all duration-300">
@@ -3049,7 +3352,7 @@ function DiarioTab() {
                     <span className="text-[11px] font-bold text-foreground">Otros</span>
                   </div>
                   <span className="text-lg font-black text-foreground mt-1.5">5%</span>
-                  <span className="text-[9px] text-muted-foreground font-semibold">Otros alimentos</span>
+                  <span className="text-[11px] text-muted-foreground font-medium">Otros alimentos</span>
                 </div>
               </div>
             </div>
@@ -3151,35 +3454,35 @@ function DiarioTab() {
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                   <div className="p-3 bg-secondary/15 rounded-xl border border-border/40 space-y-1">
-                    <div className="flex items-center gap-1.5 font-bold text-emerald-600 dark:text-emerald-500">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-500">
                       <div className="size-2 rounded-full bg-emerald-500" />
                       <span>90% - 100% (Listo/Sano)</span>
                     </div>
-                    <p className="text-muted-foreground text-[10px] leading-relaxed">Sin agujetas, dolor ni molestia. Fuerza al máximo y rango de movimiento normal completo.</p>
+                    <p className="text-muted-foreground text-xs leading-relaxed">Sin agujetas, dolor ni molestia. Fuerza al máximo y rango de movimiento normal completo.</p>
                   </div>
 
                   <div className="p-3 bg-secondary/15 rounded-xl border border-border/40 space-y-1">
-                    <div className="flex items-center gap-1.5 font-bold text-teal-600 dark:text-teal-500">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-teal-600 dark:text-teal-500">
                       <div className="size-2 rounded-full bg-teal-500" />
                       <span>70% - 80% (Leve cansancio)</span>
                     </div>
-                    <p className="text-muted-foreground text-[10px] leading-relaxed">Cansancio muscular leve o agujetas mínimas que desaparecen al calentar. Fuerza normal.</p>
+                    <p className="text-muted-foreground text-xs leading-relaxed">Cansancio muscular leve o agujetas mínimas que desaparecen al calentar. Fuerza normal.</p>
                   </div>
 
                   <div className="p-3 bg-secondary/15 rounded-xl border border-border/40 space-y-1">
-                    <div className="flex items-center gap-1.5 font-bold text-amber-600 dark:text-amber-500">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-500">
                       <div className="size-2 rounded-full bg-amber-500" />
                       <span>50% - 60% (Fatiga moderada)</span>
                     </div>
-                    <p className="text-muted-foreground text-[10px] leading-relaxed">Agujetas moderadas (DOMS) al tacto o al estirar. Rigidez leve. Evita entrenar hoy este músculo a alta intensidad.</p>
+                    <p className="text-muted-foreground text-xs leading-relaxed">Agujetas moderadas (DOMS) al tacto o al estirar. Rigidez leve. Evita entrenar hoy este músculo a alta intensidad.</p>
                   </div>
 
                   <div className="p-3 bg-secondary/15 rounded-xl border border-border/40 space-y-1">
-                    <div className="flex items-center gap-1.5 font-bold text-rose-600 dark:text-rose-500">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-rose-600 dark:text-rose-500">
                       <div className="size-2 rounded-full bg-rose-500" />
                       <span>Menos de 50% (Sobrecarga)</span>
                     </div>
-                    <p className="text-muted-foreground text-[10px] leading-relaxed">Dolor fuerte o rigidez limitante en la vida diaria. Pérdida notable de fuerza. Requiere descanso absoluto.</p>
+                    <p className="text-muted-foreground text-xs leading-relaxed">Dolor fuerte o rigidez limitante en la vida diaria. Pérdida notable de fuerza. Requiere descanso absoluto.</p>
                   </div>
                 </div>
               </div>
