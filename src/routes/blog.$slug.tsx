@@ -152,14 +152,14 @@ function BlogDetailPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mt-10">
             {/* Article Body */}
             <div className="lg:col-span-8 space-y-6">
-              <div className="prose prose-neutral dark:prose-invert max-w-none text-foreground leading-relaxed space-y-6">
+              <div className="typeset typeset-docs max-w-[37em]">
                 {post.content.split("\n\n").map((paragraph, idx) => {
                   const p = paragraph.trim();
                   if (!p) return null;
 
                   if (p.startsWith("### ")) {
                     return (
-                      <h3 key={idx} className="text-xl font-bold tracking-tight text-foreground mt-8 mb-3">
+                      <h3 key={idx}>
                         {p.replace("### ", "")}
                       </h3>
                     );
@@ -167,7 +167,7 @@ function BlogDetailPage() {
 
                   if (p.startsWith("#### ")) {
                     return (
-                      <h4 key={idx} className="text-lg font-bold tracking-tight text-foreground mt-6 mb-2">
+                      <h4 key={idx}>
                         {p.replace("#### ", "")}
                       </h4>
                     );
@@ -175,23 +175,23 @@ function BlogDetailPage() {
 
                   if (p.startsWith("> ")) {
                     return (
-                      <blockquote key={idx} className="border-l-4 border-primary pl-4 py-2 italic text-muted-foreground bg-primary/5 rounded-r-xl my-6">
+                      <blockquote key={idx}>
                         {p.replace("> ", "").replace(/"/g, "")}
                       </blockquote>
                     );
                   }
 
                   if (p.startsWith("---")) {
-                    return <hr key={idx} className="border-border my-8" />;
+                    return <hr key={idx} />;
                   }
 
                   if (p.startsWith("- ")) {
                     const items = p.split("\n").map(li => li.replace("- ", "").trim());
                     return (
-                      <ul key={idx} className="list-disc list-inside space-y-2 my-4 text-sm sm:text-base text-muted-foreground">
+                      <ul key={idx}>
                         {items.map((it, i) => (
-                          <li key={i} className="leading-relaxed">
-                            <span className="text-foreground font-normal">{it}</span>
+                          <li key={i}>
+                            {it}
                           </li>
                         ))}
                       </ul>
@@ -199,7 +199,7 @@ function BlogDetailPage() {
                   }
 
                   return (
-                    <p key={idx} className="text-sm sm:text-base text-muted-foreground/90 leading-relaxed">
+                    <p key={idx}>
                       {p}
                     </p>
                   );

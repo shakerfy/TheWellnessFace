@@ -4,15 +4,120 @@ import {
   User, Calendar, BarChart3, CreditCard, Settings, 
   LogOut, QrCode, CheckCircle, Clock, AlertTriangle, 
   MapPin, ChevronRight, ChevronLeft, X, Sparkles, Shield, AlertCircle, ShieldAlert, Star,
-  Flame, Coffee, Droplet, TrendingUp, Info, Edit,
+  Flame, Coffee, Droplet, TrendingUp, Info, Edit, Sun, Moon, ArrowUpRight, Utensils,
   Camera, Dumbbell, Activity, Plus, Check, Loader2,
-  Play, Pause, RotateCcw, Search, ChevronUp, ChevronDown, Trash2
+  Play, Pause, RotateCcw, Search, ChevronUp, ChevronDown, Trash2, FileDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { Tooltip as ShadcnTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine 
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine,
+  BarChart, Bar, Cell, RadarChart, Radar, PolarGrid,
+  PieChart, Pie,
+  RadialBarChart, RadialBar, PolarRadiusAxis, PolarAngleAxis, Label
 } from "recharts";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, type ChartConfig } from "@/components/ui/chart";
+// @ts-ignore
+import * as SunCalc from "suncalc";
+
+const SYMPTOMS_DATA = [
+  { symptom: "ninguno", count: 18, fill: "var(--color-ninguno)" },
+  { symptom: "cabeza", count: 14, fill: "var(--color-cabeza)" },
+  { symptom: "fatiga", count: 10, fill: "var(--color-fatiga)" },
+  { symptom: "hinchazon", count: 8, fill: "var(--color-hinchazon)" },
+  { symptom: "humor", count: 7, fill: "var(--color-humor)" },
+  { symptom: "estomago", count: 5, fill: "var(--color-estomago)" },
+  { symptom: "nauseas", count: 3, fill: "var(--color-nauseas)" },
+  { symptom: "otro", count: 2, fill: "var(--color-otro)" }
+];
+
+const SYMPTOMS_CHART_CONFIG = {
+  ninguno: { label: "Ninguno", color: "#10b981" },
+  cabeza: { label: "Dolor de cabeza", color: "#8b5cf6" },
+  fatiga: { label: "Fatiga", color: "#f59e0b" },
+  hinchazon: { label: "Hinchazón", color: "#f97316" },
+  humor: { label: "Cambios de humor", color: "#ec4899" },
+  estomago: { label: "Dolor de estómago", color: "#ef4444" },
+  nauseas: { label: "Náuseas", color: "#eab308" },
+  otro: { label: "Otro", color: "#94a3b8" }
+};
+
+const WHY_EAT_DATA = [
+  { reason: "hambre", label: "Hambre", percentage: 35, fill: "var(--color-hambre)" },
+  { reason: "estres", label: "Estrés", percentage: 15, fill: "var(--color-estres)" },
+  { reason: "sabor", label: "Sabor", percentage: 15, fill: "var(--color-sabor)" },
+  { reason: "social", label: "Social", percentage: 10, fill: "var(--color-social)" },
+  { reason: "habito", label: "Hábito", percentage: 10, fill: "var(--color-habito)" },
+  { reason: "emocional", label: "Emocional", percentage: 8, fill: "var(--color-emocional)" },
+  { reason: "aburrimiento", label: "Aburrimiento", percentage: 5, fill: "var(--color-aburrimiento)" },
+  { reason: "otro", label: "Otro", percentage: 2, fill: "var(--color-otro)" }
+];
+
+const WHY_EAT_CHART_CONFIG = {
+  percentage: {
+    label: "Porcentaje"
+  },
+  hambre: { label: "Hambre", color: "#10b981" },
+  estres: { label: "Estrés", color: "#ef4444" },
+  sabor: { label: "Sabor", color: "#eab308" },
+  social: { label: "Social", color: "#0ea5e9" },
+  habito: { label: "Hábito", color: "#6366f1" },
+  emocional: { label: "Emocional", color: "#ec4899" },
+  aburrimiento: { label: "Aburrimiento", color: "#a855f7" },
+  otro: { label: "Otro", color: "#94a3b8" }
+};
+
+const ADHERENCE_DATA = [
+  { name: "adherencia", value: 85, fill: "var(--color-adherencia)" }
+];
+
+const ADHERENCE_CHART_CONFIG = {
+  value: {
+    label: "Adherencia"
+  },
+  adherencia: {
+    label: "Adherencia Nutricional",
+    color: "#10b981"
+  }
+};
+
+const STABILITY_DATA = [
+  { subject: "Horarios", value: 85 },
+  { subject: "Nutrición", value: 90 },
+  { subject: "Humor", value: 75 },
+  { subject: "Hidratación", value: 80 },
+  { subject: "Consistencia", value: 95 }
+];
+
+const STABILITY_CHART_CONFIG = {
+  value: {
+    label: "Estabilidad",
+    color: "#10b981"
+  }
+} satisfies ChartConfig;
+
+const COLOR_PLATE_DATA = [
+  { colorKey: "verde", percentage: 35, fill: "var(--color-verde)" },
+  { colorKey: "amarillo", percentage: 20, fill: "var(--color-amarillo)" },
+  { colorKey: "rojo", percentage: 15, fill: "var(--color-rojo)" },
+  { colorKey: "marron", percentage: 13, fill: "var(--color-marron)" },
+  { colorKey: "blanco", percentage: 12, fill: "var(--color-blanco)" },
+  { colorKey: "otros", percentage: 5, fill: "var(--color-otros)" }
+];
+
+const COLOR_PLATE_CHART_CONFIG = {
+  percentage: {
+    label: "Porcentaje"
+  },
+  verde: { label: "Verde (Vegetales)", color: "#10b981" },
+  amarillo: { label: "Amarillo/Naranja (Cítricos)", color: "#f59e0b" },
+  rojo: { label: "Rojo (Frutos rojos)", color: "#f43f5e" },
+  marron: { label: "Marrón (Granos/Proteínas)", color: "#92400e" },
+  blanco: { label: "Blanco (Ajo/Hongos)", color: "#cbd5e1" },
+  otros: { label: "Otros (Semillas)", color: "#94a3b8" }
+} satisfies ChartConfig;
 
 export const Route = createFileRoute("/app")({
   component: StudentDashboard,
@@ -2412,10 +2517,100 @@ function WorkoutFeedbackModal({
   );
 }
 
+const parseTimeToMinutes = (timeStr: string): number => {
+  const cleanStr = timeStr.trim().toUpperCase();
+  const isPM = cleanStr.includes("PM");
+  const isAM = cleanStr.includes("AM");
+  const baseTime = cleanStr.replace("AM", "").replace("PM", "").trim();
+  const parts = baseTime.split(":");
+  let hours = parseInt(parts[0], 10);
+  const minutes = parts[1] ? parseInt(parts[1], 10) : 0;
+  
+  if (isPM && hours < 12) hours += 12;
+  if (isAM && hours === 12) hours = 0;
+  
+  return hours * 60 + minutes;
+};
+
+const formatDateLabel = (dateStr: string) => {
+  try {
+    const [year, month, day] = dateStr.split("-").map(Number);
+    const date = new Date(year, month - 1, day);
+    
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+    
+    const isToday = today.getFullYear() === date.getFullYear() &&
+                    today.getMonth() === date.getMonth() &&
+                    today.getDate() === date.getDate();
+                    
+    const isYesterday = yesterday.getFullYear() === date.getFullYear() &&
+                        yesterday.getMonth() === date.getMonth() &&
+                        yesterday.getDate() === date.getDate();
+                        
+    const options: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long' };
+    const formatted = date.toLocaleDateString('es-ES', options);
+    const capitalized = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+    
+    if (isToday) {
+      return `Hoy — ${capitalized}`;
+    } else if (isYesterday) {
+      return `Ayer — ${capitalized}`;
+    } else {
+      return capitalized;
+    }
+  } catch (err) {
+    return dateStr;
+  }
+};
+
 // Subcomponent: AI Coach Diario (Wellfooder Timeline)
 function DiarioTab() {
   const [subTab, setSubTab] = useState<"diario" | "analisis" | "recuperacion">("diario");
-  const [insightPeriod, setInsightPeriod] = useState<"day" | "week" | "month" | "quarter">("week");
+  const [insightPeriod, setInsightPeriod] = useState<"day" | "week" | "month" | "quarter" | "all">("week");
+  const [sunTimes, setSunTimes] = useState({ sunrise: "06:30", sunset: "20:15" });
+
+  useEffect(() => {
+    const getSolarTimes = (lat: number, lng: number) => {
+      try {
+        // @ts-ignore
+        const times = SunCalc.getTimes(new Date(), lat, lng);
+        const formatTime = (date: Date) => {
+          return date.toLocaleTimeString("es-AR", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+          });
+        };
+        setSunTimes({
+          sunrise: formatTime(times.sunrise),
+          sunset: formatTime(times.sunset),
+        });
+      } catch (err) {
+        console.error("Error al calcular horarios solares con SunCalc:", err);
+      }
+    };
+
+    // Coordenadas por defecto (Buenos Aires)
+    const defaultLat = -34.6037;
+    const defaultLng = -58.3816;
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          getSolarTimes(position.coords.latitude, position.coords.longitude);
+        },
+        (error) => {
+          console.warn("Error de geolocalización, usando Buenos Aires:", error);
+          getSolarTimes(defaultLat, defaultLng);
+        },
+        { enableHighAccuracy: false, timeout: 5000 }
+      );
+    } else {
+      getSolarTimes(defaultLat, defaultLng);
+    }
+  }, []);
   const [mood, setMood] = useState(75);
   const [hunger, setHunger] = useState(40);
   const [energy, setEnergy] = useState(60);
@@ -2633,6 +2828,8 @@ function DiarioTab() {
   ]);
   const [selectedCustomWorkout, setSelectedCustomWorkout] = useState<any | null>(null);
   const [workoutToEdit, setWorkoutToEdit] = useState<any | null>(null);
+  const [mealsGoal, setMealsGoal] = useState(3);
+
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -2644,41 +2841,446 @@ function DiarioTab() {
     return () => clearTimeout(timer);
   }, [activeModal, foodAnalysisStep]);
 
-  const timelineItems = [
-    {
-      id: "1",
-      time: "12:30 PM",
-      title: "Avocado Toast & Hojas Verdes",
-      subtitle: "Almuerzo",
-      type: "food",
-      img: "https://images.unsplash.com/photo-1541532713592-79a0317b6b77?auto=format&fit=crop&w=600&q=80",
-      kcal: 420,
-      tag: "Fibra Alta",
-      coachFeedback: "Excelente balance de grasas saludables. Considerá agregar una fuente de proteína la próxima vez para prolongar la saciedad.",
-    },
-    {
-      id: "2",
-      time: "02:00 PM",
-      title: "Registro de Hidratación",
-      subtitle: "Control de Rutina",
-      type: "hydration",
-      img: null,
-      kcal: 0,
-      tag: "Armstrong 5",
-      coachFeedback: "Nivel 5 indica deshidratación leve. Toma 500ml de agua ahora mismo para compensar el entrenamiento de la mañana.",
-    },
-    {
-      id: "3",
-      time: "08:15 AM",
-      title: "Café Negro",
-      subtitle: "Desayuno",
-      type: "coffee",
-      img: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=150&q=80",
-      kcal: 2,
-      tag: "Sin Azúcar",
-      coachFeedback: null,
-    }
-  ];
+  const timelineItems = React.useMemo(() => {
+    const baseItems = [
+      {
+        id: "1",
+        date: "2026-07-15",
+        time: "12:30 PM",
+        title: "Avocado Toast & Hojas Verdes",
+        subtitle: "Almuerzo",
+        type: "food",
+        img: "https://images.unsplash.com/photo-1541532713592-79a0317b6b77?auto=format&fit=crop&w=600&q=80",
+        kcal: 420,
+        tag: "Fibra Alta",
+        coachFeedback: "Excelente balance de grasas saludables. Considerá agregar una fuente de proteína la próxima vez para prolongar la saciedad.",
+      },
+      {
+        id: "2",
+        date: "2026-07-15",
+        time: "02:00 PM",
+        title: "Registro de Hidratación",
+        subtitle: "Control de Rutina",
+        type: "hydration",
+        img: null,
+        kcal: 0,
+        tag: "Armstrong 5",
+        coachFeedback: "Nivel 5 indica deshidratación leve. Toma 500ml de agua ahora mismo para compensar el entrenamiento de la mañana.",
+      },
+      {
+        id: "3",
+        date: "2026-07-15",
+        time: "08:15 AM",
+        title: "Café Negro",
+        subtitle: "Desayuno",
+        type: "coffee",
+        img: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=150&q=80",
+        kcal: 2,
+        tag: "Sin Azúcar",
+        coachFeedback: null,
+      },
+      {
+        id: "4",
+        date: "2026-07-14",
+        time: "09:30 AM",
+        title: "Omelette de Espinacas & Queso",
+        subtitle: "Desayuno",
+        type: "food",
+        img: "https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=600&q=80",
+        kcal: 320,
+        tag: "Proteína Alta",
+        coachFeedback: "Muy buena elección proteica por la mañana. Mantener un desayuno con bajo índice glucémico estabiliza tu energía por horas.",
+      },
+      {
+        id: "5",
+        date: "2026-07-14",
+        time: "04:15 PM",
+        title: "Snack de Nueces y Almendras",
+        subtitle: "Snack",
+        type: "food",
+        img: null,
+        kcal: 180,
+        tag: "Grasas Saludables",
+        coachFeedback: "El snack de frutos secos aporta ácidos grasos esenciales y saciedad antes de tu cena.",
+      },
+      {
+        id: "6",
+        date: "2026-07-13",
+        time: "08:30 AM",
+        title: "Café con Leche y Tostadas de Masa Madre",
+        subtitle: "Desayuno",
+        type: "food",
+        img: null,
+        kcal: 280,
+        tag: "Energía Compleja",
+        coachFeedback: "La masa madre es excelente para tu microbiota digestiva. Buena combinación energética para arrancar el día.",
+      },
+      {
+        id: "7",
+        date: "2026-07-13",
+        time: "08:30 PM",
+        title: "Salmón Grillado con Espárragos",
+        subtitle: "Cena",
+        type: "food",
+        img: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=600&q=80",
+        kcal: 540,
+        tag: "Omega 3 y Fitoquímicos",
+        coachFeedback: "Excelente cena ligera y rica en grasas saludables que promueven la recuperación celular durante el sueño profundo.",
+      }
+    ];
+
+    const formatTime12h = (time24: string) => {
+      try {
+        const parts = time24.split(":");
+        const hrs = parseInt(parts[0], 10);
+        const mins = parts[1];
+        const ampm = hrs >= 12 ? "PM" : "AM";
+        const displayHrs = hrs % 12 || 12;
+        return `${displayHrs}:${mins} ${ampm}`;
+      } catch {
+        return time24;
+      }
+    };
+
+    const uniqueDates = Array.from(new Set(baseItems.map(item => item.date)));
+    
+    const circadianEvents: any[] = [];
+    uniqueDates.forEach(d => {
+      circadianEvents.push(
+        {
+          id: `circadian-sunrise-${d}`,
+          date: d,
+          time: formatTime12h(sunTimes.sunrise),
+          title: "Hito Solar: Amanecer",
+          subtitle: "Ritmo Circadiano",
+          type: "sunrise",
+          img: null,
+          kcal: 0,
+          tag: "Inicio de Fase de Luz",
+          coachFeedback: "Amanecer biológico. Tu cuerpo frena la melatonina e inicia la secreción de cortisol. Momento ideal para exponerte a la luz natural y activar tu metabolismo.",
+        },
+        {
+          id: `circadian-peak-${d}`,
+          date: d,
+          time: "01:00 PM",
+          title: "Pico Metabólico",
+          subtitle: "Eficiencia Digestiva",
+          type: "peak",
+          img: null,
+          kcal: 0,
+          tag: "Máxima Sensibilidad",
+          coachFeedback: "Pico de sensibilidad a la insulina y temperatura corporal. Tu capacidad de asimilación de nutrientes es óptima. Excelente momento para tu comida principal.",
+        },
+        {
+          id: `circadian-sunset-${d}`,
+          date: d,
+          time: formatTime12h(sunTimes.sunset),
+          title: "Hito Solar: Atardecer",
+          subtitle: "Ritmo Circadiano",
+          type: "sunset",
+          img: null,
+          kcal: 0,
+          tag: "Inicio de Fase Oscura",
+          coachFeedback: "Atardecer biológico. Comienza la transición hacia la producción de melatonina. Se recomienda cenar ligero y evitar pantallas de luz azul intensa.",
+        }
+      );
+    });
+
+    return [...baseItems, ...circadianEvents].sort((a, b) => {
+      if (a.date !== b.date) {
+        return b.date.localeCompare(a.date);
+      }
+      return parseTimeToMinutes(a.time) - parseTimeToMinutes(b.time);
+    });
+  }, [sunTimes]);
+
+  const dynamicAdherence = React.useMemo(() => {
+    const foodLogsByDate: { [date: string]: number } = {};
+    const foodItems = timelineItems.filter(item => item.type === "food");
+    
+    foodItems.forEach(item => {
+      foodLogsByDate[item.date] = (foodLogsByDate[item.date] || 0) + 1;
+    });
+
+    const dates = Object.keys(foodLogsByDate);
+    if (dates.length === 0) return 0;
+
+    let totalAdherence = 0;
+    dates.forEach(d => {
+      const count = foodLogsByDate[d];
+      const dailyPct = Math.min(100, (count / mealsGoal) * 100);
+      totalAdherence += dailyPct;
+    });
+
+    return Math.round(totalAdherence / dates.length);
+  }, [timelineItems, mealsGoal]);
+
+  const handleDownloadReport = () => {
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+
+    const filteredItems = timelineItems.filter(item => {
+      try {
+        const [year, month, day] = item.date.split("-").map(Number);
+        const itemDate = new Date(year, month - 1, day);
+        
+        const today = new Date(2026, 6, 15);
+        const diffTime = Math.abs(today.getTime() - itemDate.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (insightPeriod === "day") {
+          return diffDays <= 1;
+        } else if (insightPeriod === "week") {
+          return diffDays <= 7;
+        } else if (insightPeriod === "month") {
+          return diffDays <= 30;
+        } else if (insightPeriod === "quarter") {
+          return diffDays <= 90;
+        } else {
+          return true;
+        }
+      } catch {
+        return true;
+      }
+    });
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html lang="es">
+      <head>
+        <meta charset="utf-8">
+        <title>Reporte de Bienestar y Alimentación — Shakerfy</title>
+        <style>
+          body {
+            font-family: system-ui, -apple-system, sans-serif;
+            color: #1e293b;
+            line-height: 1.5;
+            margin: 40px;
+          }
+          .header {
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+          .logo {
+            font-size: 24px;
+            font-weight: 800;
+            color: #10b981;
+          }
+          .date {
+            font-size: 13px;
+            color: #475569;
+          }
+          .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-top: 35px;
+            margin-bottom: 15px;
+            border-left: 4px solid #10b981;
+            padding-left: 10px;
+          }
+          .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+          }
+          .card {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            background: #f8fafc;
+          }
+          .card-title {
+            font-weight: 700;
+            font-size: 13px;
+            color: #475569;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+          }
+          .card-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: #0f172a;
+          }
+          .bar-container {
+            margin-bottom: 10px;
+          }
+          .bar-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #334155;
+          }
+          .bar-track {
+            background-color: #e2e8f0;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+          }
+          .bar-fill {
+            height: 100%;
+            border-radius: 4px;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            margin-bottom: 30px;
+          }
+          th, td {
+            text-align: left;
+            padding: 10px 12px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 12px;
+          }
+          th {
+            background-color: #f1f5f9;
+            font-weight: 700;
+            color: #334155;
+          }
+          .badge {
+            display: inline-block;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+          }
+          .badge-food { background-color: #d1fae5; color: #065f46; }
+          .badge-hydration { background-color: #dbeafe; color: #1e40af; }
+          .badge-coffee { background-color: #fef3c7; color: #92400e; }
+          .badge-circadian { background-color: #f3e8ff; color: #6b21a8; }
+          .disclaimer {
+            font-size: 10px;
+            color: #64748b;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 15px;
+            margin-top: 40px;
+            text-align: center;
+            line-height: 1.4;
+          }
+          @media print {
+            body { margin: 15px; }
+            button { display: none; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div>
+            <div class="logo">Shakerfy</div>
+            <div style="font-size: 12px; color: #64748b; margin-top: 4px;">Pulse Smart — Wellness Lab</div>
+          </div>
+          <div class="date" style="text-align: right;">
+            <div><strong>Usuario:</strong> Agustín</div>
+            <div style="margin-top: 4px;"><strong>Rango:</strong> ${insightPeriod === "day" ? "Hoy" : insightPeriod === "week" ? "Últimos 7 días" : insightPeriod === "month" ? "Último mes" : "Último trimestre"}</div>
+            <div style="margin-top: 4px;"><strong>Fecha Emisión:</strong> ${new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="card">
+            <div class="card-title">Adherencia Nutricional</div>
+            <div class="card-value">${dynamicAdherence}%</div>
+            <p style="font-size: 11px; color: #64748b; margin-top: 5px;">Consistencia calculada en base a tu objetivo diario de <strong>${mealsGoal} comidas</strong>.</p>
+          </div>
+          <div class="card">
+            <div class="card-title">Estabilidad de Horarios</div>
+            <div class="card-value">95%</div>
+            <p style="font-size: 11px; color: #64748b; margin-top: 5px;">Alineación de tus ingestas con tus ventanas biológicas óptimas.</p>
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="card" style="background: white;">
+            <div class="card-title" style="border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 12px;">Causas Principales de Ingesta</div>
+            ${WHY_EAT_DATA.map(d => `
+              <div class="bar-container">
+                <div class="bar-label">
+                  <span>${d.label}</span>
+                  <span>${d.percentage}%</span>
+                </div>
+                <div class="bar-track">
+                  <div class="bar-fill" style="background-color: ${WHY_EAT_CHART_CONFIG[d.reason as keyof typeof WHY_EAT_CHART_CONFIG]?.color || '#10b981'}; width: ${d.percentage}%;"></div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+
+          <div class="card" style="background: white;">
+            <div class="card-title" style="border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 12px;">Síntomas Físicos Reportados</div>
+            ${SYMPTOMS_DATA.map(d => {
+              const maxCount = Math.max(...SYMPTOMS_DATA.map(x => x.count));
+              const pct = Math.round((d.count / maxCount) * 100);
+              const label = SYMPTOMS_CHART_CONFIG[d.symptom as keyof typeof SYMPTOMS_CHART_CONFIG]?.label || d.symptom;
+              const color = SYMPTOMS_CHART_CONFIG[d.symptom as keyof typeof SYMPTOMS_CHART_CONFIG]?.color || '#cbd5e1';
+              return `
+                <div class="bar-container">
+                  <div class="bar-label">
+                    <span>${label}</span>
+                    <span>${d.count} veces</span>
+                  </div>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="background-color: ${color}; width: ${pct}%;"></div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+
+        <div class="section-title">Detalle del Registro Diario de Actividad</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Hora</th>
+              <th>Categoría</th>
+              <th>Detalle / Registro</th>
+              <th>Impacto / Feedback Nutricional</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filteredItems.map(item => `
+              <tr>
+                <td style="font-weight: 600;">${item.date}</td>
+                <td style="font-weight: 600;">${item.time}</td>
+                <td>
+                  <span class="badge badge-${item.type === 'food' ? 'food' : item.type === 'hydration' ? 'hydration' : item.type === 'coffee' ? 'coffee' : 'circadian'}">
+                    ${item.type === 'food' ? 'Comida' : item.type === 'hydration' ? 'Hidratación' : item.type === 'coffee' ? 'Café' : 'Hito Solar'}
+                  </span>
+                </td>
+                <td><strong>${item.title}</strong>${item.kcal > 0 ? ` (${item.kcal} kcal)` : ''}</td>
+                <td style="font-size: 11px; color: #475569;">${item.coachFeedback || 'N/A'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <div class="disclaimer">
+          <strong>Aviso Médico & Disclaimer:</strong> Este documento es un resumen de registros de hábitos y estimaciones circadianas con fines informativos de autoconocimiento. No constituye un diagnóstico médico, prescripción clínica ni asesoramiento nutricional formal. Por favor, consulte con su médico, nutricionista o profesional de la salud matriculado antes de realizar cambios significativos en su dieta, rutina de ayuno o hábitos biológicos.
+        </div>
+
+        <script>
+          window.onload = function() {
+            window.print();
+          }
+        </script>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+  };
 
   const CustomSlider = ({ value, onChange, labelLeft, labelRight, colorClass }: any) => {
     const handleSliderClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -2986,417 +3588,641 @@ function DiarioTab() {
             {/* Vertical Line */}
             <div className="absolute left-6 md:left-[50%] top-0 bottom-0 w-[2px] bg-border transform -translate-x-1/2 md:-translate-x-[1px]"></div>
 
-            {timelineItems.map((item, index) => {
-              const isEven = index % 2 === 0;
-              const showOnLeft = !isEven; // Zig-zag on desktop
-              
-              return (
-                <div key={item.id} className="relative mb-12 md:grid md:grid-cols-2 md:gap-12 items-center group">
-                  {/* Timeline Dot */}
-                  <div className={`absolute left-0 md:left-1/2 w-4.5 h-4.5 rounded-full border-4 bg-background z-10 transform -translate-x-1/2 ${
-                    item.type === "food" ? "border-primary" : item.type === "hydration" ? "border-blue-500" : "border-muted-foreground/50"
-                  }`}></div>
-
-                  {/* Time Label for Desktop */}
-                  <div className={`hidden md:block ${showOnLeft ? "text-right pr-6 md:order-2" : "text-left pl-6 md:order-1"}`}>
-                    <span className="text-primary font-bold text-base">{item.time}</span>
-                    <p className="text-muted-foreground text-xs mt-0.5">{item.subtitle}</p>
-                  </div>
-
-                  {/* Card Container */}
-                  <div className={`pl-6 md:pl-0 ${showOnLeft ? "md:order-1" : "md:order-2"}`}>
-                    <div className="bg-card border border-border rounded-2xl overflow-hidden">
-                      {item.img && (
-                        <div className="relative h-44 w-full overflow-hidden">
-                          <img 
-                            src={item.img} 
-                            alt={item.title} 
-                            className="w-full h-full object-cover" 
-                          />
-                          <div className="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-t from-background/90 to-transparent"></div>
-                          <div className="absolute bottom-4 left-4 right-4">
-                            <h3 className="text-foreground text-base font-extrabold">{item.title}</h3>
-                            <div className="flex items-center gap-2 mt-1 text-[11px] text-muted-foreground font-bold">
-                              {item.kcal > 0 && (
-                                <span className="flex items-center gap-0.5 text-primary">
-                                  <Flame className="w-3.5 h-3.5" /> {item.kcal} kcal
-                                </span>
-                              )}
-                              {item.kcal > 0 && <span className="w-1 h-1 rounded-full bg-muted-foreground/50" />}
-                              <span className="uppercase tracking-wider">{item.tag}</span>
-                            </div>
-                          </div>
+            {(() => {
+              let lastDate = "";
+              return timelineItems.map((item, index) => {
+                const showDateSeparator = item.date !== lastDate;
+                if (showDateSeparator) {
+                  lastDate = item.date;
+                }
+                
+                const isEven = index % 2 === 0;
+                const showOnLeft = !isEven; // Zig-zag on desktop
+                
+                return (
+                  <React.Fragment key={item.id}>
+                    {showDateSeparator && (
+                      <div className="relative flex justify-center my-8 pl-6 md:pl-0 w-full select-none">
+                        <div className="absolute top-1/2 left-6 md:left-0 right-0 h-[1px] bg-border/40 -translate-y-1/2"></div>
+                        <div className="relative z-10 flex items-center gap-2 bg-card border border-border px-4 py-1.5 rounded-full text-[11px] font-bold text-foreground shadow-sm">
+                          <Calendar className="w-3.5 h-3.5 text-primary" />
+                          <span>{formatDateLabel(item.date)}</span>
                         </div>
-                      )}
-
-                      {!item.img && item.type === "hydration" && (
-                        <div className="p-5 space-y-4">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <h3 className="text-foreground text-base font-extrabold">{item.title}</h3>
-                              <p className="text-[10px] text-muted-foreground font-bold uppercase mt-0.5">{item.subtitle}</p>
-                            </div>
-                            <div className="w-9 h-9 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500">
-                              <Droplet className="w-5 h-5" />
-                            </div>
-                          </div>
-
-                          {/* Hydration Selector */}
-                          <div className="space-y-2">
-                            <div className="flex justify-between gap-1 h-12 w-full rounded-xl overflow-hidden bg-secondary/20 p-1">
-                              {[
-                                { level: 1, color: "#fbfce1" },
-                                { level: 2, color: "#f9f9cd" },
-                                { level: 3, color: "#f6f2a9" },
-                                { level: 4, color: "#f2e285" },
-                                { level: 5, color: "#eec863" },
-                                { level: 6, color: "#e8a33a" },
-                                { level: 7, color: "#d4812f" },
-                                { level: 8, color: "#a66a2e" }
-                              ].map(h => (
-                                <button
-                                  key={h.level}
-                                  type="button"
-                                  onClick={() => {
-                                    setHydrationLevel(h.level);
-                                  }}
-                                  className={`flex-1 h-full rounded-lg transition-all relative ${
-                                    hydrationLevel === h.level 
-                                      ? "border-2 border-foreground z-10" 
-                                      : "hover:opacity-90"
-                                  }`}
-                                  style={{ backgroundColor: h.color }}
-                                >
-                                  {hydrationLevel === h.level && (
-                                    <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-foreground rounded-full"></span>
-                                  )}
-                                </button>
-                              ))}
-                            </div>
-                            <div className="flex justify-between text-[9px] uppercase font-bold text-muted-foreground/80 tracking-wider">
-                              <span>Óptimo</span>
-                              <span>Deshidratado</span>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {!item.img && item.type !== "hydration" && (
-                        <div className="p-4 flex items-center gap-4">
-                          {item.type === "coffee" && (
-                            <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600 shrink-0">
-                              <Coffee className="w-5 h-5" />
-                            </div>
-                          )}
-                          {item.type === "thought" && (
-                            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                              <Sparkles className="w-5 h-5" />
-                            </div>
-                          )}
-                          <div>
-                            <h4 className="text-foreground text-sm font-extrabold">{item.title}</h4>
-                            <p className="text-[10px] text-muted-foreground font-bold mt-0.5">{item.kcal > 0 ? `${item.kcal} kcal • ` : ""}{item.tag}</p>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Coach / AI Feedback Section */}
-                      {item.coachFeedback && (
-                        <div className="p-4 bg-secondary/20 border-t border-border">
-                          <div className="flex items-start gap-2.5">
-                            <Sparkles className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                            <p className="text-xs text-muted-foreground leading-relaxed font-medium">
-                              {item.coachFeedback}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                     
-                    {/* Mobile-only Time Stamp */}
-                    <div className="md:hidden mt-2 ml-1 text-primary font-bold text-xs">
-                      <span>{item.time}</span>
+                    <div className="relative mb-12 md:grid md:grid-cols-2 md:gap-12 items-center group">
+                      {/* Timeline Dot */}
+                      <div className={`absolute left-0 md:left-1/2 w-4.5 h-4.5 rounded-full border-4 bg-background z-10 transform -translate-x-1/2 ${
+                        item.type === "food" 
+                          ? "border-primary" 
+                          : item.type === "hydration" 
+                          ? "border-blue-500" 
+                          : item.type === "coffee"
+                          ? "border-amber-700"
+                          : item.type === "sunrise"
+                          ? "border-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"
+                          : item.type === "sunset"
+                          ? "border-indigo-400 shadow-[0_0_8px_rgba(129,140,248,0.5)]"
+                          : item.type === "peak"
+                          ? "border-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]"
+                          : "border-muted-foreground/50"
+                      }`}></div>
+
+                      {/* Time Label for Desktop */}
+                      <div className={`hidden md:block ${showOnLeft ? "text-right pr-6 md:order-2" : "text-left pl-6 md:order-1"}`}>
+                        <span className={`font-bold text-base ${
+                          item.type === "sunrise" ? "text-amber-500" :
+                          item.type === "sunset" ? "text-indigo-400" :
+                          item.type === "peak" ? "text-rose-500" :
+                          "text-primary"
+                        }`}>{item.time}</span>
+                        <p className="text-muted-foreground text-xs mt-0.5">{item.subtitle}</p>
+                      </div>
+
+                      {/* Card Container */}
+                      <div className={`pl-6 md:pl-0 ${showOnLeft ? "md:order-1" : "md:order-2"}`}>
+                        <div className={`bg-card border rounded-2xl overflow-hidden ${
+                          item.type === "sunrise" ? "border-amber-500/20 shadow-[0_4px_20px_-4px_rgba(245,158,11,0.05)]" :
+                          item.type === "sunset" ? "border-indigo-500/20 shadow-[0_4px_20px_-4px_rgba(129,140,248,0.05)]" :
+                          item.type === "peak" ? "border-rose-500/20 shadow-[0_4px_20px_-4px_rgba(244,63,94,0.05)]" :
+                          "border-border"
+                        }`}>
+                          {item.img && (
+                            <div className="relative h-44 w-full overflow-hidden">
+                              <img 
+                                src={item.img} 
+                                alt={item.title} 
+                                className="w-full h-full object-cover" 
+                              />
+                              <div className="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-t from-background/90 to-transparent"></div>
+                              <div className="absolute bottom-4 left-4 right-4">
+                                <h3 className="text-foreground text-base font-extrabold">{item.title}</h3>
+                                <div className="flex items-center gap-2 mt-1 text-[11px] text-muted-foreground font-bold">
+                                  {item.kcal > 0 && (
+                                    <span className="flex items-center gap-0.5 text-primary">
+                                      <Flame className="w-3.5 h-3.5" /> {item.kcal} kcal
+                                    </span>
+                                  )}
+                                  {item.kcal > 0 && <span className="w-1 h-1 rounded-full bg-muted-foreground/50" />}
+                                  <span className="uppercase tracking-wider">{item.tag}</span>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {!item.img && item.type === "hydration" && (
+                            <div className="p-5 space-y-4">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <h3 className="text-foreground text-base font-extrabold">{item.title}</h3>
+                                  <p className="text-[10px] text-muted-foreground font-bold uppercase mt-0.5">{item.subtitle}</p>
+                                </div>
+                                <div className="w-9 h-9 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500">
+                                  <Droplet className="w-5 h-5" />
+                                </div>
+                              </div>
+
+                              {/* Hydration Selector */}
+                              <div className="space-y-2">
+                                <div className="flex justify-between gap-1 h-12 w-full rounded-xl overflow-hidden bg-secondary/20 p-1">
+                                  {[
+                                    { level: 1, color: "#fbfce1" },
+                                    { level: 2, color: "#f9f9cd" },
+                                    { level: 3, color: "#f6f2a9" },
+                                    { level: 4, color: "#f2e285" },
+                                    { level: 5, color: "#eec863" },
+                                    { level: 6, color: "#e8a33a" },
+                                    { level: 7, color: "#d4812f" },
+                                    { level: 8, color: "#a66a2e" }
+                                  ].map(h => (
+                                    <button
+                                      key={h.level}
+                                      type="button"
+                                      onClick={() => {
+                                        setHydrationLevel(h.level);
+                                      }}
+                                      className={`flex-1 h-full rounded-lg transition-all relative ${
+                                        hydrationLevel === h.level 
+                                          ? "border-2 border-foreground z-10" 
+                                          : "hover:opacity-90"
+                                      }`}
+                                      style={{ backgroundColor: h.color }}
+                                    >
+                                      {hydrationLevel === h.level && (
+                                        <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-foreground rounded-full"></span>
+                                      )}
+                                    </button>
+                                  ))}
+                                </div>
+                                <div className="flex justify-between text-[9px] uppercase font-bold text-muted-foreground/80 tracking-wider">
+                                  <span>Óptimo</span>
+                                  <span>Deshidratado</span>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {!item.img && item.type !== "hydration" && (
+                            <div className="p-4 flex items-center gap-4">
+                              {item.type === "coffee" && (
+                                <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600 shrink-0">
+                                  <Coffee className="w-5 h-5" />
+                                </div>
+                              )}
+                              {item.type === "thought" && (
+                                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                                  <Sparkles className="w-5 h-5" />
+                                </div>
+                              )}
+                              {item.type === "sunrise" && (
+                                <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500 shrink-0 border border-amber-500/20">
+                                  <Sun className="w-5 h-5" />
+                                </div>
+                              )}
+                              {item.type === "sunset" && (
+                                <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 shrink-0 border border-indigo-500/20">
+                                  <Moon className="w-5 h-5" />
+                                </div>
+                              )}
+                              {item.type === "peak" && (
+                                <div className="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-500 shrink-0 border border-rose-500/20">
+                                  <TrendingUp className="w-5 h-5" />
+                                </div>
+                              )}
+                              <div>
+                                <h4 className="text-foreground text-sm font-extrabold">{item.title}</h4>
+                                <p className={`text-[10px] font-bold mt-0.5 ${
+                                  item.type === "sunrise" ? "text-amber-600 dark:text-amber-500" :
+                                  item.type === "sunset" ? "text-indigo-400" :
+                                  item.type === "peak" ? "text-rose-500" :
+                                  "text-muted-foreground"
+                                }`}>{item.kcal > 0 ? `${item.kcal} kcal • ` : ""}{item.tag}</p>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Mobile-only Time Stamp */}
+                          <div className={`md:hidden mt-2 ml-4 mb-2 font-bold text-xs ${
+                            item.type === "sunrise" ? "text-amber-500" :
+                            item.type === "sunset" ? "text-indigo-400" :
+                            item.type === "peak" ? "text-rose-500" :
+                            "text-primary"
+                          }`}>
+                            <span>{item.time}</span>
+                          </div>
+
+                          {/* Coach / AI Feedback Section */}
+                          {item.coachFeedback && (
+                            <div className="p-4 bg-secondary/20 border-t border-border">
+                              <div className="flex items-start gap-2.5">
+                                {item.type === "sunrise" ? (
+                                  <Sun className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                                ) : item.type === "sunset" ? (
+                                  <Moon className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
+                                ) : item.type === "peak" ? (
+                                  <TrendingUp className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                                ) : (
+                                  <Sparkles className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                                )}
+                                <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+                                  {item.coachFeedback}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              );
-            })}
+                  </React.Fragment>
+                );
+              });
+            })()}
           </div>
         </>
       )}
 
       {subTab === "analisis" && (
-        <div className="space-y-6">
+        <div className="space-y-6 animate-in fade-in duration-300">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <p className="text-sm text-muted-foreground">Perspectivas detalladas de tu alimentación y bienestar.</p>
             
-            <div className="flex p-0.5 bg-secondary/35 rounded-xl border border-border">
-              {(["day", "week", "month", "quarter"] as const).map((period) => (
-                <button
-                  key={period}
-                  type="button"
-                  onClick={() => setInsightPeriod(period)}
-                  className={`px-3 py-1.5 text-[10px] font-bold rounded-lg transition capitalize ${
-                    insightPeriod === period
-                      ? "bg-foreground text-background"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {period === "day" ? "Día" : period === "week" ? "Semana" : period === "month" ? "Mes" : "Trimestre"}
-                </button>
-              ))}
-            </div>
+            <Select 
+              value={insightPeriod} 
+              onValueChange={(val: any) => setInsightPeriod(val)}
+            >
+              <SelectTrigger className="w-full sm:w-48 bg-card border border-border text-xs font-bold h-9">
+                <SelectValue placeholder="Seleccionar período" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem className="text-xs font-bold" value="day">Día</SelectItem>
+                <SelectItem className="text-xs font-bold" value="week">Semana</SelectItem>
+                <SelectItem className="text-xs font-bold" value="month">Mes</SelectItem>
+                <SelectItem className="text-xs font-bold" value="quarter">Trimestre</SelectItem>
+                <SelectItem className="text-xs font-bold" value="all">Desde siempre</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Mindful Rate */}
-            <div className="bg-card border border-border p-6 rounded-2xl flex flex-col items-center justify-center text-center">
-              <h3 className="text-muted-foreground text-xs font-bold uppercase tracking-wider mb-6">Mindful rate</h3>
-              <div className="relative flex items-center justify-center size-48">
-                <svg className="size-48 transform -rotate-90">
-                  <circle className="text-secondary/40" cx="96" cy="96" fill="transparent" r="80" stroke="currentColor" strokeWidth="6"></circle>
-                  <circle className="text-violet-600 dark:text-violet-500" cx="96" cy="96" fill="transparent" r="80" stroke="currentColor" strokeDasharray="502.6" strokeDashoffset="75.4" strokeLinecap="round" strokeWidth="8"></circle>
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-4xl font-black text-foreground">85%</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Alimentación Consciente */}
+            <Card className="col-span-1 flex flex-col justify-between">
+              <CardHeader className="pb-0 flex flex-row items-start justify-between space-y-0">
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <CardTitle className="text-lg font-bold text-foreground tracking-tight leading-none">Alimentación consciente</CardTitle>
+                    <TooltipProvider>
+                      <ShadcnTooltip>
+                        <TooltipTrigger asChild>
+                          <button type="button" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Información de alimentación consciente">
+                            <Info className="w-3.5 h-3.5" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-[280px] text-xs leading-relaxed">
+                          El porcentaje de consistencia calculado en base a tu objetivo diario de comidas registradas versus las comidas reales cargadas en tu diario.
+                        </TooltipContent>
+                      </ShadcnTooltip>
+                    </TooltipProvider>
+                  </div>
+                  <CardDescription className="text-xs text-muted-foreground mt-1">Consistencia de tu diario</CardDescription>
                 </div>
-              </div>
-              <div className="mt-6 flex items-center gap-1.5 text-muted-foreground">
-                <button
-                  type="button"
-                  onClick={() => setShowMindfulRateInfo(!showMindfulRateInfo)}
-                  className={`p-1 rounded-full transition-colors flex items-center justify-center ${
-                    showMindfulRateInfo ? "bg-secondary text-foreground" : "hover:bg-secondary text-muted-foreground"
-                  }`}
-                  title="Ver explicación"
+              </CardHeader>
+              
+              <CardContent className="flex-1 flex flex-col items-center justify-center pb-0 pt-4">
+                <ChartContainer
+                  config={ADHERENCE_CHART_CONFIG}
+                  className="mx-auto aspect-square w-full max-h-[170px] select-none"
                 >
-                  <Info className="w-3.5 h-3.5" />
-                </button>
-                <p className="text-xs font-medium">Porcentaje de días registrados</p>
-              </div>
+                  <RadialBarChart
+                    data={[{ name: "adherencia", value: dynamicAdherence, fill: "var(--color-adherencia)" }]}
+                    startAngle={90}
+                    endAngle={-270}
+                    innerRadius={70}
+                    outerRadius={85}
+                  >
+                    <PolarAngleAxis
+                      type="number"
+                      domain={[0, 100]}
+                      angleAxisId={0}
+                      tick={false}
+                    />
+                    <RadialBar 
+                      dataKey="value" 
+                      background={{ fill: "var(--muted)" }} 
+                      cornerRadius={10} 
+                      barSize={15}
+                    />
+                    <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
+                      <Label
+                        content={({ viewBox }) => {
+                          if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                            return (
+                              <text
+                                x={viewBox.cx}
+                                y={viewBox.cy}
+                                textAnchor="middle"
+                                dominantBaseline="middle"
+                              >
+                                <tspan
+                                  x={viewBox.cx}
+                                  y={viewBox.cy}
+                                  className="fill-foreground text-3xl font-black"
+                                >
+                                  {dynamicAdherence}%
+                                </tspan>
+                                <tspan
+                                  x={viewBox.cx}
+                                  y={(viewBox.cy || 0) + 20}
+                                  className="fill-muted-foreground text-[10px] font-bold uppercase tracking-wider"
+                                >
+                                  Registro
+                                </tspan>
+                              </text>
+                            )
+                          }
+                        }}
+                      />
+                    </PolarRadiusAxis>
+                  </RadialBarChart>
+                </ChartContainer>
+              </CardContent>
 
-              {showMindfulRateInfo && (
-                <div className="mt-3 p-3 bg-secondary/35 border border-border/50 rounded-xl text-left text-[11px] leading-relaxed text-muted-foreground animate-in fade-in slide-in-from-top-1 duration-200">
-                  <span className="block font-bold text-foreground mb-1">¿Qué es el mindful Rate?</span>
-                  El porcentaje de días en los que registró su ingesta de alimentos, dividido por el número total de días del intervalo seleccionado.
+              <CardFooter className="border-t border-border/40 pt-3 pb-3 flex justify-between items-center text-xs">
+                <span className="text-muted-foreground font-bold uppercase tracking-wider text-[9px]">Objetivo diario:</span>
+                <div className="flex items-center gap-2">
+                  <button 
+                    type="button"
+                    onClick={() => setMealsGoal(prev => Math.max(1, prev - 1))}
+                    className="w-5 h-5 rounded bg-secondary hover:bg-secondary/80 flex items-center justify-center font-bold text-foreground transition"
+                  >
+                    -
+                  </button>
+                  <span className="font-extrabold text-foreground w-20 text-center">{mealsGoal} {mealsGoal === 1 ? "comida" : "comidas"}</span>
+                  <button 
+                    type="button"
+                    onClick={() => setMealsGoal(prev => Math.min(8, prev + 1))}
+                    className="w-5 h-5 rounded bg-secondary hover:bg-secondary/80 flex items-center justify-center font-bold text-foreground transition"
+                  >
+                    +
+                  </button>
                 </div>
-              )}
-            </div>
+              </CardFooter>
+            </Card>
 
-            {/* Why did you eat */}
-            <div className="bg-card border border-border p-6 rounded-2xl flex flex-col justify-between">
-              <h3 className="text-muted-foreground text-xs font-bold uppercase tracking-wider mb-6">¿Por qué comiste?</h3>
-              <div className="flex flex-col items-center">
-                <div className="relative size-40 mb-6">
-                  <svg className="size-full" viewBox="0 0 36 36">
-                    <circle cx="18" cy="18" fill="transparent" r="15.9" stroke="var(--border)" strokeOpacity="0.2" strokeWidth="2"></circle>
-                    {/* Hunger (45%) */}
-                    <circle cx="18" cy="18" fill="transparent" r="15.9" stroke="currentColor" strokeDasharray="45 55" strokeDashoffset="85" strokeWidth="2.5" className="text-violet-600 dark:text-violet-500"></circle>
-                    {/* Stress (20%) */}
-                    <circle cx="18" cy="18" fill="transparent" r="15.9" stroke="currentColor" strokeDasharray="20 80" strokeDashoffset="40" strokeWidth="2.5" className="text-purple-500 dark:text-purple-400"></circle>
-                    {/* Social (15%) */}
-                    <circle cx="18" cy="18" fill="transparent" r="15.9" stroke="currentColor" strokeDasharray="15 85" strokeDashoffset="100" strokeWidth="2.5" className="text-indigo-400 dark:text-indigo-500"></circle>
-                    {/* Time (20%) */}
-                    <circle cx="18" cy="18" fill="transparent" r="15.9" stroke="currentColor" strokeDasharray="20 80" strokeDashoffset="20" strokeWidth="2.5" className="text-fuchsia-400 dark:text-fuchsia-500"></circle>
-                  </svg>
+            {/* ¿Por qué comiste? */}
+            <Card className="col-span-1 flex flex-col justify-between">
+              <CardHeader className="pb-0 flex flex-row items-start justify-between space-y-0">
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <CardTitle className="text-lg font-bold text-foreground tracking-tight leading-none">¿Por qué comiste?</CardTitle>
+                    <TooltipProvider>
+                      <ShadcnTooltip>
+                        <TooltipTrigger asChild>
+                          <button type="button" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Información de causas de ingesta">
+                            <Info className="w-3.5 h-3.5" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-[280px] text-xs leading-relaxed">
+                          Clasificar tus ingestas te ayuda a distinguir el hambre fisiológica real de los desencadenantes de hambre emocional (como aburrimiento, estrés o hábitos sociales).
+                        </TooltipContent>
+                      </ShadcnTooltip>
+                    </TooltipProvider>
+                  </div>
+                  <CardDescription className="text-xs text-muted-foreground mt-1">Causas principales de tus comidas</CardDescription>
                 </div>
-                <div className="grid grid-cols-2 gap-x-4 gap-y-2 w-full mt-2">
-                  <div className="flex items-center gap-2">
-                    <div className="size-2.5 rounded-full bg-violet-600 dark:bg-violet-500"></div>
-                    <span className="text-[11px] text-foreground font-bold">Hambre (45%)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="size-2.5 rounded-full bg-purple-500 dark:bg-purple-400"></div>
-                    <span className="text-[11px] text-foreground font-bold">Estrés (20%)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="size-2.5 rounded-full bg-indigo-400 dark:bg-indigo-500"></div>
-                    <span className="text-[11px] text-foreground font-bold">Social (15%)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="size-2.5 rounded-full bg-fuchsia-400 dark:bg-fuchsia-500"></div>
-                    <span className="text-[11px] text-foreground font-bold">Tiempo (20%)</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+              </CardHeader>
+              
+              <CardContent className="flex-1 flex flex-col items-center justify-center pb-2 pt-4">
+                <ChartContainer
+                  config={WHY_EAT_CHART_CONFIG}
+                  className="mx-auto aspect-square w-full max-h-[220px] select-none"
+                >
+                  <PieChart>
+                    <ChartTooltip
+                      cursor={false}
+                      content={<ChartTooltipContent hideLabel />}
+                    />
+                    <Pie
+                      data={WHY_EAT_DATA}
+                      dataKey="percentage"
+                      nameKey="reason"
+                      innerRadius={35}
+                      outerRadius={55}
+                      strokeWidth={3}
+                    />
+                    <ChartLegend
+                      content={<ChartLegendContent nameKey="reason" />}
+                      className="flex-wrap gap-2 *:basis-1/4 *:justify-center"
+                    />
+                  </PieChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
 
-            {/* Food Symptoms */}
-            <div className="bg-card border border-border p-6 rounded-2xl flex flex-col justify-between">
-              <h3 className="text-muted-foreground text-xs font-bold uppercase tracking-wider mb-6">Síntomas Físicos</h3>
-              <div className="space-y-4 w-full">
-                {[
-                  { label: "Dolor de Cabeza", count: 12, pct: 65, color: "bg-violet-400 dark:bg-violet-500" },
-                  { label: "Hinchazón", count: 8, pct: 45, color: "bg-purple-400 dark:bg-purple-500" },
-                  { label: "Dolor de Estómago", count: 5, pct: 25, color: "bg-indigo-300 dark:bg-indigo-400" },
-                  { label: "Fatiga", count: 15, pct: 85, color: "bg-violet-600 dark:bg-violet-500" }
-                ].map((sym, idx) => (
-                  <div key={idx} className="space-y-1">
-                    <div className="flex justify-between text-xs font-bold">
-                      <span className="text-foreground">{sym.label}</span>
-                      <span className="text-muted-foreground">{sym.count} veces</span>
-                    </div>
-                    <div className="h-1.5 w-full bg-secondary/40 rounded-full overflow-hidden">
-                      <div className={`h-full ${sym.color} rounded-full`} style={{ width: `${sym.pct}%` }}></div>
-                    </div>
+            {/* Síntomas Físicos */}
+            <Card className="col-span-1 flex flex-col justify-between">
+              <CardHeader className="pb-2 flex flex-row items-start justify-between space-y-0">
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <CardTitle className="text-lg font-bold text-foreground tracking-tight leading-none">Síntomas Físicos</CardTitle>
+                    <TooltipProvider>
+                      <ShadcnTooltip>
+                        <TooltipTrigger asChild>
+                          <button type="button" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Información de síntomas físicos">
+                            <Info className="w-3.5 h-3.5" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-[280px] text-xs leading-relaxed">
+                          Registrar molestias corporales post-ingesta ayuda a identificar intolerancias alimentarias ocultas y a comprender cómo reacciona tu digestión ante diferentes tipos de nutrientes.
+                        </TooltipContent>
+                      </ShadcnTooltip>
+                    </TooltipProvider>
                   </div>
-                ))}
-              </div>
-            </div>
+                  <CardDescription className="text-xs text-muted-foreground mt-1">Frecuencia de síntomas reportados</CardDescription>
+                </div>
+              </CardHeader>
+              
+              <CardContent className="flex-1 flex flex-col justify-center pb-6 pt-4">
+                <ChartContainer config={SYMPTOMS_CHART_CONFIG} className="w-full select-none">
+                  <BarChart
+                    accessibilityLayer
+                    data={SYMPTOMS_DATA}
+                    layout="vertical"
+                    margin={{
+                      left: 0,
+                    }}
+                  >
+                    <YAxis
+                      dataKey="symptom"
+                      type="category"
+                      tickLine={false}
+                      tickMargin={10}
+                      axisLine={false}
+                      width={125}
+                      tickFormatter={(value) =>
+                        SYMPTOMS_CHART_CONFIG[value as keyof typeof SYMPTOMS_CHART_CONFIG]?.label || value
+                      }
+                      className="text-[11px] font-normal fill-muted-foreground"
+                    />
+                    <XAxis dataKey="count" type="number" hide />
+                    <ChartTooltip
+                      cursor={false}
+                      content={<ChartTooltipContent hideLabel />}
+                    />
+                    <Bar dataKey="count" radius={5} />
+                  </BarChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
 
             {/* Behavioral Stability Index */}
-            <div className="col-span-1 md:col-span-2 lg:col-span-3 bg-card border border-border p-6 rounded-2xl">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-                <div className="md:w-1/2 space-y-4">
-                  <div>
-                    <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest mb-1">Algoritmo Inteligente</p>
-                    <h3 className="text-xl font-extrabold text-foreground">Índice de Estabilidad Conductual</h3>
+            <Card className="col-span-1 flex flex-col justify-between">
+              <CardHeader className="pb-0 flex flex-row items-start justify-between space-y-0">
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <CardTitle className="text-lg font-bold text-foreground tracking-tight leading-none">Estabilidad Conductual</CardTitle>
+                    <TooltipProvider>
+                      <ShadcnTooltip>
+                        <TooltipTrigger asChild>
+                          <button type="button" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Información de estabilidad conductual">
+                            <Info className="w-3.5 h-3.5" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-[280px] text-xs leading-relaxed">
+                          Este gráfico de radar evalúa tu regularidad en 5 pilares clave del bienestar: horarios, nutrición, humor, hidratación y consistencia. Es fundamental mantener un equilibrio entre todos ellos, ya que la sinergia de estos factores es lo que verdaderamente estabiliza tu metabolismo y sincroniza tu ritmo circadiano.
+                        </TooltipContent>
+                      </ShadcnTooltip>
+                    </TooltipProvider>
                   </div>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-5xl font-black tracking-tighter text-foreground">85</span>
-                    <span className="text-muted-foreground text-lg font-bold">/ 100</span>
+                  <CardDescription className="text-xs text-muted-foreground mt-1">Sincronización de hábitos y ritmos</CardDescription>
+                </div>
+                <div className="flex items-baseline gap-1 bg-secondary/30 px-2 py-1 rounded-lg border border-border/40">
+                  <span className="text-sm font-black text-foreground">85</span>
+                  <span className="text-[10px] text-muted-foreground font-bold">/100</span>
+                </div>
+              </CardHeader>
+              
+              <CardContent className="flex-1 flex items-center justify-center pt-4 pb-4">
+                <ChartContainer
+                  config={STABILITY_CHART_CONFIG}
+                  className="mx-auto aspect-square w-full max-h-[180px] select-none"
+                >
+                  <RadarChart data={STABILITY_DATA}>
+                    <ChartTooltip
+                      cursor={false}
+                      content={<ChartTooltipContent hideLabel />}
+                    />
+                    <PolarGrid strokeWidth={1} stroke="var(--border)" />
+                    <PolarAngleAxis
+                      dataKey="subject"
+                      tick={{ fill: "var(--muted-foreground)", fontSize: 9, fontWeight: 400 }}
+                    />
+                    <Radar
+                      name="Estabilidad"
+                      dataKey="value"
+                      fill="var(--color-value)"
+                      fillOpacity={0.25}
+                      stroke="var(--color-value)"
+                      strokeWidth={2}
+                    />
+                  </RadarChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+
+            {/* Color Plate Trend */}
+            <Card className="col-span-1 flex flex-col justify-between">
+              <CardHeader className="pb-0 flex flex-row items-start justify-between space-y-0">
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <CardTitle className="text-lg font-bold text-foreground tracking-tight leading-none">Tendencia del Plato</CardTitle>
+                    <TooltipProvider>
+                      <ShadcnTooltip>
+                        <TooltipTrigger asChild>
+                          <button type="button" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Información de tendencia del plato colorido">
+                            <Info className="w-3.5 h-3.5" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-[280px] text-xs leading-relaxed">
+                          Este gráfico de torta categoriza tus comidas según su color dominante, reflejando el aporte de fitonutrientes y antioxidantes en tu dieta. Te ayuda a asegurar un plato colorido y balanceado, clave para tu salud celular y metabólica.
+                        </TooltipContent>
+                      </ShadcnTooltip>
+                    </TooltipProvider>
                   </div>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    Tu índice de estabilidad es un 12% mayor que la semana pasada. Esto indica una mejor sincronización entre las necesidades reales de tu cuerpo y los horarios de tus comidas.
+                  <CardDescription className="text-xs text-muted-foreground mt-1">Diversidad de fitonutrientes</CardDescription>
+                </div>
+              </CardHeader>
+              
+              <CardContent className="flex-1 flex flex-col items-center justify-center pb-2 pt-4">
+                <ChartContainer
+                  config={COLOR_PLATE_CHART_CONFIG}
+                  className="mx-auto aspect-square w-full max-h-[220px] select-none"
+                >
+                  <PieChart>
+                    <ChartTooltip
+                      cursor={false}
+                      content={<ChartTooltipContent hideLabel />}
+                    />
+                    <Pie
+                      data={COLOR_PLATE_DATA}
+                      dataKey="percentage"
+                      nameKey="colorKey"
+                      innerRadius={35}
+                      outerRadius={55}
+                      strokeWidth={3}
+                    />
+                    <ChartLegend
+                      content={<ChartLegendContent nameKey="colorKey" />}
+                      className="flex-wrap gap-x-2 gap-y-1 text-[10px] justify-center mt-2"
+                    />
+                  </PieChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+
+            {/* Alineación Circadiana Card */}
+            <Card className="col-span-1 flex flex-col justify-between">
+              <CardHeader className="pb-0 flex flex-row items-start justify-between space-y-0">
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <CardTitle className="text-lg font-bold text-foreground tracking-tight leading-none">Alineación Circadiana</CardTitle>
+                    <TooltipProvider>
+                      <ShadcnTooltip>
+                        <TooltipTrigger asChild>
+                          <button type="button" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Información de alineación circadiana">
+                            <Info className="w-3.5 h-3.5" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-[280px] text-xs leading-relaxed">
+                          Mantener tu ventana de alimentación sincronizada con tu ritmo circadiano optimiza la sensibilidad a la insulina y favorece la digestión antes de tu fase de descanso biológico.
+                        </TooltipContent>
+                      </ShadcnTooltip>
+                    </TooltipProvider>
+                  </div>
+                  <CardDescription className="text-xs text-muted-foreground mt-1">Reloj biológico vs. Ingestas</CardDescription>
+                </div>
+              </CardHeader>
+              
+              <CardContent className="pt-6 pb-4 flex-1 flex flex-col justify-center">
+                {/* Dial Chart */}
+                <div className="flex items-center justify-center relative py-1">
+                  <div className="relative w-44 h-44 select-none">
+                    {/* Outer Ring (Day/Night) */}
+                    <svg className="w-full h-full transform -rotate-90 overflow-visible" viewBox="0 0 100 100">
+                      <circle cx="50" cy="50" fill="none" r="45" className="stroke-muted" strokeWidth="6"></circle>
+                      <circle cx="50" cy="50" fill="none" r="45" className="stroke-muted-foreground/20" strokeDasharray="180 282" strokeDashoffset="0" strokeLinecap="round" strokeWidth="6"></circle>
+                      <circle cx="50" cy="50" fill="none" r="35" className="stroke-violet-600 dark:stroke-violet-400" strokeDasharray="10 210" strokeDashoffset="-40" strokeLinecap="round" strokeWidth="4"></circle>
+                      <circle cx="50" cy="50" fill="none" r="35" className="stroke-violet-600 dark:stroke-violet-400" strokeDasharray="15 205" strokeDashoffset="-90" strokeLinecap="round" strokeWidth="4"></circle>
+                      <circle cx="50" cy="50" fill="none" r="35" className="stroke-violet-600 dark:stroke-violet-400" strokeDasharray="12 208" strokeDashoffset="-150" strokeLinecap="round" strokeWidth="4"></circle>
+                      <circle cx="50" cy="5" className="fill-foreground" r="2.5"></circle>
+                    </svg>
+                    {/* Center Info */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <Clock className="w-5 h-5 text-muted-foreground/30 mb-0.5" />
+                      <span className="text-foreground text-lg font-black tracking-widest">
+                        {insightPeriod === "day" ? "14:02" : "13:58"}
+                      </span>
+                      <span className="text-[8px] font-bold text-muted-foreground mt-0.5 uppercase tracking-wider">
+                        {insightPeriod === "day" ? "Pico" : "Pico Prom."}
+                      </span>
+                    </div>
+                    {/* Labels */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-4 text-[8px] font-bold text-muted-foreground/60">00:00</div>
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-4 text-[8px] font-bold text-muted-foreground/60">12:00</div>
+                    <div className="absolute left-0 top-1/2 -translate-x-4 -translate-y-1/2 text-[8px] font-bold text-muted-foreground/60">18:00</div>
+                    <div className="absolute right-0 top-1/2 translate-x-4 -translate-y-1/2 text-[8px] font-bold text-muted-foreground/60">06:00</div>
+                  </div>
+                </div>
+              </CardContent>
+
+              <CardFooter className="grid grid-cols-3 gap-1 border-t border-border/40 pt-3 pb-3 text-center text-xs">
+                <div className="border-r border-border/40 pr-1 flex flex-col justify-center">
+                  <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">Melatonina</p>
+                  <p className="text-[10px] font-extrabold text-foreground">
+                    {insightPeriod === "day" ? "~ 21:30" : "~ 21:42 (Prom.)"}
                   </p>
-                  <div className="flex flex-wrap gap-2 pt-2">
-                    <span className="px-3 py-1.5 bg-violet-600 dark:bg-violet-500 text-background rounded-lg text-xs font-bold uppercase tracking-wider">Patrón Estable</span>
-                    <span className="px-3 py-1.5 bg-secondary text-foreground border border-border rounded-lg text-xs font-bold uppercase tracking-wider">Hidratación Óptima</span>
-                  </div>
                 </div>
-                <div className="md:w-1/2 flex items-center justify-center py-4 relative">
-                  <svg className="overflow-visible w-[240px] h-[240px]" viewBox="0 0 200 200">
-                    <polygon className="text-border" points="100,20 176,75 147,165 53,165 24,75" stroke="currentColor" strokeOpacity="0.3" strokeWidth="1" fill="none"></polygon>
-                    <polygon className="text-border" points="100,40 157,81 135,148 65,148 43,81" stroke="currentColor" strokeOpacity="0.3" strokeWidth="1" fill="none"></polygon>
-                    <polygon className="text-border" points="100,60 138,88 123,132 77,132 62,88" stroke="currentColor" strokeOpacity="0.3" strokeWidth="1" fill="none"></polygon>
-                    <polygon className="text-border" points="100,80 119,94 111,116 89,116 81,94" stroke="currentColor" strokeOpacity="0.3" strokeWidth="1" fill="none"></polygon>
-                    <polygon points="100,35 165,78 140,150 75,145 35,70" fill="currentColor" fillOpacity="0.08" stroke="currentColor" strokeWidth="2.5" className="text-violet-600 dark:text-violet-500"></polygon>
-                    <text fill="currentColor" fontSize="7" fontWeight="700" textAnchor="middle" x="100" y="12" className="text-muted-foreground opacity-90 uppercase">Horarios</text>
-                    <text fill="currentColor" fontSize="7" fontWeight="700" textAnchor="start" x="182" y="77" className="text-muted-foreground opacity-90 uppercase">Nutrición</text>
-                    <text fill="currentColor" fontSize="7" fontWeight="700" textAnchor="middle" x="160" y="176" className="text-muted-foreground opacity-90 uppercase">Humor</text>
-                    <text fill="currentColor" fontSize="7" fontWeight="700" textAnchor="middle" x="40" y="176" className="text-muted-foreground opacity-90 uppercase">Agua</text>
-                    <text fill="currentColor" fontSize="7" fontWeight="700" textAnchor="end" x="18" y="77" className="text-muted-foreground opacity-90 uppercase">Registro</text>
-                  </svg>
+                <div className="border-r border-border/40 px-1 flex flex-col justify-center">
+                  <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">Ventana Ingesta</p>
+                  <p className="text-[10px] font-extrabold text-foreground leading-none">
+                    {insightPeriod === "day" ? (
+                      <>10:00 <span className="text-[8px] text-muted-foreground font-semibold">AM</span> - 06:00 <span className="text-[8px] text-muted-foreground font-semibold">PM</span></>
+                    ) : (
+                      <>10:15 <span className="text-[8px] text-muted-foreground font-semibold">AM</span> - 06:12 <span className="text-[8px] text-muted-foreground font-semibold">PM</span> <span className="text-[7px] text-muted-foreground font-bold">(Prom.)</span></>
+                    )}
+                  </p>
                 </div>
-              </div>
-            </div>
+                <div className="pl-1 flex flex-col justify-center">
+                  <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">Cortisol</p>
+                  <p className="text-[10px] font-extrabold text-foreground">
+                    {insightPeriod === "day" ? "~ 06:45" : "~ 06:38 (Prom.)"}
+                  </p>
+                </div>
+              </CardFooter>
+            </Card>
 
-            {/* Color Plate Trend (Tendencia del Plato Colorido) */}
-            <div className="col-span-1 md:col-span-2 lg:col-span-3 bg-card border border-border p-6 rounded-2xl space-y-6">
-              <div>
-                <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest mb-1">Diversidad de Fitonutrientes</p>
-                <h3 className="text-xl font-extrabold text-foreground">Tendencia del Plato Colorido (Color Plate Trend)</h3>
-                <p className="text-sm text-muted-foreground mt-1">Análisis de la distribución de colores de los alimentos ingeridos en tu diario.</p>
-              </div>
-
-              {/* Stacked Horizontal Bar */}
-              <div className="h-6 w-full rounded-xl overflow-hidden flex shadow-inner border border-border/40 select-none">
-                <div className="h-full bg-emerald-500 transition-all duration-300 flex items-center justify-center text-[10px] font-extrabold text-white animate-in slide-in-from-left duration-500" style={{ width: "35%" }} title="Verde: 35%">35%</div>
-                <div className="h-full bg-rose-500 transition-all duration-300 flex items-center justify-center text-[10px] font-extrabold text-white animate-in slide-in-from-left duration-500" style={{ width: "15%" }} title="Rojo: 15%">15%</div>
-                <div className="h-full bg-amber-500 transition-all duration-300 flex items-center justify-center text-[10px] font-extrabold text-white animate-in slide-in-from-left duration-500" style={{ width: "20%" }} title="Amarillo/Naranja: 20%">20%</div>
-                <div className="h-full bg-slate-200 dark:bg-slate-300 transition-all duration-300 flex items-center justify-center text-[10px] font-extrabold text-slate-800 animate-in slide-in-from-left duration-500" style={{ width: "12%" }} title="Blanco: 12%">12%</div>
-                <div className="h-full bg-[#92400e] transition-all duration-300 flex items-center justify-center text-[10px] font-extrabold text-white animate-in slide-in-from-left duration-500" style={{ width: "13%" }} title="Marrón: 13%">13%</div>
-                <div className="h-full bg-secondary/80 text-muted-foreground transition-all duration-300 flex items-center justify-center text-[10px] font-extrabold animate-in slide-in-from-left duration-500" style={{ width: "5%" }} title="Otros: 5%">5%</div>
-              </div>
-
-              {/* Legends Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 pt-2">
-                <div className="p-3 bg-secondary/20 rounded-xl border border-border/40 flex flex-col justify-between hover:border-foreground/20 transition-all duration-300">
-                  <div className="flex items-center gap-2">
-                    <div className="size-2.5 rounded-full bg-emerald-500"></div>
-                    <span className="text-[11px] font-bold text-foreground">Verde</span>
-                  </div>
-                  <span className="text-lg font-black text-foreground mt-1.5">35%</span>
-                  <span className="text-[11px] text-muted-foreground font-medium">Vegetales y hojas</span>
-                </div>
-
-                <div className="p-3 bg-secondary/20 rounded-xl border border-border/40 flex flex-col justify-between hover:border-foreground/20 transition-all duration-300">
-                  <div className="flex items-center gap-2">
-                    <div className="size-2.5 rounded-full bg-rose-500"></div>
-                    <span className="text-[11px] font-bold text-foreground">Rojo</span>
-                  </div>
-                  <span className="text-lg font-black text-foreground mt-1.5">15%</span>
-                  <span className="text-[11px] text-muted-foreground font-medium">Tomates y frutos rojos</span>
-                </div>
-
-                <div className="p-3 bg-secondary/20 rounded-xl border border-border/40 flex flex-col justify-between hover:border-foreground/20 transition-all duration-300">
-                  <div className="flex items-center gap-2">
-                    <div className="size-2.5 rounded-full bg-amber-500"></div>
-                    <span className="text-[11px] font-bold text-foreground">Amarillo/Nar</span>
-                  </div>
-                  <span className="text-lg font-black text-foreground mt-1.5">20%</span>
-                  <span className="text-[11px] text-muted-foreground font-medium">Cítricos y zanahorias</span>
-                </div>
-
-                <div className="p-3 bg-secondary/20 rounded-xl border border-border/40 flex flex-col justify-between hover:border-foreground/20 transition-all duration-300">
-                  <div className="flex items-center gap-2">
-                    <div className="size-2.5 rounded-full bg-slate-300 dark:bg-slate-400"></div>
-                    <span className="text-[11px] font-bold text-foreground">Blanco</span>
-                  </div>
-                  <span className="text-lg font-black text-foreground mt-1.5">12%</span>
-                  <span className="text-[11px] text-muted-foreground font-medium">Ajo, cebolla y hongos</span>
-                </div>
-
-                <div className="p-3 bg-secondary/20 rounded-xl border border-border/40 flex flex-col justify-between hover:border-foreground/20 transition-all duration-300">
-                  <div className="flex items-center gap-2">
-                    <div className="size-2.5 rounded-full bg-[#92400e]"></div>
-                    <span className="text-[11px] font-bold text-foreground">Marrón</span>
-                  </div>
-                  <span className="text-lg font-black text-foreground mt-1.5">13%</span>
-                  <span className="text-[11px] text-muted-foreground font-medium">Granos y proteínas</span>
-                </div>
-
-                <div className="p-3 bg-secondary/20 rounded-xl border border-border/40 flex flex-col justify-between hover:border-foreground/20 transition-all duration-300">
-                  <div className="flex items-center gap-2">
-                    <div className="size-2.5 rounded-full bg-muted"></div>
-                    <span className="text-[11px] font-bold text-foreground">Otros</span>
-                  </div>
-                  <span className="text-lg font-black text-foreground mt-1.5">5%</span>
-                  <span className="text-[11px] text-muted-foreground font-medium">Otros alimentos</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom Info Cards */}
-            <div className="col-span-1 md:col-span-2 lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="p-5 bg-card border border-border rounded-xl flex items-center gap-4">
-                <div className="size-12 rounded-lg bg-secondary flex items-center justify-center text-foreground shrink-0">
-                  <TrendingUp className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Precisión de Nutrición</p>
-                  <p className="text-lg font-black text-foreground">92% Match</p>
-                </div>
-              </div>
-              <div className="p-5 bg-card border border-border rounded-xl flex items-center gap-4">
-                <div className="size-12 rounded-lg bg-secondary flex items-center justify-center text-foreground shrink-0">
-                  <Droplet className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Promedio Hidratación</p>
-                  <p className="text-lg font-black text-foreground">2.4L / día</p>
-                </div>
-              </div>
-              <div className="p-5 bg-card border border-border rounded-xl flex items-center gap-4">
-                <div className="size-12 rounded-lg bg-secondary flex items-center justify-center text-foreground shrink-0">
-                  <Clock className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Regularidad</p>
-                  <p className="text-lg font-black text-foreground">Estabilidad Alta</p>
-                </div>
-              </div>
-            </div>
           </div>
 
-          <footer className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4 text-muted-foreground text-xs">
-            <p>© 2026 Wellfooder Wellness Lab. Premium Intelligence.</p>
-            <div className="flex gap-6 font-bold">
-              <a className="hover:text-primary transition-colors" href="#">Políticas de Privacidad</a>
-              <a className="hover:text-primary transition-colors" href="#">Metodología</a>
-              <a className="hover:text-primary transition-colors" href="#">Soporte</a>
-            </div>
-          </footer>
         </div>
       )}
 
@@ -3543,16 +4369,37 @@ function DiarioTab() {
             })}
           </div>
 
-          <footer className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4 text-muted-foreground text-xs">
-            <p>© 2026 Wellfooder Wellness Lab. Premium Intelligence.</p>
-            <div className="flex gap-6 font-bold">
-              <a className="hover:text-primary transition-colors" href="#">Políticas de Privacidad</a>
-              <a className="hover:text-primary transition-colors" href="#">Metodología</a>
-              <a className="hover:text-primary transition-colors" href="#">Soporte</a>
-            </div>
-          </footer>
         </div>
       )}
+
+      {/* Disclaimer and Download Report Section */}
+      <div className="mt-12 pt-8 border-t border-border/60 space-y-6">
+        <div className="bg-secondary/15 rounded-xl border border-border/40 p-4 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <h5 className="text-xs font-bold text-foreground">Aviso de Uso de Datos</h5>
+            <p className="text-[11px] leading-relaxed text-muted-foreground font-medium">
+              Este reporte es un resumen de registros de hábitos y estimaciones circadianas con fines meramente informativos y de autoconocimiento. No constituye un diagnóstico médico, prescripción clínica ni asesoramiento nutricional profesional. Consulta con un profesional de la salud matriculado antes de realizar cambios significativos en tu alimentación o estilo de vida.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-card border border-border rounded-xl p-4 shadow-sm">
+          <div className="space-y-0.5 text-center sm:text-left">
+            <h4 className="text-sm font-bold text-foreground">Compartir con tu Profesional</h4>
+            <p className="text-xs text-muted-foreground font-medium">
+              Exporta un reporte clínico en PDF {insightPeriod === "day" ? "de hoy" : insightPeriod === "week" ? "de los últimos 7 días" : insightPeriod === "month" ? "del último mes" : "del último trimestre"} con tu adherencia, estabilidad conductual y registros circadianos.
+            </p>
+          </div>
+          <Button 
+            onClick={handleDownloadReport} 
+            className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90 font-bold flex items-center justify-center gap-2"
+          >
+            <FileDown className="w-4 h-4" />
+            Descargar Reporte PDF
+          </Button>
+        </div>
+      </div>
 
       {/* FAB Overlay Blur */}
       {isFabOpen && (

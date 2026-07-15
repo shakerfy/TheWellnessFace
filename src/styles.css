@@ -1,7 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Bebas+Neue&family=Montserrat:wght@400;600;700;800;900&display=swap');
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
+@import "./typeset.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -67,6 +70,8 @@
 }
 
 :root {
+  --font-geist: 'Geist Variable', sans-serif;
+  --font-geist-mono: 'Geist Mono Variable', monospace;
   --radius: 0.625rem;
   /* Finanzas Minimalistas: blanco, negro, gris claro, gris oscuro */
   --background: oklch(1 0 0);                /* #ffffff */
@@ -214,5 +219,14 @@ select {
   background-repeat: no-repeat !important;
   background-size: 14px 14px !important;
   padding-right: 2.75rem !important;
+}
+
+.typeset-docs {
+  --typeset-font-body: var(--font-geist);
+  --typeset-font-heading: var(--font-geist);
+  --typeset-font-mono: var(--font-geist-mono);
+  --typeset-size: 15px;
+  --typeset-leading: 1.75;
+  --typeset-flow: 1.25em;
 }
 
