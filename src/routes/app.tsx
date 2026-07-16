@@ -9,6 +9,7 @@ import {
   Play, Pause, RotateCcw, Search, ChevronUp, ChevronDown, Trash2, FileDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Tooltip as ShadcnTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -3316,13 +3317,10 @@ function DiarioTab() {
   return (
     <div className={`mx-auto w-full space-y-8 pb-16 ${subTab === "analisis" ? "max-w-4xl" : "max-w-2xl"}`}>
       {/* Header Section */}
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <p className="text-xs font-bold text-primary uppercase tracking-widest mb-1.5">Tu Bitácora AI</p>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-foreground tracking-tight">
-            {subTab === "diario" ? "Bitácora de Bienestar" : subTab === "analisis" ? "Alimentación y Hábitos" : "Recuperación Muscular"}
-          </h1>
-        </div>
+      <header className="flex items-center justify-between gap-4">
+        <span className="text-2xl sm:text-3xl font-bebas tracking-wider text-foreground uppercase select-none">
+          Shakerfy
+        </span>
         <div className="flex p-1 bg-secondary/35 rounded-xl border border-border self-start">
           <button 
             type="button"
@@ -3599,90 +3597,103 @@ function DiarioTab() {
                 const isEven = index % 2 === 0;
                 const showOnLeft = !isEven; // Zig-zag on desktop
                 
+                const category = 
+                  item.type === "sunrise" || item.type === "sunset" || item.type === "thought"
+                    ? "mente"
+                    : item.type === "peak"
+                    ? "movimiento"
+                    : "nutricion"; // food, coffee, hydration
+
+                const catConfig = {
+                  mente: {
+                    // bg: "bg-gradient-to-br from-[#ff7b7c]/70 via-[#ff7b7c]/15 to-card dark:from-[#ff7b7c]/45 dark:via-[#ff7b7c]/8 dark:to-card",
+                    bg: "",
+                  },
+                  nutricion: {
+                    // bg: "bg-gradient-to-br from-[#aafc75]/70 via-[#aafc75]/15 to-card dark:from-[#aafc75]/45 dark:via-[#aafc75]/8 dark:to-card",
+                    bg: "",
+                  },
+                  movimiento: {
+                    // bg: "bg-gradient-to-br from-[#60f2fc]/70 via-[#60f2fc]/15 to-card dark:from-[#60f2fc]/45 dark:via-[#60f2fc]/8 dark:to-card",
+                    bg: "",
+                  }
+                }[category];
+
                 return (
                   <React.Fragment key={item.id}>
                     {showDateSeparator && (
                       <div className="relative flex justify-center my-8 pl-6 md:pl-0 w-full select-none">
                         <div className="absolute top-1/2 left-6 md:left-0 right-0 h-[1px] bg-border/40 -translate-y-1/2"></div>
-                        <div className="relative z-10 flex items-center gap-2 bg-card border border-border px-4 py-1.5 rounded-full text-[11px] font-bold text-foreground shadow-sm">
-                          <Calendar className="w-3.5 h-3.5 text-primary" />
+                        <Badge 
+                          variant="outline" 
+                          className="relative z-10 bg-background text-[11px] font-bold px-4 py-1.5 rounded-full flex items-center gap-2 border-border shadow-none"
+                        >
+                          <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
                           <span>{formatDateLabel(item.date)}</span>
-                        </div>
+                        </Badge>
                       </div>
                     )}
                     
                     <div className="relative mb-12 md:grid md:grid-cols-2 md:gap-12 items-center group">
                       {/* Timeline Dot */}
-                      <div className={`absolute left-0 md:left-1/2 w-4.5 h-4.5 rounded-full border-4 bg-background z-10 transform -translate-x-1/2 ${
-                        item.type === "food" 
-                          ? "border-primary" 
-                          : item.type === "hydration" 
-                          ? "border-blue-500" 
-                          : item.type === "coffee"
-                          ? "border-amber-700"
-                          : item.type === "sunrise"
-                          ? "border-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"
-                          : item.type === "sunset"
-                          ? "border-indigo-400 shadow-[0_0_8px_rgba(129,140,248,0.5)]"
-                          : item.type === "peak"
-                          ? "border-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]"
-                          : "border-muted-foreground/50"
-                      }`}></div>
+                      <div className="absolute left-0 md:left-1/2 w-4.5 h-4.5 rounded-full border-4 bg-background z-10 transform -translate-x-1/2 border-muted-foreground/30"></div>
 
                       {/* Time Label for Desktop */}
                       <div className={`hidden md:block ${showOnLeft ? "text-right pr-6 md:order-2" : "text-left pl-6 md:order-1"}`}>
-                        <span className={`font-bold text-base ${
-                          item.type === "sunrise" ? "text-amber-500" :
-                          item.type === "sunset" ? "text-indigo-400" :
-                          item.type === "peak" ? "text-rose-500" :
-                          "text-primary"
-                        }`}>{item.time}</span>
-                        <p className="text-muted-foreground text-xs mt-0.5">{item.subtitle}</p>
+                        <span className="font-bold text-base text-muted-foreground">{item.time}</span>
+                        <p className="text-muted-foreground/60 text-xs mt-0.5">{item.subtitle}</p>
                       </div>
 
                       {/* Card Container */}
                       <div className={`pl-6 md:pl-0 ${showOnLeft ? "md:order-1" : "md:order-2"}`}>
-                        <div className={`bg-card border rounded-2xl overflow-hidden ${
-                          item.type === "sunrise" ? "border-amber-500/20 shadow-[0_4px_20px_-4px_rgba(245,158,11,0.05)]" :
-                          item.type === "sunset" ? "border-indigo-500/20 shadow-[0_4px_20px_-4px_rgba(129,140,248,0.05)]" :
-                          item.type === "peak" ? "border-rose-500/20 shadow-[0_4px_20px_-4px_rgba(244,63,94,0.05)]" :
-                          "border-border"
-                        }`}>
+                        <Card className={`rounded-2xl overflow-hidden transition-all duration-300 shadow-none border-border ${catConfig.bg}`}>
                           {item.img && (
-                            <div className="relative h-44 w-full overflow-hidden">
+                            <div className="relative h-40 w-full overflow-hidden">
                               <img 
                                 src={item.img} 
                                 alt={item.title} 
                                 className="w-full h-full object-cover" 
                               />
-                              <div className="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-t from-background/90 to-transparent"></div>
-                              <div className="absolute bottom-4 left-4 right-4">
-                                <h3 className="text-foreground text-base font-extrabold">{item.title}</h3>
-                                <div className="flex items-center gap-2 mt-1 text-[11px] text-muted-foreground font-bold">
-                                  {item.kcal > 0 && (
-                                    <span className="flex items-center gap-0.5 text-primary">
-                                      <Flame className="w-3.5 h-3.5" /> {item.kcal} kcal
-                                    </span>
-                                  )}
-                                  {item.kcal > 0 && <span className="w-1 h-1 rounded-full bg-muted-foreground/50" />}
-                                  <span className="uppercase tracking-wider">{item.tag}</span>
-                                </div>
-                              </div>
                             </div>
                           )}
 
-                          {!item.img && item.type === "hydration" && (
-                            <div className="p-5 space-y-4">
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <h3 className="text-foreground text-base font-extrabold">{item.title}</h3>
-                                  <p className="text-[10px] text-muted-foreground font-bold uppercase mt-0.5">{item.subtitle}</p>
-                                </div>
-                                <div className="w-9 h-9 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500">
-                                  <Droplet className="w-5 h-5" />
-                                </div>
+                          <CardHeader className="p-5 pb-3">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="space-y-1">
+                                <CardTitle className="text-base font-bold leading-tight text-foreground">{item.title}</CardTitle>
+                                <CardDescription className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                  {item.subtitle}
+                                </CardDescription>
                               </div>
+                              {!item.img && (
+                                <div className="w-9 h-9 rounded-full bg-secondary text-muted-foreground flex items-center justify-center shrink-0 border border-border/40">
+                                  {item.type === "hydration" && <Droplet className="w-4.5 h-4.5" />}
+                                  {item.type === "coffee" && <Coffee className="w-4.5 h-4.5" />}
+                                  {item.type === "thought" && <Sparkles className="w-4.5 h-4.5" />}
+                                  {item.type === "sunrise" && <Sun className="w-4.5 h-4.5" />}
+                                  {item.type === "sunset" && <Moon className="w-4.5 h-4.5" />}
+                                  {item.type === "peak" && <TrendingUp className="w-4.5 h-4.5" />}
+                                </div>
+                              )}
+                            </div>
+                          </CardHeader>
 
+                          {(item.kcal > 0 || item.tag) && (
+                            <CardContent className="px-5 pb-4 pt-0">
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                {item.kcal > 0 && (
+                                  <span className="flex items-center gap-0.5 font-medium">
+                                    <Flame className="w-3.5 h-3.5" /> {item.kcal} kcal
+                                  </span>
+                                )}
+                                {item.kcal > 0 && item.tag && <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />}
+                                {item.tag && <span className="font-medium">{item.tag}</span>}
+                              </div>
+                            </CardContent>
+                          )}
+
+                          {!item.img && item.type === "hydration" && (
+                            <CardContent className="px-5 pb-4 pt-0 space-y-2">
                               {/* Hydration Selector */}
                               <div className="space-y-2">
                                 <div className="flex justify-between gap-1 h-12 w-full rounded-xl overflow-hidden bg-secondary/20 p-1">
@@ -3720,78 +3731,32 @@ function DiarioTab() {
                                   <span>Deshidratado</span>
                                 </div>
                               </div>
-                            </div>
-                          )}
-
-                          {!item.img && item.type !== "hydration" && (
-                            <div className="p-4 flex items-center gap-4">
-                              {item.type === "coffee" && (
-                                <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600 shrink-0">
-                                  <Coffee className="w-5 h-5" />
-                                </div>
-                              )}
-                              {item.type === "thought" && (
-                                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                                  <Sparkles className="w-5 h-5" />
-                                </div>
-                              )}
-                              {item.type === "sunrise" && (
-                                <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500 shrink-0 border border-amber-500/20">
-                                  <Sun className="w-5 h-5" />
-                                </div>
-                              )}
-                              {item.type === "sunset" && (
-                                <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 shrink-0 border border-indigo-500/20">
-                                  <Moon className="w-5 h-5" />
-                                </div>
-                              )}
-                              {item.type === "peak" && (
-                                <div className="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-500 shrink-0 border border-rose-500/20">
-                                  <TrendingUp className="w-5 h-5" />
-                                </div>
-                              )}
-                              <div>
-                                <h4 className="text-foreground text-sm font-extrabold">{item.title}</h4>
-                                <p className={`text-[10px] font-bold mt-0.5 ${
-                                  item.type === "sunrise" ? "text-amber-600 dark:text-amber-500" :
-                                  item.type === "sunset" ? "text-indigo-400" :
-                                  item.type === "peak" ? "text-rose-500" :
-                                  "text-muted-foreground"
-                                }`}>{item.kcal > 0 ? `${item.kcal} kcal • ` : ""}{item.tag}</p>
-                              </div>
-                            </div>
+                            </CardContent>
                           )}
 
                           {/* Mobile-only Time Stamp */}
-                          <div className={`md:hidden mt-2 ml-4 mb-2 font-bold text-xs ${
-                            item.type === "sunrise" ? "text-amber-500" :
-                            item.type === "sunset" ? "text-indigo-400" :
-                            item.type === "peak" ? "text-rose-500" :
-                            "text-primary"
-                          }`}>
+                          <div className="md:hidden px-5 pb-4 text-xs font-semibold text-muted-foreground">
                             <span>{item.time}</span>
                           </div>
 
                           {/* Coach / AI Feedback Section */}
                           {item.coachFeedback && (
-                            <div className="p-4 bg-secondary/20 border-t border-border">
-                              <div className="flex items-start gap-2.5">
-                                {item.type === "sunrise" ? (
-                                  <Sun className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                                ) : item.type === "sunset" ? (
-                                  <Moon className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
-                                ) : item.type === "peak" ? (
-                                  <TrendingUp className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
-                                ) : (
-                                  <Sparkles className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                                )}
-                                <p className="text-xs text-muted-foreground leading-relaxed font-medium">
-                                  {item.coachFeedback}
-                                </p>
-                              </div>
-                            </div>
+                            <CardFooter className="px-5 py-4 bg-secondary/20 border-t border-border flex items-start gap-2.5">
+                              {item.type === "sunrise" ? (
+                                <Sun className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
+                              ) : item.type === "sunset" ? (
+                                <Moon className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
+                              ) : item.type === "peak" ? (
+                                <TrendingUp className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
+                              ) : (
+                                <Sparkles className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
+                              )}
+                              <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+                                {item.coachFeedback}
+                              </p>
+                            </CardFooter>
                           )}
-                        </div>
+                        </Card>
                       </div>
                     </div>
                   </React.Fragment>
@@ -4373,33 +4338,35 @@ function DiarioTab() {
       )}
 
       {/* Disclaimer and Download Report Section */}
-      <div className="mt-12 pt-8 border-t border-border/60 space-y-6">
-        <div className="bg-secondary/15 rounded-xl border border-border/40 p-4 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
-          <div className="space-y-1">
-            <h5 className="text-xs font-bold text-foreground">Aviso de Uso de Datos</h5>
-            <p className="text-[11px] leading-relaxed text-muted-foreground font-medium">
-              Este reporte es un resumen de registros de hábitos y estimaciones circadianas con fines meramente informativos y de autoconocimiento. No constituye un diagnóstico médico, prescripción clínica ni asesoramiento nutricional profesional. Consulta con un profesional de la salud matriculado antes de realizar cambios significativos en tu alimentación o estilo de vida.
-            </p>
+      {subTab === "analisis" && (
+        <div className="mt-12 pt-8 border-t border-border/60 space-y-6">
+          <div className="bg-secondary/15 rounded-xl border border-border/40 p-4 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <h5 className="text-xs font-bold text-foreground">Aviso de Uso de Datos</h5>
+              <p className="text-[11px] leading-relaxed text-muted-foreground font-medium">
+                Este reporte es un resumen de registros de hábitos y estimaciones circadianas con fines meramente informativos y de autoconocimiento. No constituye un diagnóstico médico, prescripción clínica ni asesoramiento nutricional profesional. Consulta con un profesional de la salud matriculado antes de realizar cambios significativos en tu alimentación o estilo de vida.
+              </p>
+            </div>
           </div>
-        </div>
 
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-card border border-border rounded-xl p-4 shadow-sm">
-          <div className="space-y-0.5 text-center sm:text-left">
-            <h4 className="text-sm font-bold text-foreground">Compartir con tu Profesional</h4>
-            <p className="text-xs text-muted-foreground font-medium">
-              Exporta un reporte clínico en PDF {insightPeriod === "day" ? "de hoy" : insightPeriod === "week" ? "de los últimos 7 días" : insightPeriod === "month" ? "del último mes" : "del último trimestre"} con tu adherencia, estabilidad conductual y registros circadianos.
-            </p>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-card border border-border rounded-xl p-4 shadow-sm">
+            <div className="space-y-0.5 text-center sm:text-left">
+              <h4 className="text-sm font-bold text-foreground">Compartir con tu Profesional</h4>
+              <p className="text-xs text-muted-foreground font-medium">
+                Exporta un reporte clínico en PDF {insightPeriod === "day" ? "de hoy" : insightPeriod === "week" ? "de los últimos 7 días" : insightPeriod === "month" ? "del último mes" : "del último trimestre"} con tu adherencia, estabilidad conductual y registros circadianos.
+              </p>
+            </div>
+            <Button 
+              onClick={handleDownloadReport} 
+              className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90 font-bold flex items-center justify-center gap-2"
+            >
+              <FileDown className="w-4 h-4" />
+              Descargar Reporte PDF
+            </Button>
           </div>
-          <Button 
-            onClick={handleDownloadReport} 
-            className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90 font-bold flex items-center justify-center gap-2"
-          >
-            <FileDown className="w-4 h-4" />
-            Descargar Reporte PDF
-          </Button>
         </div>
-      </div>
+      )}
 
       {/* FAB Overlay Blur */}
       {isFabOpen && (

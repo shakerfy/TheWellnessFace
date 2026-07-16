@@ -567,9 +567,9 @@ function Hero({
     <section className="relative overflow-hidden pb-24 pt-24 md:pb-36 md:pt-32">
       {/* Animated Pastel Orbs Background (Restricted to Hero) */}
       <div aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-90">
-        <div className="absolute -right-[200px] -top-[200px] h-[400px] w-[400px] rounded-full bg-[#FF3B5C]/45 blur-[70px]" style={{ animation: "orb1 25s infinite ease-in-out" }} />
-        <div className="absolute -left-[250px] top-[10%] h-[500px] w-[500px] rounded-full bg-[#A3E635]/45 blur-[70px]" style={{ animation: "orb2 28s infinite ease-in-out 1s" }} />
-        <div className="absolute -bottom-[200px] -right-[150px] h-[400px] w-[400px] rounded-full bg-[#00D2FF]/45 blur-[80px]" style={{ animation: "orb3 30s infinite ease-in-out 3s" }} />
+        <div className="absolute -right-[200px] -top-[200px] h-[400px] w-[400px] rounded-full bg-[#ff7b7c]/75 blur-[70px]" style={{ animation: "orb1 25s infinite ease-in-out" }} />
+        <div className="absolute -left-[250px] top-[10%] h-[500px] w-[500px] rounded-full bg-[#aafc75]/75 blur-[70px]" style={{ animation: "orb2 28s infinite ease-in-out 1s" }} />
+        <div className="absolute -bottom-[200px] -right-[150px] h-[400px] w-[400px] rounded-full bg-[#60f2fc]/75 blur-[80px]" style={{ animation: "orb3 30s infinite ease-in-out 3s" }} />
         {/* Smooth fade to background color at the bottom edge */}
         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-background to-transparent z-10" />
       </div>
