@@ -3798,7 +3798,13 @@ function DiarioTab() {
                 <Droplet className="w-5 h-5" />
               </div>
             </button>
-            <button className="flex items-center gap-3 group" onClick={() => setIsFabOpen(false)}>
+            <button 
+              className="flex items-center gap-3 group" 
+              onClick={() => {
+                setIsFabOpen(false);
+                setActiveModal("registrar-actividad");
+              }}
+            >
               <span className="bg-card text-foreground text-xs font-bold px-3 py-2 rounded-lg border border-border shadow-sm group-hover:scale-105 transition-transform">Registrar actividad</span>
               <div className="w-12 h-12 rounded-full bg-card border border-border shadow-sm flex items-center justify-center text-orange-500 group-hover:scale-110 transition-transform">
                 <Activity className="w-5 h-5" />
