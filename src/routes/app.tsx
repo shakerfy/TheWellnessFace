@@ -3069,7 +3069,7 @@ function DiarioTab() {
                           )}
 
                           {!item.img && item.type === "hydration" && (
-                            <CardContent className="px-5 pb-5 pt-0 space-y-4">
+                            <CardContent className="px-5 pb-4 pt-0 space-y-2">
                               {/* Hydration Selector */}
                               <div className="space-y-2">
                                 <div className="flex justify-between gap-1 h-12 w-full rounded-xl overflow-hidden bg-secondary/20 p-1">
@@ -3091,7 +3091,7 @@ function DiarioTab() {
                                       }}
                                       className={`flex-1 h-full rounded-lg transition-all relative ${
                                         hydrationLevel === h.level 
-                                          ? "border-2 border-foreground z-10 scale-105 shadow-md" 
+                                          ? "border-2 border-foreground z-10" 
                                           : "hover:opacity-90"
                                       }`}
                                       style={{ backgroundColor: h.color }}
@@ -3102,55 +3102,10 @@ function DiarioTab() {
                                     </button>
                                   ))}
                                 </div>
-                                <div className="flex justify-between text-[9px] uppercase font-black text-muted-foreground/80 tracking-widest">
+                                <div className="flex justify-between text-[9px] uppercase font-bold text-muted-foreground/80 tracking-wider">
                                   <span>Óptimo</span>
                                   <span>Deshidratado</span>
                                 </div>
-                              </div>
-
-                              {/* Síntomas de Deshidratación */}
-                              <div className="pt-4 border-t border-border/40 space-y-2.5">
-                                <span className="text-[9px] text-muted-foreground font-black uppercase tracking-widest block">
-                                  Síntomas de Deshidratación a vigilar
-                                </span>
-                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                                  <div className="flex items-center gap-2 p-2 rounded-xl bg-secondary/35 border border-border/20">
-                                    <Droplet className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                                    <div className="min-w-0">
-                                      <p className="text-[10px] font-extrabold text-foreground leading-tight">Boca Seca</p>
-                                      <p className="text-[8px] text-muted-foreground leading-none">Falta saliva</p>
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center gap-2 p-2 rounded-xl bg-secondary/35 border border-border/20">
-                                    <Coffee className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                                    <div className="min-w-0">
-                                      <p className="text-[10px] font-extrabold text-foreground leading-tight">Fatiga</p>
-                                      <p className="text-[8px] text-muted-foreground leading-none">Cansancio</p>
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center gap-2 p-2 rounded-xl bg-secondary/35 border border-border/20">
-                                    <Brain className="w-3.5 h-3.5 text-purple-400 shrink-0" />
-                                    <div className="min-w-0">
-                                      <p className="text-[10px] font-extrabold text-foreground leading-tight">Cefalea</p>
-                                      <p className="text-[8px] text-muted-foreground leading-none">Dolor de cabeza</p>
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center gap-2 p-2 rounded-xl bg-secondary/35 border border-border/20">
-                                    <AlertCircle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
-                                    <div className="min-w-0">
-                                      <p className="text-[10px] font-extrabold text-foreground leading-tight">Mareos</p>
-                                      <p className="text-[8px] text-muted-foreground leading-none">Pérdida balance</p>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Alimentos / Suplementos advertencia */}
-                              <div className="pt-2 text-[9px] text-muted-foreground leading-relaxed flex items-start gap-1.5 bg-secondary/15 p-2.5 rounded-xl border border-border/10">
-                                <Info className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-0.5" />
-                                <p>
-                                  <span className="font-bold text-foreground">Aviso sobre coloración:</span> Ciertos suplementos (como el complejo de vitamina B) y alimentos (como la remolacha) pueden intensificar temporalmente el color de la orina, sin representar deshidratación real.
-                                </p>
                               </div>
                             </CardContent>
                           )}
@@ -3826,7 +3781,13 @@ function DiarioTab() {
               </div>
             </button>
 
-            <button className="flex items-center gap-3 group" onClick={() => setIsFabOpen(false)}>
+            <button 
+              className="flex items-center gap-3 group" 
+              onClick={() => {
+                setIsFabOpen(false);
+                setActiveModal("registrar-hidratacion");
+              }}
+            >
               <span className="bg-card text-foreground text-xs font-bold px-3 py-2 rounded-lg border border-border shadow-sm group-hover:scale-105 transition-transform">Registrar hidratación</span>
               <div className="w-12 h-12 rounded-full bg-card border border-border shadow-sm flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
                 <Droplet className="w-5 h-5" />
@@ -4131,6 +4092,15 @@ function DiarioTab() {
         </div>
       )}
 
+      {/* Registrar Hidratación Modal */}
+      {activeModal === "registrar-hidratacion" && (
+        <HydrationLogModal 
+          onClose={() => setActiveModal("none")} 
+          currentLevel={hydrationLevel}
+          onSave={(level) => setHydrationLevel(level)}
+        />
+      )}
+
       {/* FAQ Info Modal Overlay */}
       {showStreakInfo && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
@@ -4184,6 +4154,173 @@ function DiarioTab() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+interface HydrationLogModalProps {
+  onClose: () => void;
+  currentLevel: number;
+  onSave: (level: number) => void;
+}
+
+function HydrationLogModal({ onClose, currentLevel, onSave }: HydrationLogModalProps) {
+  const [localLevel, setLocalLevel] = useState(currentLevel);
+
+  const colors = [
+    { level: 1, color: "#fbfce1" },
+    { level: 2, color: "#f9f9cd" },
+    { level: 3, color: "#f6f2a9" },
+    { level: 4, color: "#f2e285" },
+    { level: 5, color: "#eec863" },
+    { level: 6, color: "#e8a33a" },
+    { level: 7, color: "#d4812f" },
+    { level: 8, color: "#a66a2e" }
+  ];
+
+  const getHydrationAdvice = (level: number) => {
+    if (level <= 2) {
+      return `Nivel ${level} indica hidratación óptima. ¡Excelente trabajo manteniendo tu cuerpo equilibrado!`;
+    } else if (level <= 4) {
+      return `Nivel ${level} indica hidratación normal tirando a levemente baja. Bebe un vaso de agua (250ml) ahora para mantener el estado óptimo.`;
+    } else if (level <= 6) {
+      return `Nivel ${level} indica deshidratación leve. Toma 500ml de agua ahora mismo para compensar el entrenamiento de la mañana.`;
+    } else {
+      return `¡Atención! Nivel ${level} indica deshidratación severa. Consume de 750ml a 1L de agua, preferiblemente con electrolitos, y modera el esfuerzo físico.`;
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[80] flex items-center justify-center p-4 animate-in fade-in duration-200">
+      <div className="w-full max-w-md bg-card border border-border rounded-[2rem] shadow-2xl flex flex-col overflow-hidden max-h-[90vh] animate-in zoom-in-95 duration-200">
+        {/* Header */}
+        <div className="px-6 pt-8 pb-4 flex justify-between items-start bg-card">
+          <div className="space-y-1">
+            <span className="text-[10px] uppercase font-black tracking-widest text-muted-foreground text-left block">Control de Rutina</span>
+            <h3 className="text-xl font-black text-foreground text-left">Registro de Hidratación</h3>
+          </div>
+          <button 
+            onClick={onClose} 
+            className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-foreground hover:bg-border transition-colors shrink-0"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="px-6 py-4 space-y-6 overflow-y-auto">
+          {/* Display Level */}
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-bold text-foreground">Escala de Armstrong</span>
+            <Badge variant="secondary" className="px-3 py-1 text-xs font-black uppercase bg-secondary text-foreground">
+              Armstrong {localLevel}
+            </Badge>
+          </div>
+
+          {/* Color Scale */}
+          <div className="space-y-2">
+            <div className="flex justify-between gap-1.5 h-12 w-full rounded-2xl overflow-hidden bg-secondary/15 p-1 border border-border/40 relative">
+              {colors.map(h => {
+                const isActive = localLevel === h.level;
+                return (
+                  <button
+                    key={h.level}
+                    type="button"
+                    onClick={() => setLocalLevel(h.level)}
+                    className={`flex-1 h-full rounded-lg transition-all relative ${
+                      isActive 
+                        ? "border-2 border-foreground z-10 scale-105 shadow-md" 
+                        : "hover:opacity-90"
+                    }`}
+                    style={{ backgroundColor: h.color }}
+                  >
+                    {isActive && (
+                      <div className="absolute -bottom-[8px] left-1/2 -translate-x-1/2 w-2 h-2 bg-foreground rotate-45 transform origin-center border-r border-b border-background z-20" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="flex justify-between text-[9px] uppercase font-black text-muted-foreground/80 tracking-widest px-1">
+              <span>Óptimo</span>
+              <span>Deshidratado</span>
+            </div>
+          </div>
+
+          {/* Coach / AI Feedback dynamic banner */}
+          <div className="p-4 bg-secondary/35 border border-border/40 rounded-2xl flex items-start gap-3">
+            <Sparkles className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+            <p className="text-xs text-muted-foreground font-semibold leading-relaxed text-left">
+              {getHydrationAdvice(localLevel)}
+            </p>
+          </div>
+
+          {/* Symptoms of Dehydration grid */}
+          <div className="space-y-2.5">
+            <span className="text-[9px] text-muted-foreground font-black uppercase tracking-widest block text-left">
+              Síntomas de Deshidratación a vigilar
+            </span>
+            <div className="grid grid-cols-2 gap-2.5">
+              <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-secondary/20 border border-border/20">
+                <Droplet className="w-4.5 h-4.5 text-blue-400 shrink-0" />
+                <div className="min-w-0 text-left">
+                  <p className="text-xs font-bold text-foreground leading-tight">Boca Seca</p>
+                  <p className="text-[10px] text-muted-foreground leading-none">Falta de saliva</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-secondary/20 border border-border/20">
+                <Coffee className="w-4.5 h-4.5 text-amber-500 shrink-0" />
+                <div className="min-w-0 text-left">
+                  <p className="text-xs font-bold text-foreground leading-tight">Fatiga</p>
+                  <p className="text-[10px] text-muted-foreground leading-none">Cansancio general</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-secondary/20 border border-border/20">
+                <Brain className="w-4.5 h-4.5 text-purple-400 shrink-0" />
+                <div className="min-w-0 text-left">
+                  <p className="text-xs font-bold text-foreground leading-tight">Cefalea</p>
+                  <p className="text-[10px] text-muted-foreground leading-none">Dolor de cabeza</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-secondary/20 border border-border/20">
+                <AlertCircle className="w-4.5 h-4.5 text-rose-400 shrink-0" />
+                <div className="min-w-0 text-left">
+                  <p className="text-xs font-bold text-foreground leading-tight">Mareos</p>
+                  <p className="text-[10px] text-muted-foreground leading-none">Pérdida de balance</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Explanation disclaimer footnote */}
+          <div className="text-[10px] text-muted-foreground leading-relaxed flex items-start gap-2 bg-secondary/10 p-3 rounded-2xl border border-border/10">
+            <Info className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
+            <p className="text-left">
+              <span className="font-bold text-foreground">Aviso sobre coloración:</span> Ciertos suplementos (como el complejo de vitamina B) y alimentos (como la remolacha) pueden intensificar temporalmente el color de la orina, sin representar deshidratación real.
+            </p>
+          </div>
+        </div>
+
+        {/* Footer actions */}
+        <div className="px-6 py-6 border-t border-border flex justify-end gap-2 bg-card">
+          <Button 
+            variant="outline" 
+            onClick={onClose} 
+            className="rounded-xl px-4 py-2 font-bold text-xs uppercase tracking-wider text-foreground hover:bg-secondary"
+          >
+            Cancelar
+          </Button>
+          <Button 
+            onClick={() => {
+              onSave(localLevel);
+              onClose();
+            }} 
+            className="rounded-xl px-5 py-2 font-bold text-xs uppercase tracking-wider bg-foreground text-background hover:opacity-90"
+          >
+            Guardar Registro
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
