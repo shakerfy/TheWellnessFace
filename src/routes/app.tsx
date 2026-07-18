@@ -13,6 +13,18 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Tooltip as ShadcnTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
+import { 
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel
+} from "@/components/ui/alert-dialog";
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine,
   BarChart, Bar, Cell, RadarChart, Radar, PolarGrid,
@@ -1420,524 +1432,6 @@ function ExerciseDetailModal({ exercise, onClose }: { exercise: any, onClose: ()
   );
 }
 
-// Subcomponent: Workout Library Modal
-function WorkoutLibraryModal({ 
-  onClose, 
-  customWorkouts, 
-  onStartWorkout, 
-  onEditWorkout, 
-  onDeleteWorkout,
-  onCreateNew
-}: { 
-  onClose: () => void; 
-  customWorkouts: any[]; 
-  onStartWorkout: (workout: any) => void;
-  onEditWorkout: (workout: any) => void;
-  onDeleteWorkout: (id: string) => void;
-  onCreateNew: () => void;
-}) {
-  return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background animate-in fade-in duration-200">
-      <div className="w-full max-w-xl mx-auto flex-1 flex flex-col overflow-hidden h-full">
-        {/* Header */}
-        <div className="px-6 pt-8 pb-4 flex justify-between items-start bg-card">
-          <div>
-            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest block mb-0.5">Mis Rutinas</span>
-            <h2 className="text-xl font-black text-foreground tracking-tight">Biblioteca de Workouts</h2>
-          </div>
-          <button 
-            onClick={onClose} 
-            className="p-2 rounded-full bg-secondary/50 hover:bg-secondary transition-colors"
-          >
-            <X className="w-5 h-5 text-muted-foreground" />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          {customWorkouts.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Dumbbell className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p className="text-sm font-semibold">No tienes workouts creados.</p>
-              <p className="text-xs mt-1">Crea tu primera rutina personalizada abajo.</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {customWorkouts.map((w) => (
-                <div key={w.id} className="p-4 bg-secondary/30 border border-border rounded-2xl flex items-center justify-between gap-4 hover:border-foreground/25 transition-all">
-                  <div>
-                    <h3 className="text-sm font-bold text-foreground">{w.name}</h3>
-                    <p className="text-[10px] font-bold text-muted-foreground mt-0.5 uppercase tracking-wider">
-                      {w.exercises.length} ejercicios • {w.duration}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button 
-                      onClick={() => onStartWorkout(w)}
-                      className="w-9 h-9 rounded-full bg-foreground text-background flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
-                      title="Iniciar Workout"
-                    >
-                      <Play className="w-4 h-4 fill-current translate-x-0.5" />
-                    </button>
-                    <button 
-                      onClick={() => onEditWorkout(w)}
-                      className="w-9 h-9 rounded-full bg-card border border-border text-foreground flex items-center justify-center hover:bg-secondary transition-colors"
-                      title="Editar"
-                    >
-                      <Settings className="w-4 h-4 text-muted-foreground" />
-                    </button>
-                    <button 
-                      onClick={() => onDeleteWorkout(w.id)}
-                      className="w-9 h-9 rounded-full bg-card border border-border text-rose-500 flex items-center justify-center hover:bg-rose-500/10 transition-colors"
-                      title="Eliminar"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="p-6 border-t border-border bg-card/50">
-          <Button 
-            onClick={onCreateNew} 
-            className="w-full h-12 rounded-xl bg-foreground text-background font-bold text-sm hover:opacity-90 transition-opacity"
-          >
-            Crear Nuevo Workout
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Subcomponent: Manual Workout Creator Modal
-function ManualWorkoutCreatorModal({
-  onClose,
-  onSave,
-  workoutToEdit
-}: {
-  onClose: () => void;
-  onSave: (workout: any) => void;
-  workoutToEdit?: any | null;
-}) {
-  const [name, setName] = useState(workoutToEdit?.name || "");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
-  
-  const availableExercises = [
-    { id: 1, name: "Dominadas en Barra", rest: 90, img: "/pull-up.png", muscles: "Espalda" },
-    { id: 2, name: "Cable Crossover", rest: 60, img: "/cable-crossover.png", muscles: "Pecho" },
-    { id: 3, name: "Jalón Dorsal", rest: 60, img: "/lat-pulldown.png", muscles: "Espalda" },
-    { id: 4, name: "Camilla de Femorales Tumbado", rest: 60, img: "/prone-leg-curl.png", muscles: "Isquiotibiales" },
-    { id: 5, name: "Sillón de Flexión de Piernas", rest: 60, img: "/seated-leg-curl.png", muscles: "Isquiotibiales" },
-    { id: 6, name: "Camilla de Isquiotibiales Sentado", rest: 60, img: "/seated-hamstring-curl.png", muscles: "Isquiotibiales" }
-  ];
-
-  const [selectedIds, setSelectedIds] = useState<number[]>(
-    workoutToEdit?.exercises.map((e: any) => e.id) || []
-  );
-
-  // Per-exercise specs: reps/time, weight, and rest
-  const [exerciseParams, setExerciseParams] = useState<Record<number, { type: "reps" | "secs"; value: number; weight: string; rest: number }>>(() => {
-    const initial: Record<number, { type: "reps" | "secs"; value: number; weight: string; rest: number }> = {};
-    if (workoutToEdit) {
-      workoutToEdit.exercises.forEach((ex: any) => {
-        const isReps = ex.reps?.endsWith("x");
-        const numVal = parseInt(ex.reps) || 12;
-        const wt = ex.weight === "Peso corporal" ? "" : ex.weight?.replace("kg", "") || "";
-        initial[ex.id] = {
-          type: isReps ? "reps" : "secs",
-          value: numVal,
-          weight: wt,
-          rest: ex.rest ?? 60
-        };
-      });
-    }
-    return initial;
-  });
-
-  const toggleExercise = (id: number) => {
-    if (selectedIds.includes(id)) {
-      setSelectedIds(selectedIds.filter(x => x !== id));
-    } else {
-      setSelectedIds([...selectedIds, id]);
-      if (!exerciseParams[id]) {
-        const ex = availableExercises.find(x => x.id === id);
-        setExerciseParams(prev => ({
-          ...prev,
-          [id]: { type: "reps", value: 12, weight: "", rest: ex?.rest || 60 }
-        }));
-      }
-    }
-  };
-
-  const removeExercise = (id: number) => {
-    setSelectedIds(selectedIds.filter(x => x !== id));
-  };
-
-  const moveExercise = (index: number, direction: "up" | "down") => {
-    if (direction === "up" && index === 0) return;
-    if (direction === "down" && index === selectedIds.length - 1) return;
-    
-    const nextIndex = direction === "up" ? index - 1 : index + 1;
-    const newIds = [...selectedIds];
-    const temp = newIds[index];
-    newIds[index] = newIds[nextIndex];
-    newIds[nextIndex] = temp;
-    setSelectedIds(newIds);
-  };
-
-  const updateParam = (id: number, field: string, val: any) => {
-    setExerciseParams(prev => ({
-      ...prev,
-      [id]: {
-        ...prev[id],
-        [field]: val
-      }
-    }));
-  };
-
-  // Calculate total workout duration
-  const calculateTotalDuration = () => {
-    let totalSeconds = 0;
-    selectedIds.forEach(id => {
-      const ex = availableExercises.find(x => x.id === id);
-      if (!ex) return;
-      const params = exerciseParams[id] || { type: "reps", value: 12, weight: "", rest: 60 };
-      
-      // Exercise active time
-      if (params.type === "reps") {
-        totalSeconds += params.value * 3; // ~3 seconds per rep
-      } else {
-        totalSeconds += params.value; // seconds directly
-      }
-      
-      // Rest time
-      totalSeconds += params.rest || 0;
-    });
-    
-    const minutes = Math.max(1, Math.round(totalSeconds / 60));
-    return `${minutes} min`;
-  };
-
-  const handleSave = () => {
-    if (!name.trim()) return;
-    
-    const selectedExercises = selectedIds
-      .map(id => availableExercises.find(ex => ex.id === id))
-      .filter((ex): ex is typeof availableExercises[0] => !!ex)
-      .map(ex => {
-        const params = exerciseParams[ex.id] || { type: "reps", value: 12, weight: "", rest: 60 };
-        const repsString = params.type === "reps" ? `${params.value}x` : `${params.value}s`;
-        const weightString = params.weight.trim() ? `${params.weight}kg` : "Peso corporal";
-        return {
-          ...ex,
-          reps: repsString,
-          weight: weightString,
-          rest: params.rest,
-          video: ex.img,
-          instructions: ["Realiza el movimiento de forma controlada."],
-          tips: "Mantén una buena postura."
-        };
-      });
-
-    onSave({
-      id: workoutToEdit?.id || `custom-${Date.now()}`,
-      name,
-      duration: calculateTotalDuration(),
-      exercises: selectedExercises
-    });
-  };
-
-  // RENDER SEARCH MODE OR PREVIEW MODE
-  if (isSearching) {
-    return (
-      <div className="fixed inset-0 z-50 flex flex-col bg-background animate-in fade-in duration-200">
-        <div className="w-full max-w-xl mx-auto flex-1 flex flex-col overflow-hidden h-full">
-          {/* Header */}
-          <div className="px-6 pt-8 pb-4 flex justify-between items-center bg-card border-b border-border">
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={() => setIsSearching(false)} 
-                className="p-2 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors"
-                title="Volver"
-              >
-                <ChevronLeft className="w-5 h-5 text-muted-foreground" />
-              </button>
-              <div>
-                <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest block mb-0.5">Agregar Ejercicios</span>
-                <h2 className="text-sm font-bold text-foreground tracking-tight">Biblioteca</h2>
-              </div>
-            </div>
-            <button 
-              onClick={() => setIsSearching(false)} 
-              className="px-4 py-2 text-xs font-bold bg-foreground text-background rounded-xl hover:opacity-95 transition-opacity"
-            >
-              Listo
-            </button>
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
-            {/* Buscador */}
-            <div className="relative">
-              <input 
-                type="text" 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buscar por ejercicio o músculo..." 
-                className="w-full pl-10 pr-4 py-3 rounded-xl bg-secondary border border-border text-sm font-semibold text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground/30 transition-colors"
-              />
-              <Search className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2" />
-              {searchQuery && (
-                <button 
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-muted text-muted-foreground transition-colors"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
-
-            {/* List pool */}
-            <div className="grid grid-cols-1 gap-3">
-              {(() => {
-                const unselected = availableExercises.filter(ex => !selectedIds.includes(ex.id));
-                const filtered = unselected.filter(ex => 
-                  ex.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                  ex.muscles.toLowerCase().includes(searchQuery.toLowerCase())
-                );
-                
-                if (filtered.length === 0) {
-                  return (
-                    <div className="text-center py-8 text-muted-foreground border border-dashed border-border rounded-3xl">
-                      <p className="text-xs font-semibold">No hay más ejercicios disponibles</p>
-                      <p className="text-[10px] mt-0.5">
-                        {searchQuery ? "Prueba buscando otra palabra" : "Has seleccionado todos los ejercicios"}
-                      </p>
-                    </div>
-                  );
-                }
-
-                return filtered.map(ex => (
-                  <div
-                    key={ex.id}
-                    onClick={() => toggleExercise(ex.id)}
-                    className="p-3.5 rounded-3xl border border-border bg-card hover:border-foreground/10 flex items-center justify-between gap-3 cursor-pointer select-none transition-all"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-11 h-11 rounded-xl overflow-hidden border border-border shrink-0 bg-background">
-                        <img src={ex.img} alt={ex.name} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-bold text-foreground truncate">{ex.name}</p>
-                        <p className="text-[10px] font-semibold text-muted-foreground">{ex.muscles}</p>
-                      </div>
-                    </div>
-                    <div className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors shrink-0">
-                      <Plus className="w-4 h-4 text-foreground" />
-                    </div>
-                  </div>
-                ));
-              })()}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // PREVIEW / EDIT MODE
-  return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background animate-in fade-in duration-200">
-      <div className="w-full max-w-xl mx-auto flex-1 flex flex-col overflow-hidden h-full">
-        {/* Header */}
-        <div className="px-6 pt-8 pb-4 flex justify-between items-start bg-card border-b border-border">
-          <div>
-            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest block mb-0.5">Creador Manual</span>
-            <h2 className="text-xl font-black text-foreground tracking-tight">
-              {workoutToEdit ? "Editar Workout" : "Nuevo Workout"}
-            </h2>
-          </div>
-          <button 
-            onClick={onClose} 
-            className="p-2 rounded-full bg-secondary/50 hover:bg-secondary transition-colors"
-          >
-            <X className="w-5 h-5 text-muted-foreground" />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-8">
-          {/* Nombre */}
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Nombre de la Rutina</label>
-            <input 
-              type="text" 
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Ej. Mi rutina de torso" 
-              className="w-full px-4 py-3 rounded-xl bg-secondary border border-border text-sm font-semibold text-foreground focus:outline-none focus:border-foreground/30 transition-colors"
-            />
-          </div>
-
-          {/* Tu rutina */}
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest block">Ejercicios de la Rutina ({selectedIds.length})</label>
-              {selectedIds.length > 0 && (
-                <span className="text-xs font-bold text-indigo-500 bg-indigo-500/10 px-2.5 py-1 rounded-lg">
-                  Est. {calculateTotalDuration()}
-                </span>
-              )}
-            </div>
-            
-            {selectedIds.length === 0 ? (
-              <div className="text-center py-10 text-muted-foreground border border-dashed border-border rounded-3xl bg-secondary/10">
-                <Dumbbell className="w-8 h-8 mx-auto mb-2 opacity-25" />
-                <p className="text-xs font-semibold">Rutina vacía</p>
-                <p className="text-[10px] mt-0.5 mb-4">Añade ejercicios para comenzar a configurar</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-3.5">
-                {selectedIds.map((id, index) => {
-                  const ex = availableExercises.find(x => x.id === id);
-                  if (!ex) return null;
-                  
-                  return (
-                    <div
-                      key={ex.id}
-                      className="p-4 rounded-3xl border border-foreground/25 bg-foreground/[0.02] shadow-sm flex flex-col transition-all animate-in fade-in duration-200"
-                    >
-                      {/* Top Row */}
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl overflow-hidden border border-border shrink-0 bg-background">
-                          <img src={ex.img} alt={ex.name} className="w-full h-full object-cover" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-bold text-foreground truncate">{ex.name}</p>
-                          <p className="text-[10px] font-semibold text-muted-foreground">{ex.muscles}</p>
-                        </div>
-                        
-                        {/* Order & Trash */}
-                        <div className="flex items-center gap-1 shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => moveExercise(index, "up")}
-                            disabled={index === 0}
-                            className="p-1.5 rounded-lg hover:bg-secondary disabled:opacity-30 disabled:hover:bg-transparent text-muted-foreground transition-all"
-                            title="Subir"
-                          >
-                            <ChevronUp className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => moveExercise(index, "down")}
-                            disabled={index === selectedIds.length - 1}
-                            className="p-1.5 rounded-lg hover:bg-secondary disabled:opacity-30 disabled:hover:bg-transparent text-muted-foreground transition-all"
-                            title="Bajar"
-                          >
-                            <ChevronDown className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => removeExercise(ex.id)}
-                            className="p-1.5 rounded-lg hover:bg-rose-500/10 text-rose-500 transition-colors ml-1"
-                            title="Quitar"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Params inputs */}
-                      <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 pt-3 border-t border-border/50">
-                        <div>
-                          <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Métrica</label>
-                          <select
-                            value={exerciseParams[ex.id]?.type || "reps"}
-                            onChange={(e) => updateParam(ex.id, "type", e.target.value as any)}
-                            className="w-full text-xs font-bold px-3 py-2.5 rounded-xl bg-secondary border border-border text-foreground focus:outline-none"
-                          >
-                            <option value="reps">Reps</option>
-                            <option value="secs">Segundos</option>
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
-                            {(exerciseParams[ex.id]?.type || "reps") === "reps" ? "Reps" : "Segs"}
-                          </label>
-                          <input
-                            type="number"
-                            min="1"
-                            value={exerciseParams[ex.id]?.value ?? 12}
-                            onChange={(e) => updateParam(ex.id, "value", parseInt(e.target.value) || 1)}
-                            className="w-full text-xs font-bold px-3 py-2.5 rounded-xl bg-secondary border border-border text-foreground focus:outline-none"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Peso (kg)</label>
-                          <input
-                            type="text"
-                            placeholder="Cuerpo"
-                            value={exerciseParams[ex.id]?.weight ?? ""}
-                            onChange={(e) => updateParam(ex.id, "weight", e.target.value)}
-                            className="w-full text-xs font-bold px-3 py-2.5 rounded-xl bg-secondary border border-border text-foreground focus:outline-none"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Descanso (segs)</label>
-                          <input
-                            type="number"
-                            min="0"
-                            step="5"
-                            value={exerciseParams[ex.id]?.rest ?? 60}
-                            onChange={(e) => updateParam(ex.id, "rest", parseInt(e.target.value) || 0)}
-                            className="w-full text-xs font-bold px-3 py-2.5 rounded-xl bg-secondary border border-border text-foreground focus:outline-none"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* Añadir ejercicio button */}
-            <button
-              type="button"
-              onClick={() => setIsSearching(true)}
-              className="w-full py-4 border-2 border-dashed border-border rounded-3xl text-muted-foreground hover:text-foreground hover:border-foreground/20 flex flex-col items-center justify-center gap-2 group transition-all mt-4 bg-secondary/10 hover:bg-secondary/20"
-            >
-              <Plus className="w-5 h-5 text-muted-foreground group-hover:scale-110 transition-transform" />
-              <span className="text-xs font-bold">Añadir Ejercicio</span>
-              <span className="text-[10px] text-muted-foreground font-medium">Busca en la biblioteca</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="p-6 border-t border-border bg-card/50">
-          <Button 
-            onClick={handleSave} 
-            disabled={!name.trim() || selectedIds.length === 0}
-            className="w-full h-12 rounded-xl bg-foreground text-background font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            Guardar Workout
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // Subcomponent: Workout Feedback Modal
 function WorkoutFeedbackModal({ 
   onClose, 
@@ -2063,6 +1557,46 @@ function WorkoutFeedbackModal({
   const exercises = customExercises || defaultExercises;
 
   const [feedback, setFeedback] = useState<Record<number, { intensity?: string; technique?: string }>>({});
+  const [checkedExercises, setCheckedExercises] = useState<Record<number, boolean>>({});
+  const [showConfirmClose, setShowConfirmClose] = useState(false);
+  const [restMaxSeconds, setRestMaxSeconds] = useState<number>(60);
+  const [showGeneralFeedback, setShowGeneralFeedback] = useState(false);
+  const [generalRating, setGeneralRating] = useState<number>(0);
+  const [finalEnergy, setFinalEnergy] = useState<string>("");
+  const [generalComments, setGeneralComments] = useState<string>("");
+
+  const toggleCheckExercise = (id: number) => {
+    setCheckedExercises(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
+
+  const handleSetFeedback = (exerciseId: number, key: "intensity" | "technique", value: string) => {
+    setFeedback(prev => {
+      const next = {
+        ...prev,
+        [exerciseId]: {
+          ...prev[exerciseId],
+          [key]: value
+        }
+      };
+      
+      const current = next[exerciseId];
+      if (current?.intensity && current?.technique) {
+        const alreadyFilled = prev[exerciseId]?.intensity && prev[exerciseId]?.technique;
+        if (!alreadyFilled) {
+          const ex = exercises.find(e => e.id === exerciseId);
+          if (ex && ex.rest) {
+            setActiveRestId(ex.id);
+            setRestSeconds(ex.rest);
+            setRestMaxSeconds(ex.rest);
+          }
+        }
+      }
+      return next;
+    });
+  };
 
   const [seconds, setSeconds] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
@@ -2163,6 +1697,104 @@ function WorkoutFeedbackModal({
     }
   });
 
+  if (showGeneralFeedback) {
+    return (
+      <div className="fixed inset-0 z-[70] flex flex-col bg-background/95 backdrop-blur-3xl overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-300">
+        <div className="flex-1 overflow-y-auto px-4 py-12 pb-12 flex items-center justify-center">
+          <div className="max-w-md w-full mx-auto bg-card border border-border/80 rounded-[2.5rem] shadow-2xl p-8 space-y-8 animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="text-center space-y-2">
+              <div className="w-16 h-16 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center justify-center mx-auto mb-2">
+                <Check className="w-8 h-8 stroke-[3]" />
+              </div>
+              <h2 className="text-2xl font-black text-foreground tracking-tight">¡Entrenamiento Finalizado!</h2>
+              <p className="text-xs text-muted-foreground font-medium">
+                Has registrado una sesión de <span className="font-bold text-foreground">{formatTime(seconds)}</span>. ¡Gran esfuerzo hoy!
+              </p>
+            </div>
+
+            {/* Star Rating */}
+            <div className="space-y-3">
+              <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest block text-center">¿Cómo calificarías este entrenamiento?</span>
+              <div className="flex items-center justify-center gap-2">
+                {[1, 2, 3, 4, 5].map((star) => {
+                  const isActive = star <= generalRating;
+                  return (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setGeneralRating(star)}
+                      className={`p-1.5 rounded-xl transition-all ${
+                        isActive 
+                          ? "text-yellow-500 scale-110" 
+                          : "text-muted-foreground/30 hover:text-yellow-500/60 hover:scale-105"
+                      }`}
+                    >
+                      <Star className={`w-8 h-8 ${isActive ? "fill-yellow-500" : ""}`} />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Energy Emojis */}
+            <div className="space-y-3">
+              <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest block text-center">¿Cómo te sientes de energía al terminar?</span>
+              <div className="flex items-center justify-center gap-3">
+                {[
+                  { emoji: "😫", label: "Agotado" },
+                  { emoji: "🥱", label: "Cansado" },
+                  { emoji: "😐", label: "Normal" },
+                  { emoji: "🙂", label: "Bien" },
+                  { emoji: "⚡", label: "Con energía" }
+                ].map((item) => {
+                  const isActive = finalEnergy === item.emoji;
+                  return (
+                    <button
+                      key={item.emoji}
+                      type="button"
+                      onClick={() => setFinalEnergy(item.emoji)}
+                      className={`w-12 h-12 text-2xl rounded-2xl flex flex-col items-center justify-center border transition-all ${
+                        isActive
+                          ? "bg-foreground text-background border-foreground scale-110 shadow-lg"
+                          : "bg-secondary/40 border-border text-foreground hover:bg-secondary hover:scale-105"
+                      }`}
+                      title={item.label}
+                    >
+                      {item.emoji}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Comments Area */}
+            <div className="space-y-2">
+              <label className="text-[10px] text-muted-foreground font-black uppercase tracking-widest block font-bold">Feedback para tu Coach IA (Opcional)</label>
+              <Textarea 
+                value={generalComments}
+                onChange={(e) => setGeneralComments(e.target.value)}
+                placeholder="¿Qué tal estuvo la rutina? Cuéntale a tu Coach IA para personalizar y adaptar tu próxima sesión..."
+                className="w-full min-h-[90px] px-4 py-3 rounded-2xl bg-secondary border border-border text-sm font-semibold text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground/30 transition-colors resize-none"
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <Button
+              onClick={() => {
+                if (onComplete) onComplete();
+                onClose();
+              }}
+              className="w-full h-14 rounded-2xl bg-foreground text-background font-black text-sm uppercase tracking-wider hover:opacity-90 transition-opacity"
+            >
+              Guardar y Finalizar
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-[70] flex flex-col bg-background/95 backdrop-blur-3xl overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-300">
       <div className="flex-1 overflow-y-auto px-4 py-12 pb-32">
@@ -2202,7 +1834,7 @@ function WorkoutFeedbackModal({
                     <div className="space-y-6 relative pl-5 border-l-2 border-dashed border-rose-500/20 ml-2">
                       {group.items.map((ex, itemIdx) => {
                         const currentFeedback = feedback[ex.id];
-                        const isLast = itemIdx === group.items.length - 1;
+                        const isChecked = !!checkedExercises[ex.id];
                         return (
                           <div key={ex.id} className="space-y-4 relative">
                             {/* Dot linking indicator */}
@@ -2211,114 +1843,88 @@ function WorkoutFeedbackModal({
                             </div>
 
                             <div className="flex items-center justify-between gap-4">
-                              <div 
-                                className="flex items-center gap-4 cursor-pointer group"
-                                onClick={() => setActiveDetailExercise(ex)}
-                              >
-                                <div className="relative w-14 h-14 rounded-xl overflow-hidden border border-border bg-card">
-                                  <img src={ex.img} alt={ex.name} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
-                                </div>
-                                <div>
-                                  <p className="text-sm font-bold text-foreground group-hover:underline leading-snug">{ex.reps} {ex.name} • {ex.weight}</p>
-                                  <p className="text-[11px] text-muted-foreground mt-0.5">Ver detalles →</p>
+                              <div className="flex items-center gap-3 min-w-0">
+                                <Checkbox
+                                  id={`check-${ex.id}`}
+                                  checked={isChecked}
+                                  disabled={!workoutStarted}
+                                  onCheckedChange={() => toggleCheckExercise(ex.id)}
+                                  className="h-6 w-6 rounded-full border-2 border-muted-foreground/30 data-[state=checked]:border-emerald-500 data-[state=checked]:bg-emerald-500 text-background transition-all shrink-0 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                                />
+                                <div 
+                                  className="flex items-center gap-4 cursor-pointer group min-w-0"
+                                  onClick={() => setActiveDetailExercise(ex)}
+                                >
+                                  <div className="relative w-14 h-14 rounded-xl overflow-hidden border border-border bg-card shrink-0">
+                                    <img src={ex.img} alt={ex.name} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                                  </div>
+                                  <div className="min-w-0">
+                                    <p className="text-sm font-bold text-foreground group-hover:underline leading-snug truncate">{ex.reps} {ex.name} • {ex.weight}</p>
+                                    <p className="text-[11px] text-muted-foreground mt-0.5">Ver detalles →</p>
+                                  </div>
                                 </div>
                               </div>
-
-                              {/* Rest timer is only shown at the end of the superset */}
-                              {isLast && (
-                                <>
-                                  {activeRestId === ex.id ? (
-                                    <div className="flex items-center gap-2 shrink-0">
-                                      <span className="px-3 py-1.5 rounded-full text-xs font-bold bg-foreground text-background flex items-center gap-1.5 animate-pulse">
-                                        <Clock className="w-3.5 h-3.5" />
-                                        {restSeconds}s
-                                      </span>
-                                      <button 
-                                        onClick={() => setActiveRestId(null)}
-                                        className="px-2 py-1 bg-secondary text-rose-500 hover:bg-rose-500/10 border border-border rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all"
-                                      >
-                                        Omitir
-                                      </button>
-                                    </div>
-                                  ) : (
-                                    <button 
-                                      onClick={() => {
-                                        setActiveRestId(ex.id);
-                                        setRestSeconds(ex.rest);
-                                      }}
-                                      className="px-3 py-1.5 rounded-full text-xs font-bold bg-secondary hover:bg-border text-foreground border border-border/80 flex items-center gap-1.5 transition-all shrink-0"
-                                    >
-                                      <Clock className="w-3.5 h-3.5 text-muted-foreground" />
-                                      Descanso
-                                    </button>
-                                  )}
-                                </>
-                              )}
                             </div>
 
                             {/* Two Segmented Controls for exercise feedback */}
-                            <div className="space-y-3 mt-2">
-                              <div>
-                                <span className="text-[9px] text-muted-foreground font-black uppercase tracking-wider block mb-1">Esfuerzo Percibido</span>
-                                <div className="flex rounded-xl overflow-hidden border border-border bg-secondary shadow-sm">
-                                  {options.map((opt) => {
-                                    const isActive = currentFeedback?.intensity === opt;
-                                    return (
-                                      <button
-                                        key={opt}
-                                        type="button"
-                                        onClick={() => setFeedback({ 
-                                          ...feedback, 
-                                          [ex.id]: { ...feedback[ex.id], intensity: opt } 
-                                        })}
-                                        className={`flex-1 py-2 px-1 text-[10px] font-bold text-center border-r border-border/50 last:border-r-0 transition-all leading-tight ${
-                                          isActive 
-                                            ? "bg-foreground text-background shadow-md" 
-                                            : "text-muted-foreground hover:bg-border hover:text-foreground"
-                                        }`}
-                                      >
-                                        {opt}
-                                      </button>
-                                    );
-                                  })}
+                            {isChecked && (
+                              <div className="space-y-3 mt-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                                <div>
+                                  <span className="text-[9px] text-muted-foreground font-black uppercase tracking-wider block mb-1">Esfuerzo Percibido</span>
+                                  <div className="flex rounded-xl overflow-hidden border border-border bg-secondary shadow-sm">
+                                    {options.map((opt) => {
+                                      const isActive = currentFeedback?.intensity === opt;
+                                      return (
+                                        <button
+                                          key={opt}
+                                          type="button"
+                                          onClick={() => handleSetFeedback(ex.id, "intensity", opt)}
+                                          className={`flex-1 py-2 px-1 text-[10px] font-bold text-center border-r border-border/50 last:border-r-0 transition-all leading-tight ${
+                                            isActive 
+                                              ? "bg-foreground text-background shadow-md" 
+                                              : "text-muted-foreground hover:bg-border hover:text-foreground"
+                                          }`}
+                                        >
+                                          {opt}
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+
+                                <div>
+                                  <span className="text-[9px] text-muted-foreground font-black uppercase tracking-wider block mb-1">¿Qué tal estuvo tu técnica?</span>
+                                  <div className="flex rounded-xl overflow-hidden border border-border bg-secondary shadow-sm">
+                                    {techniqueOptions.map((opt) => {
+                                      const isActive = currentFeedback?.technique === opt;
+                                      return (
+                                        <button
+                                          key={opt}
+                                          type="button"
+                                          onClick={() => handleSetFeedback(ex.id, "technique", opt)}
+                                          className={`flex-1 py-2 px-1 text-[10px] font-bold text-center border-r border-border/50 last:border-r-0 transition-all leading-tight ${
+                                            isActive 
+                                              ? "bg-foreground text-background shadow-md" 
+                                              : "text-muted-foreground hover:bg-border hover:text-foreground"
+                                          }`}
+                                        >
+                                          {opt}
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+
+                                <div className="min-h-[1.5rem] text-[11px] font-semibold text-foreground space-y-0.5 mt-1">
+                                  {currentFeedback?.intensity && (
+                                    <p className="leading-relaxed">Esfuerzo: <span className="font-bold text-muted-foreground">{getResponse(currentFeedback.intensity)}</span></p>
+                                  )}
+                                  {currentFeedback?.technique && (
+                                    <p className="leading-relaxed">Técnica: <span className="font-bold text-muted-foreground">{getTechniqueResponse(currentFeedback.technique)}</span></p>
+                                  )}
                                 </div>
                               </div>
-
-                              <div>
-                                <span className="text-[9px] text-muted-foreground font-black uppercase tracking-wider block mb-1">¿Qué tal estuvo tu técnica?</span>
-                                <div className="flex rounded-xl overflow-hidden border border-border bg-secondary shadow-sm">
-                                  {techniqueOptions.map((opt) => {
-                                    const isActive = currentFeedback?.technique === opt;
-                                    return (
-                                      <button
-                                        key={opt}
-                                        type="button"
-                                        onClick={() => setFeedback({ 
-                                          ...feedback, 
-                                          [ex.id]: { ...feedback[ex.id], technique: opt } 
-                                        })}
-                                        className={`flex-1 py-2 px-1 text-[10px] font-bold text-center border-r border-border/50 last:border-r-0 transition-all leading-tight ${
-                                          isActive 
-                                            ? "bg-foreground text-background shadow-md" 
-                                            : "text-muted-foreground hover:bg-border hover:text-foreground"
-                                        }`}
-                                      >
-                                        {opt}
-                                      </button>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-
-                              <div className="min-h-[1.5rem] text-[11px] font-semibold text-foreground space-y-0.5 mt-1">
-                                {currentFeedback?.intensity && (
-                                  <p className="leading-relaxed">Esfuerzo: <span className="font-bold text-muted-foreground">{getResponse(currentFeedback.intensity)}</span></p>
-                                )}
-                                {currentFeedback?.technique && (
-                                  <p className="leading-relaxed">Técnica: <span className="font-bold text-muted-foreground">{getTechniqueResponse(currentFeedback.technique)}</span></p>
-                                )}
-                              </div>
-                            </div>
+                            )}
                           </div>
                         );
                       })}
@@ -2329,112 +1935,92 @@ function WorkoutFeedbackModal({
                 // Single exercise layout
                 const ex = group.items[0];
                 const currentFeedback = feedback[ex.id];
+                const isChecked = !!checkedExercises[ex.id];
                 return (
                   <div key={ex.id} className="space-y-4 bg-card/20 border border-border/60 rounded-3xl p-5 relative">
                     <div className="flex items-center justify-between gap-4">
-                      <div 
-                        className="flex items-center gap-4 cursor-pointer group"
-                        onClick={() => setActiveDetailExercise(ex)}
-                      >
-                        <div className="relative w-14 h-14 rounded-xl overflow-hidden border border-border bg-card">
-                          <img src={ex.img} alt={ex.name} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-foreground group-hover:underline leading-snug">{ex.reps} {ex.name} • {ex.weight}</p>
-                          <p className="text-[11px] text-muted-foreground mt-0.5">Descanso: {ex.rest}s • Ver detalles →</p>
+                      <div className="flex items-center gap-3 min-w-0">
+                        <Checkbox
+                          id={`check-${ex.id}`}
+                          checked={isChecked}
+                          disabled={!workoutStarted}
+                          onCheckedChange={() => toggleCheckExercise(ex.id)}
+                          className="h-6 w-6 rounded-full border-2 border-muted-foreground/30 data-[state=checked]:border-emerald-500 data-[state=checked]:bg-emerald-500 text-background transition-all shrink-0 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                        />
+                        <div 
+                          className="flex items-center gap-4 cursor-pointer group min-w-0"
+                          onClick={() => setActiveDetailExercise(ex)}
+                        >
+                          <div className="relative w-14 h-14 rounded-xl overflow-hidden border border-border bg-card shrink-0">
+                            <img src={ex.img} alt={ex.name} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-bold text-foreground group-hover:underline leading-snug truncate">{ex.reps} {ex.name} • {ex.weight}</p>
+                            <p className="text-[11px] text-muted-foreground mt-0.5">Descanso: {ex.rest}s • Ver detalles →</p>
+                          </div>
                         </div>
                       </div>
-
-                      {activeRestId === ex.id ? (
-                        <div className="flex items-center gap-2 shrink-0">
-                          <span className="px-3 py-1.5 rounded-full text-xs font-bold bg-foreground text-background flex items-center gap-1.5 animate-pulse">
-                            <Clock className="w-3.5 h-3.5" />
-                            {restSeconds}s
-                          </span>
-                          <button 
-                            onClick={() => setActiveRestId(null)}
-                            className="px-2 py-1 bg-secondary text-rose-500 hover:bg-rose-500/10 border border-border rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all"
-                          >
-                            Omitir
-                          </button>
-                        </div>
-                      ) : (
-                        <button 
-                          onClick={() => {
-                            setActiveRestId(ex.id);
-                            setRestSeconds(ex.rest);
-                          }}
-                          className="px-3 py-1.5 rounded-full text-xs font-bold bg-secondary hover:bg-border text-foreground border border-border/80 flex items-center gap-1.5 transition-all shrink-0"
-                        >
-                          <Clock className="w-3.5 h-3.5 text-muted-foreground" />
-                          Descanso
-                        </button>
-                      )}
                     </div>
 
                     {/* Two Segmented Controls for exercise feedback */}
-                    <div className="space-y-3 mt-2">
-                      <div>
-                        <span className="text-[9px] text-muted-foreground font-black uppercase tracking-wider block mb-1">Esfuerzo Percibido</span>
-                        <div className="flex rounded-xl overflow-hidden border border-border bg-secondary shadow-sm">
-                          {options.map((opt) => {
-                            const isActive = currentFeedback?.intensity === opt;
-                            return (
-                              <button
-                                key={opt}
-                                type="button"
-                                onClick={() => setFeedback({ 
-                                  ...feedback, 
-                                  [ex.id]: { ...feedback[ex.id], intensity: opt } 
-                                })}
-                                className={`flex-1 py-2 px-1 text-[10px] font-bold text-center border-r border-border/50 last:border-r-0 transition-all leading-tight ${
-                                  isActive 
-                                    ? "bg-foreground text-background shadow-md" 
-                                    : "text-muted-foreground hover:bg-border hover:text-foreground"
-                                }`}
-                              >
-                                {opt}
-                              </button>
-                            );
-                          })}
+                    {isChecked && (
+                      <div className="space-y-3 mt-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div>
+                          <span className="text-[9px] text-muted-foreground font-black uppercase tracking-wider block mb-1">Esfuerzo Percibido</span>
+                          <div className="flex rounded-xl overflow-hidden border border-border bg-secondary shadow-sm">
+                            {options.map((opt) => {
+                              const isActive = currentFeedback?.intensity === opt;
+                              return (
+                                <button
+                                  key={opt}
+                                  type="button"
+                                  onClick={() => handleSetFeedback(ex.id, "intensity", opt)}
+                                  className={`flex-1 py-2 px-1 text-[10px] font-bold text-center border-r border-border/50 last:border-r-0 transition-all leading-tight ${
+                                    isActive 
+                                      ? "bg-foreground text-background shadow-md" 
+                                      : "text-muted-foreground hover:bg-border hover:text-foreground"
+                                  }`}
+                                >
+                                  {opt}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        <div>
+                          <span className="text-[9px] text-muted-foreground font-black uppercase tracking-wider block mb-1">¿Qué tal estuvo tu técnica?</span>
+                          <div className="flex rounded-xl overflow-hidden border border-border bg-secondary shadow-sm">
+                            {techniqueOptions.map((opt) => {
+                              const isActive = currentFeedback?.technique === opt;
+                              return (
+                                <button
+                                  key={opt}
+                                  type="button"
+                                  onClick={() => handleSetFeedback(ex.id, "technique", opt)}
+                                  className={`flex-1 py-2 px-1 text-[10px] font-bold text-center border-r border-border/50 last:border-r-0 transition-all leading-tight ${
+                                    isActive 
+                                      ? "bg-foreground text-background shadow-md" 
+                                      : "text-muted-foreground hover:bg-border hover:text-foreground"
+                                  }`}
+                                >
+                                  {opt}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        <div className="min-h-[1.5rem] text-[11px] font-semibold text-foreground space-y-0.5 mt-1">
+                          {currentFeedback?.intensity && (
+                            <p className="leading-relaxed">Esfuerzo: <span className="font-bold text-muted-foreground">{getResponse(currentFeedback.intensity)}</span></p>
+                          )}
+                          {currentFeedback?.technique && (
+                            <p className="leading-relaxed">Técnica: <span className="font-bold text-muted-foreground">{getTechniqueResponse(currentFeedback.technique)}</span></p>
+                          )}
                         </div>
                       </div>
-
-                      <div>
-                        <span className="text-[9px] text-muted-foreground font-black uppercase tracking-wider block mb-1">¿Qué tal estuvo tu técnica?</span>
-                        <div className="flex rounded-xl overflow-hidden border border-border bg-secondary shadow-sm">
-                          {techniqueOptions.map((opt) => {
-                            const isActive = currentFeedback?.technique === opt;
-                            return (
-                              <button
-                                key={opt}
-                                type="button"
-                                onClick={() => setFeedback({ 
-                                  ...feedback, 
-                                  [ex.id]: { ...feedback[ex.id], technique: opt } 
-                                })}
-                                className={`flex-1 py-2 px-1 text-[10px] font-bold text-center border-r border-border/50 last:border-r-0 transition-all leading-tight ${
-                                  isActive 
-                                    ? "bg-foreground text-background shadow-md" 
-                                    : "text-muted-foreground hover:bg-border hover:text-foreground"
-                                }`}
-                              >
-                                {opt}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      <div className="min-h-[1.5rem] text-[11px] font-semibold text-foreground space-y-0.5 mt-1">
-                        {currentFeedback?.intensity && (
-                          <p className="leading-relaxed">Esfuerzo: <span className="font-bold text-muted-foreground">{getResponse(currentFeedback.intensity)}</span></p>
-                        )}
-                        {currentFeedback?.technique && (
-                          <p className="leading-relaxed">Técnica: <span className="font-bold text-muted-foreground">{getTechniqueResponse(currentFeedback.technique)}</span></p>
-                        )}
-                      </div>
-                    </div>
+                    )}
                   </div>
                 );
               }
@@ -2493,8 +2079,13 @@ function WorkoutFeedbackModal({
                 
                 <Button 
                   onClick={() => {
-                    if (onComplete) onComplete();
-                    onClose();
+                    const allChecked = exercises.every(ex => checkedExercises[ex.id]);
+                    if (allChecked) {
+                      setIsRunning(false);
+                      setShowGeneralFeedback(true);
+                    } else {
+                      setShowConfirmClose(true);
+                    }
                   }} 
                   variant="outline"
                   className="h-11 px-5 rounded-xl bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 border-rose-500/30 font-black text-sm transition-colors"
@@ -2507,6 +2098,44 @@ function WorkoutFeedbackModal({
         </div>
       </div>
 
+      {/* Prominent Rest Timer floating panel */}
+      {activeRestId !== null && restSeconds > 0 && (
+        <div className="fixed bottom-28 left-4 right-4 z-[80] md:max-w-xl md:mx-auto bg-card/95 backdrop-blur-2xl border border-border/80 rounded-[2rem] shadow-2xl p-6 flex items-center justify-between gap-4 animate-in slide-in-from-bottom-8 duration-300">
+          <div className="flex items-center gap-4">
+            {/* Visual timer circle progress indicator */}
+            <div className="relative w-16 h-16 flex items-center justify-center shrink-0">
+              <svg className="absolute inset-0 w-full h-full transform -rotate-90">
+                <circle cx="32" cy="32" r="28" className="stroke-secondary" strokeWidth="4" fill="none" />
+                <circle 
+                  cx="32" 
+                  cy="32" 
+                  r="28" 
+                  className="stroke-primary transition-all duration-1000" 
+                  strokeWidth="4" 
+                  fill="none" 
+                  strokeDasharray="176" 
+                  strokeDashoffset={176 - (176 * restSeconds) / restMaxSeconds} 
+                  strokeLinecap="round"
+                />
+              </svg>
+              <span className="text-lg font-black font-mono text-primary">{restSeconds}s</span>
+            </div>
+            <div>
+              <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest block">Tiempo de Descanso</span>
+              <span className="text-xs font-bold text-foreground">
+                Siguiente: {exercises.find(e => e.id === activeRestId)?.name}
+              </span>
+            </div>
+          </div>
+          <button 
+            onClick={() => setActiveRestId(null)}
+            className="px-5 py-3 rounded-2xl bg-secondary hover:bg-rose-500/10 text-rose-500 hover:text-rose-500 font-extrabold text-xs uppercase tracking-wider transition-all border border-border"
+          >
+            Omitir
+          </button>
+        </div>
+      )}
+
       {/* Submodal de detalles del ejercicio */}
       {activeDetailExercise && (
         <ExerciseDetailModal 
@@ -2514,6 +2143,36 @@ function WorkoutFeedbackModal({
           onClose={() => setActiveDetailExercise(null)} 
         />
       )}
+
+      {/* Incomplete Workout Confirmation Dialog */}
+      <AlertDialog open={showConfirmClose} onOpenChange={setShowConfirmClose}>
+        <AlertDialogContent className="rounded-[2rem] border border-border p-6 bg-card max-w-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-lg font-black text-foreground flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-amber-500" />
+              ¿Registrar incompleto?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-xs text-muted-foreground leading-relaxed mt-2">
+              Aún tienes ejercicios pendientes en tu rutina. ¿Quieres finalizar y registrar tu progreso actual de todas formas?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex flex-col-reverse sm:flex-row gap-2 mt-4">
+            <AlertDialogCancel className="w-full sm:w-auto h-11 rounded-xl bg-secondary text-foreground hover:bg-border border border-border font-bold text-xs uppercase tracking-wider">
+              Seguir entrenando
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => {
+                setShowConfirmClose(false);
+                setIsRunning(false);
+                setShowGeneralFeedback(true);
+              }}
+              className="w-full sm:w-auto h-11 rounded-xl bg-rose-500 text-background hover:bg-rose-600 font-bold text-xs uppercase tracking-wider"
+            >
+              Sí, registrar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
@@ -2728,65 +2387,7 @@ function DiarioTab() {
   const [activeModal, setActiveModal] = useState<string>("none");
   const [foodAnalysisStep, setFoodAnalysisStep] = useState<"upload" | "analyzing" | "report">("upload");
 
-  // Custom Workouts State for Manual Creator
-  const [customWorkouts, setCustomWorkouts] = useState<any[]>([
-    {
-      id: "custom-1",
-      name: "Brazos de Acero",
-      focus: "Bíceps y Tríceps",
-      duration: "30 min",
-      exercises: [
-        { 
-          id: 1, 
-          name: "Dominadas en Barra (Pull-ups)", 
-          reps: "12x", 
-          weight: "Peso corporal", 
-          rest: 90, 
-          img: "/pull-up.png", 
-          video: "/chinupreversewidegrip_x264(2).mp4", 
-          muscles: "Bíceps",
-          instructions: ["Sujeta los agarres y flexiona."], 
-          tips: "Controla el movimiento",
-          superset: "Superserie A"
-        },
-        { 
-          id: 2, 
-          name: "Cable Crossover", 
-          reps: "15x", 
-          weight: "15kg", 
-          rest: 60, 
-          img: "/cable-crossover.png", 
-          video: "/cable-crossover.png", 
-          muscles: "Pecho",
-          instructions: ["Junta las manos al frente y abajo."], 
-          tips: "No uses el impulso del cuerpo",
-          superset: "Superserie A"
-        }
-      ]
-    },
-    {
-      id: "custom-2",
-      name: "Rutina de Piernas Básica",
-      focus: "Isquiotibiales",
-      duration: "20 min",
-      exercises: [
-        {
-          id: 4,
-          name: "Camilla de Femorales Tumbado",
-          reps: "12x",
-          weight: "30kg",
-          rest: 60,
-          img: "/prone-leg-curl.png",
-          video: "/prone-leg-curl.png",
-          muscles: "Isquiotibiales",
-          instructions: ["Acuéstate boca abajo y flexiona las piernas."],
-          tips: "Mantén las caderas pegadas al banco."
-        }
-      ]
-    }
-  ]);
-  const [selectedCustomWorkout, setSelectedCustomWorkout] = useState<any | null>(null);
-  const [workoutToEdit, setWorkoutToEdit] = useState<any | null>(null);
+
   const [mealsGoal, setMealsGoal] = useState(3);
 
 
@@ -4153,18 +3754,7 @@ function DiarioTab() {
                 <Sparkles className="w-5 h-5 fill-current" />
               </div>
             </button>
-            <button 
-              className="flex items-center gap-3 group" 
-              onClick={() => {
-                setIsFabOpen(false);
-                setActiveModal("workout-library");
-              }}
-            >
-              <span className="bg-card text-foreground text-xs font-bold px-3 py-2 rounded-lg border border-border shadow-sm group-hover:scale-105 transition-transform">Crear workout manualmente</span>
-              <div className="w-12 h-12 rounded-full bg-card border border-border shadow-sm flex items-center justify-center text-foreground group-hover:scale-110 transition-transform">
-                <Dumbbell className="w-5 h-5" />
-              </div>
-            </button>
+
             <button className="flex items-center gap-3 group" onClick={() => setIsFabOpen(false)}>
               <span className="bg-card text-foreground text-xs font-bold px-3 py-2 rounded-lg border border-border shadow-sm group-hover:scale-105 transition-transform">Registrar hidratación</span>
               <div className="w-12 h-12 rounded-full bg-card border border-border shadow-sm flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
@@ -4322,57 +3912,7 @@ function DiarioTab() {
         />
       )}
 
-      {/* Workout Library Modal */}
-      {activeModal === "workout-library" && (
-        <WorkoutLibraryModal 
-          onClose={() => setActiveModal("none")}
-          customWorkouts={customWorkouts}
-          onStartWorkout={(w) => {
-            setSelectedCustomWorkout(w);
-            setActiveModal("workout-feedback-custom");
-          }}
-          onEditWorkout={(w) => {
-            setWorkoutToEdit(w);
-            setActiveModal("create-custom-workout");
-          }}
-          onDeleteWorkout={(id) => {
-            setCustomWorkouts(customWorkouts.filter(x => x.id !== id));
-          }}
-          onCreateNew={() => {
-            setWorkoutToEdit(null);
-            setActiveModal("create-custom-workout");
-          }}
-        />
-      )}
 
-      {/* Manual Workout Creator Modal */}
-      {activeModal === "create-custom-workout" && (
-        <ManualWorkoutCreatorModal 
-          onClose={() => setActiveModal("workout-library")}
-          workoutToEdit={workoutToEdit}
-          onSave={(workout) => {
-            if (workoutToEdit) {
-              setCustomWorkouts(customWorkouts.map(x => x.id === workout.id ? workout : x));
-            } else {
-              setCustomWorkouts([...customWorkouts, workout]);
-            }
-            setActiveModal("workout-library");
-          }}
-        />
-      )}
-
-      {/* Custom Workout Session Modal (Reuses feedback modal) */}
-      {activeModal === "workout-feedback-custom" && selectedCustomWorkout && (
-        <WorkoutFeedbackModal 
-          onClose={() => {
-            setActiveModal("workout-library");
-            setSelectedCustomWorkout(null);
-          }} 
-          customExercises={selectedCustomWorkout.exercises}
-          workoutTitle={selectedCustomWorkout.name}
-          onComplete={() => handleWorkoutComplete(selectedCustomWorkout.exercises)}
-        />
-      )}
 
       {/* Racha de Actividad Modal */}
       {activeModal === "racha-actividad" && (
