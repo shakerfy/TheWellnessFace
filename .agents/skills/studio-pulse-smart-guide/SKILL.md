@@ -12,27 +12,30 @@ Este skill documenta los flujos de desarrollo, patrones comunes y comandos neces
 ## 🛠️ Patrones y Buenas Prácticas
 
 ### 1. Manejo del Enrutador (TanStack Router)
-* **Generación de Rutas:** TanStack Start utiliza enrutamiento basado en archivos. Cada vez que crees, renombres o elimines un archivo bajo `src/routes/`, el enrutador regenerará `src/routeTree.gen.ts`.
-* **Rutas Dinámicas:** Se nombran usando el prefijo `$`. Por ejemplo: `src/routes/gym.$slug.tsx`.
-    * En el componente, accede al parámetro de la siguiente manera:
-      ```tsx
-      const { slug } = Route.useParams();
-      ```
-* **Manejo de Errores y Carga:** Utiliza `loader` para pre-cargar datos. Siempre provee un `notFoundComponent` y un `errorComponent` al crear o modificar archivos de ruta para que la experiencia del usuario sea fluida.
+
+- **Generación de Rutas:** TanStack Start utiliza enrutamiento basado en archivos. Cada vez que crees, renombres o elimines un archivo bajo `src/routes/`, el enrutador regenerará `src/routeTree.gen.ts`.
+- **Rutas Dinámicas:** Se nombran usando el prefijo `$`. Por ejemplo: `src/routes/gym.$slug.tsx`.
+  - En el componente, accede al parámetro de la siguiente manera:
+    ```tsx
+    const { slug } = Route.useParams();
+    ```
+- **Manejo de Errores y Carga:** Utiliza `loader` para pre-cargar datos. Siempre provee un `notFoundComponent` y un `errorComponent` al crear o modificar archivos de ruta para que la experiencia del usuario sea fluida.
 
 ### 2. Estilos y Animaciones (TailwindCSS v4)
-* **Variables CSS de Tema:** El sistema de diseño se basa en variables globales definidas en [styles.css](file:///C:/Users/shake/.gemini/antigravity/scratch/studio-pulse-smart/src/styles.css).
-* **Animaciones:** Habilita transiciones con `transition-all duration-300` o clases de entrada como `animate-fade-up` (implementadas en el listado de gimnasios).
-* **Fuentes:** La tipografía principal es Inter, importada globalmente en `__root.tsx` a través de `@fontsource/inter`.
+
+- **Variables CSS de Tema:** El sistema de diseño se basa en variables globales definidas en [styles.css](file:///C:/Users/shake/.gemini/antigravity/scratch/studio-pulse-smart/src/styles.css).
+- **Animaciones:** Habilita transiciones con `transition-all duration-300` o clases de entrada como `animate-fade-up` (implementadas en el listado de gimnasios).
+- **Fuentes:** La tipografía principal es Inter, importada globalmente en `__root.tsx` a través de `@fontsource/inter`.
 
 ### 3. Integración con Base de Datos (Futuro)
-* **Firebase:** En el futuro se integrará Firebase como base de datos para almacenar colecciones y documentos (ver detalles de las colecciones en [ROADMAP.md](file:///c:/Users/shake/.gemini/antigravity/scratch/studio-pulse-smart/ROADMAP.md)). Por ahora, los datos están simulados localmente en [gyms.ts](file:///c:/Users/shake/.gemini/antigravity/scratch/studio-pulse-smart/src/lib/gyms.ts).
+
+- **Firebase:** En el futuro se integrará Firebase como base de datos para almacenar colecciones y documentos (ver detalles de las colecciones en [ROADMAP.md](file:///c:/Users/shake/.gemini/antigravity/scratch/studio-pulse-smart/ROADMAP.md)). Por ahora, los datos están simulados localmente en [gyms.ts](file:///c:/Users/shake/.gemini/antigravity/scratch/studio-pulse-smart/src/lib/gyms.ts).
 
 ---
 
 ## 🏃‍♂️ Comandos Frecuentes
 
-* **Instalación:** `cmd /c npm install`
-* **Correr en desarrollo:** `cmd /c npm run dev`
-* **Compilar:** `cmd /c npm run build`
-* **Comprobación de errores:** `cmd /c npm run lint`
+- **Instalación:** `cmd /c npm install`
+- **Correr en desarrollo:** `cmd /c npm run dev`
+- **Compilar:** `cmd /c npm run build`
+- **Comprobación de errores:** `cmd /c npm run lint`

@@ -4,7 +4,13 @@ export interface BlogPost {
   title: string;
   excerpt: string;
   content: string;
-  category: "Tendencias" | "Nutrición" | "Entrenamiento" | "Gestión & Gimnasios" | "Bienestar & Salud" | "Tecnología Fitness";
+  category:
+    | "Tendencias"
+    | "Nutrición"
+    | "Entrenamiento"
+    | "Gestión & Gimnasios"
+    | "Bienestar & Salud"
+    | "Tecnología Fitness";
   readTime: string;
   date: string;
   author: {
@@ -23,17 +29,20 @@ export const BLOG_POSTS: BlogPost[] = [
     id: "post-1",
     slug: "el-auge-del-fitness-hibrido",
     title: "El auge del fitness híbrido: Cómo combinar entrenamiento presencial y digital",
-    excerpt: "Descubrí cómo los centros deportivos están adaptando sus modelos para ofrecer flexibilidad total a sus socios mediante la integración de IA y monitoreo en tiempo real.",
+    excerpt:
+      "Descubrí cómo los centros deportivos están adaptando sus modelos para ofrecer flexibilidad total a sus socios mediante la integración de IA y monitoreo en tiempo real.",
     category: "Tendencias",
     readTime: "4 min de lectura",
     date: "4 de Julio, 2026",
     author: {
       name: "Valeria Rossi",
       role: "Especialista en Tendencias Fitness",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
-      bio: "Periodista deportiva y consultora en innovación tecnológica aplicada al bienestar y centros de alto rendimiento."
+      avatar:
+        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+      bio: "Periodista deportiva y consultora en innovación tecnológica aplicada al bienestar y centros de alto rendimiento.",
     },
-    image: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=1200&q=80",
+    image:
+      "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=1200&q=80",
     featured: true,
     tags: ["Fitness Híbrido", "Tendencias", "Tecnología", "Gimnasios"],
     content: `
@@ -68,23 +77,26 @@ Los centros que lideran esta transformación en América Latina están implement
 ### Conclusión y perspectivas a futuro
 
 El futuro del bienestar pertenece a los centros que pongan la experiencia del usuario en el centro de su estrategia. Adoptar herramientas inteligentes no solo optimiza la operación diaria del gimnasio, sino que fideliza a una comunidad activa que valora su tiempo y su salud.
-    `
+    `,
   },
   {
     id: "post-2",
     slug: "guia-nutricion-pre-entrenamiento",
     title: "Guía completa de nutrición pre-entrenamiento: Qué comer según tu objetivo",
-    excerpt: "Aprende a optimizar tus niveles de energía, fuerza y resistencia ajustando tu ingesta de macronutrientes antes de entrar a la sala o a tu clase intensiva.",
+    excerpt:
+      "Aprende a optimizar tus niveles de energía, fuerza y resistencia ajustando tu ingesta de macronutrientes antes de entrar a la sala o a tu clase intensiva.",
     category: "Nutrición",
     readTime: "5 min de lectura",
     date: "28 de Junio, 2026",
     author: {
       name: "Lic. Gonzalo Méndez",
       role: "Nutricionista Deportivo (MN 4821)",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
-      bio: "Asesor de atletas de alta competencia y conferencista en nutrición basada en evidencia."
+      avatar:
+        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
+      bio: "Asesor de atletas de alta competencia y conferencista en nutrición basada en evidencia.",
     },
-    image: "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1200&q=80",
+    image:
+      "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1200&q=80",
     featured: false,
     tags: ["Nutrición", "Rendimiento", "Comida Pre-WOD", "Suplementos"],
     content: `
@@ -115,23 +127,26 @@ Carbohidratos de rápida absorción, bajos en fibra y casi nulos en grasas para 
 - **Abusar de los pre-entrenos con exceso de cafeína:** Genera taquicardia y posterior "Crash" energético.
 
 > *"La hidratación previa es tan importante como la comida sólida: beber entre 400ml y 600ml de agua en las 2 horas previas asegura el volumen plasmático adecuado para la bomba muscular."*
-    `
+    `,
   },
   {
     id: "post-3",
     slug: "crossfit-vs-funcional-diferencias",
     title: "CrossFit vs Entrenamiento Funcional: Diferencias clave y cuál se adapta mejor a vos",
-    excerpt: "Desglosamos las metodologías, equipamientos, riesgos e intensidad de cada disciplina para ayudarte a elegir la mejor opción según tu estado físico actual.",
+    excerpt:
+      "Desglosamos las metodologías, equipamientos, riesgos e intensidad de cada disciplina para ayudarte a elegir la mejor opción según tu estado físico actual.",
     category: "Entrenamiento",
     readTime: "6 min de lectura",
     date: "20 de Junio, 2026",
     author: {
       name: "Coach Martín Soria",
       role: "Head Coach & Preparador Físico",
-      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
-      bio: "Atleta de CrossFit regional y docente en ciencias del ejercicio con más de 12 años de trayectoria."
+      avatar:
+        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
+      bio: "Atleta de CrossFit regional y docente en ciencias del ejercicio con más de 12 años de trayectoria.",
     },
-    image: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=1200&q=80",
+    image:
+      "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=1200&q=80",
     featured: false,
     tags: ["CrossFit", "Funcional", "Comparativa", "Principiantes"],
     content: `
@@ -157,23 +172,26 @@ Una de las preguntas más frecuentes que recibimos en los buscadores de Shakerfy
 
 - **Elegí CrossFit si:** Te motivan los desafíos constantes, querés superarte contra el reloj, te atrae la fuerza máxima con barra y buscás una comunidad súper apasionada.
 - **Elegí Funcional si:** Buscás moverte mejor, tonificar, perder grasa corporal, recuperarte de una vida sedentaria o entrenar sin la presión de levantar pesos máximos.
-    `
+    `,
   },
   {
     id: "post-4",
     slug: "abrir-un-studio-boutique-exito",
     title: "Cómo abrir un Studio Boutique o Box con éxito en 2026: Guía paso a paso",
-    excerpt: "Descubrí las claves financieras, de infraestructura y de software necesarias para posicionar un centro fitness rentable con alta tasa de retención.",
+    excerpt:
+      "Descubrí las claves financieras, de infraestructura y de software necesarias para posicionar un centro fitness rentable con alta tasa de retención.",
     category: "Gestión & Gimnasios",
     readTime: "7 min de lectura",
     date: "15 de Junio, 2026",
     author: {
       name: "Santiago Peralta",
       role: "Fundador & Consultor de Gimnasios",
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=200&q=80",
-      bio: "Asesor de negocios de salud y fitness. Ha ayudado a escalar más de 40 centros deportivos en la región."
+      avatar:
+        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=200&q=80",
+      bio: "Asesor de negocios de salud y fitness. Ha ayudado a escalar más de 40 centros deportivos en la región.",
     },
-    image: "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?auto=format&fit=crop&w=1200&q=80",
+    image:
+      "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?auto=format&fit=crop&w=1200&q=80",
     featured: false,
     tags: ["Gestión", "Emprendedores", "Studio Boutique", "Software"],
     content: `
@@ -197,23 +215,26 @@ Un centro moderno requiere:
 
 ### 3. La regla del 'Customer Lifetime Value' (LTV)
 Captar un alumno cuesta hasta 5 veces más que retenerlo. Diseñá protocolos de bienvenida, seguimiento de ausencias y encuestas de satisfacción periódicas para mantener una tasa de baja (churn) inferior al 5% mensual.
-    `
+    `,
   },
   {
     id: "post-5",
     slug: "importancia-recuperacion-muscular-sueno",
     title: "La importancia de la recuperación muscular: Sueño, terapia de frío y movilidad",
-    excerpt: "El músculo no crece durante el entrenamiento sino durante el descanso. Analizamos las mejores estrategias científicamente validadas para acelerar la regeneración.",
+    excerpt:
+      "El músculo no crece durante el entrenamiento sino durante el descanso. Analizamos las mejores estrategias científicamente validadas para acelerar la regeneración.",
     category: "Bienestar & Salud",
     readTime: "5 min de lectura",
     date: "10 de Junio, 2026",
     author: {
       name: "Dra. Camila Torres",
       role: "Médica Deportóloga",
-      avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=200&q=80",
-      bio: "Especialista en medicina del rendimiento físico, optimización hormonal y recuperación fisiológica."
+      avatar:
+        "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=200&q=80",
+      bio: "Especialista en medicina del rendimiento físico, optimización hormonal y recuperación fisiológica.",
     },
-    image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=1200&q=80",
+    image:
+      "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=1200&q=80",
     featured: false,
     tags: ["Recuperación", "Sueño", "Crioterapia", "Movilidad"],
     content: `
@@ -233,23 +254,26 @@ La crioterapia o los baños de hielo a 10°C - 15°C reducen la inflamación agu
 
 ### 3. Movilidad y Liberación Miofascial
 El uso diario de Foam Roller y sesiones suaves de estiramientos dinámicos mejoran el flujo sanguíneo local, barriendo deshechos metabólicos y devolviendo la elasticidad adecuada a los tejidos conectivos.
-    `
+    `,
   },
   {
     id: "post-6",
     slug: "aforo-tiempo-real-nuevo-estandar",
     title: "Aforo en tiempo real y reservas instantáneas: El nuevo estándar del usuario",
-    excerpt: "Cómo la tecnología de datos está transformando la convivencia dentro de los centros deportivos y eliminando los embotellamientos en hora pico.",
+    excerpt:
+      "Cómo la tecnología de datos está transformando la convivencia dentro de los centros deportivos y eliminando los embotellamientos en hora pico.",
     category: "Tecnología Fitness",
     readTime: "4 min de lectura",
     date: "2 de Junio, 2026",
     author: {
       name: "Valeria Rossi",
       role: "Especialista en Tendencias Fitness",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
-      bio: "Periodista deportiva y consultora en innovación tecnológica aplicada al bienestar."
+      avatar:
+        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+      bio: "Periodista deportiva y consultora en innovación tecnológica aplicada al bienestar.",
     },
-    image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1200&q=80",
+    image:
+      "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1200&q=80",
     featured: false,
     tags: ["Tecnología", "IA", "Aforo", "Experiencia Alumno"],
     content: `
@@ -267,17 +291,17 @@ Mediante sistemas integrados como **Shakerfy**, el ingreso por código QR o moli
 - **Naranja / Rojo (>80% aforo):** Horario pico. La app sugiere automáticamente sedes cercanas con menor concurrencia o de calistenia/clases grupales con cupo garantizado.
 
 Esto distribuye la carga horaria a lo largo del día, optimizando el uso de las instalaciones para el gimnasio y garantizando una experiencia de entrenamiento sin esperas frustrantes para el deportista.
-    `
-  }
+    `,
+  },
 ];
 
 export function getBlogPostBySlug(slug: string): BlogPost | undefined {
-  return BLOG_POSTS.find(p => p.slug === slug);
+  return BLOG_POSTS.find((p) => p.slug === slug);
 }
 
 export function getRelatedPosts(currentSlug: string, category: string, limit = 3): BlogPost[] {
-  const otherPosts = BLOG_POSTS.filter(p => p.slug !== currentSlug);
-  const sameCategory = otherPosts.filter(p => p.category === category);
+  const otherPosts = BLOG_POSTS.filter((p) => p.slug !== currentSlug);
+  const sameCategory = otherPosts.filter((p) => p.category === category);
   if (sameCategory.length >= limit) return sameCategory.slice(0, limit);
-  return [...sameCategory, ...otherPosts.filter(p => p.category !== category)].slice(0, limit);
+  return [...sameCategory, ...otherPosts.filter((p) => p.category !== category)].slice(0, limit);
 }

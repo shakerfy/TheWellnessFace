@@ -23,12 +23,15 @@ function AuthPage() {
   return (
     <div className="relative min-h-screen flex items-center justify-center p-6 bg-background">
       {/* Mesh Gradient Background */}
-      <div 
-        aria-hidden 
-        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_20%,rgba(59,130,246,0.15),transparent_40%),radial-gradient(circle_at_80%_80%,rgba(236,72,153,0.2),transparent_40%)] opacity-80 blur-3xl" 
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_20%,rgba(59,130,246,0.15),transparent_40%),radial-gradient(circle_at_80%_80%,rgba(236,72,153,0.2),transparent_40%)] opacity-80 blur-3xl"
       />
 
-      <Link to="/" className="absolute left-6 top-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition hover:text-foreground">
+      <Link
+        to="/"
+        className="absolute left-6 top-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition hover:text-foreground"
+      >
         <ArrowLeft className="h-4 w-4" /> Volver al buscador
       </Link>
 
@@ -41,7 +44,9 @@ function AuthPage() {
             {isLogin ? "¡Hola de nuevo!" : "Crea tu cuenta"}
           </h1>
           <p className="text-sm text-muted-foreground mt-1.5">
-            {isLogin ? "Ingresa tus datos para acceder a Shakerfy" : "Comienza a reservar y entrenar hoy mismo"}
+            {isLogin
+              ? "Ingresa tus datos para acceder a Shakerfy"
+              : "Comienza a reservar y entrenar hoy mismo"}
           </p>
         </div>
 
@@ -74,7 +79,9 @@ function AuthPage() {
             <div className="flex justify-between items-center">
               <label className="text-xs font-medium text-muted-foreground">Contraseña</label>
               {isLogin && (
-                <a href="#" className="text-xs text-muted-foreground hover:underline">¿La olvidaste?</a>
+                <a href="#" className="text-xs text-muted-foreground hover:underline">
+                  ¿La olvidaste?
+                </a>
               )}
             </div>
             <input
@@ -106,7 +113,10 @@ function AuthPage() {
 
         {isLogin && (
           <div className="mt-6 pt-6 border-t border-border/60 text-center">
-            <Link to="/auth/gym" className="text-xs text-muted-foreground hover:text-foreground hover:underline">
+            <Link
+              to="/auth/gym"
+              className="text-xs text-muted-foreground hover:text-foreground hover:underline"
+            >
               ¿Eres administrador de un gimnasio? Ingresa aquí
             </Link>
           </div>

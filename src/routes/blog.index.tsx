@@ -1,6 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import { Search, Clock, ArrowRight, Sparkles, Tag, BookOpen, User, Calendar, Share2, Mail, CheckCircle2 } from "lucide-react";
+import {
+  Search,
+  Clock,
+  ArrowRight,
+  Sparkles,
+  Tag,
+  BookOpen,
+  User,
+  Calendar,
+  Share2,
+  Mail,
+  CheckCircle2,
+} from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,9 +23,17 @@ export const Route = createFileRoute("/blog/")({
   head: () => ({
     meta: [
       { title: "Blog & Novedades — Shakerfy" },
-      { name: "description", content: "Tendencias en entrenamiento, nutrición deportiva, salud y gestión de gimnasios inteligentes." },
+      {
+        name: "description",
+        content:
+          "Tendencias en entrenamiento, nutrición deportiva, salud y gestión de gimnasios inteligentes.",
+      },
       { property: "og:title", content: "Blog & Novedades — Shakerfy" },
-      { property: "og:description", content: "Artículos y guías sobre fitness, nutrición, entrenamiento y tecnología para gimnasios." },
+      {
+        property: "og:description",
+        content:
+          "Artículos y guías sobre fitness, nutrición, entrenamiento y tecnología para gimnasios.",
+      },
     ],
   }),
   component: BlogIndexPage,
@@ -75,7 +95,10 @@ function BlogIndexPage() {
           </div>
 
           <div className="relative z-10 mx-auto max-w-6xl px-6 text-center">
-            <Badge variant="outline" className="mb-4 rounded-full border-border bg-card/60 px-3 py-1 text-xs font-semibold text-muted-foreground backdrop-blur-sm">
+            <Badge
+              variant="outline"
+              className="mb-4 rounded-full border-border bg-card/60 px-3 py-1 text-xs font-semibold text-muted-foreground backdrop-blur-sm"
+            >
               <Sparkles className="mr-1.5 h-3.5 w-3.5 text-primary" />
               Conocimiento & Comunidad Fitness
             </Badge>
@@ -83,7 +106,8 @@ function BlogIndexPage() {
               Blog & Novedades
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-balance text-base text-muted-foreground sm:text-lg">
-              Guías completas, tendencias tecnológicas, consejos de nutrición y estrategias de gestión para entusiastas y dueños de centros.
+              Guías completas, tendencias tecnológicas, consejos de nutrición y estrategias de
+              gestión para entusiastas y dueños de centros.
             </p>
 
             {/* Search Bar */}
@@ -184,8 +208,12 @@ function BlogIndexPage() {
                         className="h-9 w-9 rounded-full object-cover border border-border"
                       />
                       <div>
-                        <div className="text-xs font-bold text-foreground">{featuredPost.author.name}</div>
-                        <div className="text-[11px] text-muted-foreground">{featuredPost.author.role}</div>
+                        <div className="text-xs font-bold text-foreground">
+                          {featuredPost.author.name}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground">
+                          {featuredPost.author.role}
+                        </div>
                       </div>
                     </div>
 
@@ -202,7 +230,9 @@ function BlogIndexPage() {
           <div className="mb-8 flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold tracking-tight text-foreground">
-                {selectedCategory === "Todos" ? "Todos los Artículos" : `Artículos sobre ${selectedCategory}`}
+                {selectedCategory === "Todos"
+                  ? "Todos los Artículos"
+                  : `Artículos sobre ${selectedCategory}`}
               </h2>
               <p className="mt-1 text-xs text-muted-foreground">
                 Mostrando {filteredPosts.length} publicación{filteredPosts.length === 1 ? "" : "es"}
@@ -274,9 +304,12 @@ function BlogIndexPage() {
           ) : (
             <div className="my-12 flex flex-col items-center justify-center rounded-3xl border border-dashed border-border bg-card/40 p-12 text-center">
               <BookOpen className="h-12 w-12 text-muted-foreground/60 mb-3" />
-              <h3 className="text-lg font-semibold text-foreground">No encontramos publicaciones</h3>
+              <h3 className="text-lg font-semibold text-foreground">
+                No encontramos publicaciones
+              </h3>
               <p className="mt-1 text-xs text-muted-foreground max-w-sm">
-                No hay artículos que coincidan con la búsqueda "{searchQuery}" en la categoría seleccionada.
+                No hay artículos que coincidan con la búsqueda "{searchQuery}" en la categoría
+                seleccionada.
               </p>
               <Button
                 variant="outline"
@@ -293,7 +326,10 @@ function BlogIndexPage() {
 
           {/* Newsletter Subscription Banner */}
           <section className="mt-20 overflow-hidden rounded-3xl border border-border bg-foreground text-background p-8 sm:p-12 relative">
-            <div aria-hidden className="pointer-events-none absolute right-0 top-0 h-64 w-64 rounded-full bg-primary/20 blur-3xl" />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute right-0 top-0 h-64 w-64 rounded-full bg-primary/20 blur-3xl"
+            />
             <div className="relative z-10 max-w-2xl">
               <Badge className="rounded-full bg-primary text-primary-foreground font-semibold mb-3">
                 Newsletter Fitness
@@ -302,13 +338,16 @@ function BlogIndexPage() {
                 Recibí los mejores artículos y tendencias cada semana
               </h3>
               <p className="mt-2 text-sm text-background/80">
-                Únete a más de 12.000 entrenadores, deportistas y dueños de centros que leen nuestras guías exclusivas.
+                Únete a más de 12.000 entrenadores, deportistas y dueños de centros que leen
+                nuestras guías exclusivas.
               </p>
 
               {subscribed ? (
                 <div className="mt-6 flex items-center gap-2 rounded-2xl bg-primary/20 border border-primary/40 p-4 text-sm text-primary font-semibold">
                   <CheckCircle2 className="h-5 w-5 shrink-0" />
-                  <span>¡Te suscribiste con éxito! Revisá tu casilla de correo para la primera edición.</span>
+                  <span>
+                    ¡Te suscribiste con éxito! Revisá tu casilla de correo para la primera edición.
+                  </span>
                 </div>
               ) : (
                 <form onSubmit={handleSubscribe} className="mt-6 flex flex-col sm:flex-row gap-3">
@@ -320,7 +359,10 @@ function BlogIndexPage() {
                     onChange={(e) => setEmailInput(e.target.value)}
                     className="h-11 rounded-xl bg-background/10 border-background/20 text-background placeholder:text-background/50 focus:border-background"
                   />
-                  <Button type="submit" className="h-11 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/90 shrink-0">
+                  <Button
+                    type="submit"
+                    className="h-11 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/90 shrink-0"
+                  >
                     Suscribirme Gratis
                   </Button>
                 </form>

@@ -6,56 +6,62 @@ Este documento describe la arquitectura de páginas, la estructura de la base de
 
 ## 📊 Estado General y Componentes
 
-| Módulo / Vista | Estado | Progreso |
-| :--- | :--- | :---: |
-| **Página de Inicio (Landing Page)** | 🟢 Funcional (Mock) | 95% |
-| **Perfil del Gimnasio (`/gym/$slug`)** | 🟢 Funcional (Mock) | 100% |
-| **Autenticación Alumnos (`/auth`)** | 🟢 Maquetado (Mock) | 100% |
-| **Autenticación Gimnasios (`/auth/gym`)**| 🟢 Maquetado (Mock) | 100% |
-| **Dashboard Gimnasio (Administrador)** | 🟡 Modificaciones | 85% |
-| **Dashboard Alumno (Usuario)** | 🟡 Modificaciones | 90% |
-| **Modelado de Colecciones (Firebase)** | 🟡 En progreso | 25% |
-| **Integración de API / Server Functions**| 🔴 Pendiente | 0% |
+| Módulo / Vista                            | Estado              | Progreso |
+| :---------------------------------------- | :------------------ | :------: |
+| **Página de Inicio (Landing Page)**       | 🟢 Funcional (Mock) |   95%    |
+| **Perfil del Gimnasio (`/gym/$slug`)**    | 🟢 Funcional (Mock) |   100%   |
+| **Autenticación Alumnos (`/auth`)**       | 🟢 Maquetado (Mock) |   100%   |
+| **Autenticación Gimnasios (`/auth/gym`)** | 🟢 Maquetado (Mock) |   100%   |
+| **Dashboard Gimnasio (Administrador)**    | 🟡 Modificaciones   |   85%    |
+| **Dashboard Alumno (Usuario)**            | 🟡 Modificaciones   |   90%    |
+| **Modelado de Colecciones (Firebase)**    | 🟡 En progreso      |   25%    |
+| **Integración de API / Server Functions** | 🔴 Pendiente        |    0%    |
 
 ---
 
 ## 📐 1. Estructura de Páginas y Vistas
 
 ### 🏠 Landing Page (Página de Inicio)
-*   **Hero Section:** Buscador semántico con animación de máquina de escribir (*typewriter effect*) que simula a la IA redactando prompts de búsqueda.
-*   **Grilla Principal:** Tarjetas de gimnasios con estilo "Airbnb" (imagen destacada, calificación, barrio/ciudad, precio base, estado de apertura).
-*   **Filtros Rápidos:** Botones interactivos para filtrar por categorías y disciplinas (CrossFit, Yoga, Pilates, Funcional, Spinning, Powerlifting, Boutique).
+
+- **Hero Section:** Buscador semántico con animación de máquina de escribir (_typewriter effect_) que simula a la IA redactando prompts de búsqueda.
+- **Grilla Principal:** Tarjetas de gimnasios con estilo "Airbnb" (imagen destacada, calificación, barrio/ciudad, precio base, estado de apertura).
+- **Filtros Rápidos:** Botones interactivos para filtrar por categorías y disciplinas (CrossFit, Yoga, Pilates, Funcional, Spinning, Powerlifting, Boutique).
 
 ### 🏋️‍♂️ Perfil del Gimnasio (`/gym/$slug`)
-*   **Multimedia:** Carrusel interactivo de imágenes del local.
-*   **Información Básica:** Nombre, dirección, calificación de estrellas, horario de apertura detallado por día (apoyando turnos cortados).
-*   **Normas / Obligaciones:** Banner informativo detallando exigencias físicas y materiales de ingreso (ej: Apto médico, toalla).
-*   **Staff & Coaches:** Panel dedicado a presentar a los profesores del centro, mostrando sus fotos, certificaciones, especialidades y diplomas adjuntos.
-*   **Planes y Membresías:** Grid de tarjetas comparativas mostrando los beneficios y amenities específicos incluidos en cada plan.
-*   **Agenda de Clases:** Calendario semanal interactivo filtrable por días que muestra horarios, instructores y cupos disponibles con confirmación inmediata de reserva.
+
+- **Multimedia:** Carrusel interactivo de imágenes del local.
+- **Información Básica:** Nombre, dirección, calificación de estrellas, horario de apertura detallado por día (apoyando turnos cortados).
+- **Normas / Obligaciones:** Banner informativo detallando exigencias físicas y materiales de ingreso (ej: Apto médico, toalla).
+- **Staff & Coaches:** Panel dedicado a presentar a los profesores del centro, mostrando sus fotos, certificaciones, especialidades y diplomas adjuntos.
+- **Planes y Membresías:** Grid de tarjetas comparativas mostrando los beneficios y amenities específicos incluidos en cada plan.
+- **Agenda de Clases:** Calendario semanal interactivo filtrable por días que muestra horarios, instructores y cupos disponibles con confirmación inmediata de reserva.
 
 ### 🔑 Autenticación (Rutas Separadas)
-*   **Alumnos (`/auth`):** Acceso por defecto para usuarios/alumnos. Tarjeta de ingreso y registro limpia para iniciar sesión y ser redirigidos al panel del alumno.
-*   **Gimnasios (`/auth/gym`):** Acceso específico para los administradores y dueños de gimnasios. Tarjeta de ingreso adaptada a comercios para redirigir al panel del gimnasio.
+
+- **Alumnos (`/auth`):** Acceso por defecto para usuarios/alumnos. Tarjeta de ingreso y registro limpia para iniciar sesión y ser redirigidos al panel del alumno.
+- **Gimnasios (`/auth/gym`):** Acceso específico para los administradores y dueños de gimnasios. Tarjeta de ingreso adaptada a comercios para redirigir al panel del gimnasio.
 
 ### 🏢 Dashboard para Gimnasios (Vistas de Admin)
-Estructura de navegación mediante Sidebar responsivo y navegación interna por pestañas (*Tabs*):
+
+Estructura de navegación mediante Sidebar responsivo y navegación interna por pestañas (_Tabs_):
+
 1.  **Control de Asistencias:** Monitor de entradas en tiempo real con alertas y tabla de historial con filtros avanzados y exportador.
 2.  **Miembros:** Tabla con buscador para gestionar datos, planes contratados y estados de cuenta.
 3.  **Membresías:** Grid de planes comerciales vinculando los amenities específicos que incluye cada suscripción.
 4.  **Clases:** Calendario de sesiones vinculando los instructores del Staff.
 5.  **Configuración:** Panel enriquecido para editar la información pública:
-    *   *Ficha Básica:* Datos, horarios detallados individuales por día con intervalos partidos (File Uploader).
-    *   *Políticas:* Horas de anticipación mínimas para cancelación de clases.
-    *   *Amenities (Catálogo Marketplace):* WiFi, Estacionamiento, Sauna, etc.
-    *   *Requisitos / Obligaciones (Catálogo Marketplace):* Normas de convivencia e ingreso.
-    *   *Staff:* Altas, bajas y edición de instructores (foto de perfil, diplomas de certificaciones, nombre, especialidad, títulos).
+    - _Ficha Básica:_ Datos, horarios detallados individuales por día con intervalos partidos (File Uploader).
+    - _Políticas:_ Horas de anticipación mínimas para cancelación de clases.
+    - _Amenities (Catálogo Marketplace):_ WiFi, Estacionamiento, Sauna, etc.
+    - _Requisitos / Obligaciones (Catálogo Marketplace):_ Normas de convivencia e ingreso.
+    - _Staff:_ Altas, bajas y edición de instructores (foto de perfil, diplomas de certificaciones, nombre, especialidad, títulos).
 
 ---
 
 ## 🗄️ 2. Modelo de Datos de Firebase (Colecciones y Documentos)
 
 ### 1. Colección: `memberships` (Planes)
+
 ```json
 {
   "id": "uuid",
@@ -70,6 +76,7 @@ Estructura de navegación mediante Sidebar responsivo y navegación interna por 
 ```
 
 ### 2. Colección: `members` (Perfiles de Alumnos / Usuarios)
+
 ```json
 {
   "id": "uuid (referencia a Firebase Auth uid)",
@@ -85,6 +92,7 @@ Estructura de navegación mediante Sidebar responsivo y navegación interna por 
 ```
 
 ### 3. Colección: `staff` (Equipo / Instructores)
+
 ```json
 {
   "id": "uuid",
@@ -100,6 +108,7 @@ Estructura de navegación mediante Sidebar responsivo y navegación interna por 
 ```
 
 ### 4. Colección: `classes` (Modelos de Clases)
+
 ```json
 {
   "id": "uuid",
@@ -117,6 +126,7 @@ Estructura de navegación mediante Sidebar responsivo y navegación interna por 
 ```
 
 ### 5. Colección: `class_sessions` (Sesiones Reales)
+
 ```json
 {
   "id": "uuid",
@@ -131,6 +141,7 @@ Estructura de navegación mediante Sidebar responsivo y navegación interna por 
 ```
 
 ### 6. Colección: `bookings` (Reservas)
+
 ```json
 {
   "id": "uuid",
@@ -143,6 +154,7 @@ Estructura de navegación mediante Sidebar responsivo y navegación interna por 
 ```
 
 ### 7. Colección: `attendance_logs` (Asistencia General)
+
 ```json
 {
   "id": "uuid",
@@ -153,6 +165,7 @@ Estructura de navegación mediante Sidebar responsivo y navegación interna por 
 ```
 
 ### 8. Colección: `payments` (Finanzas)
+
 ```json
 {
   "id": "uuid",
@@ -167,6 +180,7 @@ Estructura de navegación mediante Sidebar responsivo y navegación interna por 
 ```
 
 ### 9. Colección: `gym_config` (Configuración de Comercio)
+
 ```json
 {
   "id": "uuid",

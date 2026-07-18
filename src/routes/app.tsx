@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { 
   User, Calendar, BarChart3, CreditCard, Settings, 
   LogOut, QrCode, CheckCircle, Clock, AlertTriangle, 
-  MapPin, ChevronRight, ChevronLeft, X, Sparkles, Shield, AlertCircle, ShieldAlert, Star,
+  MapPin, ChevronRight, ChevronLeft, X, Sparkles, Shield, AlertCircle, ShieldAlert, Star, Heart,
   Flame, Coffee, Droplet, TrendingUp, Info, Edit, Sun, Moon, ArrowUpRight, Utensils,
   Camera, Dumbbell, Activity, Plus, Check, Loader2,
   Play, Pause, RotateCcw, Search, ChevronUp, ChevronDown, Trash2, FileDown
@@ -2615,48 +2615,6 @@ function DiarioTab() {
   const [mood, setMood] = useState(75);
   const [hunger, setHunger] = useState(40);
   const [energy, setEnergy] = useState(60);
-  const [checkinPage, setCheckinPage] = useState(0);
-  const [swipeStartX, setSwipeStartX] = useState<number | null>(null);
-  const [swipeCurrentX, setSwipeCurrentX] = useState<number | null>(null);
-  const [isSwiping, setIsSwiping] = useState(false);
-
-  const handleSwipeStart = (clientX: number, target: HTMLElement) => {
-    if (
-      target.closest('.cursor-pointer') || 
-      target.closest('.cursor-col-resize') || 
-      target.closest('button') ||
-      target.closest('input') ||
-      target.closest('select')
-    ) {
-      return;
-    }
-    setSwipeStartX(clientX);
-    setIsSwiping(true);
-  };
-
-  const handleSwipeMove = (clientX: number) => {
-    if (!isSwiping || swipeStartX === null) return;
-    setSwipeCurrentX(clientX);
-  };
-
-  const handleSwipeEnd = () => {
-    if (!isSwiping || swipeStartX === null || swipeCurrentX === null) {
-      setIsSwiping(false);
-      setSwipeStartX(null);
-      setSwipeCurrentX(null);
-      return;
-    }
-    const diff = swipeStartX - swipeCurrentX;
-    const threshold = 60;
-    if (diff > threshold && checkinPage === 0) {
-      setCheckinPage(1);
-    } else if (diff < -threshold && checkinPage === 1) {
-      setCheckinPage(0);
-    }
-    setIsSwiping(false);
-    setSwipeStartX(null);
-    setSwipeCurrentX(null);
-  };
 
   const [hydrationLevel, setHydrationLevel] = useState(5);
 
@@ -3315,12 +3273,23 @@ function DiarioTab() {
   };
 
   return (
-    <div className={`mx-auto w-full space-y-8 pb-16 ${subTab === "analisis" ? "max-w-4xl" : "max-w-2xl"}`}>
+    <div className="mx-auto w-full space-y-8 pb-16 max-w-2xl">
       {/* Header Section */}
       <header className="flex items-center justify-between gap-4">
-        <span className="text-2xl sm:text-3xl font-bebas tracking-wider text-foreground uppercase select-none">
-          Shakerfy
-        </span>
+        <div className="flex items-center gap-2.5">
+          <span className="text-2xl sm:text-3xl font-bebas tracking-wider text-foreground uppercase select-none">
+            Shakerfy
+          </span>
+          <button 
+            type="button"
+            onClick={() => setActiveModal("racha-actividad")}
+            className="inline-flex items-center gap-1.5 text-[11px] font-black px-2.5 py-1 rounded-full bg-orange-500/10 text-orange-500 border border-orange-500/20 hover:bg-orange-500/20 active:scale-95 transition-all cursor-pointer shadow-sm"
+            title="Ver racha de actividad"
+          >
+            <Flame className="w-3.5 h-3.5 fill-orange-500 animate-pulse text-orange-500" />
+            12 días
+          </button>
+        </div>
         <div className="flex p-1 bg-secondary/35 rounded-xl border border-border self-start">
           <button 
             type="button"
@@ -3360,226 +3329,6 @@ function DiarioTab() {
 
       {subTab === "diario" && (
         <>
-          {/* Status Check-in Page View */}
-          <section className="bg-card border border-border rounded-2xl p-5 md:p-6 space-y-5 relative overflow-hidden">
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-border/40 pb-3">
-              <div className="flex items-center gap-2">
-                <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
-                  {checkinPage === 0 ? (
-                    "Estado Actual"
-                  ) : (
-                    <span className="flex items-center gap-2">
-                      Racha de Actividad
-                      <span className="inline-flex items-center gap-1 text-[11px] font-black px-2.5 py-0.5 rounded-full bg-orange-500/10 text-orange-500 border border-orange-500/20">
-                        <Flame className="w-3.5 h-3.5 fill-orange-500 animate-pulse text-orange-500" />
-                        12 días
-                      </span>
-                    </span>
-                  )}
-                </h2>
-                {checkinPage === 1 && (
-                  <button 
-                    onClick={() => setShowStreakInfo(true)}
-                    className="text-muted-foreground hover:text-primary transition-colors p-1 rounded-full hover:bg-secondary/40 focus:outline-none cursor-pointer"
-                    title="¿Cómo funciona mi racha?"
-                  >
-                    <Info className="w-3.5 h-3.5" />
-                  </button>
-                )}
-              </div>
-            </div>
-            
-            {/* Page content with smooth swipe/drag and fade animation */}
-            <div 
-              className="relative min-h-[100px] cursor-grab active:cursor-grabbing select-none touch-pan-y"
-              onTouchStart={(e) => handleSwipeStart(e.touches[0].clientX, e.target as HTMLElement)}
-              onTouchMove={(e) => handleSwipeMove(e.touches[0].clientX)}
-              onTouchEnd={handleSwipeEnd}
-              onMouseDown={(e) => handleSwipeStart(e.clientX, e.target as HTMLElement)}
-              onMouseMove={(e) => handleSwipeMove(e.clientX)}
-              onMouseUp={handleSwipeEnd}
-              onMouseLeave={() => {
-                if (isSwiping) handleSwipeEnd();
-              }}
-            >
-              {checkinPage === 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 animate-in fade-in slide-in-from-left-4 duration-300">
-                  <CustomSlider 
-                    value={mood} 
-                    onChange={setMood} 
-                    labelLeft="Ansioso" 
-                    labelRight="Calmo" 
-                    colorClass="from-[#150a21] to-[#7f20df] dark:from-[#0a0410] dark:to-[#7f20df]"
-                  />
-                  <CustomSlider 
-                    value={hunger} 
-                    onChange={setHunger} 
-                    labelLeft="Hambriento" 
-                    labelRight="Saciado" 
-                    colorClass="from-[#041f14] to-[#10b981] dark:from-[#020f0a] dark:to-[#10b981]"
-                  />
-                  <CustomSlider 
-                    value={energy} 
-                    onChange={setEnergy} 
-                    labelLeft="Cansado" 
-                    labelRight="Enérgico" 
-                    colorClass="from-[#221a05] to-[#f59e0b] dark:from-[#181203] dark:to-[#f59e0b]"
-                  />
-                </div>
-              ) : (
-                <div className="w-full animate-in fade-in slide-in-from-right-4 duration-300">
-                  <div className="flex justify-between items-center text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-3 px-0.5">
-                    <span>Curva de Actividad (7 días)</span>
-                    <span className="text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Base: 150 ptos</span>
-                  </div>
-
-                  <ChartContainer config={chartConfig} className="h-36 w-full aspect-auto select-none">
-                    <AreaChart
-                      data={activityData}
-                      margin={{ top: 5, right: 5, left: -25, bottom: 0 }}
-                    >
-                      <defs>
-                        <linearGradient id="recharts-activity-grad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.25} />
-                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.0} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border/40" />
-                      <XAxis 
-                        dataKey="day" 
-                        tickLine={false} 
-                        axisLine={false} 
-                        tickMargin={6}
-                        className="text-[10px] font-bold fill-muted-foreground"
-                      />
-                      <YAxis 
-                        tickLine={false} 
-                        axisLine={false} 
-                        tickMargin={4}
-                        domain={[100, 200]}
-                        className="text-[9px] font-semibold fill-muted-foreground"
-                      />
-                      <ReferenceLine 
-                        y={150} 
-                        stroke="#10b981" 
-                        strokeDasharray="4 4" 
-                        strokeWidth={2}
-                        label={{ 
-                          value: "Mínimo Saludable (150)", 
-                          position: "insideBottomRight", 
-                          offset: 8,
-                          fill: "#10b981",
-                          fontSize: 9,
-                          fontWeight: "bold"
-                        }} 
-                      />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Area 
-                        type="monotone" 
-                        dataKey="puntos" 
-                        stroke="hsl(var(--primary))" 
-                        strokeWidth={2.5} 
-                        fillOpacity={1} 
-                        fill="url(#recharts-activity-grad)" 
-                      />
-                    </AreaChart>
-                  </ChartContainer>
-                </div>
-              )}
-            </div>
-
-            {/* FAQ Info Modal Overlay */}
-            {showStreakInfo && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-                <div className="bg-card border border-border w-full max-w-md rounded-2xl shadow-xl p-5 relative overflow-hidden space-y-4 animate-in zoom-in-95 duration-200">
-                  <button
-                    onClick={() => setShowStreakInfo(false)}
-                    className="absolute top-4 right-4 size-8 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-all cursor-pointer"
-                    aria-label="Cerrar"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-
-                  <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-foreground">
-                    <Info className="w-4 h-4 text-primary" />
-                    <span>¿Cómo funciona mi Racha?</span>
-                  </div>
-
-                  <div className="space-y-2 max-h-[350px] overflow-y-auto pr-1">
-                    {STREAK_FAQ.map((faq, idx) => {
-                      const isOpen = activeFaq === idx;
-                      return (
-                        <div key={idx} className="border-b border-border/40 last:border-b-0 pb-1.5 last:pb-0">
-                          <button
-                            onClick={() => setActiveFaq(isOpen ? null : idx)}
-                            className="w-full flex items-center justify-between text-left py-1 text-[11px] font-bold text-foreground hover:text-primary transition-colors focus:outline-none cursor-pointer"
-                          >
-                            <span>{faq.q}</span>
-                            {isOpen ? (
-                              <ChevronUp className="w-3.5 h-3.5 shrink-0 ml-1 text-muted-foreground" />
-                            ) : (
-                              <ChevronDown className="w-3.5 h-3.5 shrink-0 ml-1 text-muted-foreground" />
-                            )}
-                          </button>
-                          
-                          {isOpen && (
-                            <p className="text-[10px] text-muted-foreground leading-relaxed mt-1 animate-in fade-in slide-in-from-top-1 duration-200 select-text">
-                              {faq.a}
-                            </p>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <Button 
-                    onClick={() => setShowStreakInfo(false)}
-                    className="w-full text-xs font-bold py-2"
-                  >
-                    Entendido
-                  </Button>
-                </div>
-              </div>
-            )}
-          </section>
-
-          {/* Page View Indicators & Navigation Controls (Below & Outside the card) */}
-          <div className="flex items-center justify-between px-2 pt-2.5">
-            {/* Dots Indicator */}
-            <div className="flex items-center gap-1.5">
-              <button 
-                onClick={() => setCheckinPage(0)}
-                className={`size-2 rounded-full transition-all duration-300 ${checkinPage === 0 ? "bg-primary scale-125" : "bg-muted hover:bg-muted-foreground/40"} cursor-pointer`}
-                aria-label="Página 1"
-              />
-              <button 
-                onClick={() => setCheckinPage(1)}
-                className={`size-2 rounded-full transition-all duration-300 ${checkinPage === 1 ? "bg-primary scale-125" : "bg-muted hover:bg-muted-foreground/40"} cursor-pointer`}
-                aria-label="Página 2"
-              />
-            </div>
-            
-            {/* Chevrons Navigation */}
-            <div className="flex items-center gap-2">
-              <button
-                disabled={checkinPage === 0}
-                onClick={() => setCheckinPage(0)}
-                className="size-7 rounded-lg border border-border flex items-center justify-center text-foreground hover:bg-secondary disabled:opacity-40 disabled:pointer-events-none transition-all duration-200 cursor-pointer"
-                title="Página Anterior"
-              >
-                <ChevronLeft className="w-3.5 h-3.5" />
-              </button>
-              <button
-                disabled={checkinPage === 1}
-                onClick={() => setCheckinPage(1)}
-                className="size-7 rounded-lg border border-border flex items-center justify-center text-foreground hover:bg-secondary disabled:opacity-40 disabled:pointer-events-none transition-all duration-200 cursor-pointer"
-                title="Siguiente Página"
-              >
-                <ChevronRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
 
           {/* Timeline */}
           <div className="relative pl-6 md:pl-0">
@@ -4384,6 +4133,18 @@ function DiarioTab() {
               className="flex items-center gap-3 group" 
               onClick={() => {
                 setIsFabOpen(false);
+                setActiveModal("estado-actual");
+              }}
+            >
+              <span className="bg-card text-foreground text-xs font-bold px-3 py-2 rounded-lg border border-border shadow-sm group-hover:scale-105 transition-transform">Registrar estado actual</span>
+              <div className="w-12 h-12 rounded-full bg-card border border-border shadow-sm flex items-center justify-center text-rose-500 group-hover:scale-110 transition-transform">
+                <Heart className="w-5 h-5 fill-rose-500 text-rose-500" />
+              </div>
+            </button>
+            <button 
+              className="flex items-center gap-3 group" 
+              onClick={() => {
+                setIsFabOpen(false);
                 setActiveModal("generate-workout");
               }}
             >
@@ -4611,6 +4372,206 @@ function DiarioTab() {
           workoutTitle={selectedCustomWorkout.name}
           onComplete={() => handleWorkoutComplete(selectedCustomWorkout.exercises)}
         />
+      )}
+
+      {/* Racha de Actividad Modal */}
+      {activeModal === "racha-actividad" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-md bg-card border border-border rounded-[2rem] shadow-2xl flex flex-col overflow-hidden max-h-[90vh]">
+            {/* Header */}
+            <div className="px-6 pt-8 pb-4 flex justify-between items-center bg-card">
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-bold text-foreground">Racha de Actividad</h3>
+                <span className="inline-flex items-center gap-1 text-[11px] font-black px-2.5 py-0.5 rounded-full bg-orange-500/10 text-orange-500 border border-orange-500/20">
+                  <Flame className="w-3.5 h-3.5 fill-orange-500 animate-pulse text-orange-500" />
+                  12 días
+                </span>
+                <button 
+                  onClick={() => setShowStreakInfo(true)}
+                  className="text-muted-foreground hover:text-primary transition-colors p-1 rounded-full hover:bg-secondary/40 focus:outline-none cursor-pointer"
+                  title="¿Cómo funciona mi racha?"
+                >
+                  <Info className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <button 
+                onClick={() => setActiveModal("none")} 
+                className="p-2 rounded-full bg-secondary/50 hover:bg-secondary transition-colors"
+              >
+                <X className="w-5 h-5 text-muted-foreground" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 pt-0 overflow-y-auto">
+              <div className="w-full">
+                <div className="flex justify-between items-center text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-3 px-0.5">
+                  <span>Curva de Actividad (7 días)</span>
+                  <span className="text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Base: 150 ptos</span>
+                </div>
+
+                <ChartContainer config={chartConfig} className="h-44 w-full aspect-auto select-none">
+                  <AreaChart
+                    data={activityData}
+                    margin={{ top: 5, right: 5, left: -25, bottom: 0 }}
+                  >
+                    <defs>
+                      <linearGradient id="recharts-activity-grad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.25} />
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border/40" />
+                    <XAxis 
+                      dataKey="day" 
+                      tickLine={false} 
+                      axisLine={false} 
+                      tickMargin={6}
+                      className="text-[10px] font-bold fill-muted-foreground"
+                    />
+                    <YAxis 
+                      tickLine={false} 
+                      axisLine={false} 
+                      tickMargin={4}
+                      domain={[100, 200]}
+                      className="text-[9px] font-semibold fill-muted-foreground"
+                    />
+                    <ReferenceLine 
+                      y={150} 
+                      stroke="#10b981" 
+                      strokeDasharray="4 4" 
+                      strokeWidth={2}
+                      label={{ 
+                        value: "Mínimo Saludable (150)", 
+                        position: "insideBottomRight", 
+                        offset: 8,
+                        fill: "#10b981",
+                        fontSize: 9,
+                        fontWeight: "bold"
+                      }} 
+                    />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Area 
+                      type="monotone" 
+                      dataKey="puntos" 
+                      stroke="hsl(var(--primary))" 
+                      strokeWidth={2.5} 
+                      fillOpacity={1} 
+                      fill="url(#recharts-activity-grad)" 
+                    />
+                  </AreaChart>
+                </ChartContainer>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Estado Actual Modal */}
+      {activeModal === "estado-actual" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-md bg-card border border-border rounded-[2rem] shadow-2xl flex flex-col overflow-hidden max-h-[90vh]">
+            {/* Header */}
+            <div className="px-6 pt-8 pb-4 flex justify-between items-center bg-card">
+              <div>
+                <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest block mb-0.5">Control de Bienestar</span>
+                <h3 className="text-lg font-bold text-foreground">Estado Actual</h3>
+              </div>
+              <button 
+                onClick={() => setActiveModal("none")} 
+                className="p-2 rounded-full bg-secondary/50 hover:bg-secondary transition-colors"
+              >
+                <X className="w-5 h-5 text-muted-foreground" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 pt-2 space-y-6 overflow-y-auto">
+              <CustomSlider 
+                value={mood} 
+                onChange={setMood} 
+                labelLeft="Ansioso" 
+                labelRight="Calmo" 
+                colorClass="from-[#150a21] to-[#7f20df] dark:from-[#0a0410] dark:to-[#7f20df]"
+              />
+              <CustomSlider 
+                value={hunger} 
+                onChange={setHunger} 
+                labelLeft="Hambriento" 
+                labelRight="Saciado" 
+                colorClass="from-[#041f14] to-[#10b981] dark:from-[#020f0a] dark:to-[#10b981]"
+              />
+              <CustomSlider 
+                value={energy} 
+                onChange={setEnergy} 
+                labelLeft="Cansado" 
+                labelRight="Enérgico" 
+                colorClass="from-[#221a05] to-[#f59e0b] dark:from-[#181203] dark:to-[#f59e0b]"
+              />
+              
+              <Button 
+                onClick={() => setActiveModal("none")}
+                className="w-full rounded-xl h-11 text-sm font-bold bg-foreground text-background hover:opacity-90 mt-4"
+              >
+                Guardar Registro
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FAQ Info Modal Overlay */}
+      {showStreakInfo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-card border border-border w-full max-w-md rounded-[2rem] shadow-xl p-5 relative overflow-hidden space-y-4 animate-in zoom-in-95 duration-200">
+            <button
+              onClick={() => setShowStreakInfo(false)}
+              className="absolute top-4 right-4 size-8 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-all cursor-pointer"
+              aria-label="Cerrar"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-foreground">
+              <Info className="w-4 h-4 text-primary" />
+              <span>¿Cómo funciona mi Racha?</span>
+            </div>
+
+            <div className="space-y-2 max-h-[350px] overflow-y-auto pr-1">
+              {STREAK_FAQ.map((faq, idx) => {
+                const isOpen = activeFaq === idx;
+                return (
+                  <div key={idx} className="border-b border-border/40 last:border-b-0 pb-1.5 last:pb-0">
+                    <button
+                      onClick={() => setActiveFaq(isOpen ? null : idx)}
+                      className="w-full flex items-center justify-between text-left py-1 text-[11px] font-bold text-foreground hover:text-primary transition-colors focus:outline-none cursor-pointer"
+                    >
+                      <span>{faq.q}</span>
+                      {isOpen ? (
+                        <ChevronUp className="w-3.5 h-3.5 shrink-0 ml-1 text-muted-foreground" />
+                      ) : (
+                        <ChevronDown className="w-3.5 h-3.5 shrink-0 ml-1 text-muted-foreground" />
+                      )}
+                    </button>
+                    
+                    {isOpen && (
+                      <p className="text-[10px] text-muted-foreground leading-relaxed mt-1 animate-in fade-in slide-in-from-top-1 duration-200 select-text">
+                        {faq.a}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <Button 
+              onClick={() => setShowStreakInfo(false)}
+              className="w-full text-xs font-bold py-2 rounded-xl"
+            >
+              Entendido
+            </Button>
+          </div>
+        </div>
       )}
     </div>
   );

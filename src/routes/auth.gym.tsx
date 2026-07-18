@@ -24,12 +24,15 @@ function GymAuthPage() {
   return (
     <div className="relative min-h-screen flex items-center justify-center p-6 bg-background">
       {/* Mesh Background */}
-      <div 
-        aria-hidden 
-        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_20%,rgba(147,51,234,0.15),transparent_40%),radial-gradient(circle_at_80%_80%,rgba(59,130,246,0.15),transparent_40%)] opacity-80 blur-3xl" 
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_20%,rgba(147,51,234,0.15),transparent_40%),radial-gradient(circle_at_80%_80%,rgba(59,130,246,0.15),transparent_40%)] opacity-80 blur-3xl"
       />
 
-      <Link to="/auth" className="absolute left-6 top-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition hover:text-foreground">
+      <Link
+        to="/auth"
+        className="absolute left-6 top-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition hover:text-foreground"
+      >
         <ArrowLeft className="h-4 w-4" /> Volver a Alumnos
       </Link>
 
@@ -42,7 +45,9 @@ function GymAuthPage() {
             {isLogin ? "Acceso de Gimnasios" : "Suma tu gimnasio"}
           </h1>
           <p className="text-sm text-muted-foreground mt-1.5">
-            {isLogin ? "Ingresa al panel de administración" : "Digitaliza tu negocio y vende tus membresías con IA"}
+            {isLogin
+              ? "Ingresa al panel de administración"
+              : "Digitaliza tu negocio y vende tus membresías con IA"}
           </p>
         </div>
 
@@ -50,7 +55,9 @@ function GymAuthPage() {
           {!isLogin && (
             <>
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Nombre del Gimnasio</label>
+                <label className="text-xs font-medium text-muted-foreground">
+                  Nombre del Gimnasio
+                </label>
                 <input
                   type="text"
                   required
@@ -74,7 +81,9 @@ function GymAuthPage() {
             </>
           )}
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Email administrativo</label>
+            <label className="text-xs font-medium text-muted-foreground">
+              Email administrativo
+            </label>
             <input
               type="email"
               required
@@ -88,7 +97,9 @@ function GymAuthPage() {
             <div className="flex justify-between items-center">
               <label className="text-xs font-medium text-muted-foreground">Contraseña</label>
               {isLogin && (
-                <a href="#" className="text-xs text-muted-foreground hover:underline">¿La olvidaste?</a>
+                <a href="#" className="text-xs text-muted-foreground hover:underline">
+                  ¿La olvidaste?
+                </a>
               )}
             </div>
             <input

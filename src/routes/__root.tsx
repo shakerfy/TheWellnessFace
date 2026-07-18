@@ -83,10 +83,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Shakerfy — Encuentra tu gimnasio con IA" },
-      { name: "description", content: "Shakerfy es el buscador con IA de gimnasios, fitness centers y studios. Descubre, reserva y gestiona tu membres\u00eda." },
+      {
+        name: "description",
+        content:
+          "Shakerfy es el buscador con IA de gimnasios, fitness centers y studios. Descubre, reserva y gestiona tu membres\u00eda.",
+      },
       { name: "author", content: "Shakerfy" },
       { property: "og:title", content: "Shakerfy — Encuentra tu gimnasio con IA" },
-      { property: "og:description", content: "Buscador con IA de gimnasios, fitness centers y studios." },
+      {
+        property: "og:description",
+        content: "Buscador con IA de gimnasios, fitness centers y studios.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:title", content: "Shakerfy" },

@@ -1,6 +1,21 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowLeft, Clock, Calendar, Share2, Check, Copy, Twitter, Linkedin, MessageCircle, ChevronRight, Bookmark, Sparkles, Building2, Dumbbell } from "lucide-react";
+import {
+  ArrowLeft,
+  Clock,
+  Calendar,
+  Share2,
+  Check,
+  Copy,
+  Twitter,
+  Linkedin,
+  MessageCircle,
+  ChevronRight,
+  Bookmark,
+  Sparkles,
+  Building2,
+  Dumbbell,
+} from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -51,11 +66,17 @@ function BlogDetailPage() {
 
   const shareTwitter = () => {
     const text = encodeURIComponent(`"${post.title}" vía @ShakerfyApp`);
-    window.open(`https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(currentUrl)}`, "_blank");
+    window.open(
+      `https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(currentUrl)}`,
+      "_blank",
+    );
   };
 
   const shareLinkedIn = () => {
-    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(currentUrl)}`, "_blank");
+    window.open(
+      `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(currentUrl)}`,
+      "_blank",
+    );
   };
 
   return (
@@ -76,7 +97,9 @@ function BlogDetailPage() {
             <ChevronRight className="h-3 w-3" />
             <span className="text-muted-foreground/80">{post.category}</span>
             <ChevronRight className="h-3 w-3" />
-            <span className="text-foreground font-medium truncate max-w-[200px] sm:max-w-xs">{post.title}</span>
+            <span className="text-foreground font-medium truncate max-w-[200px] sm:max-w-xs">
+              {post.title}
+            </span>
           </nav>
         </div>
 
@@ -122,18 +145,48 @@ function BlogDetailPage() {
 
               {/* Share actions */}
               <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-muted-foreground mr-1 hidden sm:inline">Compartir:</span>
-                <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl hover:bg-green-500/10 hover:text-green-500 hover:border-green-500/30" onClick={shareWhatsApp} title="Compartir en WhatsApp">
+                <span className="text-xs font-medium text-muted-foreground mr-1 hidden sm:inline">
+                  Compartir:
+                </span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9 rounded-xl hover:bg-green-500/10 hover:text-green-500 hover:border-green-500/30"
+                  onClick={shareWhatsApp}
+                  title="Compartir en WhatsApp"
+                >
                   <MessageCircle className="h-4 w-4" />
                 </Button>
-                <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl hover:bg-blue-400/10 hover:text-blue-400 hover:border-blue-400/30" onClick={shareTwitter} title="Compartir en Twitter / X">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9 rounded-xl hover:bg-blue-400/10 hover:text-blue-400 hover:border-blue-400/30"
+                  onClick={shareTwitter}
+                  title="Compartir en Twitter / X"
+                >
                   <Twitter className="h-4 w-4" />
                 </Button>
-                <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl hover:bg-blue-600/10 hover:text-blue-600 hover:border-blue-600/30" onClick={shareLinkedIn} title="Compartir en LinkedIn">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9 rounded-xl hover:bg-blue-600/10 hover:text-blue-600 hover:border-blue-600/30"
+                  onClick={shareLinkedIn}
+                  title="Compartir en LinkedIn"
+                >
                   <Linkedin className="h-4 w-4" />
                 </Button>
-                <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl" onClick={handleCopyLink} title="Copiar enlace">
-                  {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9 rounded-xl"
+                  onClick={handleCopyLink}
+                  title="Copiar enlace"
+                >
+                  {copied ? (
+                    <Check className="h-4 w-4 text-primary" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
             </div>
@@ -141,11 +194,7 @@ function BlogDetailPage() {
 
           {/* Featured Hero Image */}
           <div className="relative my-8 aspect-[16/9] overflow-hidden rounded-3xl border border-border bg-muted">
-            <img
-              src={post.image}
-              alt={post.title}
-              className="h-full w-full object-cover"
-            />
+            <img src={post.image} alt={post.title} className="h-full w-full object-cover" />
           </div>
 
           {/* Grid Layout: Main Article (8 cols) + Sidebar (4 cols) */}
@@ -158,26 +207,16 @@ function BlogDetailPage() {
                   if (!p) return null;
 
                   if (p.startsWith("### ")) {
-                    return (
-                      <h3 key={idx}>
-                        {p.replace("### ", "")}
-                      </h3>
-                    );
+                    return <h3 key={idx}>{p.replace("### ", "")}</h3>;
                   }
 
                   if (p.startsWith("#### ")) {
-                    return (
-                      <h4 key={idx}>
-                        {p.replace("#### ", "")}
-                      </h4>
-                    );
+                    return <h4 key={idx}>{p.replace("#### ", "")}</h4>;
                   }
 
                   if (p.startsWith("> ")) {
                     return (
-                      <blockquote key={idx}>
-                        {p.replace("> ", "").replace(/"/g, "")}
-                      </blockquote>
+                      <blockquote key={idx}>{p.replace("> ", "").replace(/"/g, "")}</blockquote>
                     );
                   }
 
@@ -186,23 +225,17 @@ function BlogDetailPage() {
                   }
 
                   if (p.startsWith("- ")) {
-                    const items = p.split("\n").map(li => li.replace("- ", "").trim());
+                    const items = p.split("\n").map((li) => li.replace("- ", "").trim());
                     return (
                       <ul key={idx}>
                         {items.map((it, i) => (
-                          <li key={i}>
-                            {it}
-                          </li>
+                          <li key={i}>{it}</li>
                         ))}
                       </ul>
                     );
                   }
 
-                  return (
-                    <p key={idx}>
-                      {p}
-                    </p>
-                  );
+                  return <p key={idx}>{p}</p>;
                 })}
               </div>
 
@@ -227,7 +260,9 @@ function BlogDetailPage() {
                   <div className="text-xs font-bold uppercase text-primary">Escrito por</div>
                   <h4 className="text-lg font-bold text-foreground">{post.author.name}</h4>
                   <p className="text-xs text-muted-foreground font-medium">{post.author.role}</p>
-                  <p className="text-xs text-muted-foreground leading-relaxed pt-1">{post.author.bio}</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed pt-1">
+                    {post.author.bio}
+                  </p>
                 </div>
               </div>
             </div>
@@ -241,7 +276,8 @@ function BlogDetailPage() {
                 </div>
                 <h3 className="font-bold text-lg text-foreground">¿Buscás dónde entrenar hoy?</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Encontrá gimnasios con aforo en tiempo real, clases de yoga, CrossFit y pases libres cerca de tu ubicación.
+                  Encontrá gimnasios con aforo en tiempo real, clases de yoga, CrossFit y pases
+                  libres cerca de tu ubicación.
                 </p>
                 <Link to="/" className="block">
                   <Button className="w-full rounded-xl bg-primary text-primary-foreground font-bold text-xs">
@@ -257,7 +293,8 @@ function BlogDetailPage() {
                 </div>
                 <h3 className="font-bold text-lg text-background">¿Sos dueño de un centro?</h3>
                 <p className="text-xs text-background/80 leading-relaxed">
-                  Publicá tu gimnasio en Shakerfy, digitalizá tus cobros y aumentá la retención de tus alumnos.
+                  Publicá tu gimnasio en Shakerfy, digitalizá tus cobros y aumentá la retención de
+                  tus alumnos.
                 </p>
                 <Link to="/auth/gym" className="block">
                   <Button variant="secondary" className="w-full rounded-xl font-bold text-xs">
@@ -268,7 +305,9 @@ function BlogDetailPage() {
 
               {/* Related Posts in Sidebar */}
               <div className="space-y-4 pt-4 border-t border-border">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Artículos Relacionados</h4>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Artículos Relacionados
+                </h4>
                 <div className="space-y-4">
                   {relatedPosts.map((rPost) => (
                     <Link
@@ -287,7 +326,9 @@ function BlogDetailPage() {
                         <h5 className="text-xs font-bold leading-snug text-foreground group-hover:text-primary transition-colors line-clamp-2">
                           {rPost.title}
                         </h5>
-                        <span className="text-[10px] text-muted-foreground block">{rPost.readTime}</span>
+                        <span className="text-[10px] text-muted-foreground block">
+                          {rPost.readTime}
+                        </span>
                       </div>
                     </Link>
                   ))}
@@ -302,10 +343,15 @@ function BlogDetailPage() {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h3 className="text-2xl font-bold text-foreground">Seguí Leyendo</h3>
-              <p className="text-xs text-muted-foreground mt-0.5">Otros artículos que podrían interesarte</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Otros artículos que podrían interesarte
+              </p>
             </div>
             <Link to="/blog">
-              <Button variant="ghost" className="text-xs font-bold text-primary hover:text-primary/80 gap-1">
+              <Button
+                variant="ghost"
+                className="text-xs font-bold text-primary hover:text-primary/80 gap-1"
+              >
                 Ver todo el Blog <ArrowLeft className="h-3.5 w-3.5 rotate-180" />
               </Button>
             </Link>
@@ -328,7 +374,9 @@ function BlogDetailPage() {
                 </div>
                 <div className="p-5 space-y-2 flex-1 flex flex-col justify-between">
                   <div>
-                    <span className="text-[10px] font-bold text-primary uppercase">{rPost.category}</span>
+                    <span className="text-[10px] font-bold text-primary uppercase">
+                      {rPost.category}
+                    </span>
                     <h4 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2 mt-1">
                       {rPost.title}
                     </h4>
