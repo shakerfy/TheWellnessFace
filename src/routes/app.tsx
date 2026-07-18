@@ -5,7 +5,7 @@ import {
   LogOut, QrCode, CheckCircle, Clock, AlertTriangle, 
   MapPin, ChevronRight, ChevronLeft, X, Sparkles, Shield, AlertCircle, ShieldAlert, Star, Heart,
   Flame, Coffee, Droplet, TrendingUp, Info, Edit, Sun, Moon, ArrowUpRight, Utensils,
-  Camera, Dumbbell, Activity, Plus, Check, Loader2,
+  Camera, Dumbbell, Brain, Activity, Plus, Check, Loader2,
   Play, Pause, RotateCcw, Search, ChevronUp, ChevronDown, Trash2, FileDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -2402,6 +2402,32 @@ function DiarioTab() {
   }, [activeModal, foodAnalysisStep]);
 
   const timelineItems = React.useMemo(() => {
+    const getHydrationFeedback = (level: number) => {
+      if (level <= 2) {
+        return {
+          tag: `Armstrong ${level}`,
+          feedback: `Nivel ${level} indica hidratación óptima. ¡Excelente trabajo manteniendo tu cuerpo equilibrado!`
+        };
+      } else if (level <= 4) {
+        return {
+          tag: `Armstrong ${level}`,
+          feedback: `Nivel ${level} indica hidratación normal tirando a levemente baja. Bebe un vaso de agua (250ml) ahora para mantener el estado óptimo.`
+        };
+      } else if (level <= 6) {
+        return {
+          tag: `Armstrong ${level}`,
+          feedback: `Nivel ${level} indica deshidratación leve. Toma 500ml de agua ahora mismo para compensar el entrenamiento o la actividad.`
+        };
+      } else {
+        return {
+          tag: `Armstrong ${level}`,
+          feedback: `¡Atención! Nivel ${level} indica deshidratación severa. Consume de 750ml a 1L de agua, preferiblemente con electrolitos, y modera el esfuerzo físico.`
+        };
+      }
+    };
+
+    const hydData = getHydrationFeedback(hydrationLevel);
+
     const baseItems = [
       {
         id: "1",
@@ -2424,8 +2450,8 @@ function DiarioTab() {
         type: "hydration",
         img: null,
         kcal: 0,
-        tag: "Armstrong 5",
-        coachFeedback: "Nivel 5 indica deshidratación leve. Toma 500ml de agua ahora mismo para compensar el entrenamiento de la mañana.",
+        tag: hydData.tag,
+        coachFeedback: hydData.feedback,
       },
       {
         id: "3",
@@ -2552,7 +2578,7 @@ function DiarioTab() {
       }
       return parseTimeToMinutes(a.time) - parseTimeToMinutes(b.time);
     });
-  }, [sunTimes]);
+  }, [sunTimes, hydrationLevel]);
 
   const dynamicAdherence = React.useMemo(() => {
     const foodLogsByDate: { [date: string]: number } = {};
@@ -3043,7 +3069,7 @@ function DiarioTab() {
                           )}
 
                           {!item.img && item.type === "hydration" && (
-                            <CardContent className="px-5 pb-4 pt-0 space-y-2">
+                            <CardContent className="px-5 pb-5 pt-0 space-y-4">
                               {/* Hydration Selector */}
                               <div className="space-y-2">
                                 <div className="flex justify-between gap-1 h-12 w-full rounded-xl overflow-hidden bg-secondary/20 p-1">
@@ -3065,7 +3091,7 @@ function DiarioTab() {
                                       }}
                                       className={`flex-1 h-full rounded-lg transition-all relative ${
                                         hydrationLevel === h.level 
-                                          ? "border-2 border-foreground z-10" 
+                                          ? "border-2 border-foreground z-10 scale-105 shadow-md" 
                                           : "hover:opacity-90"
                                       }`}
                                       style={{ backgroundColor: h.color }}
@@ -3076,10 +3102,55 @@ function DiarioTab() {
                                     </button>
                                   ))}
                                 </div>
-                                <div className="flex justify-between text-[9px] uppercase font-bold text-muted-foreground/80 tracking-wider">
+                                <div className="flex justify-between text-[9px] uppercase font-black text-muted-foreground/80 tracking-widest">
                                   <span>Óptimo</span>
                                   <span>Deshidratado</span>
                                 </div>
+                              </div>
+
+                              {/* Síntomas de Deshidratación */}
+                              <div className="pt-4 border-t border-border/40 space-y-2.5">
+                                <span className="text-[9px] text-muted-foreground font-black uppercase tracking-widest block">
+                                  Síntomas de Deshidratación a vigilar
+                                </span>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                  <div className="flex items-center gap-2 p-2 rounded-xl bg-secondary/35 border border-border/20">
+                                    <Droplet className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                                    <div className="min-w-0">
+                                      <p className="text-[10px] font-extrabold text-foreground leading-tight">Boca Seca</p>
+                                      <p className="text-[8px] text-muted-foreground leading-none">Falta saliva</p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2 p-2 rounded-xl bg-secondary/35 border border-border/20">
+                                    <Coffee className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                                    <div className="min-w-0">
+                                      <p className="text-[10px] font-extrabold text-foreground leading-tight">Fatiga</p>
+                                      <p className="text-[8px] text-muted-foreground leading-none">Cansancio</p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2 p-2 rounded-xl bg-secondary/35 border border-border/20">
+                                    <Brain className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                                    <div className="min-w-0">
+                                      <p className="text-[10px] font-extrabold text-foreground leading-tight">Cefalea</p>
+                                      <p className="text-[8px] text-muted-foreground leading-none">Dolor de cabeza</p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2 p-2 rounded-xl bg-secondary/35 border border-border/20">
+                                    <AlertCircle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                                    <div className="min-w-0">
+                                      <p className="text-[10px] font-extrabold text-foreground leading-tight">Mareos</p>
+                                      <p className="text-[8px] text-muted-foreground leading-none">Pérdida balance</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Alimentos / Suplementos advertencia */}
+                              <div className="pt-2 text-[9px] text-muted-foreground leading-relaxed flex items-start gap-1.5 bg-secondary/15 p-2.5 rounded-xl border border-border/10">
+                                <Info className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-0.5" />
+                                <p>
+                                  <span className="font-bold text-foreground">Aviso sobre coloración:</span> Ciertos suplementos (como el complejo de vitamina B) y alimentos (como la remolacha) pueden intensificar temporalmente el color de la orina, sin representar deshidratación real.
+                                </p>
                               </div>
                             </CardContent>
                           )}
