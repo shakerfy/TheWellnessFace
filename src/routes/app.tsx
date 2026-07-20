@@ -5375,13 +5375,6 @@ function RecipeSwipeStack({
                       </span>
                     ))}
                   </div>
-
-                  <div className="bg-emerald-500/10 backdrop-blur-sm border border-emerald-500/20 rounded-lg p-2 flex items-start gap-1 mt-1">
-                    <Sparkles className="w-3 h-3 text-emerald-400 shrink-0 mt-0.5" />
-                    <p className="text-[9px] text-emerald-200 leading-snug font-semibold line-clamp-1">
-                      {currentRecipe.coachFeedback}
-                    </p>
-                  </div>
                 </div>
               </div>
 
@@ -5605,14 +5598,9 @@ function RecipesGridTab({
 
               {/* Info Area */}
               <div className="p-5 flex-1 flex flex-col justify-between gap-4">
-                <div className="space-y-2">
-                  <h4 className="text-sm font-bold text-foreground group-hover:text-emerald-600 transition-colors leading-snug line-clamp-2">
-                    {recipe.title}
-                  </h4>
-                  <p className="text-[10px] text-muted-foreground leading-relaxed line-clamp-2 font-medium">
-                    {recipe.coachFeedback}
-                  </p>
-                </div>
+                <h4 className="text-sm font-bold text-foreground group-hover:text-emerald-600 transition-colors leading-snug line-clamp-2">
+                  {recipe.title}
+                </h4>
 
                 <div className="border-t border-border/50 pt-3 space-y-2">
                   <MealOrganizerBadges
