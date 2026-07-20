@@ -21,6 +21,149 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getBlogPostBySlug, getRelatedPosts, type BlogPost } from "@/lib/blogs";
 
+function parseInlineMarkdown(text: string): React.ReactNode {
+  if (!text) return text;
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((part, index) => {
+    if (part.startsWith("**") && part.endsWith("**") && part.length > 4) {
+      return (
+        <strong key={index} className="font-bold text-foreground">
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
+    const italicParts = part.split(/(\*[^*]+\*)/g);
+    if (italicParts.length > 1) {
+      return italicParts.map((sub, subIdx) => {
+        if (sub.startsWith("*") && sub.endsWith("*") && sub.length > 2) {
+          return (
+            <em key={subIdx} className="italic text-foreground/90">
+              {sub.slice(1, -1)}
+            </em>
+          );
+        }
+        return sub;
+      });
+    }
+    return part;
+  });
+}
+
+function renderBlogMarkdown(content: string) {
+  const blocks = content.split(/\n\s*\n/);
+
+  return blocks.map((block, idx) => {
+    const trimmed = block.trim();
+    if (!trimmed) return null;
+
+    // 1. Markdown Table (| Col | Col |)
+    if (trimmed.startsWith("|") && trimmed.includes("|")) {
+      const lines = trimmed.split("\n").map(l => l.trim()).filter(l => l.startsWith("|"));
+      if (lines.length >= 2) {
+        // Line 0: Header
+        const headerCols = lines[0]
+          .split("|")
+          .map(c => c.trim())
+          .filter((_, i, arr) => i > 0 && i < arr.length - 1);
+
+        // Filter out delimiter line (|---|---|)
+        const bodyLines = lines.slice(1).filter(l => !l.includes(":---") && !l.includes("---"));
+
+        return (
+          <div key={idx} className="my-8 overflow-x-auto rounded-2xl border border-border bg-card shadow-sm">
+            <table className="w-full text-left text-xs sm:text-sm">
+              <thead className="bg-secondary/40 text-muted-foreground uppercase tracking-wider font-bold border-b border-border">
+                <tr>
+                  {headerCols.map((col, i) => (
+                    <th key={i} className="px-4 py-3 font-extrabold text-foreground">{parseInlineMarkdown(col)}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/40 text-foreground">
+                {bodyLines.map((rowLine, rIdx) => {
+                  const cells = rowLine
+                    .split("|")
+                    .map(c => c.trim())
+                    .filter((_, i, arr) => i > 0 && i < arr.length - 1);
+                  return (
+                    <tr key={rIdx} className="hover:bg-muted/30 transition-colors">
+                      {cells.map((cell, cIdx) => (
+                        <td key={cIdx} className="px-4 py-3 align-top font-medium">{parseInlineMarkdown(cell)}</td>
+                      ))}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        );
+      }
+    }
+
+    // 2. Headings
+    if (trimmed.startsWith("### ")) {
+      return (
+        <h3 key={idx} className="text-xl font-bold mt-8 mb-3 text-foreground tracking-tight">
+          {parseInlineMarkdown(trimmed.replace("### ", ""))}
+        </h3>
+      );
+    }
+    if (trimmed.startsWith("#### ")) {
+      return (
+        <h4 key={idx} className="text-lg font-bold mt-6 mb-2 text-foreground">
+          {parseInlineMarkdown(trimmed.replace("#### ", ""))}
+        </h4>
+      );
+    }
+
+    // 3. Blockquotes
+    if (trimmed.startsWith("> ")) {
+      const quoteText = trimmed.replace(/^>\s*/gm, "").replace(/"/g, "").trim();
+      return (
+        <blockquote key={idx} className="my-6 border-l-4 border-emerald-500 bg-emerald-500/5 dark:bg-emerald-500/10 p-4 rounded-r-2xl italic text-foreground font-medium">
+          {parseInlineMarkdown(quoteText)}
+        </blockquote>
+      );
+    }
+
+    // 4. Horizontal Rule
+    if (trimmed === "---") {
+      return <hr key={idx} className="my-8 border-border" />;
+    }
+
+    // 5. Unordered List (- item)
+    if (trimmed.startsWith("- ")) {
+      const items = trimmed.split("\n").map(li => li.replace(/^-\s*/, "").trim());
+      return (
+        <ul key={idx} className="my-4 space-y-2 list-disc list-inside text-foreground">
+          {items.map((it, i) => (
+            <li key={i} className="leading-relaxed">{parseInlineMarkdown(it)}</li>
+          ))}
+        </ul>
+      );
+    }
+
+    // 6. Ordered List (1. item)
+    if (/^\d+\.\s/.test(trimmed)) {
+      const items = trimmed.split("\n").map(li => li.replace(/^\d+\.\s*/, "").trim());
+      return (
+        <ol key={idx} className="my-4 space-y-2 list-decimal list-inside text-foreground">
+          {items.map((it, i) => (
+            <li key={i} className="leading-relaxed">{parseInlineMarkdown(it)}</li>
+          ))}
+        </ol>
+      );
+    }
+
+    // 7. Regular Paragraph
+    return (
+      <p key={idx} className="leading-relaxed text-foreground/90 my-3">
+        {parseInlineMarkdown(trimmed)}
+      </p>
+    );
+  });
+}
+
 export const Route = createFileRoute("/blog/$slug")({
   loader: ({ params }) => {
     const post = getBlogPostBySlug(params.slug);
@@ -202,41 +345,7 @@ function BlogDetailPage() {
             {/* Article Body */}
             <div className="lg:col-span-8 space-y-6">
               <div className="typeset typeset-docs max-w-[37em]">
-                {post.content.split("\n\n").map((paragraph, idx) => {
-                  const p = paragraph.trim();
-                  if (!p) return null;
-
-                  if (p.startsWith("### ")) {
-                    return <h3 key={idx}>{p.replace("### ", "")}</h3>;
-                  }
-
-                  if (p.startsWith("#### ")) {
-                    return <h4 key={idx}>{p.replace("#### ", "")}</h4>;
-                  }
-
-                  if (p.startsWith("> ")) {
-                    return (
-                      <blockquote key={idx}>{p.replace("> ", "").replace(/"/g, "")}</blockquote>
-                    );
-                  }
-
-                  if (p.startsWith("---")) {
-                    return <hr key={idx} />;
-                  }
-
-                  if (p.startsWith("- ")) {
-                    const items = p.split("\n").map((li) => li.replace("- ", "").trim());
-                    return (
-                      <ul key={idx}>
-                        {items.map((it, i) => (
-                          <li key={i}>{it}</li>
-                        ))}
-                      </ul>
-                    );
-                  }
-
-                  return <p key={idx}>{p}</p>;
-                })}
+                {renderBlogMarkdown(post.content)}
               </div>
 
               {/* Article Tags */}
