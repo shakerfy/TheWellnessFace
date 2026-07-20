@@ -2230,28 +2230,16 @@ const formatDateLabel = (dateStr: string) => {
   }
 };
 
-// Helper component to render the 4 dynamic profile/category badges for meals & recipes
+// Helper component to render dynamic glassmorphism badges for meals & recipes
 interface MealOrganizerBadgesProps {
-  category: string; // 1. Tipos / Momentos del día (Desayunos, Almuerzos, Cenas, Snacks)
-  tasteProfileMatch?: string; // 2. Perfil de Gustos (swipes)
-  dietRestrictions?: string[]; // 3. Restricciones e Ingredientes
-  kcal?: number; // 4. Métricas nutricionales
-  protein?: string;
-  carbs?: string;
-  fat?: string;
-  compact?: boolean;
+  category: string; // Momento del día (Desayuno, Almuerzo, Cena, Snack)
+  tags?: string[]; // Badges nutricionales (Alta en Proteínas, Baja en Carbohidratos, etc.)
   className?: string;
 }
 
 function MealOrganizerBadges({
   category,
-  tasteProfileMatch = "95% Match Gustos",
-  dietRestrictions = [],
-  kcal,
-  protein,
-  carbs,
-  fat,
-  compact = false,
+  tags = [],
   className = "",
 }: MealOrganizerBadgesProps) {
   return (
@@ -2264,34 +2252,16 @@ function MealOrganizerBadges({
         </span>
       )}
 
-      {/* 2. Perfil de Gustos (Swipes) */}
-      {tasteProfileMatch && (
-        <span className="inline-flex items-center gap-1 backdrop-blur-md bg-amber-500/10 dark:bg-amber-500/20 border border-amber-500/20 text-amber-600 dark:text-amber-300 text-[10px] font-bold tracking-wide px-2.5 py-0.5 rounded-full shadow-sm">
-          <Sparkles className="w-3 h-3 text-amber-500 shrink-0" />
-          <span>{tasteProfileMatch}</span>
+      {/* 2. Badges Nutricionales & Características (Alta en Proteínas, Baja en Carbohidratos, etc.) */}
+      {tags.map((tag, idx) => (
+        <span 
+          key={idx} 
+          className="inline-flex items-center gap-1 backdrop-blur-md bg-secondary/60 dark:bg-secondary/40 border border-border/60 text-foreground/90 text-[10px] font-medium tracking-wide px-2.5 py-0.5 rounded-full shadow-sm"
+        >
+          <Sparkles className="w-2.5 h-2.5 text-emerald-500 shrink-0" />
+          <span>{tag}</span>
         </span>
-      )}
-
-      {/* 3. Restricciones e Ingredientes */}
-      {dietRestrictions.length > 0 && (
-        <span className="inline-flex items-center gap-1 backdrop-blur-md bg-blue-500/10 dark:bg-blue-500/20 border border-blue-500/20 text-blue-600 dark:text-blue-300 text-[10px] font-bold tracking-wide px-2.5 py-0.5 rounded-full shadow-sm">
-          <Shield className="w-3 h-3 text-blue-500 shrink-0" />
-          <span>{dietRestrictions.join(" · ")}</span>
-        </span>
-      )}
-
-      {/* 4. Métricas de Seguimiento */}
-      {(kcal !== undefined || protein) && (
-        <span className="inline-flex items-center gap-1 backdrop-blur-md bg-purple-500/10 dark:bg-purple-500/20 border border-purple-500/20 text-purple-600 dark:text-purple-300 text-[10px] font-bold tracking-wide px-2.5 py-0.5 rounded-full shadow-sm">
-          <Flame className="w-3 h-3 text-purple-500 shrink-0" />
-          <span>
-            {kcal !== undefined && `${kcal} kcal`}
-            {protein && ` • ${protein} Prot`}
-            {!compact && carbs && ` • ${carbs} Carb`}
-            {!compact && fat && ` • ${fat} Grasa`}
-          </span>
-        </span>
-      )}
+      ))}
     </div>
   );
 }
@@ -2301,8 +2271,7 @@ const RECIPES_POOL = [
     id: "receta-1",
     title: "Smoothie Bowl de Proteína y Berries",
     category: "Desayuno",
-    tasteProfileMatch: "98% Match Gustos (Swipes)",
-    dietRestrictions: ["Vegetariana", "Sin Gluten"],
+    tags: ["Alta en Proteínas", "Sin Gluten", "Alta en Antioxidantes"],
     img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?auto=format&fit=crop&w=600&q=80",
     kcal: 340,
     protein: "22g",
@@ -2310,7 +2279,7 @@ const RECIPES_POOL = [
     fat: "6g",
     prepTime: "10 min",
     difficulty: "Fácil",
-    tag: "Proteína Alta",
+    tag: "Alta en Proteínas",
     coachFeedback: "Excelente para reponer glucógeno post-entreno y aportar antioxidantes para combatir el estrés oxidativo celular.",
     ingredients: [
       "1 taza de frutos rojos congelados (arándanos, frambuesas)",
@@ -2330,8 +2299,7 @@ const RECIPES_POOL = [
     id: "receta-2",
     title: "Bowl de Quinoa, Salmón y Aguacate",
     category: "Almuerzo",
-    tasteProfileMatch: "95% Match Gustos (Cocina & Sabores)",
-    dietRestrictions: ["Sin Lactosa", "Omega 3"],
+    tags: ["Grasas Saludables", "Omega 3", "Sin Lactosa"],
     img: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80",
     kcal: 580,
     protein: "38g",
@@ -2339,7 +2307,7 @@ const RECIPES_POOL = [
     fat: "24g",
     prepTime: "20 min",
     difficulty: "Fácil",
-    tag: "Omega 3 y Grasas Saludables",
+    tag: "Grasas Saludables",
     coachFeedback: "Excelente combinación de grasas saludables omega-3 y carbohidratos complejos. Ideal para tu ventana metabólica post-entrenamiento.",
     ingredients: [
       "150g de filete de salmón fresco",
@@ -2360,8 +2328,7 @@ const RECIPES_POOL = [
     id: "receta-3",
     title: "Pechuga de Pollo con Camote y Brócoli",
     category: "Cena",
-    tasteProfileMatch: "92% Match Gustos (Proteica)",
-    dietRestrictions: ["Keto Friendly", "Sin Gluten"],
+    tags: ["Alta en Proteínas", "Baja en Carbohidratos", "Sin Gluten"],
     img: "https://images.unsplash.com/photo-1532550907401-a500c9a57435?auto=format&fit=crop&w=600&q=80",
     kcal: 460,
     protein: "42g",
@@ -2369,7 +2336,7 @@ const RECIPES_POOL = [
     fat: "12g",
     prepTime: "25 min",
     difficulty: "Fácil",
-    tag: "Proteína Limpia",
+    tag: "Alta en Proteínas",
     coachFeedback: "Una cena ligera pero rica en aminoácidos para optimizar la síntesis proteica nocturna y favorecer la recuperación muscular.",
     ingredients: [
       "150g de pechuga de pollo cortada en filetes",
@@ -2391,8 +2358,7 @@ const RECIPES_POOL = [
     id: "receta-4",
     title: "Pancakes Fit de Avena y Banano",
     category: "Desayuno",
-    tasteProfileMatch: "96% Match Gustos (Swipes)",
-    dietRestrictions: ["Vegetariana", "Alta Fibra"],
+    tags: ["Energía Sostenible", "Alta en Fibra", "Vegetariana"],
     img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=600&q=80",
     kcal: 320,
     protein: "18g",
@@ -2422,8 +2388,7 @@ const RECIPES_POOL = [
     id: "receta-5",
     title: "Tostada de Masa Madre con Ricotta e Higos",
     category: "Snack",
-    tasteProfileMatch: "94% Match Gustos (Gourmet Fit)",
-    dietRestrictions: ["Vegetariana", "Microbiota Amigable"],
+    tags: ["Microbiota Amigable", "Vegetariana", "Gourmet Fit"],
     img: "https://images.unsplash.com/photo-1541532713592-79a0317b6b77?auto=format&fit=crop&w=600&q=80",
     kcal: 290,
     protein: "12g",
@@ -2432,7 +2397,7 @@ const RECIPES_POOL = [
     prepTime: "10 min",
     difficulty: "Muy Fácil",
     tag: "Microbiota Amigable",
-    coachFeedback: "El pan de masa madre es excelente para la digestión y la ricotta ofrece una liberación sostenida de aminoácidos.",
+    coachFeedback: "El pan de masa madre es excelente para la digestión y la ricotta ofrece una liberación sustained de aminoácidos.",
     ingredients: [
       "1 rebanada gruesa de pan de masa madre tostado",
       "3 cdas de queso ricotta descremado o cottage",
@@ -2756,9 +2721,8 @@ function DiarioTab() {
         protein: "14g",
         carbs: "48g",
         fat: "18g",
-        tasteProfileMatch: "90% Match Gustos",
-        dietRestrictions: ["Vegetariana", "Alta Fibra"],
-        tag: "Fibra Alta",
+        tags: ["Alta en Fibra", "Grasas Saludables"],
+        tag: "Alta en Fibra",
         coachFeedback: "Excelente balance de grasas saludables. Considerá agregar una fuente de proteína la próxima vez para prolongar la saciedad.",
       },
       {
@@ -2785,8 +2749,7 @@ function DiarioTab() {
         protein: "0g",
         carbs: "0g",
         fat: "0g",
-        tasteProfileMatch: "100% Match Gustos",
-        dietRestrictions: ["Vegano", "Sin Azúcar"],
+        tags: ["Sin Azúcar", "Cero Calorías"],
         tag: "Sin Azúcar",
         coachFeedback: null,
       },
@@ -2802,9 +2765,8 @@ function DiarioTab() {
         protein: "24g",
         carbs: "4g",
         fat: "22g",
-        tasteProfileMatch: "97% Match Gustos",
-        dietRestrictions: ["Keto", "Vegetariana"],
-        tag: "Proteína Alta",
+        tags: ["Alta en Proteínas", "Baja en Carbohidratos"],
+        tag: "Alta en Proteínas",
         coachFeedback: "Muy buena elección proteica por la mañana. Mantener un desayuno con bajo índice glucémico estabiliza tu energía por horas.",
       },
       {
@@ -2819,8 +2781,7 @@ function DiarioTab() {
         protein: "6g",
         carbs: "8g",
         fat: "15g",
-        tasteProfileMatch: "91% Match Gustos",
-        dietRestrictions: ["Keto", "Vegano", "Sin Gluten"],
+        tags: ["Grasas Saludables", "Baja en Carbohidratos"],
         tag: "Grasas Saludables",
         coachFeedback: "El snack de frutos secos aporta ácidos grasos esenciales y saciedad antes de tu cena.",
       },
@@ -2836,8 +2797,7 @@ function DiarioTab() {
         protein: "10g",
         carbs: "40g",
         fat: "8g",
-        tasteProfileMatch: "88% Match Gustos",
-        dietRestrictions: ["Vegetariana", "Microbiota Amigable"],
+        tags: ["Energía Compleja", "Microbiota Amigable"],
         tag: "Energía Compleja",
         coachFeedback: "La masa madre es excelente para tu microbiota digestiva. Buena combinación energética para arrancar el día.",
       },
@@ -2853,9 +2813,8 @@ function DiarioTab() {
         protein: "44g",
         carbs: "6g",
         fat: "36g",
-        tasteProfileMatch: "99% Match Gustos",
-        dietRestrictions: ["Keto", "Pescatariana", "Sin Gluten"],
-        tag: "Omega 3 y Fitoquímicos",
+        tags: ["Alta en Proteínas", "Baja en Carbohidratos", "Omega 3"],
+        tag: "Alta en Proteínas",
         coachFeedback: "Excelente cena ligera y rica en grasas saludables que promueven la recuperación celular durante el sueño profundo.",
       }
     ];
@@ -3501,12 +3460,7 @@ function DiarioTab() {
                             <CardContent className="px-5 pb-4 pt-0">
                               <MealOrganizerBadges
                                 category={item.subtitle}
-                                tasteProfileMatch={item.tasteProfileMatch}
-                                dietRestrictions={item.dietRestrictions}
-                                kcal={item.kcal}
-                                protein={item.protein}
-                                carbs={item.carbs}
-                                fat={item.fat}
+                                tags={item.tags || (item.tag ? [item.tag] : [])}
                               />
                             </CardContent>
                           ) : (item.kcal > 0 || item.tag) && (
@@ -4299,11 +4253,7 @@ function DiarioTab() {
               type: "food",
               img: recipe.img,
               kcal: recipe.kcal,
-              protein: recipe.protein,
-              carbs: recipe.carbs,
-              fat: recipe.fat,
-              tasteProfileMatch: recipe.tasteProfileMatch,
-              dietRestrictions: recipe.dietRestrictions,
+              tags: recipe.tags || (recipe.tag ? [recipe.tag] : []),
               tag: recipe.tag,
               coachFeedback: recipe.coachFeedback,
             };
@@ -5404,18 +5354,11 @@ function RecipeSwipeStack({
               <div className="absolute inset-0 p-3.5 flex flex-col justify-between pointer-events-none">
                 <div className="flex justify-between items-start gap-1 flex-wrap">
                   <div className="flex gap-1 flex-wrap">
-                    {/* 1. Momento del Día */}
+                    {/* Momento del Día */}
                     <span className="backdrop-blur-md bg-emerald-500/30 text-emerald-100 text-[8px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full border border-emerald-400/30 shadow-sm flex items-center gap-1">
                       <Clock className="w-2.5 h-2.5 shrink-0" />
                       {currentRecipe.category}
                     </span>
-                    {/* 2. Perfil de Gustos (Swipes) */}
-                    {currentRecipe.tasteProfileMatch && (
-                      <span className="backdrop-blur-md bg-amber-500/30 text-amber-100 text-[8px] font-bold px-2 py-0.5 rounded-full border border-amber-400/30 shadow-sm flex items-center gap-0.5">
-                        <Sparkles className="w-2.5 h-2.5 fill-current shrink-0" />
-                        {currentRecipe.tasteProfileMatch}
-                      </span>
-                    )}
                   </div>
                   <span className="backdrop-blur-md bg-black/40 text-white/90 text-[8px] font-bold px-2 py-0.5 rounded-full border border-white/10 shrink-0">
                     {currentRecipe.prepTime}
@@ -5428,18 +5371,13 @@ function RecipeSwipeStack({
                   </h4>
                   
                   <div className="flex flex-wrap gap-1 text-white/90 text-[8px] font-bold">
-                    {/* 3. Restricciones e Ingredientes */}
-                    {currentRecipe.dietRestrictions?.length > 0 && (
-                      <span className="backdrop-blur-md bg-blue-500/30 text-blue-100 px-2 py-0.5 rounded-full border border-blue-400/30 flex items-center gap-0.5 shadow-sm">
-                        <Shield className="w-2.5 h-2.5 shrink-0" />
-                        {currentRecipe.dietRestrictions.join(" · ")}
+                    {/* Nutritional / Characteristic Tags */}
+                    {(currentRecipe.tags || [currentRecipe.tag]).map((t: string, idx: number) => (
+                      <span key={idx} className="backdrop-blur-md bg-white/15 text-white px-2 py-0.5 rounded-full border border-white/20 flex items-center gap-0.5 shadow-sm">
+                        <Sparkles className="w-2.5 h-2.5 text-emerald-400 shrink-0" />
+                        {t}
                       </span>
-                    )}
-                    {/* 4. Métricas de Seguimiento */}
-                    <span className="backdrop-blur-md bg-purple-500/30 text-purple-100 px-2 py-0.5 rounded-full border border-purple-400/30 flex items-center gap-0.5 shadow-sm">
-                      <Flame className="w-2.5 h-2.5 shrink-0" />
-                      {currentRecipe.kcal} kcal • {currentRecipe.protein} P • {currentRecipe.carbs} C
-                    </span>
+                    ))}
                   </div>
 
                   <div className="bg-emerald-500/10 backdrop-blur-sm border border-emerald-500/20 rounded-lg p-2 flex items-start gap-1 mt-1">
@@ -5690,11 +5628,7 @@ function RecipesGridTab({
                 <div className="border-t border-border/50 pt-3 space-y-2">
                   <MealOrganizerBadges
                     category={recipe.category}
-                    tasteProfileMatch={recipe.tasteProfileMatch}
-                    dietRestrictions={recipe.dietRestrictions}
-                    kcal={recipe.kcal}
-                    protein={recipe.protein}
-                    compact
+                    tags={recipe.tags || (recipe.tag ? [recipe.tag] : [])}
                   />
                 </div>
               </div>
@@ -5780,42 +5714,16 @@ function RecipeDetailModal({
             </div>
           </div>
 
-          {/* Indicadores de Perfil & Organización */}
-          <div className="bg-secondary/20 rounded-2xl p-4 border border-border/60 space-y-2.5">
+          {/* Características Nutricionales Badges */}
+          <div className="bg-secondary/20 rounded-2xl p-3.5 border border-border/60 space-y-2">
             <h5 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              Organización del Planificador (IA & Perfil)
+              <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
+              Características Nutricionales
             </h5>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-              <div className="bg-background/80 p-2.5 rounded-xl border border-border/40 flex items-start gap-2">
-                <Clock className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                <div>
-                  <span className="block text-[9px] font-bold text-muted-foreground uppercase">1. Momento del Día</span>
-                  <span className="font-extrabold text-foreground">{recipe.category}</span>
-                </div>
-              </div>
-              <div className="bg-background/80 p-2.5 rounded-xl border border-border/40 flex items-start gap-2">
-                <Sparkles className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                <div>
-                  <span className="block text-[9px] font-bold text-muted-foreground uppercase">2. Perfil de Gustos</span>
-                  <span className="font-extrabold text-foreground">{recipe.tasteProfileMatch || "95% Match (Swipes)"}</span>
-                </div>
-              </div>
-              <div className="bg-background/80 p-2.5 rounded-xl border border-border/40 flex items-start gap-2">
-                <Shield className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-                <div>
-                  <span className="block text-[9px] font-bold text-muted-foreground uppercase">3. Restricciones & Dietas</span>
-                  <span className="font-extrabold text-foreground">{recipe.dietRestrictions?.join(", ") || "Filtros de perfil aplicados"}</span>
-                </div>
-              </div>
-              <div className="bg-background/80 p-2.5 rounded-xl border border-border/40 flex items-start gap-2">
-                <Flame className="w-4 h-4 text-purple-500 shrink-0 mt-0.5" />
-                <div>
-                  <span className="block text-[9px] font-bold text-muted-foreground uppercase">4. Métricas & Macros</span>
-                  <span className="font-extrabold text-foreground">{recipe.kcal} kcal ({recipe.protein} P · {recipe.carbs} C · {recipe.fat} G)</span>
-                </div>
-              </div>
-            </div>
+            <MealOrganizerBadges
+              category={recipe.category}
+              tags={recipe.tags || (recipe.tag ? [recipe.tag] : [])}
+            />
           </div>
 
           {/* Coach Advice */}
