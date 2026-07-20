@@ -5,7 +5,7 @@ import {
   LogOut, QrCode, CheckCircle, Clock, AlertTriangle, 
   MapPin, ChevronRight, ChevronLeft, X, Sparkles, Shield, AlertCircle, ShieldAlert, Star, Heart,
   Flame, Coffee, Droplet, TrendingUp, Info, Edit, Sun, Moon, ArrowUpRight, Utensils,
-  Camera, Dumbbell, Brain, Activity, Plus, Check, Loader2,
+  Camera, Dumbbell, Brain, Activity, Plus, Check, Loader2, ShoppingCart, Copy,
   Play, Pause, RotateCcw, Search, ChevronUp, ChevronDown, Trash2, FileDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -2478,9 +2478,19 @@ function DiarioTab() {
 
   const [customActivities, setCustomActivities] = useState<any[]>([]);
   const [savedRecipes, setSavedRecipes] = useState<string[]>(["receta-5"]);
+  const [cartRecipeIds, setCartRecipeIds] = useState<string[]>(["receta-5"]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const [showSwipeStack, setShowSwipeStack] = useState(true);
   const [currentSwipeIndex, setCurrentSwipeIndex] = useState(0);
   const [activeRecipeDetail, setActiveRecipeDetail] = useState<any | null>(null);
+
+  const toggleCartRecipe = (recipeId: string) => {
+    setCartRecipeIds(prev => 
+      prev.includes(recipeId) 
+        ? prev.filter(id => id !== recipeId)
+        : [...prev, recipeId]
+    );
+  };
 
   const chartConfig = {
     puntos: {
@@ -4230,6 +4240,9 @@ function DiarioTab() {
         <RecipesGridTab 
           savedRecipes={savedRecipes} 
           setSavedRecipes={setSavedRecipes}
+          cartRecipeIds={cartRecipeIds}
+          onToggleCart={toggleCartRecipe}
+          onOpenCart={() => setIsCartOpen(true)}
           onExploreClick={() => {
             setShowSwipeStack(true);
             setSubTab("diario");
@@ -4242,6 +4255,8 @@ function DiarioTab() {
         <RecipeDetailModal 
           recipe={activeRecipeDetail}
           onClose={() => setActiveRecipeDetail(null)}
+          isInCart={cartRecipeIds.includes(activeRecipeDetail.id)}
+          onToggleCart={toggleCartRecipe}
           onLog={(recipe) => {
             const newMeal = {
               id: `custom-recipe-${Date.now()}`,
@@ -4263,8 +4278,18 @@ function DiarioTab() {
           }}
           onRemove={(recipeId) => {
             setSavedRecipes(prev => prev.filter(id => id !== recipeId));
+            setCartRecipeIds(prev => prev.filter(id => id !== recipeId));
             setActiveRecipeDetail(null);
           }}
+        />
+      )}
+
+      {isCartOpen && (
+        <ShoppingCartModal 
+          cartRecipeIds={cartRecipeIds}
+          onClose={() => setIsCartOpen(false)}
+          onToggleCart={toggleCartRecipe}
+          onClearCart={() => setCartRecipeIds([])}
         />
       )}
 
@@ -5483,6 +5508,9 @@ function RecipeSwipeStack({
 interface RecipesGridTabProps {
   savedRecipes: string[];
   setSavedRecipes: React.Dispatch<React.SetStateAction<string[]>>;
+  cartRecipeIds: string[];
+  onToggleCart: (recipeId: string) => void;
+  onOpenCart: () => void;
   onExploreClick: () => void;
   onOpenDetail: (recipe: any) => void;
 }
@@ -5490,6 +5518,9 @@ interface RecipesGridTabProps {
 function RecipesGridTab({
   savedRecipes,
   setSavedRecipes,
+  cartRecipeIds,
+  onToggleCart,
+  onOpenCart,
   onExploreClick,
   onOpenDetail,
 }: RecipesGridTabProps) {
@@ -5510,12 +5541,25 @@ function RecipesGridTab({
   return (
     <div className="space-y-6 animate-in fade-in duration-300 text-left px-6 py-6 pb-24 max-w-5xl mx-auto">
       <div className="flex flex-col gap-4">
-        {/* Title */}
-        <div>
-          <h2 className="text-[22px] font-black text-foreground leading-tight tracking-tight">Mis Recetas Guardadas</h2>
-          <p className="text-xs text-muted-foreground mt-1 font-medium">
-            Platos recomendados por tu Coach IA que has guardado durante la exploración.
-          </p>
+        {/* Title & Cart Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-[22px] font-black text-foreground leading-tight tracking-tight">Mis Recetas Guardadas</h2>
+            <p className="text-xs text-muted-foreground mt-1 font-medium">
+              Platos recomendados por tu Coach IA que has guardado durante la exploración.
+            </p>
+          </div>
+
+          <Button
+            onClick={onOpenCart}
+            className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl px-4 py-2.5 flex items-center gap-2 transition-all shadow-md shrink-0 cursor-pointer self-start sm:self-auto"
+          >
+            <ShoppingCart className="w-4 h-4" />
+            <span>Lista de Compras</span>
+            <span className="bg-white/20 text-white text-[10px] font-black px-2 py-0.5 rounded-full ml-0.5">
+              {cartRecipeIds.length}
+            </span>
+          </Button>
         </div>
 
         {/* Search & Categories */}
@@ -5575,42 +5619,61 @@ function RecipesGridTab({
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredList.map(recipe => (
-            <div 
-              key={recipe.id}
-              onClick={() => onOpenDetail(recipe)}
-              className="group bg-card border border-border rounded-[2rem] overflow-hidden shadow-sm hover:shadow-md transition-all duration-350 flex flex-col h-full cursor-pointer hover:border-foreground/20"
-            >
-              {/* Image Area */}
-              <div className="h-44 overflow-hidden relative">
-                <img 
-                  src={recipe.img} 
-                  alt={recipe.title} 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
-                />
-                <span className="absolute top-4 left-4 bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md">
-                  {recipe.category}
-                </span>
-                <span className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded border border-white/10">
-                  {recipe.prepTime}
-                </span>
-              </div>
-
-              {/* Info Area */}
-              <div className="p-5 flex-1 flex flex-col justify-between gap-4">
-                <h4 className="text-sm font-bold text-foreground group-hover:text-emerald-600 transition-colors leading-snug line-clamp-2">
-                  {recipe.title}
-                </h4>
-
-                <div className="border-t border-border/50 pt-3 space-y-2">
-                  <MealOrganizerBadges
-                    category={recipe.category}
-                    tags={recipe.tags || (recipe.tag ? [recipe.tag] : [])}
+          {filteredList.map(recipe => {
+            const isInCart = cartRecipeIds.includes(recipe.id);
+            return (
+              <div 
+                key={recipe.id}
+                onClick={() => onOpenDetail(recipe)}
+                className="group bg-card border border-border rounded-[2rem] overflow-hidden shadow-sm hover:shadow-md transition-all duration-350 flex flex-col h-full cursor-pointer hover:border-foreground/20"
+              >
+                {/* Image Area */}
+                <div className="h-44 overflow-hidden relative">
+                  <img 
+                    src={recipe.img} 
+                    alt={recipe.title} 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                   />
+                  <span className="absolute top-4 left-4 bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md">
+                    {recipe.category}
+                  </span>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onToggleCart(recipe.id);
+                    }}
+                    className={`absolute top-4 right-4 p-2 rounded-full backdrop-blur-md border transition-all cursor-pointer ${
+                      isInCart 
+                        ? "bg-emerald-500 text-white border-emerald-400 shadow-md scale-105"
+                        : "bg-black/50 hover:bg-black/70 text-white/80 hover:text-white border-white/20"
+                    }`}
+                    title={isInCart ? "Quitar de lista de compras" : "Añadir a lista de compras"}
+                  >
+                    <ShoppingCart className="w-3.5 h-3.5" />
+                  </button>
+
+                  <span className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded border border-white/10">
+                    {recipe.prepTime}
+                  </span>
+                </div>
+
+                {/* Info Area */}
+                <div className="p-5 flex-1 flex flex-col justify-between gap-4">
+                  <h4 className="text-sm font-bold text-foreground group-hover:text-emerald-600 transition-colors leading-snug line-clamp-2">
+                    {recipe.title}
+                  </h4>
+
+                  <div className="border-t border-border/50 pt-3 space-y-2">
+                    <MealOrganizerBadges
+                      category={recipe.category}
+                      tags={recipe.tags || (recipe.tag ? [recipe.tag] : [])}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
@@ -5623,6 +5686,8 @@ interface RecipeDetailModalProps {
   onClose: () => void;
   onLog: (recipe: any) => void;
   onRemove: (recipeId: string) => void;
+  isInCart: boolean;
+  onToggleCart: (recipeId: string) => void;
 }
 
 function RecipeDetailModal({
@@ -5630,6 +5695,8 @@ function RecipeDetailModal({
   onClose,
   onLog,
   onRemove,
+  isInCart,
+  onToggleCart,
 }: RecipeDetailModalProps) {
   const [checkedIngredients, setCheckedIngredients] = useState<Record<number, boolean>>({});
 
@@ -5765,30 +5832,216 @@ function RecipeDetailModal({
         </div>
 
         {/* Footer actions */}
-        <div className="px-6 py-6 border-t border-border flex flex-col sm:flex-row gap-2 bg-card justify-between items-center shrink-0">
+        <div className="px-6 py-6 border-t border-border flex flex-col sm:flex-row gap-3 bg-card justify-between items-center shrink-0">
           <button
             onClick={() => onRemove(recipe.id)}
-            className="text-[10px] text-rose-500 font-bold uppercase tracking-widest hover:underline p-2 border-0 bg-transparent cursor-pointer"
+            className="text-[10px] text-rose-500 font-bold uppercase tracking-widest hover:underline p-1 border-0 bg-transparent cursor-pointer"
           >
             Quitar de mis recetas
           </button>
           
-          <div className="flex gap-2 w-full sm:w-auto">
+          <div className="flex gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
+            <Button
+              onClick={() => onToggleCart(recipe.id)}
+              variant="outline"
+              className={`rounded-xl px-3 py-2 font-bold text-xs gap-1.5 flex-1 sm:flex-initial ${
+                isInCart 
+                  ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                  : "border-border hover:bg-secondary text-foreground"
+              }`}
+            >
+              <ShoppingCart className="w-3.5 h-3.5" />
+              {isInCart ? "En Compras" : "Añadir a Compras"}
+            </Button>
+
             <Button 
               variant="outline" 
               onClick={onClose} 
-              className="rounded-xl px-4 py-2 font-bold text-xs uppercase tracking-wider text-foreground hover:bg-secondary flex-1 sm:flex-initial"
+              className="rounded-xl px-3 py-2 font-bold text-xs text-foreground hover:bg-secondary flex-1 sm:flex-initial"
             >
               Cerrar
             </Button>
+            
             <Button 
               onClick={() => onLog(recipe)}
-              className="rounded-xl px-5 py-2 font-bold text-xs uppercase tracking-wider bg-foreground text-background hover:opacity-90 flex-1 sm:flex-initial"
+              className="rounded-xl px-4 py-2 font-bold text-xs uppercase tracking-wider bg-foreground text-background hover:opacity-90 flex-1 sm:flex-initial"
             >
-              Registrar Comida
+              Registrar
             </Button>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// Shopping Cart Modal Component
+interface ShoppingCartModalProps {
+  cartRecipeIds: string[];
+  onClose: () => void;
+  onToggleCart: (recipeId: string) => void;
+  onClearCart: () => void;
+}
+
+function ShoppingCartModal({
+  cartRecipeIds,
+  onClose,
+  onToggleCart,
+  onClearCart,
+}: ShoppingCartModalProps) {
+  const selectedRecipes = RECIPES_POOL.filter(r => cartRecipeIds.includes(r.id));
+  
+  // Combine ingredients across selected recipes
+  const allIngredients = selectedRecipes.flatMap(r => r.ingredients);
+  const uniqueIngredients = Array.from(new Set(allIngredients));
+
+  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
+  const [copied, setCopied] = useState(false);
+
+  const toggleItem = (item: string) => {
+    setCheckedItems(prev => ({ ...prev, [item]: !prev[item] }));
+  };
+
+  const handleCopy = () => {
+    const listText = `🛒 LISTA DE COMPRAS (Shakerfy Studio Pulse)\n\n` +
+      `Recetas (${selectedRecipes.length}):\n` +
+      selectedRecipes.map(r => `- ${r.title}`).join('\n') +
+      `\n\nIngredientes:\n` +
+      uniqueIngredients.map(ing => `${checkedItems[ing] ? '✓' : '☐'} ${ing}`).join('\n');
+
+    navigator.clipboard.writeText(listText);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-background/95 backdrop-blur-2xl animate-in fade-in duration-250">
+      <div className="w-full max-w-lg bg-card border border-border rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden max-h-[85vh] animate-in zoom-in-95 duration-200 text-left">
+        {/* Header */}
+        <div className="p-6 border-b border-border flex justify-between items-center bg-secondary/20">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500">
+              <ShoppingCart className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-base font-extrabold text-foreground leading-tight">Lista de Compras</h3>
+              <p className="text-[11px] text-muted-foreground font-semibold">
+                {selectedRecipes.length} {selectedRecipes.length === 1 ? "receta seleccionada" : "recetas seleccionadas"}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-full bg-secondary hover:bg-secondary/80 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer border-0"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {selectedRecipes.length === 0 ? (
+            <div className="p-10 text-center space-y-3">
+              <div className="w-12 h-12 rounded-full bg-secondary/50 flex items-center justify-center mx-auto text-muted-foreground">
+                <ShoppingCart className="w-6 h-6" />
+              </div>
+              <p className="text-xs font-bold text-foreground">Tu lista de compras está vacía</p>
+              <p className="text-[11px] text-muted-foreground max-w-xs mx-auto leading-relaxed font-medium">
+                Presiona el icono de carrito en tus recetas guardadas para generar la lista de compras automáticamente.
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* Selected Recipes Pills */}
+              <div className="space-y-2">
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
+                  Recetas incluidas ({selectedRecipes.length})
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {selectedRecipes.map(r => (
+                    <div 
+                      key={r.id}
+                      className="bg-secondary/40 border border-border rounded-xl px-3 py-1.5 flex items-center gap-2 text-xs font-bold text-foreground"
+                    >
+                      <span className="line-clamp-1 max-w-[180px]">{r.title}</span>
+                      <button 
+                        onClick={() => onToggleCart(r.id)}
+                        className="text-muted-foreground hover:text-rose-500 cursor-pointer border-0 bg-transparent p-0"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Consolidated Ingredients Checklist */}
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
+                    Ingredientes Necesarios ({uniqueIngredients.length})
+                  </span>
+                  <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                    {Object.values(checkedItems).filter(Boolean).length} / {uniqueIngredients.length} listos
+                  </span>
+                </div>
+
+                <div className="space-y-1.5 max-h-[300px] overflow-y-auto pr-1">
+                  {uniqueIngredients.map((ing, idx) => {
+                    const isChecked = !!checkedItems[ing];
+                    return (
+                      <div
+                        key={idx}
+                        onClick={() => toggleItem(ing)}
+                        className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center gap-3 select-none ${
+                          isChecked 
+                            ? "bg-emerald-500/[0.04] border-emerald-500/20 text-muted-foreground line-through" 
+                            : "bg-card border-border hover:border-foreground/20 text-foreground font-semibold"
+                        }`}
+                      >
+                        <div className={`w-4 h-4 rounded-md border flex items-center justify-center shrink-0 transition-colors ${
+                          isChecked ? "bg-emerald-500 border-emerald-500 text-white" : "border-muted-foreground/40 bg-background"
+                        }`}>
+                          {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
+                        </div>
+                        <span className="text-xs">{ing}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Footer */}
+        {selectedRecipes.length > 0 && (
+          <div className="p-4 border-t border-border bg-secondary/10 flex items-center justify-between gap-3 shrink-0">
+            <Button
+              onClick={onClearCart}
+              variant="outline"
+              className="text-xs font-bold text-rose-500 border-rose-500/20 hover:bg-rose-500/10 rounded-xl"
+            >
+              Vaciar
+            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={handleCopy}
+                variant="outline"
+                className="text-xs font-bold rounded-xl gap-1.5"
+              >
+                {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                {copied ? "¡Copiado!" : "Copiar Lista"}
+              </Button>
+              <Button
+                onClick={onClose}
+                className="text-xs font-bold rounded-xl bg-foreground text-background px-5"
+              >
+                Listo
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
