@@ -2478,7 +2478,7 @@ function DiarioTab() {
 
   const [customActivities, setCustomActivities] = useState<any[]>([]);
   const [savedRecipes, setSavedRecipes] = useState<string[]>(["receta-5"]);
-  const [showSwipeStack, setShowSwipeStack] = useState(false);
+  const [showSwipeStack, setShowSwipeStack] = useState(true);
   const [currentSwipeIndex, setCurrentSwipeIndex] = useState(0);
   const [activeRecipeDetail, setActiveRecipeDetail] = useState<any | null>(null);
 
@@ -3321,7 +3321,6 @@ function DiarioTab() {
                 {/* Card Container */}
                 <div className="pl-6 md:pl-0 md:order-1">
                   <RecipeSwipeStack 
-                    onClose={() => setShowSwipeStack(false)}
                     savedRecipes={savedRecipes}
                     setSavedRecipes={setSavedRecipes}
                     currentSwipeIndex={currentSwipeIndex}
@@ -5208,7 +5207,7 @@ function ActivityLogModal({ onClose, onSave, activities }: ActivityLogModalProps
 // ==========================================
 
 interface RecipeSwipeStackProps {
-  onClose: () => void;
+  onClose?: () => void;
   savedRecipes: string[];
   setSavedRecipes: React.Dispatch<React.SetStateAction<string[]>>;
   currentSwipeIndex: number;
@@ -5282,12 +5281,9 @@ function RecipeSwipeStack({
           <Sparkles className="w-4 h-4 text-emerald-500 fill-emerald-500/20" />
           <h3 className="text-xs font-bold text-foreground">Explorar Ideas de Recetas</h3>
         </div>
-        <button 
-          onClick={onClose}
-          className="p-1 rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors cursor-pointer border-0 bg-transparent"
-        >
-          <X className="w-3.5 h-3.5" />
-        </button>
+        <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+          Coach IA
+        </span>
       </div>
 
       {hasCards && currentRecipe ? (
@@ -5473,22 +5469,15 @@ function RecipeSwipeStack({
           <div>
             <h4 className="text-xs font-bold text-foreground">¡Todo explorado!</h4>
             <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">
-              Revisa tus platos guardados en <strong>Mis recetas</strong>.
+              Revisa tus platos guardados en <strong>Mis recetas</strong> o inicia una nueva ronda.
             </p>
           </div>
-          <div className="flex gap-2 w-full mt-1">
+          <div className="w-full mt-1">
             <Button 
               onClick={() => setCurrentSwipeIndex(0)} 
-              variant="outline" 
-              className="flex-1 text-[10px] h-7 font-bold rounded-lg"
+              className="w-full text-[10px] h-8 font-bold rounded-xl bg-foreground text-background"
             >
-              Reiniciar
-            </Button>
-            <Button 
-              onClick={onClose} 
-              className="flex-1 text-[10px] h-7 font-bold rounded-lg"
-            >
-              Cerrar
+              Reiniciar exploración
             </Button>
           </div>
         </div>
