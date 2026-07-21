@@ -5,7 +5,7 @@ import {
   LogOut, QrCode, CheckCircle, Clock, AlertTriangle, 
   MapPin, ChevronRight, ChevronLeft, X, Sparkles, Shield, AlertCircle, ShieldAlert, Star, Heart,
   Flame, Coffee, Droplet, TrendingUp, Info, Edit, Sun, Moon, ArrowUpRight, Utensils,
-  Camera, Dumbbell, Brain, Activity, Plus, Check, Loader2, ShoppingCart, Copy,
+  Camera, Dumbbell, Brain, Activity, Plus, Check, Loader2, ShoppingCart, Copy, Share2,
   Play, Pause, RotateCcw, Search, ChevronUp, ChevronDown, Trash2, FileDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -2246,19 +2246,17 @@ function MealOrganizerBadges({
     <div className={`flex flex-wrap gap-1.5 items-center ${className}`}>
       {/* 1. Momento del Día */}
       {category && (
-        <span className="inline-flex items-center gap-1 backdrop-blur-md bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-500/20 text-emerald-600 dark:text-emerald-300 text-[10px] font-bold tracking-wide px-2.5 py-0.5 rounded-full shadow-sm">
-          <Clock className="w-3 h-3 shrink-0" />
+        <span className="inline-flex items-center backdrop-blur-md bg-secondary text-foreground text-[10px] font-bold tracking-wide px-2.5 py-0.5 rounded-full shadow-xs">
           <span>{category}</span>
         </span>
       )}
 
-      {/* 2. Badges Nutricionales & Características (Alta en Proteínas, Baja en Carbohidratos, etc.) */}
+      {/* 2. Badges Nutricionales & Características */}
       {tags.map((tag, idx) => (
         <span 
           key={idx} 
-          className="inline-flex items-center gap-1 backdrop-blur-md bg-secondary/60 dark:bg-secondary/40 border border-border/60 text-foreground/90 text-[10px] font-medium tracking-wide px-2.5 py-0.5 rounded-full shadow-sm"
+          className="inline-flex items-center backdrop-blur-md bg-secondary/50 text-muted-foreground text-[10px] font-medium tracking-wide px-2.5 py-0.5 rounded-full"
         >
-          <Sparkles className="w-2.5 h-2.5 text-emerald-500 shrink-0" />
           <span>{tag}</span>
         </span>
       ))}
@@ -2481,6 +2479,7 @@ function DiarioTab() {
   const [cartRecipeIds, setCartRecipeIds] = useState<string[]>(["receta-5"]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [showSwipeStack, setShowSwipeStack] = useState(true);
+  const [isSwipeModalOpen, setIsSwipeModalOpen] = useState(false);
   const [currentSwipeIndex, setCurrentSwipeIndex] = useState(0);
   const [activeRecipeDetail, setActiveRecipeDetail] = useState<any | null>(null);
 
@@ -2648,7 +2647,6 @@ function DiarioTab() {
     "gemelos": 90
   });
   const [isEditingRecovery, setIsEditingRecovery] = useState(false);
-  const [showRecoveryInfo, setShowRecoveryInfo] = useState(false);
   const [showMindfulRateInfo, setShowMindfulRateInfo] = useState(false);
 
   const handleWorkoutComplete = (exercisesTrained: any[]) => {
@@ -3317,20 +3315,22 @@ function DiarioTab() {
             {/* Vertical Line */}
             <div className="absolute left-6 md:left-[50%] top-0 bottom-0 w-[2px] bg-border transform -translate-x-1/2 md:-translate-x-[1px]"></div>
 
+            {/* Recipe Swipe Stack timeline item */}
             {showSwipeStack && (
               <div className="relative mb-12 md:grid md:grid-cols-2 md:gap-12 items-center group animate-in slide-in-from-top-4 duration-300">
                 {/* Timeline Dot */}
-                <div className="absolute left-0 md:left-1/2 w-4.5 h-4.5 rounded-full border-4 bg-background z-10 transform -translate-x-1/2 border-emerald-500 shadow-sm"></div>
+                <div className="absolute left-0 md:left-1/2 w-4.5 h-4.5 rounded-full border-4 bg-background z-10 transform -translate-x-1/2 border-foreground/40 shadow-sm"></div>
 
                 {/* Time Label for Desktop */}
                 <div className="hidden md:block text-right pr-6 md:order-2">
-                  <span className="font-bold text-base text-emerald-500">Ahora</span>
-                  <p className="text-muted-foreground/60 text-xs mt-0.5 font-semibold">Explorar Ideas</p>
+                  <span className="font-extrabold text-base text-foreground">Ahora</span>
+                  <p className="text-muted-foreground/70 text-xs mt-0.5 font-semibold">Explorar Ideas</p>
                 </div>
 
                 {/* Card Container */}
                 <div className="pl-6 md:pl-0 md:order-1">
                   <RecipeSwipeStack 
+                    onClose={() => setShowSwipeStack(false)}
                     savedRecipes={savedRecipes}
                     setSavedRecipes={setSavedRecipes}
                     currentSwipeIndex={currentSwipeIndex}
@@ -4064,17 +4064,64 @@ function DiarioTab() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex items-center gap-2">
               <p className="text-sm text-muted-foreground">Monitorea y edita el estado de fatiga de tus grupos musculares.</p>
-              <button 
-                type="button"
-                onClick={() => setShowRecoveryInfo(!showRecoveryInfo)}
-                className={`p-1.5 rounded-full transition-colors shrink-0 flex items-center justify-center ${
-                  showRecoveryInfo ? "bg-secondary text-foreground" : "hover:bg-secondary text-muted-foreground"
-                }`}
-                title="Explicación de exclusión"
-              >
-                <Info className="w-4 h-4" />
-              </button>
+              <TooltipProvider>
+                <ShadcnTooltip>
+                  <TooltipTrigger asChild>
+                    <button 
+                      type="button"
+                      className="p-1.5 rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors shrink-0 flex items-center justify-center cursor-pointer border-0 bg-transparent"
+                    >
+                      <Info className="w-4 h-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" align="start" className="max-w-md p-4 bg-card border border-border shadow-xl rounded-2xl text-xs space-y-3 text-left">
+                    <div className="flex gap-2.5 pb-2.5 border-b border-border/50">
+                      <ShieldAlert className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="block font-bold text-foreground mb-0.5">Exclusión de Músculos por Fatiga</span>
+                        <span className="text-muted-foreground text-[11px] leading-relaxed">
+                          Músculos con recuperación inferior al 70% se excluirán automáticamente del Generador de Workouts con IA para prevenir lesiones.
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <span className="block font-bold text-foreground text-[11px]">¿Cómo estimar tu porcentaje?</span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px]">
+                        <div className="p-2.5 bg-secondary/30 rounded-xl space-y-0.5">
+                          <span className="font-bold text-emerald-500 block">90% - 100% (Sano)</span>
+                          <p className="text-muted-foreground leading-snug">Sin agujetas ni dolor. Fuerza máxima.</p>
+                        </div>
+                        <div className="p-2.5 bg-secondary/30 rounded-xl space-y-0.5">
+                          <span className="font-bold text-teal-500 block">70% - 80% (Cansancio leve)</span>
+                          <p className="text-muted-foreground leading-snug">Agujetas mínimas que pasan al calentar.</p>
+                        </div>
+                        <div className="p-2.5 bg-secondary/30 rounded-xl space-y-0.5">
+                          <span className="font-bold text-amber-500 block">50% - 60% (Fatiga moderada)</span>
+                          <p className="text-muted-foreground leading-snug">Agujetas al tacto/estirar. Evita alta intensidad.</p>
+                        </div>
+                        <div className="p-2.5 bg-secondary/30 rounded-xl space-y-0.5">
+                          <span className="font-bold text-rose-500 block">&lt; 50% (Sobrecarga)</span>
+                          <p className="text-muted-foreground leading-snug">Dolor fuerte o rigidez. Requiere descanso.</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-border/60 text-[10px]">
+                      <Link 
+                        to="/blog/$slug"
+                        params={{ slug: "fisiologia-de-la-recuperacion-muscular-y-fatiga" }}
+                        className="text-emerald-500 font-bold hover:underline flex items-center justify-between gap-1 group"
+                      >
+                        <span>🔬 Leer artículo completo sobre evidencia y fatiga (6 min)</span>
+                        <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                      </Link>
+                    </div>
+                  </TooltipContent>
+                </ShadcnTooltip>
+              </TooltipProvider>
             </div>
+
             <Button
               onClick={() => setIsEditingRecovery(!isEditingRecovery)}
               variant={isEditingRecovery ? "default" : "outline"}
@@ -4093,60 +4140,6 @@ function DiarioTab() {
               )}
             </Button>
           </div>
-
-          {/* Info Banner (Toggled by "i" button) */}
-          {showRecoveryInfo && (
-            <div className="bg-card border border-border rounded-2xl p-5 space-y-4 text-xs leading-relaxed animate-in fade-in slide-in-from-top-2 duration-300">
-              <div className="flex gap-3 pb-3 border-b border-border/50">
-                <ShieldAlert className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
-                <div>
-                  <span className="block font-bold text-foreground mb-0.5">Exclusión de Músculos por Fatiga</span>
-                  <span className="text-muted-foreground">
-                    Los grupos musculares con recuperación **inferior al 70%** se excluirán automáticamente del Generador de Workouts con IA para prevenir lesiones y optimizar el descanso.
-                  </span>
-                </div>
-              </div>
-              
-              <div className="space-y-3">
-                <span className="block font-bold text-foreground">¿Cómo estimar tu porcentaje de recuperación?</span>
-                <p className="text-muted-foreground">Utiliza esta guía física y muscular sencilla para arrastrar los deslizadores al valor adecuado:</p>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                  <div className="p-3 bg-secondary/15 rounded-xl border border-border/40 space-y-1">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-500">
-                      <div className="size-2 rounded-full bg-emerald-500" />
-                      <span>90% - 100% (Listo/Sano)</span>
-                    </div>
-                    <p className="text-muted-foreground text-xs leading-relaxed">Sin agujetas, dolor ni molestia. Fuerza al máximo y rango de movimiento normal completo.</p>
-                  </div>
-
-                  <div className="p-3 bg-secondary/15 rounded-xl border border-border/40 space-y-1">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-teal-600 dark:text-teal-500">
-                      <div className="size-2 rounded-full bg-teal-500" />
-                      <span>70% - 80% (Leve cansancio)</span>
-                    </div>
-                    <p className="text-muted-foreground text-xs leading-relaxed">Cansancio muscular leve o agujetas mínimas que desaparecen al calentar. Fuerza normal.</p>
-                  </div>
-
-                  <div className="p-3 bg-secondary/15 rounded-xl border border-border/40 space-y-1">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-500">
-                      <div className="size-2 rounded-full bg-amber-500" />
-                      <span>50% - 60% (Fatiga moderada)</span>
-                    </div>
-                    <p className="text-muted-foreground text-xs leading-relaxed">Agujetas moderadas (DOMS) al tacto o al estirar. Rigidez leve. Evita entrenar hoy este músculo a alta intensidad.</p>
-                  </div>
-
-                  <div className="p-3 bg-secondary/15 rounded-xl border border-border/40 space-y-1">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-rose-600 dark:text-rose-500">
-                      <div className="size-2 rounded-full bg-rose-500" />
-                      <span>Menos de 50% (Sobrecarga)</span>
-                    </div>
-                    <p className="text-muted-foreground text-xs leading-relaxed">Dolor fuerte o rigidez limitante en la vida diaria. Pérdida notable de fuerza. Requiere descanso absoluto.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Muscles List */}
           <div className="space-y-3">
@@ -4526,13 +4519,44 @@ function DiarioTab() {
                   <Flame className="w-3.5 h-3.5 fill-orange-500 animate-pulse text-orange-500" />
                   12 días
                 </span>
-                <button 
-                  onClick={() => setShowStreakInfo(true)}
-                  className="text-muted-foreground hover:text-primary transition-colors p-1 rounded-full hover:bg-secondary/40 focus:outline-none cursor-pointer"
-                  title="¿Cómo funciona mi racha?"
-                >
-                  <Info className="w-3.5 h-3.5" />
-                </button>
+                <TooltipProvider>
+                  <ShadcnTooltip>
+                    <TooltipTrigger asChild>
+                      <button 
+                        type="button"
+                        className="text-muted-foreground hover:text-primary transition-colors p-1 rounded-full hover:bg-secondary/40 focus:outline-none cursor-pointer border-0 bg-transparent flex items-center justify-center"
+                      >
+                        <Info className="w-3.5 h-3.5" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" align="start" className="max-w-xs sm:max-w-sm p-4 bg-card border border-border shadow-2xl rounded-2xl text-xs space-y-3 text-left">
+                      <div className="flex items-center gap-2 font-bold text-foreground border-b border-border/50 pb-2">
+                        <Flame className="w-4 h-4 text-orange-500 fill-orange-500" />
+                        <span>Metodología de Racha de Actividad</span>
+                      </div>
+                      
+                      <div className="space-y-2 text-[11px] leading-relaxed text-muted-foreground">
+                        <p>
+                          <strong className="text-foreground">Promedio Ponderado 7 Días:</strong> Se calcula el promedio de tus minutos METs de los últimos 7 días. Los días recientes tienen mayor peso, permitiéndote tomar 1-2 días de descanso sin perder la racha.
+                        </p>
+                        <p>
+                          <strong className="text-foreground">Línea Base OMS (150 pts):</strong> Combina las directrices globales de la OMS con gasto energético MET para asegurar un hábito de salud constante.
+                        </p>
+                      </div>
+
+                      <div className="pt-2 border-t border-border/60 text-[10px]">
+                        <Link 
+                          to="/blog/$slug"
+                          params={{ slug: "ciencia-de-la-racha-de-actividad-y-mets" }}
+                          className="text-emerald-500 font-bold hover:underline flex items-center justify-between gap-1 group"
+                        >
+                          <span>🔬 Leer artículo completo sobre la ciencia de la racha y METs</span>
+                          <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                        </Link>
+                      </div>
+                    </TooltipContent>
+                  </ShadcnTooltip>
+                </TooltipProvider>
               </div>
               <button 
                 onClick={() => setActiveModal("none")} 
@@ -4606,6 +4630,7 @@ function DiarioTab() {
           </div>
         </div>
       )}
+
 
       {/* Estado Actual Modal */}
       {activeModal === "estado-actual" && (
@@ -4700,60 +4725,6 @@ function DiarioTab() {
           activities={MET_ACTIVITIES}
         />
       )}
-
-      {/* FAQ Info Modal Overlay */}
-      {showStreakInfo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-card border border-border w-full max-w-md rounded-[2rem] shadow-xl p-5 relative overflow-hidden space-y-4 animate-in zoom-in-95 duration-200">
-            <button
-              onClick={() => setShowStreakInfo(false)}
-              className="absolute top-4 right-4 size-8 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-all cursor-pointer"
-              aria-label="Cerrar"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-foreground">
-              <Info className="w-4 h-4 text-primary" />
-              <span>¿Cómo funciona mi Racha?</span>
-            </div>
-
-            <div className="space-y-2 max-h-[350px] overflow-y-auto pr-1">
-              {STREAK_FAQ.map((faq, idx) => {
-                const isOpen = activeFaq === idx;
-                return (
-                  <div key={idx} className="border-b border-border/40 last:border-b-0 pb-1.5 last:pb-0">
-                    <button
-                      onClick={() => setActiveFaq(isOpen ? null : idx)}
-                      className="w-full flex items-center justify-between text-left py-1 text-[11px] font-bold text-foreground hover:text-primary transition-colors focus:outline-none cursor-pointer"
-                    >
-                      <span>{faq.q}</span>
-                      {isOpen ? (
-                        <ChevronUp className="w-3.5 h-3.5 shrink-0 ml-1 text-muted-foreground" />
-                      ) : (
-                        <ChevronDown className="w-3.5 h-3.5 shrink-0 ml-1 text-muted-foreground" />
-                      )}
-                    </button>
-                    
-                    {isOpen && (
-                      <p className="text-[10px] text-muted-foreground leading-relaxed mt-1 animate-in fade-in slide-in-from-top-1 duration-200 select-text">
-                        {faq.a}
-                      </p>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            <Button 
-              onClick={() => setShowStreakInfo(false)}
-              className="w-full text-xs font-bold py-2 rounded-xl"
-            >
-              Entendido
-            </Button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -4811,7 +4782,47 @@ function HydrationLogModal({ onClose, currentLevel, onSave }: HydrationLogModalP
         <div className="px-6 py-4 space-y-6 overflow-y-auto">
           {/* Display Level */}
           <div className="flex justify-between items-center">
-            <span className="text-sm font-bold text-foreground">Escala de Armstrong</span>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold text-foreground">Escala de Armstrong</span>
+              <TooltipProvider>
+                <ShadcnTooltip>
+                  <TooltipTrigger asChild>
+                    <button 
+                      type="button"
+                      className="p-1 rounded-full hover:bg-secondary/40 text-muted-foreground hover:text-foreground transition-colors shrink-0 flex items-center justify-center cursor-pointer border-0 bg-transparent"
+                    >
+                      <Info className="w-3.5 h-3.5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" align="start" className="max-w-xs sm:max-w-sm p-4 bg-card border border-border shadow-2xl rounded-2xl text-xs space-y-3 text-left">
+                    <div className="flex items-center gap-2 font-bold text-foreground border-b border-border/50 pb-2">
+                      <Droplet className="w-4 h-4 text-blue-500 fill-blue-500" />
+                      <span>Evaluación de Hidratación (Armstrong)</span>
+                    </div>
+                    
+                    <div className="space-y-2 text-[11px] leading-relaxed text-muted-foreground">
+                      <p>
+                        <strong className="text-foreground">Estándar Clínico (Ucol):</strong> Desarrollado por el Dr. Lawrence Armstrong (UCONN) para medir la osmolalidad urinaria sin requerir laboratorios.
+                      </p>
+                      <p>
+                        <strong className="text-foreground">Rango Objetivo:</strong> Mantenerse en Niveles 1, 2 y 3. Perder un 2% de agua corporal reduce la fuerza y resistencia hasta un 15%.
+                      </p>
+                    </div>
+
+                    <div className="pt-2 border-t border-border/60 text-[10px]">
+                      <Link 
+                        to="/blog/$slug"
+                        params={{ slug: "escala-de-armstrong-y-fisiologia-de-la-hidratacion" }}
+                        className="text-emerald-500 font-bold hover:underline flex items-center justify-between gap-1 group"
+                      >
+                        <span>🔬 Leer artículo completo sobre la Escala de Armstrong y la Hidratación</span>
+                        <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                      </Link>
+                    </div>
+                  </TooltipContent>
+                </ShadcnTooltip>
+              </TooltipProvider>
+            </div>
             <Badge variant="secondary" className="px-3 py-1 text-xs font-black uppercase bg-secondary text-foreground">
               Armstrong {localLevel}
             </Badge>
@@ -5272,7 +5283,6 @@ function RecipeSwipeStack({
     }, 300);
   };
 
-  // Drag handlers
   const handleDragStart = (clientX: number, clientY: number) => {
     if (!hasCards || swipeDir) return;
     setIsDragging(true);
@@ -5283,7 +5293,6 @@ function RecipeSwipeStack({
     if (!isDragging) return;
     const dx = clientX - dragStart.x;
     const dy = clientY - dragStart.y;
-    // Limit vertical drag
     setDragOffset({ x: dx, y: dy * 0.2 });
   };
 
@@ -5300,207 +5309,215 @@ function RecipeSwipeStack({
   };
 
   return (
-    <div className="bg-card border border-border rounded-2xl p-4 shadow-sm w-full relative overflow-hidden animate-in slide-in-from-top-4 duration-300">
-      <div className="flex justify-between items-center mb-3">
-        <div className="flex items-center gap-1.5">
-          <Sparkles className="w-4 h-4 text-emerald-500 fill-emerald-500/20" />
-          <h3 className="text-xs font-bold text-foreground">Explorar Ideas de Recetas</h3>
-        </div>
-        <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-          Coach IA
-        </span>
-      </div>
-
-      {hasCards && currentRecipe ? (
-        <div className="flex flex-col items-center gap-3">
-          {/* Card Stack Area */}
-          <div className="relative w-full h-[250px] select-none touch-none">
-            {/* Background Card */}
-            {nextRecipe && (
-              <div 
-                className="absolute inset-0 rounded-xl border border-border bg-card overflow-hidden shadow-sm scale-95 translate-y-2 opacity-60 transition-all duration-300 pointer-events-none"
-                style={{ zIndex: 10 }}
-              >
-                <img 
-                  src={nextRecipe.img} 
-                  alt={nextRecipe.title} 
-                  className="w-full h-full object-cover grayscale-[20%]" 
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                <div className="absolute bottom-3 left-3 right-3 text-left">
-                  <h4 className="text-xs font-bold text-white leading-tight line-clamp-1">{nextRecipe.title}</h4>
-                </div>
-              </div>
-            )}
-
-            {/* Top Card */}
-            <div
-              className={`absolute inset-0 rounded-xl border border-border bg-card overflow-hidden shadow-md select-none cursor-grab active:cursor-grabbing`}
-              style={{
-                zIndex: 20,
-                transform: swipeDir 
-                  ? `translate3d(${swipeDir === "right" ? 400 : -400}px, ${dragOffset.y}px, 0) rotate(${swipeDir === "right" ? 10 : -10}deg)`
-                  : `translate3d(${dragOffset.x}px, ${dragOffset.y}px, 0) rotate(${dragOffset.x * 0.05}deg)`,
-                transition: isDragging ? "none" : "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
-                touchAction: "none"
-              }}
-              onMouseDown={(e) => handleDragStart(e.clientX, e.clientY)}
-              onMouseMove={(e) => handleDragMove(e.clientX, e.clientY)}
-              onMouseUp={handleDragEnd}
-              onMouseLeave={handleDragEnd}
-              onTouchStart={(e) => handleDragStart(e.touches[0].clientX, e.touches[0].clientY)}
-              onTouchMove={(e) => handleDragMove(e.touches[0].clientX, e.touches[0].clientY)}
-              onTouchEnd={handleDragEnd}
-            >
-              <img 
-                src={currentRecipe.img} 
-                alt={currentRecipe.title} 
-                className="w-full h-full object-cover pointer-events-none" 
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/10 pointer-events-none" />
-
-              {/* Status Badges */}
-              {dragOffset.x > 40 && (
-                <div className="absolute top-4 left-4 border border-emerald-500 text-emerald-500 font-black text-[10px] uppercase tracking-widest px-2 py-0.5 rounded rotate-[-12deg] bg-black/60 pointer-events-none">
-                  GUARDAR ❤️
-                </div>
-              )}
-              {dragOffset.x < -40 && (
-                <div className="absolute top-4 right-4 border border-rose-500 text-rose-500 font-black text-[10px] uppercase tracking-widest px-2 py-0.5 rounded rotate-[12deg] bg-black/60 pointer-events-none">
-                  PASAR ❌
-                </div>
-              )}
-
-              {/* Card Contents */}
-              <div className="absolute inset-0 p-3.5 flex flex-col justify-between pointer-events-none">
-                <div className="flex justify-between items-start gap-1 flex-wrap">
-                  <div className="flex gap-1 flex-wrap">
-                    {/* Momento del Día */}
-                    <span className="backdrop-blur-md bg-emerald-500/30 text-emerald-100 text-[8px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full border border-emerald-400/30 shadow-sm flex items-center gap-1">
-                      <Clock className="w-2.5 h-2.5 shrink-0" />
-                      {currentRecipe.category}
-                    </span>
-                  </div>
-                  <span className="backdrop-blur-md bg-black/40 text-white/90 text-[8px] font-bold px-2 py-0.5 rounded-full border border-white/10 shrink-0">
-                    {currentRecipe.prepTime}
-                  </span>
-                </div>
-
-                <div className="text-left space-y-1.5 pointer-events-auto">
-                  <h4 className="text-xs font-extrabold text-white leading-tight drop-shadow-sm line-clamp-2">
-                    {currentRecipe.title}
-                  </h4>
-                  
-                  <div className="flex flex-wrap gap-1 text-white/90 text-[8px] font-bold">
-                    {/* Nutritional / Characteristic Tags */}
-                    {(currentRecipe.tags || [currentRecipe.tag]).map((t: string, idx: number) => (
-                      <span key={idx} className="backdrop-blur-md bg-white/15 text-white px-2 py-0.5 rounded-full border border-white/20 flex items-center gap-0.5 shadow-sm">
-                        <Sparkles className="w-2.5 h-2.5 text-emerald-400 shrink-0" />
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Info Overlay */}
-              {showInfo && (
-                <div className="absolute inset-0 bg-card/95 backdrop-blur-md p-4 flex flex-col justify-between overflow-y-auto animate-in fade-in duration-200" style={{ zIndex: 30 }}>
-                  <div className="text-left space-y-3">
-                    <div className="flex justify-between items-center border-b border-border pb-1">
-                      <h4 className="font-black text-foreground text-xs uppercase tracking-wider">Ingredientes</h4>
-                      <button 
-                        onClick={() => setShowInfo(false)}
-                        className="text-[10px] text-muted-foreground hover:text-foreground font-bold border-0 bg-transparent"
-                      >
-                        Cerrar
-                      </button>
-                    </div>
-                    <ul className="space-y-1">
-                      {currentRecipe.ingredients.slice(0, 5).map((ing, i) => (
-                        <li key={i} className="text-[10px] font-medium text-muted-foreground flex items-start gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
-                          <span className="line-clamp-1">{ing}</span>
-                        </li>
-                      ))}
-                      {currentRecipe.ingredients.length > 5 && (
-                        <li className="text-[9px] text-muted-foreground/60 italic font-bold">
-                          + {currentRecipe.ingredients.length - 5} ingredientes más
-                        </li>
-                      )}
-                    </ul>
-                    <div className="pt-1.5 border-t border-border">
-                      <p className="text-[9px] font-medium text-foreground/80 leading-relaxed italic line-clamp-2">
-                        "{currentRecipe.coachFeedback}"
-                      </p>
-                    </div>
-                  </div>
-                  <Button 
-                    onClick={() => setShowInfo(false)}
-                    variant="outline" 
-                    className="w-full text-[10px] h-7 font-bold rounded-lg mt-2"
-                  >
-                    Volver
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex gap-3 items-center justify-center pt-1">
-            <button 
-              onClick={() => handleSwipe("left")}
-              className="w-9 h-9 rounded-full bg-rose-500/10 hover:bg-rose-500/20 active:scale-90 text-rose-500 border border-rose-500/20 flex items-center justify-center shadow transition-all cursor-pointer bg-transparent"
-            >
-              <X className="w-4 h-4 stroke-[3]" />
-            </button>
-            
-            <button 
-              onClick={() => setShowInfo(!showInfo)}
-              className={`w-8 h-8 rounded-full border flex items-center justify-center shadow-sm transition-all cursor-pointer bg-transparent ${
-                showInfo 
-                  ? "bg-foreground text-background border-foreground" 
-                  : "bg-secondary/40 hover:bg-secondary text-muted-foreground border-border"
-              }`}
-            >
-              <Info className="w-4 h-4" />
-            </button>
-
-            <button 
-              onClick={() => handleSwipe("right")}
-              className="w-9 h-9 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 active:scale-90 text-emerald-500 border border-emerald-500/20 flex items-center justify-center shadow transition-all cursor-pointer bg-transparent"
-            >
-              <Heart className="w-4 h-4 fill-current stroke-[2]" />
-            </button>
-          </div>
-
-          <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
-            Receta {currentSwipeIndex + 1} de {RECIPES_POOL.length}
-          </div>
-        </div>
-      ) : (
-        <div className="p-6 flex flex-col items-center justify-center gap-3 text-center animate-in fade-in duration-300">
-          <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 mb-1">
-            <Check className="w-5 h-5 stroke-[3]" />
+    <Card className="w-full bg-card border border-border shadow-none rounded-[2rem] p-5 overflow-hidden animate-in slide-in-from-top-4 duration-300 flex flex-col text-left">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-foreground border border-border/40 shrink-0">
+            <Sparkles className="w-4 h-4 text-foreground" />
           </div>
           <div>
-            <h4 className="text-xs font-bold text-foreground">¡Todo explorado!</h4>
-            <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">
-              Revisa tus platos guardados en <strong>Mis recetas</strong> o inicia una nueva ronda.
-            </p>
-          </div>
-          <div className="w-full mt-1">
-            <Button 
-              onClick={() => setCurrentSwipeIndex(0)} 
-              className="w-full text-[10px] h-8 font-bold rounded-xl bg-foreground text-background"
-            >
-              Reiniciar exploración
-            </Button>
+            <h3 className="text-xs font-extrabold text-foreground leading-tight">Explorar Recetas IA</h3>
+            <p className="text-[10px] text-muted-foreground font-semibold">Desliza para guardar o pasar</p>
           </div>
         </div>
-      )}
-    </div>
+
+        {onClose && (
+          <button 
+            onClick={onClose}
+            className="w-7 h-7 rounded-full bg-secondary/80 hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer border-0"
+            title="Cerrar exploration"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="w-full">
+        {hasCards && currentRecipe ? (
+          <div className="flex flex-col items-center gap-4">
+            {/* Card Stack Area */}
+            <div className="relative w-full h-[270px] select-none touch-none">
+              {/* Background Card */}
+              {nextRecipe && (
+                <div 
+                  className="absolute inset-0 rounded-2xl border border-border bg-card overflow-hidden shadow-sm scale-95 translate-y-2 opacity-60 transition-all duration-300 pointer-events-none"
+                  style={{ zIndex: 10 }}
+                >
+                  <img 
+                    src={nextRecipe.img} 
+                    alt={nextRecipe.title} 
+                    className="w-full h-full object-cover grayscale-[20%]" 
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                  <div className="absolute bottom-3 left-3 right-3 text-left">
+                    <h4 className="text-xs font-bold text-white leading-tight line-clamp-1">{nextRecipe.title}</h4>
+                  </div>
+                </div>
+              )}
+
+              {/* Top Card */}
+              <div
+                className="absolute inset-0 rounded-2xl border border-border bg-card overflow-hidden shadow-md select-none cursor-grab active:cursor-grabbing"
+                style={{
+                  zIndex: 20,
+                  transform: swipeDir 
+                    ? `translate3d(${swipeDir === "right" ? 400 : -400}px, ${dragOffset.y}px, 0) rotate(${swipeDir === "right" ? 10 : -10}deg)`
+                    : `translate3d(${dragOffset.x}px, ${dragOffset.y}px, 0) rotate(${dragOffset.x * 0.05}deg)`,
+                  transition: isDragging ? "none" : "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+                  touchAction: "none"
+                }}
+                onMouseDown={(e) => handleDragStart(e.clientX, e.clientY)}
+                onMouseMove={(e) => handleDragMove(e.clientX, e.clientY)}
+                onMouseUp={handleDragEnd}
+                onMouseLeave={handleDragEnd}
+                onTouchStart={(e) => handleDragStart(e.touches[0].clientX, e.touches[0].clientY)}
+                onTouchMove={(e) => handleDragMove(e.touches[0].clientX, e.touches[0].clientY)}
+                onTouchEnd={handleDragEnd}
+              >
+                <img 
+                  src={currentRecipe.img} 
+                  alt={currentRecipe.title} 
+                  className="w-full h-full object-cover pointer-events-none" 
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/10 pointer-events-none" />
+
+                {/* Status Badges */}
+                {dragOffset.x > 40 && (
+                  <div className="absolute top-4 left-4 border border-foreground text-white font-black text-[10px] uppercase tracking-widest px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md pointer-events-none">
+                    GUARDAR ❤️
+                  </div>
+                )}
+                {dragOffset.x < -40 && (
+                  <div className="absolute top-4 right-4 border border-rose-500 text-rose-400 font-black text-[10px] uppercase tracking-widest px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md pointer-events-none">
+                    PASAR ❌
+                  </div>
+                )}
+
+                {/* Card Contents */}
+                <div className="absolute inset-0 p-4 flex flex-col justify-between pointer-events-none">
+                  <div className="flex justify-between items-start gap-1 flex-wrap">
+                    <span className="backdrop-blur-md bg-black/50 text-white text-[9px] font-extrabold tracking-wider uppercase px-2.5 py-1 rounded-full shadow-xs">
+                      {currentRecipe.category}
+                    </span>
+                    <span className="backdrop-blur-md bg-black/50 text-white/90 text-[9px] font-bold px-2.5 py-1 rounded-full shrink-0">
+                      {currentRecipe.prepTime}
+                    </span>
+                  </div>
+
+                  <div className="text-left space-y-2 pointer-events-auto">
+                    <h4 className="text-sm font-extrabold text-white leading-tight drop-shadow-sm line-clamp-2">
+                      {currentRecipe.title}
+                    </h4>
+                    
+                    <div className="flex flex-wrap gap-1.5 text-white/90 text-[9px] font-semibold">
+                      {(currentRecipe.tags || [currentRecipe.tag]).map((t: string, idx: number) => (
+                        <span key={idx} className="backdrop-blur-md bg-white/15 text-white px-2.5 py-0.5 rounded-full shadow-xs">
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Info Overlay */}
+                {showInfo && (
+                  <div className="absolute inset-0 bg-card/95 backdrop-blur-md p-4 flex flex-col justify-between overflow-y-auto animate-in fade-in duration-200" style={{ zIndex: 30 }}>
+                    <div className="text-left space-y-3">
+                      <div className="flex justify-between items-center border-b border-border pb-1.5">
+                        <h4 className="font-extrabold text-foreground text-xs uppercase tracking-wider">Ingredientes</h4>
+                        <button 
+                          onClick={() => setShowInfo(false)}
+                          className="text-[10px] text-muted-foreground hover:text-foreground font-bold border-0 bg-transparent cursor-pointer"
+                        >
+                          Cerrar
+                        </button>
+                      </div>
+                      <ul className="space-y-1.5">
+                        {currentRecipe.ingredients.slice(0, 5).map((ing: string, i: number) => (
+                          <li key={i} className="text-[10px] font-semibold text-muted-foreground flex items-start gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-foreground mt-1.5 shrink-0" />
+                            <span className="line-clamp-1">{ing}</span>
+                          </li>
+                        ))}
+                        {currentRecipe.ingredients.length > 5 && (
+                          <li className="text-[9px] text-muted-foreground/70 italic font-bold">
+                            + {currentRecipe.ingredients.length - 5} ingredientes más
+                          </li>
+                        )}
+                      </ul>
+                    </div>
+                    <Button 
+                      onClick={() => setShowInfo(false)}
+                      variant="outline" 
+                      className="w-full text-[10px] h-8 font-bold rounded-xl mt-2"
+                    >
+                      Volver
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-4 items-center justify-center pt-1">
+              <button 
+                onClick={() => handleSwipe("left")}
+                className="w-10 h-10 rounded-full bg-secondary/80 hover:bg-secondary active:scale-95 text-muted-foreground hover:text-rose-500 border border-border flex items-center justify-center shadow-xs transition-all cursor-pointer"
+                title="Pasar"
+              >
+                <X className="w-4 h-4 stroke-[3]" />
+              </button>
+              
+              <button 
+                onClick={() => setShowInfo(!showInfo)}
+                className={`w-9 h-9 rounded-full border flex items-center justify-center shadow-xs transition-all cursor-pointer ${
+                  showInfo 
+                    ? "bg-foreground text-background border-foreground" 
+                    : "bg-secondary/40 hover:bg-secondary text-muted-foreground border-border"
+                }`}
+                title="Ver info"
+              >
+                <Info className="w-4 h-4" />
+              </button>
+
+              <button 
+                onClick={() => handleSwipe("right")}
+                className="w-10 h-10 rounded-full bg-foreground text-background hover:opacity-90 active:scale-95 border border-foreground flex items-center justify-center shadow-xs transition-all cursor-pointer"
+                title="Guardar receta"
+              >
+                <Heart className="w-4 h-4 fill-current" />
+              </button>
+            </div>
+
+            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+              Receta {currentSwipeIndex + 1} de {RECIPES_POOL.length}
+            </div>
+          </div>
+        ) : (
+          <div className="p-6 flex flex-col items-center justify-center gap-3 text-center animate-in fade-in duration-300">
+            <div className="w-10 h-10 rounded-full bg-secondary/60 flex items-center justify-center text-foreground mb-1">
+              <Check className="w-5 h-5 stroke-[3]" />
+            </div>
+            <div>
+              <h4 className="text-xs font-bold text-foreground">¡Todo explorado!</h4>
+              <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">
+                Revisa tus platos guardados en <strong>Mis recetas</strong> o inicia una nueva ronda.
+              </p>
+            </div>
+            <div className="w-full mt-1">
+              <Button 
+                onClick={() => setCurrentSwipeIndex(0)} 
+                className="w-full text-[10px] h-8 font-bold rounded-xl bg-foreground text-background"
+              >
+                Reiniciar exploración
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+    </Card>
   );
 }
 
@@ -5539,7 +5556,7 @@ function RecipesGridTab({
   const categories = ["Todas", "Desayuno", "Almuerzo", "Cena", "Snack"];
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300 text-left px-6 py-6 pb-24 max-w-5xl mx-auto">
+    <div className="space-y-6 animate-in fade-in duration-300 text-left px-6 py-6 pb-24 max-w-6xl mx-auto">
       <div className="flex flex-col gap-4">
         {/* Title & Cart Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -5618,34 +5635,38 @@ function RecipesGridTab({
           No se encontraron recetas que coincidan con tu búsqueda.
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {filteredList.map(recipe => {
             const isInCart = cartRecipeIds.includes(recipe.id);
             return (
-              <div 
+              <Card 
                 key={recipe.id}
                 onClick={() => onOpenDetail(recipe)}
-                className="group bg-card border border-border rounded-[2rem] overflow-hidden shadow-sm hover:shadow-md transition-all duration-350 flex flex-col h-full cursor-pointer hover:border-foreground/20"
+                className="group rounded-2xl overflow-hidden transition-all duration-300 border border-border/80 bg-card hover:border-foreground/20 hover:shadow-md flex flex-col h-full cursor-pointer select-none"
               >
-                {/* Image Area */}
-                <div className="h-44 overflow-hidden relative">
+                {/* Image Banner */}
+                <div className="relative h-44 w-full overflow-hidden shrink-0 bg-secondary/30">
                   <img 
                     src={recipe.img} 
                     alt={recipe.title} 
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                   />
-                  <span className="absolute top-4 left-4 bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                  
+                  {/* Category Pill */}
+                  <span className="absolute top-3 left-3 bg-black/60 backdrop-blur-md text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full">
                     {recipe.category}
                   </span>
 
+                  {/* Cart Button */}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       onToggleCart(recipe.id);
                     }}
-                    className={`absolute top-4 right-4 p-2 rounded-full backdrop-blur-md border transition-all cursor-pointer ${
+                    className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-md border transition-all cursor-pointer ${
                       isInCart 
-                        ? "bg-emerald-500 text-white border-emerald-400 shadow-md scale-105"
+                        ? "bg-foreground text-background border-foreground shadow-md scale-105"
                         : "bg-black/50 hover:bg-black/70 text-white/80 hover:text-white border-white/20"
                     }`}
                     title={isInCart ? "Quitar de lista de compras" : "Añadir a lista de compras"}
@@ -5653,25 +5674,47 @@ function RecipesGridTab({
                     <ShoppingCart className="w-3.5 h-3.5" />
                   </button>
 
-                  <span className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded border border-white/10">
-                    {recipe.prepTime}
-                  </span>
+                  {/* Prep Time & Quick Info Overlay */}
+                  <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-[10px] font-bold">
+                    <span className="bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full">
+                      {recipe.prepTime}
+                    </span>
+                    <span className="bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full">
+                      350 kcal
+                    </span>
+                  </div>
                 </div>
 
-                {/* Info Area */}
-                <div className="p-5 flex-1 flex flex-col justify-between gap-4">
-                  <h4 className="text-sm font-bold text-foreground group-hover:text-emerald-600 transition-colors leading-snug line-clamp-2">
+                {/* Header */}
+                <CardHeader className="p-4 pb-2 text-left">
+                  <CardDescription className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
+                    Receta IA • {recipe.category}
+                  </CardDescription>
+                  <CardTitle className="text-sm font-extrabold leading-snug text-foreground group-hover:text-emerald-500 transition-colors line-clamp-2">
                     {recipe.title}
-                  </h4>
+                  </CardTitle>
+                </CardHeader>
 
-                  <div className="border-t border-border/50 pt-3 space-y-2">
+                {/* Content */}
+                <CardContent className="px-4 pb-4 pt-1 flex-1 flex flex-col justify-end text-left">
+                  <div className="pt-2 border-t border-border/40 space-y-2">
                     <MealOrganizerBadges
                       category={recipe.category}
                       tags={recipe.tags || (recipe.tag ? [recipe.tag] : [])}
                     />
                   </div>
-                </div>
-              </div>
+                </CardContent>
+
+                {/* Footer */}
+                <CardFooter className="px-4 py-3 bg-secondary/20 border-t border-border flex items-center justify-between shrink-0">
+                  <span className="text-[11px] font-bold text-muted-foreground group-hover:text-foreground transition-colors">
+                    Ver preparación
+                  </span>
+                  <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-muted-foreground group-hover:text-foreground group-hover:bg-foreground group-hover:text-background transition-colors">
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </div>
+                </CardFooter>
+              </Card>
             );
           })}
         </div>
@@ -5902,16 +5945,34 @@ function ShoppingCartModal({
     setCheckedItems(prev => ({ ...prev, [item]: !prev[item] }));
   };
 
-  const handleCopy = () => {
-    const listText = `🛒 LISTA DE COMPRAS (Shakerfy Studio Pulse)\n\n` +
+  const getFormattedList = () => {
+    return `🛒 LISTA DE COMPRAS (Shakerfy Studio Pulse)\n\n` +
       `Recetas (${selectedRecipes.length}):\n` +
       selectedRecipes.map(r => `- ${r.title}`).join('\n') +
       `\n\nIngredientes:\n` +
       uniqueIngredients.map(ing => `${checkedItems[ing] ? '✓' : '☐'} ${ing}`).join('\n');
+  };
 
-    navigator.clipboard.writeText(listText);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(getFormattedList());
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleShare = async () => {
+    const text = getFormattedList();
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Lista de Compras - Shakerfy",
+          text: text,
+        });
+      } catch (e) {
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, "_blank");
+      }
+    } else {
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, "_blank");
+    }
   };
 
   return (
@@ -6016,26 +6077,33 @@ function ShoppingCartModal({
 
         {/* Footer */}
         {selectedRecipes.length > 0 && (
-          <div className="p-4 border-t border-border bg-secondary/10 flex items-center justify-between gap-3 shrink-0">
+          <div className="p-4 border-t border-border bg-secondary/10 flex items-center justify-between gap-2 shrink-0">
             <Button
               onClick={onClearCart}
               variant="outline"
-              className="text-xs font-bold text-rose-500 border-rose-500/20 hover:bg-rose-500/10 rounded-xl"
+              className="text-xs font-bold text-rose-500 border-rose-500/20 hover:bg-rose-500/10 rounded-xl px-3"
             >
               Vaciar
             </Button>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+              <Button
+                onClick={handleShare}
+                className="text-xs font-bold rounded-xl gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                Compartir
+              </Button>
               <Button
                 onClick={handleCopy}
                 variant="outline"
                 className="text-xs font-bold rounded-xl gap-1.5"
               >
                 {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-                {copied ? "¡Copiado!" : "Copiar Lista"}
+                {copied ? "¡Copiado!" : "Copiar"}
               </Button>
               <Button
                 onClick={onClose}
-                className="text-xs font-bold rounded-xl bg-foreground text-background px-5"
+                className="text-xs font-bold rounded-xl bg-foreground text-background px-4"
               >
                 Listo
               </Button>

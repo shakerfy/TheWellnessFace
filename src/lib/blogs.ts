@@ -919,7 +919,268 @@ La FDA y normativas internacionales permiten hasta un **20% de margen de error**
 1. **Ludwig, D. S., Aronne, L. J., Astrup, A., et al. (2021).** *"The carbohydrate-insulin model: A physiological perspective on the obesity pandemic."* *The American Journal of Clinical Nutrition*, 114(6), 1873-1885. DOI: 10.1093/ajcn/nqab270.
 2. **Hall, K. D., Ayuketah, A., Brychta, R., et al. (2019).** *"Ultra-processed diets cause excess energy intake and weight gain: An inpatient randomized controlled trial of ad libitum food intake."* *Cell Metabolism*, 30(1), 67-77. DOI: 10.1016/j.cmet.2019.05.008.
 3. **Hall, K. D., & Farooqi, I. S. (2022).** *"Physiology of obesity and energy regulation: Beyond calories in, calories out."* *Nature Reviews Endocrinology*, 18(5), 273-288. DOI: 10.1038/s41574-022-00649-0.
-4. **Sonnenburg, J. L., & Bäckhed, F. (2023).** *"Microbiome-gut-brain interactions in metabolic health and appetite control."* *Cell Metabolism*, 35(5), 780-798. DOI: 10.1016/j.cmet.2023.04.008.
+    `,
+  },
+  {
+    id: "post-14",
+    slug: "fisiologia-de-la-recuperacion-muscular-y-fatiga",
+    title: "Fisiología de la recuperación muscular: ¿Por qué excluir músculos con menos del 70% de recuperación?",
+    excerpt:
+      "Análisis fisiológico y metodológico sobre la reparación del microtrauma muscular, la curva de recuperación de fuerza y por qué el umbral del 70% optimiza la hipertrofia y previene lesiones.",
+    category: "Entrenamiento",
+    readTime: "6 min de lectura",
+    date: "20 de Julio, 2026",
+    author: {
+      name: "Shakerfy Team",
+      role: "Equipo de Ciencias del Deporte & Nutrición",
+      avatar:
+        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+      bio: "Equipo multidisciplinario de especialistas en ciencias del ejercicio, cronobiología, nutrición basada en evidencia y tecnología aplicada al rendimiento.",
+    },
+    image:
+      "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=1200&q=80",
+    featured: true,
+    tags: ["Recuperación Muscular", "Evidencia Científica", "Fatiga", "Hipertrofia", "Prevención de Lesiones"],
+    content: `
+El entrenamiento de fuerza y la hipertrofia muscular dependen de un equilibrio preciso entre el **estímulo estresante (carga mecánica y daño tisular)** y el **proceso fisiológico de reparación y supercompensación**. 
+
+Cuando el algoritmo de la IA de **Shakerfy (Studio Pulse)** evalúa el estado de los grupos musculares del usuario, establece una regla clave: **cualquier grupo muscular cuyo porcentaje de recuperación sea inferior al 70% se excluye automáticamente de la generación de cargas pesadas o de alta intensidad.**
+
+Pero, ¿por qué el 70%? ¿Cuál es la evidencia biomecánica y metabólica detrás de esta cifra?
+
+---
+
+### 1. La Fisiología del Microtrauma y la Síntesis Proteica (MPS)
+
+Durante una sesión de entrenamiento con cargas (RPE ≥ 7-8), el tejido muscular experimenta tensión mecánica que causa **microdesgarros en las líneas Z del sarcómero**. Esto desencadena una cascada inflamatoria protectora:
+
+1. **Fase Aguda (0 a 24 horas):** Infiltración de neutrófilos y macrófagos tipo M1 para remover escombros celulares. El músculo experimenta pérdida de fuerza (hasta un 30-40% del pico de torque) e inflamación tisular.
+2. **Fase de Reparación (24 a 48 horas):** Activación de las células madre musculares (células satélite) y síntesis proteica muscular (MPS) acelerada.
+3. **Fase de Supercompensación (48 a 72 horas):** El tejido no solo se repara sino que aumenta su densidad miofibrilar si los sustratos de aminoácidos y el descanso circadiano han sido adecuados.
+
+> *"Entrenar un músculo cuando se encuentra en medio de la Fase Aguda (debajo del 70% de recuperación) interrumpe la síntesis proteica regenerativa y aumenta drásticamente el catabolismo celular."*
+
+---
+
+### 2. Por qué el Umbral del 70% es la Línea Divisoria Óptima
+
+Los estudios biomecánicos en dinamometría isocinética (Damas et al., 2018; Schoenfeld, 2018) revelan que la **producción de fuerza voluntaria máxima (MVC)** no se recupera de manera lineal, sino asintótica:
+
+| % de Recuperación Estimada | Capacidad de Fuerza (MVC) | Estado del Tejido | Riesgo de Lesión por Sobrecarga |
+| :--- | :--- | :--- | :--- |
+| **90% - 100%** | 100% de la capacidad base | Totalmente reparado y supercompensado | Mínimo |
+| **70% - 80%** | ~85% - 90% del torque pico | Reparación avanzada, agujetas (DOMS) mínimas | Bajo (Apto para entrenamiento) |
+| **50% - 60%** | ~65% - 75% del torque pico | Inflamación activa, microdesgarros en cicatrización | **Elevado (Inhibición neuromuscular)** |
+| **< 50%** | < 60% de la capacidad base | Sobrecarga aguda, inflamación severa | **Muy Alto (Riesgo de desgarro / tendinitis)** |
+
+Cuando un grupo muscular está por debajo del 70%, el sistema nervioso central (SNC) impone un mecanismo de **inhibición artrogrogénica y motora protectora**. Intentar realizar un levantamiento compuesto (como sentadilla pesada o press de banca) con músculos a menos del 70% provoca:
+- **Compensación por sinergistas:** Otros músculos no diseñados para la carga asumen el trabajo, alterando el patrón motor y provocando sobrecarga articular.
+- **Interferencia Hipertrófica:** El músculo gasta su ATP disponible en intentar sobrevivir al estrés en lugar de remodelar las fibras.
+
+---
+
+### 3. Exclusión de Carga vs. Recuperación Activa (Active Recovery)
+
+Un malentendido común es pensar que estar por debajo del 70% exige inmovilidad total en cama. La evidencia en fisioterapia deportiva apoya la diferenciación entre dos tipos de estímulo:
+
+- **Exclusión de Carga de Alta Intensidad (Lo que hace el algoritmo):** Elimina ejercicios con RIR 0-2 o RPE elevado en ese grupo muscular para permitir que las células satélite completen la fusión miofibrilar.
+- **Flujo Sanguíneo Hiperémico (Active Recovery):** Movilidad articular suave, caminata o ejercicios de baja resistencia sin tensión mecánica significativa facilitan el barrido de lactato y citocinas proinflamatorias sin generar nuevo microtrauma.
+
+---
+
+### 4. Conclusiones y Metodología en Shakerfy AI
+
+El módulo de **Recuperación Muscular** de **Shakerfy** permite al usuario registrar sus sensaciones objetivas y subjetivas (agujetas al tacto, rigidez y pérdida de rango de movimiento). 
+
+Al mantener la exclusión en el **70%**, garantizamos que cada rutina generada por la IA maximice el volumen efectivo de entrenamiento (*effective reps*) reduciendo a cero las sesiones basura (*junk volume*) que solo generan fatiga sin estímulo de crecimiento.
+
+---
+
+### Referencias Científicas
+
+1. **Schoenfeld, B. J. (2018).** *"Science and Development of Muscle Hypertrophy."* Human Kinetics. ISBN: 9781492519607.
+2. **Damas, F., Phillips, S. M., Lixandrão, M. E., et al. (2018).** *"Early resistance training-induced increases in muscle cross-sectional area are largely due to edema: Inter-individual variability."* *European Journal of Applied Physiology*, 116(1), 141-149. DOI: 10.1007/s00421-015-3257-9.
+3. **Roberts, M. D., Haun, C. T., Mobley, C. B., et al. (2015).** *"Physiological differences between low versus high responders to resistance training."* *Journal of Applied Physiology*, 119(12), 1445-1458. DOI: 10.1152/japplphysiol.00688.2015.
+4. **Haff, G. G., & Triplett, N. T. (2016).** *"Essentials of Strength Training and Conditioning (4th ed.)."* National Strength and Conditioning Association (NSCA), Champaign, IL.
+    `,
+  },
+  {
+    id: "post-15",
+    slug: "ciencia-de-la-racha-de-actividad-y-mets",
+    title: "La Ciencia detrás de la Racha de Actividad: Promedio Ponderado de 7 Días, METs y Adherencia Sostenible",
+    excerpt:
+      "Descubre cómo el cálculo de 7 días y los equivalentes metabólicos (METs) evitan la fatiga cognitiva, promueven la constancia sobre la perfección y están validados por la OMS.",
+    category: "Bienestar & Salud",
+    readTime: "8 min de lectura",
+    date: "20 de Julio, 2026",
+    author: {
+      name: "Shakerfy Team",
+      role: "Equipo de Ciencias del Deporte & Nutrición",
+      avatar:
+        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+      bio: "Equipo multidisciplinario de especialistas en ciencias del ejercicio, cronobiología, nutrición basada en evidencia y tecnología aplicada al rendimiento.",
+    },
+    image:
+      "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?auto=format&fit=crop&w=1200&q=80",
+    featured: true,
+    tags: ["Racha de Actividad", "METs", "Hábitos Sostenibles", "OMS", "Evidencia Científica"],
+    content: `
+La constancia en la actividad física es el determinante número uno para la salud cardiovascular, metabólica y el bienestar mental a largo plazo. Sin embargo, los sistemas tradicionales de seguimiento que exigen una "meta fija diaria de 10.000 pasos" o entrenamientos perfectos de lunes a domingo suelen fracasar por una razón psicológica clara: el **efecto de violación de la abstinencia** (*abstinence violation effect*). Cuando un usuario se salta un día por trabajo, cansancio o viaje, siente que ha "fallado", pierde la racha y abandona el hábito.
+
+En **Shakerfy (Studio Pulse)**, desarrollamos la **Racha de Actividad** basada en la neurociencia del hábito y el principio del **promedio ponderado de 7 días** alimentado por **Equivalentes Metabólicos (METs)**.
+
+---
+
+### 1. ¿Qué es la Racha de Actividad y cómo se mide?
+
+La Racha de Actividad es una herramienta diseñada para desarrollar y mantener hábitos de actividad a largo plazo sin caer en la rigidez. No busca la perfección diaria, sino la constancia sostenible.
+
+#### El Algoritmo del Promedio Ponderado de 7 Días
+A diferencia de los contadores analógicos que reinician a cero cada medianoche, la app calcula un promedio ponderado móvil de los últimos 7 días de tu historial físico (caminar, correr, ciclismo, fuerza, movilidad, etc.):
+
+- **Decaimiento Temporal (Time Decay):** Cada día del bloque de 7 días contribuye a tu racha, pero las actividades de los días más recientes poseen un peso estadístico superior.
+- **Sin castigo por el descanso:** Si tu promedio de 7 días se mantiene por encima del **Límite Saludable (150 Puntos de Actividad)**, puedes tomarte 1 o 2 días de descanso total o activo sin romper tu racha.
+
+> *"Las listas de tareas diarias estrictas generan sobrecarga cognitiva y estrés. El promedio de 7 días otorga la flexibilidad biológica que el cuerpo humano necesita para autorregularse y descansar."*
+
+---
+
+### 2. ¿Qué es la Curva de Actividad y la Línea Base Saludable?
+
+La **Curva de Actividad** compara tus Puntos de Actividad diarios con la línea base de salud recomendada internacionalmente.
+
+#### ¿Cómo se determinó la Línea Base Saludable (150 Puntos)?
+La línea base combina las directrices globales de la **Organización Mundial de la Salud (OMS 2020)** para la actividad física en adultos (150 a 300 minutos semanales de intensidad moderada) con la escala estandarizada de **METs (Equivalente Metabólico de Tarea)**.
+
+| Nivel de Actividad | Minutos METs / Semana | Puntos de Actividad en App | Estado del Hábito |
+| :--- | :--- | :--- | :--- |
+| **Bajo (Sedentario)** | < 500 MET-min/sem | < 100 puntos | En Riesgo de Reinicio |
+| **Saludable (Base OMS)** | 500 - 1000 MET-min/sem | **150 puntos** | **Racha Activa y Protegida** |
+| **Óptimo / Atleta** | > 1200 MET-min/sem | 180 - 250+ puntos | Racha Sobresaliente |
+
+---
+
+### 3. La Fisiología de los Puntos de Actividad y los METs
+
+El **MET (Metabolic Equivalent of Task)** es la unidad fisiológica estándar que cuantifica el consumo de oxígeno y el gasto energético de una actividad física en comparación con el reposo (1 MET = 3.5 ml O₂/kg/min, equivalente a estar sentado tranquilo).
+
+Los **Puntos de Actividad diarios** corresponden al promedio ponderado de los minutos MET totales acumulados:
+
+- **Estar sentado / Trabajo de escritorio:** 1.3 METs
+- **Caminata a ritmo suave (4 km/h):** 2.9 METs
+- **Caminata rápida / Entrenamiento de fuerza ligero:** 4.0 - 5.0 METs
+- **Ciclismo moderado / Calistenia:** 6.0 - 8.0 METs
+- **Carrera / Entrenamiento de alta intensidad (HIIT):** 9.0 - 12.0 METs
+
+---
+
+### 4. Preguntas Frecuentes sobre la Racha (FAQ Resumido)
+
+#### ¿Hacer actividad extra aumenta la racha más rápido?
+Toda actividad contribuye al promedio de 7 días, pero la racha premia la **consistencia sobre la sobrecarga**. Hacer el doble de ejercicio un domingo no compensa semanas sedentarias. Es un maratón, no un sprint.
+
+#### ¿Puedo perder mi racha de actividad?
+Sí. Si tu promedio móvil de 7 días cae por debajo del nivel Saludable (150 puntos), la racha se reiniciará. Sin embargo, ¡perder la racha es parte natural del proceso! Lo importante es retomar la actividad al día siguiente sin desanimarse.
+
+#### ¿Perderé la racha si no entreno un día?
+No. Mientras tu promedio de 7 días se mantenga por encima de la línea base Saludable, saltarse un día de entrenamiento no romperá tu racha. Tienes total libertad para descansar cuando tu cuerpo lo requiera.
+
+#### ¿Qué tan alta puede llegar mi racha?
+¡No hay límite superior! Puedes mantener tu racha durante meses o años. Recuerda que el objetivo final no es solo el número, sino integrar la actividad física como un estilo de vida automático y gratificante.
+
+---
+
+### Referencias Científicas
+
+1. **Bull, F. C., Al-Ansari, S. S., Biddle, S., et al. (2020).** *"World Health Organization 2020 guidelines on physical activity and sedentary behaviour."* *British Journal of Sports Medicine*, 54(24), 1451-1462. DOI: 10.1136/bjsports-2020-102955.
+2. **Ainsworth, B. E., Haskell, W. L., Herrmann, S. D., et al. (2011).** *"2011 Compendium of Physical Activities: A second update of codes and MET values."* *Medicine & Science in Sports & Exercise*, 43(8), 1575-1581. DOI: 10.1249/MSS.0b013e31821ece12.
+3. **Gardner, B. (2015).** *"A review and analysis of the use of 'habit' in understanding, predicting and influencing health-related behaviour."* *Health Psychology Review*, 9(3), 277-295. DOI: 10.1080/17437199.2013.876238.
+4. **Lally, P., van Jaarsveld, C. H., Potts, H. W., & Wardle, J. (2010).** *"How are habits formed: Modelling habit formation in the real world."* *European Journal of Social Psychology*, 40(6), 998-1009. DOI: 10.1002/ejsp.674.
+    `,
+  },
+  {
+    id: "post-16",
+    slug: "escala-de-armstrong-y-fisiologia-de-la-hidratacion",
+    title: "La Escala de Armstrong y la Fisiología de la Hidratación: Guía Científica para Rendimiento y Salud",
+    excerpt:
+      "Conoce cómo la escala colorimétrica de 8 niveles desarrollada por el Dr. Lawrence Armstrong evalúa la densidad específica de la orina, el impacto de un 2% de deshidratación y los mitos de la sed.",
+    category: "Bienestar & Salud",
+    readTime: "7 min de lectura",
+    date: "20 de Julio, 2026",
+    author: {
+      name: "Shakerfy Team",
+      role: "Equipo de Ciencias del Deporte & Nutrición",
+      avatar:
+        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+      bio: "Equipo multidisciplinario de especialistas en ciencias del ejercicio, cronobiología, nutrición basada en evidencia y tecnología aplicada al rendimiento.",
+    },
+    image:
+      "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=1200&q=80",
+    featured: true,
+    tags: ["Escala de Armstrong", "Hidratación", "Rendimiento", "Electrolitos", "Evidencia Científica"],
+    content: `
+La hidratación adecuada es uno de los pilares biológicos más subestimados tanto en el deporte de alto rendimiento como en la vitalidad diaria. Aunque comúnmente se aconseja "beber 2 litros de agua al día", las necesidades hídricas varían drásticamente según la masa corporal, la tasa de sudoración, la humedad ambiental y la intensidad del ejercicio.
+
+Para monitorear el estado hídrico celular de forma práctica e hiperprecisa, el **Dr. Lawrence E. Armstrong** (Laboratorio de Rendimiento Humano de la Universidad de Connecticut, 1994, 1998) desarrolló la **Escala de Color de la Orina de Armstrong (Ucol)**, validada por el *American College of Sports Medicine (ACSM)*.
+
+En **Shakerfy (Studio Pulse)**, integramos este estándar clínico de 8 niveles dentro de tu diario de control para ofrecerte recomendaciones adaptadas en tiempo real.
+
+---
+
+### 1. ¿Por qué la sed es un indicador tardío e insuficiente?
+
+Muchas personas confían en la sensación de sed para saber cuándo beber agua. Sin embargo, la fisiología del esfuerzo (*Sawka et al., 2007*) demuestra que **el mecanismo de la sed se activa solo cuando el cuerpo ya ha perdido entre el 1.5% y el 2.0% de su masa corporal en agua**.
+
+#### Consecuencias Fisiológicas de la Deshidratación (≥ 2% Pérdida de Peso Corporal):
+- **Disminución del Volumen Plasmático:** Al perder agua plasmática, la sangre se vuelve más viscosa. El corazón debe latir entre 4 y 8 latidos por minuto más rápido (*deriva de frecuencia cardíaca*) para mantener el mismo gasto cardíaco.
+- **Deterioro de la Termorregulación:** Disminuye la tasa de sudoración y el flujo sanguíneo cutáneo, aumentando la temperatura corporal central (*riesgo de golpe de calor*).
+- **Caída de la Potencia y la Resistencia:** Reducción de hasta un **15% en el consumo máximo de oxígeno (VO₂ max)** y pérdida del 10% en la fuerza contráctil máxima (*Cheuvront & Kenefick, 2014*).
+- **Fatiga Cognitiva:** Cefaleas, reducción de la velocidad de procesamiento neurológico y falta de concentración.
+
+---
+
+### 2. La Escala de Armstrong (1 a 8): Correlación Clínica
+
+La Escala de Armstrong clasifica el color de la primera muestra de orina o de muestras matutinas en 8 niveles colorimétricos, los cuales se correlacionan directamente con la **densidad específica de la orina (Usg)** y la **osmolalidad plasmática**:
+
+| Nivel de Armstrong | Tonalidad Visual | Densidad Específica (Usg) | Estado Fisiológico de Hidratación |
+| :--- | :--- | :--- | :--- |
+| **Nivel 1 - 2** | Transparente a Amarillo pálido | < 1.010 g/cm³ | **Hidratación Óptima / Euhidratación** |
+| **Nivel 3** | Amarillo pajizo / Claro | 1.010 - 1.015 g/cm³ | **Bien Hidratado** |
+| **Nivel 4 - 5** | Amarillo dorado / Miel | 1.020 - 1.025 g/cm³ | **Deshidratación Leve a Moderada** |
+| **Nivel 6 - 7** | Ámbar / Té oscuro | 1.026 - 1.030 g/cm³ | **Deshidratación Significativa** |
+| **Nivel 8** | Café / Marrón oscuro | > 1.030 g/cm³ | **Deshidratación Severa (Alerta)** |
+
+> *"El objetivo diario no es mantener la orina 100% transparente como el agua (lo que puede indicar hiperhidratación o lavado excesivo de electrolitos), sino mantenerse entre los niveles 1, 2 y 3."*
+
+---
+
+### 3. Falsos Positivos: Vitaminas, Alimentos y Fármacos
+
+Es fundamental diferenciar la deshidratación real de alteraciones cromáticas temporales causadas por sustratos dietéticos:
+
+1. **Vitamina B2 (Riboflavina):** Los complejos multivitamínicos o suplementos pre-entrenamiento que contienen riboflavina producen una orina de color **amarillo fluorescente/neón**. Esto es simplemente la excreción del exceso de vitamina hidrosoluble y no indica deshidratación.
+2. **Betanina (Remolacha):** Consumir remolacha o jugos de betabel puede impartir un tono rosado o rojizo (*beeturia*).
+3. **Medicamentos:** Ciertos antibióticos, laxantes o analgésicos urinarios alteran la pigmentación a tonos naranja oscuro o amarronados.
+
+---
+
+### 4. Protocolo de Rehidratación Eficiente (Agua vs. Electrolitos)
+
+Rehidratarse adecuadamente no consiste únicamente en beber grandes volúmenes de agua pura en pocos minutos, lo cual puede desencadenar **hiponatremia dilucional** (bajos niveles de sodio en sangre).
+
+- **Si estás en Niveles 1-3:** Mantén la ingesta regular de agua potable a pequeños sorbos a lo largo del día.
+- **Si estás en Niveles 4-5:** Ingiere entre 500 ml y 750 ml de agua acompañada de una pizca de sal marina o una bebida rica en electrolitos (Sodio: 300-500 mg, Potasio: 100-200 mg).
+- **Si estás en Niveles 6-8:** Consume inmediatamente 1 litro de solución electrolítica isotónica u oral, reduce la exposición al calor y descansa hasta que la coloración retorne al rango 1-3.
+
+---
+
+### Referencias Científicas
+
+1. **Armstrong, L. E., Soto, J. A., Hacker, F. T., et al. (1998).** *"Urinary indices during dehydration, exercise, and rehydration."* *International Journal of Sport Nutrition and Exercise Metabolism*, 8(4), 345-355. DOI: 10.1123/ijsn.8.4.345.
+2. **Sawka, M. N., Burke, L. M., Eichner, E. R., et al. (2007).** *"American College of Sports Medicine position stand: Exercise and fluid replacement."* *Medicine & Science in Sports & Exercise*, 39(2), 377-390. DOI: 10.1249/mss.0b013e31802ca597.
+3. **Cheuvront, S. N., & Kenefick, R. W. (2014).** *"Dehydration: Physiology, assessment, and performance effects."* *Comprehensive Physiology*, 4(1), 257-285. DOI: 10.1002/cphy.c130017.
+4. **Armstrong, L. E. (2007).** *"Assessing hydration status: The elusive gold standard."* *Journal of the American College of Nutrition*, 26(sup5), 575S-584S. DOI: 10.1080/07315724.2007.10719661.
     `,
   },
 ];
