@@ -3484,7 +3484,7 @@ function DiarioTab() {
 
                       {/* Card Container */}
                       <div className={`pl-6 md:pl-0 ${showOnLeft ? "md:order-1" : "md:order-2"}`}>
-                        <Card className={`rounded-2xl overflow-hidden transition-all duration-300 shadow-none border-border ${catConfig.bg}`}>
+                        <Card className={`rounded-2xl overflow-hidden transition-all duration-300 shadow-none border-border hover:-translate-y-1.5 hover:shadow-xl hover:shadow-foreground/5 hover:border-border/80 cursor-pointer ${catConfig.bg}`}>
                           {item.img && (
                             <div className="relative h-40 w-full overflow-hidden">
                               <img 
