@@ -5618,7 +5618,7 @@ function RecipeSwipeStack({
   };
 
   return (
-    <Card className="w-full bg-card border border-border shadow-none rounded-[2rem] p-5 overflow-hidden animate-in slide-in-from-top-4 duration-300 flex flex-col text-left">
+    <Card className="w-full bg-card border border-border shadow-none rounded-[2rem] p-5 overflow-hidden animate-in slide-in-from-top-4 duration-300 flex flex-col text-left hover:-translate-y-1.5 hover:shadow-xl hover:shadow-foreground/5 hover:border-border/80 transition-all">
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2.5">
