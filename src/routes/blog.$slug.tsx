@@ -131,6 +131,24 @@ function renderBlogMarkdown(content: string) {
       return <hr key={idx} className="my-8 border-border" />;
     }
 
+    // 4b. Formula / Math Block ($$ ... $$)
+    if (trimmed.startsWith("$$") || trimmed.includes("NRF 9.3 =")) {
+      return (
+        <div key={idx} className="my-8 p-6 rounded-3xl border border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-500/10 flex flex-col items-center justify-center text-center space-y-3 shadow-sm">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-xs font-bold uppercase tracking-wider border border-emerald-500/30">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Fórmula Algorítmica NRF 9.3</span>
+          </div>
+          <div className="text-sm sm:text-base md:text-lg font-mono font-black text-foreground tracking-tight py-2 px-4 rounded-2xl bg-card border border-border shadow-inner max-w-full overflow-x-auto">
+            NRF 9.3 = ∑ (Nutrientes Promovidos / VDR × 100) − ∑ (Nutrientes Limitados / VDR × 100)
+          </div>
+          <p className="text-xs text-muted-foreground font-medium max-w-lg leading-relaxed">
+            Suma del % de Valor Diario Recomendado (VDR) de 9 nutrientes esenciales (Fibra, Proteína, Vit. A, C, E, Ca, Fe, Mg, K) menos el % acumulado de 3 nutrientes a moderar (Grasas Saturadas, Azúcar Añadido, Sodio).
+          </p>
+        </div>
+      );
+    }
+
     // 5. Unordered List (- item)
     if (trimmed.startsWith("- ")) {
       const items = trimmed.split("\n").map(li => li.replace(/^-\s*/, "").trim());

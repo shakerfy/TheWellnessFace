@@ -2673,11 +2673,17 @@ function DiarioTab() {
 
   const [isFabOpen, setIsFabOpen] = useState(false);
   const [activeModal, setActiveModal] = useState<string>("none");
-  const [foodAnalysisStep, setFoodAnalysisStep] = useState<"upload" | "analyzing" | "report">("upload");
+  const [foodAnalysisStep, setFoodAnalysisStep] = useState<"upload" | "analyzing" | "report" | "reason" | "breathing_prompt" | "breathing_exercise">("upload");
+  const [selectedEatReason, setSelectedEatReason] = useState<string>("hambre");
+  const [whyEatData, setWhyEatData] = useState(WHY_EAT_DATA);
 
+  const [breathingPhase, setBreathingPhase] = useState<"inhale" | "hold1" | "exhale" | "hold2">("inhale");
+  const [breathingSeconds, setBreathingSeconds] = useState<number>(4);
+  const [breathingCyclesCompleted, setBreathingCyclesCompleted] = useState<number>(0);
+  const [breathingStartTime, setBreathingStartTime] = useState<number>(0);
+  const [breathingOrbScale, setBreathingOrbScale] = useState<number>(0.60);
 
   const [mealsGoal, setMealsGoal] = useState(3);
-
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -2688,6 +2694,84 @@ function DiarioTab() {
     }
     return () => clearTimeout(timer);
   }, [activeModal, foodAnalysisStep]);
+
+  // Motor de respiración guiada a 60 FPS sincronizado con reloj de tiempo real (Date.now())
+  useEffect(() => {
+    let animationFrameId: number;
+    let isCompleted = false;
+
+    if (activeModal === "food-analysis" && foodAnalysisStep === "breathing_exercise" && breathingStartTime > 0) {
+      const updateBreathing = () => {
+        const totalElapsed = Date.now() - breathingStartTime;
+        const cycleIndex = Math.floor(totalElapsed / 16000);
+
+        if (cycleIndex >= 3 && !isCompleted) {
+          isCompleted = true;
+          handleFinalizeFoodRegistration();
+          return;
+        }
+
+        const phaseMs = totalElapsed % 16000;
+
+        if (phaseMs < 4000) {
+          // 1. Inhala (0s - 4s): Expansión fluida desde 0.60 hasta 1.00
+          const progress = phaseMs / 4000;
+          setBreathingPhase("inhale");
+          setBreathingSeconds(Math.ceil((4000 - phaseMs) / 1000) || 1);
+          setBreathingOrbScale(0.60 + progress * 0.40);
+        } else if (phaseMs < 8000) {
+          // 2. Pausa Lleno (4s - 8s): Retención estática en 1.00
+          setBreathingPhase("hold1");
+          setBreathingSeconds(Math.ceil((8000 - phaseMs) / 1000) || 1);
+          setBreathingOrbScale(1.00);
+        } else if (phaseMs < 12000) {
+          // 3. Exhala (8s - 12s): Contracción fluida desde 1.00 hasta 0.60
+          const progress = (phaseMs - 8000) / 4000;
+          setBreathingPhase("exhale");
+          setBreathingSeconds(Math.ceil((12000 - phaseMs) / 1000) || 1);
+          setBreathingOrbScale(1.00 - progress * 0.40);
+        } else {
+          // 4. Pausa Vacío (12s - 16s): Retención estática en 0.60
+          setBreathingPhase("hold2");
+          setBreathingSeconds(Math.ceil((16000 - phaseMs) / 1000) || 1);
+          setBreathingOrbScale(0.60);
+        }
+
+        setBreathingCyclesCompleted(cycleIndex);
+
+        if (!isCompleted) {
+          animationFrameId = requestAnimationFrame(updateBreathing);
+        }
+      };
+
+      animationFrameId = requestAnimationFrame(updateBreathing);
+    }
+
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [activeModal, foodAnalysisStep, breathingStartTime]);
+
+  const handleFinalizeFoodRegistration = () => {
+    setWhyEatData((prevData) => {
+      const totalCount = prevData.reduce((acc, curr) => acc + curr.percentage, 0);
+      const newTotal = totalCount + 1;
+      return prevData.map((item) => {
+        if (item.reason === selectedEatReason) {
+          const newPct = Math.round(((item.percentage * totalCount / 100 + 1) / newTotal) * 100);
+          return { ...item, percentage: newPct };
+        } else {
+          const newPct = Math.round(((item.percentage * totalCount / 100) / newTotal) * 100);
+          return { ...item, percentage: newPct };
+        }
+      });
+    });
+
+    setActiveModal("none");
+    setFoodAnalysisStep("upload");
+  };
 
   const timelineItems = React.useMemo(() => {
     const getHydrationFeedback = (level: number) => {
@@ -3748,7 +3832,7 @@ function DiarioTab() {
                       content={<ChartTooltipContent hideLabel />}
                     />
                     <Pie
-                      data={WHY_EAT_DATA}
+                      data={whyEatData}
                       dataKey="percentage"
                       nameKey="reason"
                       innerRadius={35}
@@ -4423,59 +4507,284 @@ function DiarioTab() {
 
             {foodAnalysisStep === "report" && (
               <div className="px-6 pb-8 overflow-y-auto animate-in slide-in-from-bottom-4 fade-in duration-300">
-                <h2 className="text-[22px] font-black text-foreground leading-tight tracking-tight mb-3">Chicken Phở with Noodles, Veggies and Broth</h2>
-                <p className="text-sm text-foreground/80 leading-relaxed font-medium mb-8">
-                  This Vietnamese noodle soup gets lean protein from the chicken and fiber from bean sprouts, all minimally processed. Fish sauce-based broths tend to be high in sodium, and the noodles are made from refined grains.
-                </p>
-                
-                <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Overview</h4>
-                <h3 className="text-4xl font-light text-foreground mb-1 tracking-tight">HIGH</h3>
-                <p className="text-sm font-semibold text-foreground mb-6">Nutritional Value</p>
-                
-                {/* Progress Bar */}
-                <div className="flex justify-between text-[11px] font-bold text-muted-foreground mb-2">
-                  <span>Very Low</span>
-                  <span>Very High</span>
+                {/* Encabezado Principal de la Comida */}
+                <div className="mb-4">
+                  <h2 className="text-lg font-black text-foreground tracking-tight leading-snug">Chicken Phở con Vegetales</h2>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">ANÁLISIS DE CALIDAD NUTRICIONAL</p>
                 </div>
-                <div className="flex gap-1 mb-8">
-                  <div className="h-1 flex-1 rounded-full bg-border"></div>
-                  <div className="h-1 flex-1 rounded-full bg-border"></div>
-                  <div className="h-1 flex-1 rounded-full bg-border"></div>
-                  <div className="h-1 flex-1 rounded-full bg-blue-600 dark:bg-blue-500"></div>
-                  <div className="h-1 flex-1 rounded-full bg-border"></div>
-                </div>
-                
-                {/* Detail List */}
-                <div className="space-y-4">
-                  {[
-                    { label: "Processing", value: "Minimally Processed", icon: "check" },
-                    { label: "Fiber", value: "Good Source", icon: "check" },
-                    { label: "Protein", value: "Lean", icon: "check" },
-                    { label: "Added Sugars", value: "Zero", icon: "check" },
-                    { label: "Fat", value: "Moderate", icon: "warn" },
-                    { label: "Grains", value: "Refined", icon: "check" },
-                    { label: "Sodium", value: "Elevated", icon: "check" },
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-center justify-between border-b border-border/50 pb-3 last:border-0 last:pb-0">
-                      <span className="text-[13px] font-bold text-foreground">{item.label}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[13px] font-semibold text-blue-600/90 dark:text-blue-400">{item.value}</span>
-                        {item.icon === "check" ? (
-                          <Check className="w-[18px] h-[18px] text-blue-600 dark:text-blue-500" strokeWidth={3} />
-                        ) : (
-                          <AlertCircle className="w-[18px] h-[18px] text-muted-foreground" strokeWidth={2.5} />
-                        )}
-                      </div>
+
+                {/* Score de Calidad Nutricional basado en evidencia */}
+                <div className="bg-card border border-border rounded-2xl p-4 mb-6 shadow-xs">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">SCORE NRF 9.3</span>
+                      <TooltipProvider>
+                        <ShadcnTooltip>
+                          <TooltipTrigger asChild>
+                            <Link
+                              to="/blog/$slug"
+                              params={{ slug: "score-calidad-nutricional-evidencia" }}
+                              className="w-5 h-5 rounded-full bg-secondary border border-border/60 text-muted-foreground hover:text-foreground hover:bg-secondary/80 flex items-center justify-center transition-colors cursor-pointer"
+                              aria-label="Información del Score Nutricional"
+                            >
+                              <Info className="w-3.5 h-3.5" />
+                            </Link>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-[260px] p-3 text-xs leading-relaxed space-y-2 bg-popover text-popover-foreground border border-border shadow-xl">
+                            <p className="font-medium">
+                              Score basado en el <strong>Nutrient Rich Foods Index (NRF 9.3)</strong> y la escala <strong>NOVA</strong> de procesamiento.
+                            </p>
+                            <div className="pt-1.5 border-t border-border/60 flex justify-end">
+                              <Link
+                                to="/blog/$slug"
+                                params={{ slug: "score-calidad-nutricional-evidencia" }}
+                                className="inline-flex items-center gap-1 font-bold text-foreground hover:underline text-[11px]"
+                              >
+                                <span>Leer más</span>
+                                <ArrowUpRight className="w-3.5 h-3.5" />
+                              </Link>
+                            </div>
+                          </TooltipContent>
+                        </ShadcnTooltip>
+                      </TooltipProvider>
                     </div>
+                    <span className="bg-secondary text-foreground text-xs font-bold px-3 py-1 rounded-full">
+                      Excelente
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-baseline gap-2 mb-3">
+                    <span className="text-4xl font-black text-foreground tracking-tight">88</span>
+                    <span className="text-xs font-bold text-muted-foreground">/ 100 pts</span>
+                  </div>
+
+                  {/* Barra de progreso */}
+                  <div className="w-full bg-secondary h-2.5 rounded-full overflow-hidden flex p-0.5 border border-border/60">
+                    <div className="h-full bg-foreground rounded-full transition-all duration-1000" style={{ width: "88%" }}></div>
+                  </div>
+                  <div className="flex justify-between text-[10px] font-bold text-muted-foreground mt-1.5 px-0.5">
+                    <span>0 (Bajo)</span>
+                    <span>50 (Moderado)</span>
+                    <span>100 (Excelente)</span>
+                  </div>
+                </div>
+                
+                {/* Vectores completos de Calidad Nutricional NRF 9.3 & LIM3 */}
+                <div className="space-y-6">
+                  {/* 1. Matriz de Procesamiento Industrial (NOVA) */}
+                  <div>
+                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">MATRIZ INDUSTRIAL</h4>
+                    <div className="flex items-center justify-between py-1">
+                      <span className="text-xs font-bold text-foreground">Grado de Procesamiento</span>
+                      <span className="bg-secondary text-foreground text-xs font-bold px-3 py-1 rounded-full">
+                        Mínimamente Procesado
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* 2. 9 Nutrientes a Promover (NR9) */}
+                  <div>
+                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">NUTRIENTES A PROMOVER (NR9)</h4>
+                    <div className="space-y-2.5">
+                      {[
+                        { label: "Proteína Magra", value: "Alta Calidad", isPrimary: true },
+                        { label: "Fibra Dietética", value: "Buena Fuente", isPrimary: true },
+                        { label: "Hierro", value: "Buena Fuente", isPrimary: true },
+                        { label: "Magnesio", value: "Buena Fuente", isPrimary: true },
+                        { label: "Calcio", value: "Aporte Moderado", isPrimary: false },
+                        { label: "Potasio", value: "Buena Fuente", isPrimary: true },
+                        { label: "Vitamina C", value: "Buena Fuente", isPrimary: true },
+                        { label: "Vitamina A", value: "Aporte Moderado", isPrimary: false },
+                        { label: "Vitamina E", value: "Aporte Moderado", isPrimary: false },
+                      ].map((item, i) => (
+                        <div key={i} className="flex items-center justify-between py-0.5">
+                          <span className="text-xs font-bold text-foreground">{item.label}</span>
+                          <span className={`${item.isPrimary ? "bg-secondary text-foreground font-bold" : "bg-secondary/60 text-muted-foreground font-medium"} text-xs px-3 py-1 rounded-full`}>
+                            {item.value}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 3. 3 Componentes a Moderar / Limitar (LIM3) */}
+                  <div>
+                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">COMPONENTES A LIMITAR (LIM3)</h4>
+                    <div className="space-y-2.5">
+                      {[
+                        { label: "Azúcares Añadidos", value: "Sin Añadidos", isPrimary: true },
+                        { label: "Grasas Saturadas / Trans", value: "Bajo", isPrimary: true },
+                        { label: "Sodio", value: "Elevado", isPrimary: false },
+                      ].map((item, i) => (
+                        <div key={i} className="flex items-center justify-between py-0.5">
+                          <span className="text-xs font-bold text-foreground">{item.label}</span>
+                          <span className={`${item.isPrimary ? "bg-secondary text-foreground font-bold" : "bg-secondary/60 text-muted-foreground font-medium"} text-xs px-3 py-1 rounded-full`}>
+                            {item.value}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <Button 
+                  onClick={() => setFoodAnalysisStep("reason")} 
+                  className="w-full rounded-xl h-12 text-sm font-bold bg-foreground text-background hover:opacity-90 mt-6 shadow-md"
+                >
+                  Continuar a Registro
+                </Button>
+
+                {/* Caja de Insight del AI Coach (Copiado idéntico al pie de card de timeline de la imagen) */}
+                <div className="mt-6 pt-4 border-t border-border/60 flex items-start gap-3">
+                  <Sparkles className="w-4 h-4 text-foreground/80 shrink-0 mt-0.5" />
+                  <p className="text-xs font-medium text-foreground/80 leading-relaxed">
+                    Excelente balance de proteínas y fibra en la sopa. Considerá controlar el aporte de sodio del caldo para optimizar tu perfil diario.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Paso 4: ¿Por qué comiste? */}
+            {foodAnalysisStep === "reason" && (
+              <div className="px-6 pb-8 overflow-y-auto animate-in slide-in-from-right-4 fade-in duration-300">
+                <h3 className="text-lg font-black text-foreground tracking-tight mb-1">¿Por qué comiste?</h3>
+                <p className="text-xs text-muted-foreground font-medium mb-5">Selecciona el motivo o desencadenante principal de esta ingesta para tu diario de alimentación.</p>
+                
+                <div className="grid grid-cols-2 gap-2.5 mb-6">
+                  {[
+                    { id: "hambre", label: "Hambre", icon: "🌿", color: "hover:border-emerald-500/50 hover:bg-emerald-500/5" },
+                    { id: "estres", label: "Estrés", icon: "⚡", color: "hover:border-rose-500/50 hover:bg-rose-500/5" },
+                    { id: "sabor", label: "Sabor", icon: "🍰", color: "hover:border-amber-500/50 hover:bg-amber-500/5" },
+                    { id: "social", label: "Social", icon: "👥", color: "hover:border-sky-500/50 hover:bg-sky-500/5" },
+                    { id: "habito", label: "Hábito", icon: "🔄", color: "hover:border-indigo-500/50 hover:bg-indigo-500/5" },
+                    { id: "emocional", label: "Emocional", icon: "💖", color: "hover:border-pink-500/50 hover:bg-pink-500/5" },
+                    { id: "aburrimiento", label: "Aburrimiento", icon: "🥱", color: "hover:border-purple-500/50 hover:bg-purple-500/5" },
+                    { id: "otro", label: "Otro", icon: "❓", color: "hover:border-slate-500/50 hover:bg-slate-500/5" },
+                  ].map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setSelectedEatReason(item.id)}
+                      className={`flex items-center gap-2.5 p-3 rounded-xl border transition-all text-left ${
+                        selectedEatReason === item.id 
+                          ? "border-foreground bg-secondary/90 font-bold shadow-sm" 
+                          : `border-border bg-card font-medium ${item.color}`
+                      }`}
+                    >
+                      <span className="text-lg">{item.icon}</span>
+                      <span className="text-xs text-foreground font-semibold">{item.label}</span>
+                    </button>
                   ))}
                 </div>
 
-                <div className="mt-8 pt-6 border-t border-border flex items-start gap-3">
-                  <Sparkles className="w-5 h-5 text-muted-foreground shrink-0" />
-                  <p className="text-[11px] text-muted-foreground font-medium leading-relaxed">
-                    Visual identification may be inaccurate. Always check important details manually.
-                  </p>
+                <div className="flex gap-2.5">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setFoodAnalysisStep("report")}
+                    className="rounded-xl h-11 text-xs font-bold border-border"
+                  >
+                    Atrás
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      const isNegativeTrigger = ["estres", "emocional", "aburrimiento"].includes(selectedEatReason);
+                      if (isNegativeTrigger) {
+                        setFoodAnalysisStep("breathing_prompt");
+                      } else {
+                        handleFinalizeFoodRegistration();
+                      }
+                    }}
+                    className="flex-1 rounded-xl h-11 text-sm font-bold bg-foreground text-background hover:opacity-90 shadow-md"
+                  >
+                    Guardar Registro
+                  </Button>
                 </div>
+              </div>
+            )}
+
+            {/* Paso 5: Sugerencia de Respiración Guiada para emociones negativas */}
+            {foodAnalysisStep === "breathing_prompt" && (
+              <div className="px-6 pb-8 flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-300">
+                <div className="w-14 h-14 rounded-full bg-secondary border border-border/80 text-foreground flex items-center justify-center mb-4 mt-4 shadow-xs">
+                  <Brain className="w-7 h-7" />
+                </div>
+                <h3 className="text-lg font-black text-foreground mb-2 tracking-tight">Pausa Reguladora</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed mb-6 max-w-[280px] font-medium">
+                  Detectamos que el motivo de tu comida fue <strong>{WHY_EAT_CHART_CONFIG[selectedEatReason as keyof typeof WHY_EAT_CHART_CONFIG]?.label || selectedEatReason}</strong>. ¿Te gustaría hacer 1 minuto de respiración guiada para autorregular tu sistema nervioso?
+                </p>
+                
+                <div className="w-full space-y-2.5">
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      setBreathingStartTime(Date.now());
+                      setBreathingPhase("inhale");
+                      setBreathingSeconds(4);
+                      setBreathingCyclesCompleted(0);
+                      setBreathingOrbScale(0.60);
+                      setFoodAnalysisStep("breathing_exercise");
+                    }}
+                    className="w-full rounded-xl h-12 text-sm font-bold bg-foreground text-background hover:opacity-90 shadow-md"
+                  >
+                    Iniciar Respiración Guiada
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => handleFinalizeFoodRegistration()}
+                    className="w-full rounded-xl h-10 text-xs font-bold text-muted-foreground hover:text-foreground"
+                  >
+                    Omitir e ir a guardar
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Paso 6: Ejercicio Interactivo de Respiración Guiada */}
+            {foodAnalysisStep === "breathing_exercise" && (
+              <div className="px-6 pb-8 flex flex-col items-center text-center animate-in fade-in duration-300">
+                <div className="flex justify-between items-center w-full mb-2">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">RESPIRACIÓN CUADRADA</span>
+                  <span className="bg-secondary text-foreground text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-border/60">
+                    Ciclos completados: {breathingCyclesCompleted}
+                  </span>
+                </div>
+                
+                {/* Círculo animado interactivo: Expansión y contracción continua a 60 FPS sincronizado en tiempo real */}
+                <div className="relative w-44 h-44 my-6 flex items-center justify-center">
+                  <div 
+                    style={{ 
+                      transform: `scale(${breathingOrbScale})`
+                    }}
+                    className="absolute inset-0 rounded-full border-2 bg-secondary/80 border-foreground/60 shadow-md"
+                  />
+                  <div className="relative z-10 flex flex-col items-center">
+                    <span className="text-base font-black tracking-wider uppercase text-foreground">
+                      {breathingPhase === "inhale" && "Inhala"}
+                      {breathingPhase === "hold1" && "Pausa (Lleno)"}
+                      {breathingPhase === "exhale" && "Exhala"}
+                      {breathingPhase === "hold2" && "Pausa (Vacío)"}
+                    </span>
+                    <span className="text-3xl font-black text-foreground tracking-tight mt-1">{breathingSeconds}s</span>
+                  </div>
+                </div>
+
+                <p className="text-xs text-muted-foreground mb-6 font-medium max-w-[260px] h-8 flex items-center justify-center">
+                  {breathingPhase === "inhale" && "Inhala profundamente por la nariz expandiendo el abdomen."}
+                  {breathingPhase === "hold1" && "Sostén el aire con serenidad en la caja torácica."}
+                  {breathingPhase === "exhale" && "Exhala lentamente por la boca liberando toda la tensión."}
+                  {breathingPhase === "hold2" && "Mantén los pulmones vacíos en profunda calma."}
+                </p>
+
+                <Button
+                  type="button"
+                  onClick={() => handleFinalizeFoodRegistration()}
+                  className="w-full rounded-xl h-11 text-xs font-bold bg-foreground text-background hover:opacity-90 shadow-md"
+                >
+                  Finalizar y Guardar
+                </Button>
               </div>
             )}
           </div>

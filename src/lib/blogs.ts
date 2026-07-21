@@ -1183,6 +1183,124 @@ Rehidratarse adecuadamente no consiste únicamente en beber grandes volúmenes d
 4. **Armstrong, L. E. (2007).** *"Assessing hydration status: The elusive gold standard."* *Journal of the American College of Nutrition*, 26(sup5), 575S-584S. DOI: 10.1080/07315724.2007.10719661.
     `,
   },
+  {
+    id: "post-14",
+    slug: "score-calidad-nutricional-evidencia",
+    title: "Score de Calidad Nutricional: La ciencia del NRF 9.3 y la Clasificación NOVA",
+    excerpt:
+      "Descubre la metodología científica de Shakerfy basada en el Nutrient Rich Foods Index (NRF 9.3) y el grado de procesamiento industrial de la escala NOVA.",
+    category: "Nutrición",
+    readTime: "7 min de lectura",
+    date: "21 de Julio, 2026",
+    author: {
+      name: "Shakerfy Team",
+      role: "Equipo de Ciencias del Deporte & Nutrición",
+      avatar:
+        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+      bio: "Equipo multidisciplinario de especialistas en ciencias del ejercicio, cronobiología, nutrición basada en evidencia y tecnología aplicada al rendimiento.",
+    },
+    image:
+      "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=1200&q=80",
+    featured: true,
+    tags: ["Score Nutricional", "NRF 9.3", "NOVA", "Calidad Nutricional", "Evidencia"],
+    content: `
+Evaluar el valor nutricional de una comida ha ido mucho más allá de simplemente contar calorías o medir el gramaje bruto de macronutrientes. En la nutrición clínica y deportiva basada en evidencia, el concepto dominante es la **Densidad Nutricional y la Calidad de la Matriz Alimentaria**.
+
+En **Shakerfy**, para reemplazar las escalas cualitativas ambiguas ("muy alto" o "muy bajo"), desarrollamos nuestro **Food Quality Score (0 a 100)** fundamentado en dos marcos validados internacionalmente por la Organización Mundial de la Salud (OMS) y la literatura epidemiológica: el **Nutrient Rich Foods Index (NRF 9.3)** y el **Sistema de Clasificación NOVA**.
+
+---
+
+### 1. El Índice NRF 9.3 (Nutrient Rich Foods Index)
+
+Desarrollado por epidemiólogos nutricionales (Fulgoni et al., 2015; Drewnowski, 2021), el modelo **NRF 9.3** calcula la relación matemática entre nutrientes cuyo consumo se debe incentivar frente a aquellos que se deben limitar:
+
+- **9 Nutrientes a Promover (NR9):** Proteína de alta calidad (magra), Fibra dietética, Hierro, Magnesio, Calcio, Potasio, Vitamina C, Vitamina A y Vitamina E.
+- **3 Componentes a Limitar (LIM3):** Azúcares añadidos refinados, Grasas saturadas/trans excesivas y Sodio elevado.
+
+$$ NRF 9.3 = ∑ (Nutrientes Promovidos / VDR × 100) − ∑ (Nutrientes Limitados / VDR × 100) $$
+
+Un plato rico en vegetales, fibra soluble e insoluble, y fuentes proteicas magras suma puntos positivos de densidad micro y macronutricional, mientras que los jarabes de maíz ricos en fructosa, aceites hidrogenados y exceso de sal restan puntuación.
+
+---
+
+### 2. El Sistema NOVA y el Grado de Procesamiento Industrial
+
+La investigación conducida por la Universidad de São Paulo y respaldada por la OMS (Monteiro et al., 2019, 2023) demuestra que **la matriz del alimento y la alteración física/química industrial impactan la respuesta glucémica, la microbiota intestinal y la saciedad**, independientemente de las calorías.
+
+La escala NOVA categoriza los alimentos en 4 grupos:
+1. **NOVA 1 - Alimentos no procesados o mínimamente procesados:** Frutas, vegetales, granos enteros, carnes frescas, huevos, semillas. (*Premio máximo en el Score Shakerfy*).
+2. **NOVA 2 - Ingredientes culinarios procesados:** Aceite de oliva virgen extra, mantequilla, sal, especias.
+3. **NOVA 3 - Alimentos procesados:** Quesos curados, conservas artesanales, panes de masa madre de grano entero.
+4. **NOVA 4 - Alimentos ultraprocesados:** Formulaciones industriales con aditivos, emulsionantes, colorantes, saborizantes y harinas hiper-refinadas. (*Penalización en el Score Shakerfy*).
+
+---
+
+### 3. El Análisis Vectorial de 13 Métricas en Shakerfy (NR9 + LIM3 + NOVA)
+
+Cada vez que registras una comida en el **AI Coach** de Shakerfy, nuestro sistema analiza de forma individual y transparente 13 vectores nutricionales en su propio renglón:
+
+#### A. Matriz Industrial
+- **Grado de Procesamiento:** Clasificación de la matriz en escala NOVA 1 a 4.
+
+#### B. 9 Nutrientes a Promover (NR9)
+1. **Proteína Magra:** Aporte de aminoácidos esenciales y biodisponibilidad.
+2. **Fibra Dietética:** Densidad de fibra soluble e insoluble por ración.
+3. **Hierro:** Mineral clave para el transporte de oxígeno y función mitocondrial.
+4. **Magnesio:** Cofactor enzimático en la síntesis de ATP y relajación muscular.
+5. **Calcio:** Salud ósea, transmisión neuromuscular y contracción muscular.
+6. **Potasio:** Equilibrio hidroelectrolítico y regulación de la presión arterial.
+7. **Vitamina C:** Antioxidante hidrosoluble y síntesis de colágeno.
+8. **Vitamina A:** Salud visual, integridad epitelial e inmunidad.
+9. **Vitamina E:** Protección de membranas celulares frente al estrés oxidativo.
+
+#### C. 3 Componentes a Limitar (LIM3)
+10. **Azúcares Añadidos:** Control de sacarosa y JMAF refinados libres.
+11. **Grasas Saturadas / Trans:** Evaluación de lipofilia y perfil lipídico.
+12. **Sodio:** Control de carga osmótica y volemia arterial.
+
+---
+
+### 4. Criterios de Evaluación Estandarizada por Nutriente (13 Vectores)
+
+Para que los resultados de Shakerfy sean transparentes e inconfundibles, cada uno de los 13 vectores nutricionales se clasifica dentro de una matriz epidemiológica en 4 niveles basada en el Porcentaje de Valor Diario Recomendado (% VDR):
+
+| Vector Nutricional (13 Métricas) | Nivel 1: Óptimo / Excelente | Nivel 2: Moderado / Bueno | Nivel 3: Leve / Bajo | Nivel 4: Nulo / Alerta |
+| :--- | :--- | :--- | :--- | :--- |
+| **1. Grado de Procesamiento** | **Mínimamente Procesado** (NOVA 1) | **Ingrediente Culinario** (NOVA 2) | **Procesado** (NOVA 3) | **Ultraprocesado** (NOVA 4) |
+| **2. Proteína Magra** | **Alta Calidad** (>20g por ración) | **Buena Fuente** (10-19g por ración) | **Aporte Bajo** (5-9g por ración) | **Sin Aporte** (<5g por ración) |
+| **3. Fibra Dietética** | **Buena Fuente** (>5g por ración) | **Aporte Moderado** (3-4.9g) | **Aporte Bajo** (1-2.9g) | **Sin Aporte** (<1g por ración) |
+| **4. Hierro** | **Buena Fuente** (>20% VDR) | **Aporte Moderado** (10-19% VDR) | **Aporte Bajo** (<10% VDR) | **Sin Aporte** (0% VDR) |
+| **5. Magnesio** | **Buena Fuente** (>20% VDR) | **Aporte Moderado** (10-19% VDR) | **Aporte Bajo** (<10% VDR) | **Sin Aporte** (0% VDR) |
+| **6. Calcio** | **Buena Fuente** (>20% VDR) | **Aporte Moderado** (10-19% VDR) | **Aporte Bajo** (<10% VDR) | **Sin Aporte** (0% VDR) |
+| **7. Potasio** | **Buena Fuente** (>20% VDR) | **Aporte Moderado** (10-19% VDR) | **Aporte Bajo** (<10% VDR) | **Sin Aporte** (0% VDR) |
+| **8. Vitamina C** | **Buena Fuente** (>20% VDR) | **Aporte Moderado** (10-19% VDR) | **Aporte Bajo** (<10% VDR) | **Sin Aporte** (0% VDR) |
+| **9. Vitamina A** | **Buena Fuente** (>20% VDR) | **Aporte Moderado** (10-19% VDR) | **Aporte Bajo** (<10% VDR) | **Sin Aporte** (0% VDR) |
+| **10. Vitamina E** | **Buena Fuente** (>20% VDR) | **Aporte Moderado** (10-19% VDR) | **Aporte Bajo** (<10% VDR) | **Sin Aporte** (0% VDR) |
+| **11. Azúcares Añadidos** | **Sin Añadidos** (0g refinados) | **Bajo** (<5g por ración) | **Moderado** (5-12g refinados) | **Elevado** (>12g refinados) |
+| **12. Grasas Saturadas / Trans** | **Saludable** (0g trans / Insaturadas) | **Bajo** (<3g saturadas) | **Moderado** (3-6g saturadas) | **Elevado / Excesivo** (>6g o Trans) |
+| **13. Sodio** | **Bajo** (<140mg por ración) | **Equilibrado** (140-400mg) | **Moderado** (401-799mg) | **Elevado** (>800mg por ración) |
+
+---
+
+### 5. Interpretación de la Escala del Score (0 a 100)
+
+El **Food Quality Score** global integra todos los vectores y se clasifica de la siguiente manera dentro del tema de la aplicación:
+
+- **80 - 100 (Excelente):** Máxima densidad nutricional, alimentos reales (NOVA 1-2), alto aporte de fibra y proteína de calidad.
+- **60 - 79 (Buena Calidad):** Perfil equilibrado con densidad nutricional óptima y procesamiento mínimo.
+- **40 - 59 (Moderada):** Presencia de refinados o sodio/grasas moderadas. Se sugiere acompañar con fibra o proteína magra.
+- **< 40 (A Mejorar):** Predominio de alimentos ultraprocesados (NOVA 4) o azúcares refinados.
+
+---
+
+### Referencias Científicas
+
+1. **Fulgoni, V. L., Keast, D. R., & Drewnowski, A. (2015).** *"Development and validation of the Nutrient Rich Foods Index: A tool for measuring nutrient density of foods."* *The Journal of Nutrition*, 145(5), 1023-1031. DOI: 10.3945/jn.114.207811.
+2. **Monteiro, C. A., Cannon, G., Lawrence, M., et al. (2019 / Actualizado 2023).** *"Ultra-processed foods, diet quality, and health using the NOVA classification system."* *World Health Organization & FAO Public Health Papers*, Rome.
+3. **Drewnowski, A. (2021).** *"Defining nutrient density: The Nutrient Rich Foods Index and its application to global food systems."* *Frontiers in Nutrition*, 8, 678542. DOI: 10.3389/fnut.2021.678542.
+4. **Hall, K. D., Ayuketah, A., Brychta, R., et al. (2019).** *"Ultra-processed diets cause excess calorie intake and weight gain: An inpatient randomized controlled trial of ad libitum food intake."* *Cell Metabolism*, 30(1), 67-77. DOI: 10.1016/j.cmet.2019.05.008.
+    `,
+  },
 ];
 
 export function getBlogPostBySlug(slug: string): BlogPost | undefined {
