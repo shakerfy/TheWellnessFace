@@ -1,5 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import React, { useState, useEffect } from "react";
+import { SiteHeader } from "@/components/site-header";
+import { Index } from "./index";
 import { 
   User, Calendar, BarChart3, CreditCard, Settings, 
   LogOut, QrCode, CheckCircle, Clock, AlertTriangle, 
@@ -146,7 +148,32 @@ const TABS = [
 ];
 
 function StudentDashboard() {
-  const [activeTab, setActiveTab] = useState("inicio");
+  const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window !== "undefined") {
+      const tab = new URLSearchParams(window.location.search).get("tab");
+      if (tab && TABS.some((t) => t.id === tab)) return tab;
+    }
+    return "inicio";
+  });
+
+  useEffect(() => {
+    const updateTabFromUrl = () => {
+      if (typeof window !== "undefined") {
+        const tab = new URLSearchParams(window.location.search).get("tab");
+        if (tab && TABS.some((t) => t.id === tab)) {
+          setActiveTab(tab);
+        }
+      }
+    };
+    updateTabFromUrl();
+    window.addEventListener("popstate", updateTabFromUrl);
+    const interval = setInterval(updateTabFromUrl, 200);
+    return () => {
+      window.removeEventListener("popstate", updateTabFromUrl);
+      clearInterval(interval);
+    };
+  }, []);
+
   const [qrOpen, setQrOpen] = useState(false);
   const [qrTimer, setQrTimer] = useState(60);
   const navigate = useNavigate();
@@ -182,79 +209,22 @@ function StudentDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col md:flex-row pb-16 md:pb-0">
-      {/* Sidebar for Desktop */}
-      <aside className="hidden md:flex flex-col w-64 bg-card border-r border-border p-6 h-screen sticky top-0">
-        <div className="flex items-center gap-2 mb-8">
-          <div className="grid h-7 w-7 place-items-center rounded-md bg-foreground text-background">
-            <span className="text-[13px] font-bold">S</span>
-          </div>
-          <span className="text-lg font-bold tracking-tight">Shakerfy App</span>
-        </div>
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
+      {/* Site Header with User Dropdown Menu always visible at top */}
+      <SiteHeader />
 
-        <nav className="flex-1 space-y-1.5">
-          {TABS.map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition ${
-                  activeTab === tab.id
-                    ? "bg-foreground text-background"
-                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                }`}
-              >
-                <Icon className="h-4 w-4" />
-                {tab.label}
-              </button>
-            );
-          })}
-        </nav>
+      <div className="flex-1 pb-16 md:pb-0">
+        {/* Main Content Area */}
+        <main className={`flex-1 w-full ${activeTab === "inicio" ? "" : "p-6 md:p-10 max-w-5xl mx-auto"}`}>
 
-        <button 
-          onClick={handleLogout}
-          className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-rose-500 hover:bg-rose-500/10 transition mt-auto"
-        >
-          <LogOut className="h-4 w-4" />
-          Cerrar sesión
-        </button>
-      </aside>
-
-      {/* Main Content Area */}
-      <main className="flex-1 p-6 md:p-10 max-w-5xl mx-auto w-full">
-        {/* Mobile Header */}
-        <header className="flex md:hidden items-center justify-between mb-6 pb-4 border-b border-border">
-          <div className="flex items-center gap-2">
-            <div className="grid h-7 w-7 place-items-center rounded-md bg-foreground text-background">
-              <span className="text-[12px] font-bold">S</span>
-            </div>
-            <span className="text-base font-bold tracking-tight">Shakerfy</span>
-          </div>
-          <button 
-            onClick={handleLogout}
-            className="p-2 rounded-xl text-rose-500 hover:bg-rose-500/10 transition"
-          >
-            <LogOut className="h-5 w-5" />
-          </button>
-        </header>
-
-        {activeTab === "inicio" && (
-          <InicioTab 
-            setQrOpen={setQrOpen} 
-            reservations={reservations} 
-            setReservations={setReservations} 
-            setBlockedCancellationClass={setBlockedCancellationClass}
-            showReviewPrompt={showReviewPrompt}
-            setReviewModalOpen={setReviewModalOpen}
-          />
-        )}
+        {activeTab === "inicio" && <InicioTab />}
         {activeTab === "diario" && <DiarioTab />}
         {activeTab === "clases" && <ClasesTab />}
         {activeTab === "progreso" && <ProgresoTab />}
         {activeTab === "pagos" && <PagosTab />}
         {activeTab === "config" && <ConfigTab />}
       </main>
+      </div>
 
       {/* Bottom Nav for Mobile */}
       <nav className="flex md:hidden fixed bottom-0 left-0 right-0 border-t border-border bg-card/90 backdrop-blur px-4 py-2 justify-between z-40">
@@ -445,126 +415,8 @@ function StudentDashboard() {
 }
 
 // Subcomponent: Inicio Tab
-interface InicioTabProps {
-  setQrOpen: (v: boolean) => void;
-  reservations: { id: string; name: string; instructor: string; time: string; timeLabel: string; cannotCancel: boolean; timeRemainingLabel: string }[];
-  setReservations: React.Dispatch<React.SetStateAction<{ id: string; name: string; instructor: string; time: string; timeLabel: string; cannotCancel: boolean; timeRemainingLabel: string }[]>>;
-  setBlockedCancellationClass: (v: any) => void;
-  showReviewPrompt: boolean;
-  setReviewModalOpen: (v: boolean) => void;
-}
-
-function InicioTab({ setQrOpen, reservations, setReservations, setBlockedCancellationClass, showReviewPrompt, setReviewModalOpen }: InicioTabProps) {
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">¡Hola, Agustín! 👋</h2>
-        <p className="text-sm text-muted-foreground">Tu entrenamiento de hoy te espera.</p>
-      </div>
-
-      {/* Member State Card */}
-      <div className="grid gap-6 md:grid-cols-2 items-start">
-        <div className="rounded-3xl border border-border bg-card p-6  flex flex-col justify-between h-[230px]">
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Membresía Activa</span>
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-500 bg-emerald-500/10 px-2.5 py-0.5 rounded-full">
-                <CheckCircle className="h-3 w-3" /> Activa
-              </span>
-            </div>
-            <h3 className="text-xl font-bold tracking-tight mt-3">Pase Libre Mensual</h3>
-            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-              <MapPin className="h-3.5 w-3.5" /> Kraft Strength Club · Palermo
-            </p>
-            <div className="mt-4 flex items-baseline gap-1">
-              <span className="text-2xl font-bold">22</span>
-              <span className="text-xs text-muted-foreground">días restantes (Vence el 20 de Julio)</span>
-            </div>
-          </div>
-          <div className="mt-auto flex gap-3 pt-4">
-            <Button size="sm" className="rounded-xl flex-1 gap-2" onClick={() => setQrOpen(true)}>
-              <QrCode className="h-4 w-4" /> Mostrar QR
-            </Button>
-            <Button size="sm" variant="outline" className="rounded-xl flex-1">Renovar</Button>
-          </div>
-        </div>
-
-        {/* Next Class Cards */}
-        <div className="space-y-4">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">Reservas para hoy</span>
-          {reservations.map((res) => (
-            <div key={res.id} className="rounded-3xl border border-border bg-card p-6  flex flex-col justify-between border-primary/20">
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-primary">Próxima Clase</span>
-                  <span className="inline-flex items-center gap-1 text-[11px] font-medium text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">
-                    <Sparkles className="h-3 w-3" /> Hoy
-                  </span>
-                </div>
-                <h3 className="text-lg font-bold tracking-tight mt-2">{res.name}</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">Instructor: {res.instructor} · 60 min</p>
-                <div className="mt-3 flex items-center gap-2 text-xs text-foreground font-semibold">
-                  <Clock className="h-3.5 w-3.5 text-muted-foreground" /> {res.timeLabel}
-                </div>
-              </div>
-              <div className="mt-4 flex gap-2">
-                <Button 
-                  size="sm" 
-                  variant="ghost" 
-                  className="rounded-xl flex-1 text-rose-500 hover:bg-rose-500/10 hover:text-rose-500 text-xs"
-                  onClick={() => {
-                    if (res.cannotCancel) {
-                      setBlockedCancellationClass(res);
-                    } else {
-                      alert(`Tu reserva para "${res.name}" a las ${res.time} hs ha sido cancelada con éxito.`);
-                      setReservations(prev => prev.filter(r => r.id !== res.id));
-                    }
-                  }}
-                >
-                  Cancelar Reserva
-                </Button>
-                <Button size="sm" variant="outline" className="rounded-xl flex-1 text-xs">Ubicación</Button>
-              </div>
-            </div>
-          ))}
-          {reservations.length === 0 && (
-            <div className="rounded-3xl border border-dashed border-border p-6  text-center flex flex-col items-center justify-center py-8">
-              <Calendar className="h-6 w-6 text-muted-foreground mb-1" />
-              <p className="text-xs font-bold text-foreground">No tienes clases reservadas para hoy</p>
-            </div>
-          )}
-        </div>
-      </div>
-      
-      {/* Alert Banner */}
-      <div className="flex items-start gap-3 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 text-amber-500 text-xs">
-        <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
-        <div>
-          <span className="font-semibold">Recomendación médica:</span> Tu ficha tiene agendada una molestia de rodilla izquierda. Recuerda avisar a tu coach antes del inicio del WOD para adaptar los movimientos de carga.
-        </div>
-      </div>
-
-      {/* Verified Review Trigger Card */}
-      {showReviewPrompt && (
-        <div className="rounded-3xl border border-primary/20 bg-primary/5 p-6  flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="space-y-1 text-center sm:text-left">
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full uppercase tracking-wider">
-              <Sparkles className="h-3 w-3" /> Reseña Verificada (Estilo Airbnb)
-            </span>
-            <h4 className="font-bold text-sm text-foreground">¿Te gusta entrenar en Kraft Strength Club?</h4>
-            <p className="text-xs text-muted-foreground">Como miembro activo con check-ins de asistencia registrados, tu opinión ayuda a la comunidad.</p>
-          </div>
-          <Button 
-            size="sm" 
-            className="rounded-xl shrink-0"
-            onClick={() => setReviewModalOpen(true)}
-          >
-            Calificar Experiencia
-          </Button>
-        </div>
-      )}
-    </div>
-  );
+function InicioTab() {
+  return <Index hideHeader={true} />;
 }
 
 // Subcomponent: Clases Tab

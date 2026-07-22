@@ -48,7 +48,7 @@ const CATEGORIES = [
   "Boutique",
 ];
 
-function Index() {
+export function Index({ hideHeader = false }: { hideHeader?: boolean } = {}) {
   const [category, setCategory] = useState("Todos");
   const [isSearching, setIsSearching] = useState(false);
   const [aiActive, setAiActive] = useState(false);
@@ -206,7 +206,7 @@ function Index() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SiteHeader />
+      {!hideHeader && <SiteHeader />}
       <Hero onSearch={handleSearch} isSearching={isSearching} />
 
       <StatsSection />
