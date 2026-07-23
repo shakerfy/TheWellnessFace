@@ -1500,7 +1500,7 @@ function GymDashboard() {
 
   if (currentUser.role === "student") {
     return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
+      <div className="min-h-screen bg-slate-50/70 dark:bg-background text-foreground flex flex-col font-sans">
         <header className="p-4 border-b border-border flex justify-between items-center sticky top-0 bg-background/80 backdrop-blur-md z-30">
           <div className="flex items-center gap-2">
             <div className="grid h-7 w-7 place-items-center rounded-md bg-primary text-primary-foreground">
@@ -1588,25 +1588,25 @@ function GymDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col md:flex-row">
+    <div className="min-h-screen bg-slate-50/70 dark:bg-background text-foreground flex flex-col md:flex-row">
       {/* Sidebar */}
       <aside className="w-full md:w-64 bg-card border-b md:border-b-0 md:border-r border-border p-6 flex flex-col h-auto md:h-screen sticky top-0 z-30 shrink-0">
-        <div className="flex items-center gap-2 mb-8 justify-between md:justify-start">
-          <div className="flex items-center gap-2">
-            <div className="grid h-7 w-7 place-items-center rounded-md bg-primary text-primary-foreground">
-              <Building2 className="h-4 w-4" />
-            </div>
-            <span className="text-lg font-bold tracking-tight">Shakerfy Admin</span>
-          </div>
+        <div className="flex items-center justify-center mb-8 relative w-full">
+          <Link
+            to="/"
+            className="text-2xl sm:text-3xl font-bebas tracking-widest text-foreground uppercase select-none hover:opacity-90 transition text-center"
+          >
+            Shakerfy
+          </Link>
           <button
             onClick={handleLogout}
-            className="md:hidden p-2 rounded-xl text-destructive hover:bg-destructive/ transition"
+            className="md:hidden absolute right-0 p-2 rounded-xl text-destructive hover:bg-destructive/10 transition"
           >
             <LogOut className="h-5 w-5" />
           </button>
         </div>
 
-        <nav className="flex-1 flex flex-col gap-1.5 overflow-y-auto pr-2 pb-10 [&::-webkit-scrollbar]:hidden">
+        <nav className="flex-1 flex flex-col gap-1.5 overflow-y-auto pr-2 pb-6 [&::-webkit-scrollbar]:hidden">
           {visibleTabs.map((tab) => {
             const Icon = tab.icon;
             const hasSubstitutionsBadge = tab.id === "clases" && pendingSubstitutionsCount > 0;
@@ -1615,16 +1615,16 @@ function GymDashboard() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition ${
+                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 ${
                   activeTab === tab.id
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                    ? "bg-secondary text-foreground font-bold border border-border/80 shadow-2xs"
+                    : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
                 }`}
               >
-                <Icon className="h-4 w-4 shrink-0" />
+                <Icon className={`h-4 w-4 shrink-0 ${activeTab === tab.id ? "text-primary" : "text-muted-foreground"}`} />
                 <span className="truncate">{tab.label}</span>
                 {hasSubstitutionsBadge && (
-                  <span className="ml-auto bg-secondary text-white font-extrabold text-[9px] px-2 py-0.5 rounded-full shrink-0 animate-pulse uppercase tracking-wider">
+                  <span className="ml-auto bg-primary/10 text-primary font-extrabold text-[9px] px-2 py-0.5 rounded-full shrink-0 animate-pulse uppercase tracking-wider border border-primary/20">
                     {pendingSubstitutionsCount} suplencia
                     {pendingSubstitutionsCount > 1 ? "s" : ""}
                   </span>
@@ -1634,48 +1634,34 @@ function GymDashboard() {
           })}
         </nav>
 
+        {/* User Profile Info in Sidebar */}
+        <div className="pt-4 border-t border-border/60 mt-auto mb-2 flex items-center gap-3 px-1">
+          <img
+            src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+            alt="Admin"
+            className="h-9 w-9 rounded-full border border-border/60 object-cover shrink-0"
+          />
+          <div className="flex flex-col min-w-0 flex-1">
+            <span className="text-xs font-bold text-foreground truncate">
+              {currentUser.name || "Alan Kraft"}
+            </span>
+            <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider truncate">
+              Administrador
+            </span>
+          </div>
+        </div>
+
         <button
           onClick={handleLogout}
-          className="hidden md:flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/ transition mt-auto"
+          className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition"
         >
-          <LogOut className="h-4 w-4" />
-          Cerrar sesión
+          <LogOut className="h-4 w-4 shrink-0" />
+          <span>Cerrar sesión</span>
         </button>
       </aside>
 
       {/* Main Content Area */}
       <main className="flex-1 p-6 md:p-10 w-full max-w-7xl mx-auto overflow-x-auto min-w-0">
-        {/* Top Header */}
-        <header className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Kraft Strength Club</h1>
-            <p className="text-sm text-muted-foreground">
-              Panel de Control de Recepción y Administración.
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-
-
-            <div className="h-9 w-9 rounded-full bg-secondary flex items-center justify-center relative cursor-pointer">
-              <Bell className="h-4 w-4" />
-              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-destructive" />
-            </div>
-
-            <div className="flex items-center gap-2">
-              <div className="text-right hidden sm:block">
-                <div className="text-xs font-bold text-foreground">Administrador</div>
-                <div className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">
-                  👑 Admin
-                </div>
-              </div>
-              <img
-                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                alt="Admin"
-                className="h-9 w-9 rounded-full border border-border"
-              />
-            </div>
-          </div>
-        </header>
 
         {currentUser.role === "coach" && pendingSubstitutionsCount > 0 && (
           <div className="mb-6 p-4 rounded-xl bg-secondary/35 border border-border text-xs flex items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -3389,7 +3375,7 @@ function MiembrosTab({
 
                             {/* Metric Stats Cards */}
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                              <div className="bg-background border border-border/60 rounded-2xl p-3.5 text-center shadow-2xs">
+                              <div className="bg-card border border-border/50 rounded-2xl p-3.5 text-center shadow-none transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-border/80">
                                 <div className="text-xl font-black text-primary">
                                   {history.attended.length}
                                 </div>
@@ -3397,7 +3383,7 @@ function MiembrosTab({
                                   Clases Asistidas
                                 </div>
                               </div>
-                              <div className="bg-background border border-border/60 rounded-2xl p-3.5 text-center shadow-2xs">
+                              <div className="bg-card border border-border/50 rounded-2xl p-3.5 text-center shadow-none transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-border/80">
                                 <div className="text-xl font-black text-primary">
                                   {history.enrolled.length}
                                 </div>
@@ -3405,7 +3391,7 @@ function MiembrosTab({
                                   Próximas Agendadas
                                 </div>
                               </div>
-                              <div className="bg-background border border-border/60 rounded-2xl p-3.5 text-center shadow-2xs">
+                              <div className="bg-card border border-border/50 rounded-2xl p-3.5 text-center shadow-none transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-border/80">
                                 <div
                                   className={`text-xl font-black ${
                                     history.attendanceRate === null
@@ -3425,7 +3411,7 @@ function MiembrosTab({
                                   Tasa de Asistencia
                                 </div>
                               </div>
-                              <div className="bg-background border border-border/60 rounded-2xl p-3.5 text-center shadow-2xs flex flex-col justify-center items-center">
+                              <div className="bg-card border border-border/50 rounded-2xl p-3.5 text-center shadow-none transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-border/80 flex flex-col justify-center items-center">
                                 <div className="text-xs font-bold text-foreground truncate mt-0.5">
                                   {history.lastClass ? `${history.lastClass.day}` : "—"}
                                 </div>
@@ -3439,7 +3425,7 @@ function MiembrosTab({
                             {history.isChurnRisk && (
                               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-destructive/10 border border-destructive/30 rounded-2xl text-xs text-destructive">
                                 <div className="flex items-start gap-2.5">
-                                  <span className="text-base shrink-0">⚠️</span>
+                                  <AlertCircle className="w-4 h-4 shrink-0 text-destructive mt-0.5" />
                                   <div>
                                     <div className="font-bold">Riesgo de Baja Detectado</div>
                                     <div className="text-[11px] opacity-90 mt-0.5 leading-relaxed">
@@ -3470,17 +3456,16 @@ function MiembrosTab({
 
                             <Separator />
 
-                            {/* Detailed Information Grid */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                              {/* Left Column: Ficha Médica y Pagos */}
-                              <div className="space-y-5">
-                                {/* Ficha Médica Card */}
-                                <div className="bg-background border border-border/60 rounded-2xl p-4 space-y-3 shadow-2xs">
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-xs font-bold text-foreground uppercase tracking-wider">
-                                      🏥 Salud & Emergencia
+                            {/* Detailed Information Grid - Flat Default & Floating Hover (Equal Heights) */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full items-stretch">
+                              {/* Ficha Médica Card */}
+                              <div className="bg-card border border-border/50 rounded-2xl p-4.5 space-y-3.5 shadow-none transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-border/80 focus-within:shadow-md focus-within:-translate-y-0.5 h-full flex flex-col justify-between">
+                                <div className="space-y-3.5">
+                                  <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                                    <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+                                      Salud & Emergencia
                                     </span>
-                                    <span className="text-[10px] text-muted-foreground font-semibold">
+                                    <span className="text-[10px] text-muted-foreground/70 font-semibold">
                                       Ficha Médica
                                     </span>
                                   </div>
@@ -3559,132 +3544,147 @@ function MiembrosTab({
                                     )}
                                   </div>
                                 </div>
-
-                                {/* Historial de Pagos Card */}
-                                <div className="bg-background border border-border/60 rounded-2xl p-4 space-y-3 shadow-2xs">
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-xs font-bold text-foreground uppercase tracking-wider">
-                                      💳 Historial de Pagos
-                                    </span>
-                                    <span className="text-[10px] text-muted-foreground font-semibold">
-                                      {m.payments?.length || 0} registros
-                                    </span>
-                                  </div>
-
-                                  {m.payments && m.payments.length > 0 ? (
-                                    <div className="overflow-x-auto rounded-xl border border-border/40">
-                                      <table className="w-full text-left text-[11px]">
-                                        <thead>
-                                          <tr className="bg-secondary/30 border-b border-border/40 text-muted-foreground font-bold uppercase text-[9.5px]">
-                                            <th className="p-2.5">Fecha</th>
-                                            <th className="p-2.5">Plan</th>
-                                            <th className="p-2.5">Monto</th>
-                                            <th className="p-2.5">Método</th>
-                                            <th className="p-2.5 text-right">Recibo</th>
-                                          </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-border/30">
-                                          {m.payments.map((p: any) => (
-                                            <tr key={p.id} className="hover:bg-secondary/20 transition-colors">
-                                              <td className="p-2.5 text-muted-foreground">{p.date}</td>
-                                              <td className="p-2.5 font-semibold text-foreground">{p.duration}</td>
-                                              <td className="p-2.5 font-bold text-primary">${p.amount}</td>
-                                              <td className="p-2.5 text-muted-foreground">{p.method}</td>
-                                              <td className="p-2.5 text-right">
-                                                <Button
-                                                  variant="ghost"
-                                                  size="icon"
-                                                  className="h-6 w-6 text-primary hover:bg-primary/10 rounded-md"
-                                                  onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setViewingReceipt({ member: m, payment: p });
-                                                  }}
-                                                >
-                                                  <FileText className="w-3.5 h-3.5" />
-                                                </Button>
-                                              </td>
-                                            </tr>
-                                          ))}
-                                        </tbody>
-                                      </table>
-                                    </div>
-                                  ) : (
-                                    <p className="text-xs text-muted-foreground text-center py-3 italic">
-                                      Sin registros de pagos en el historial.
-                                    </p>
-                                  )}
-                                </div>
                               </div>
 
-                              {/* Right Column: Clases e Historial */}
-                              <div className="space-y-5">
-                                {/* Clases Asistidas Card */}
-                                <div className="bg-background border border-border/60 rounded-2xl p-4 space-y-3 shadow-2xs">
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-xs font-bold text-foreground uppercase tracking-wider">
-                                      🏋️ Historial de Clases Asistidas
+                              {/* Clases Asistidas Card */}
+                              <div className="bg-card border border-border/50 rounded-2xl p-4.5 space-y-3.5 shadow-none transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-border/80 focus-within:shadow-md focus-within:-translate-y-0.5 h-full flex flex-col justify-between">
+                                <div className="flex flex-col h-full justify-between space-y-3.5">
+                                  <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                                    <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+                                      Historial de Clases Asistidas
                                     </span>
-                                    <span className="text-[10px] text-muted-foreground font-semibold">
+                                    <span className="text-[10px] text-muted-foreground/70 font-semibold">
                                       {history.attended.length} asistencias
                                     </span>
                                   </div>
 
-                                  {history.attended.length > 0 ? (
-                                    <div className="overflow-x-auto rounded-xl border border-border/40">
-                                      <table className="w-full text-left text-[11px] min-w-[280px]">
-                                        <thead>
-                                          <tr className="bg-secondary/30 border-b border-border/40 text-muted-foreground font-bold uppercase text-[9.5px]">
-                                            <th className="p-2.5">Clase</th>
-                                            <th className="p-2.5">Día</th>
-                                            <th className="p-2.5">Horario</th>
-                                          </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-border/30">
-                                          {history.attended.map((h: any, i: number) => (
-                                            <tr key={i} className="hover:bg-secondary/20 transition-colors">
-                                              <td className="p-2.5 font-bold text-foreground">{h.className}</td>
-                                              <td className="p-2.5 text-muted-foreground">{h.day}</td>
-                                              <td className="p-2.5 text-muted-foreground">{h.time}</td>
+                                  <div className="flex-1 flex flex-col justify-center">
+                                    {history.attended.length > 0 ? (
+                                      <div className="overflow-x-auto rounded-xl border border-border/40 my-auto">
+                                        <table className="w-full text-left text-[11px] min-w-[280px]">
+                                          <thead>
+                                            <tr className="bg-secondary/30 border-b border-border/40 text-muted-foreground font-bold uppercase text-[9.5px]">
+                                              <th className="p-2.5">Clase</th>
+                                              <th className="p-2.5">Día</th>
+                                              <th className="p-2.5">Horario</th>
                                             </tr>
-                                          ))}
-                                        </tbody>
-                                      </table>
-                                    </div>
-                                  ) : (
-                                    <p className="text-xs text-muted-foreground text-center py-3 italic">
-                                      Sin clases asistidas registradas en el sistema.
-                                    </p>
-                                  )}
+                                          </thead>
+                                          <tbody className="divide-y divide-border/30">
+                                            {history.attended.map((h: any, i: number) => (
+                                              <tr key={i} className="hover:bg-secondary/20 transition-colors">
+                                                <td className="p-2.5 font-bold text-foreground">{h.className}</td>
+                                                <td className="p-2.5 text-muted-foreground">{h.day}</td>
+                                                <td className="p-2.5 text-muted-foreground">{h.time}</td>
+                                              </tr>
+                                            ))}
+                                          </tbody>
+                                        </table>
+                                      </div>
+                                    ) : (
+                                      <div className="py-8 my-auto text-center">
+                                        <p className="text-xs text-muted-foreground italic">
+                                          Sin clases asistidas registradas en el sistema.
+                                        </p>
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
+                              </div>
 
-                                {/* Próximas Clases Agendadas Card */}
-                                <div className="bg-background border border-border/60 rounded-2xl p-4 space-y-3 shadow-2xs">
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-xs font-bold text-foreground uppercase tracking-wider">
-                                      📅 Próximas Clases Agendadas
+                              {/* Historial de Pagos Card */}
+                              <div className="bg-card border border-border/50 rounded-2xl p-4.5 space-y-3.5 shadow-none transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-border/80 focus-within:shadow-md focus-within:-translate-y-0.5 h-full flex flex-col justify-between">
+                                <div className="flex flex-col h-full justify-between space-y-3.5">
+                                  <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                                    <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+                                      Historial de Pagos
                                     </span>
-                                    <span className="text-[10px] text-muted-foreground font-semibold">
+                                    <span className="text-[10px] text-muted-foreground/70 font-semibold">
+                                      {m.payments?.length || 0} registros
+                                    </span>
+                                  </div>
+
+                                  <div className="flex-1 flex flex-col justify-center">
+                                    {m.payments && m.payments.length > 0 ? (
+                                      <div className="overflow-x-auto rounded-xl border border-border/40 my-auto">
+                                        <table className="w-full text-left text-[11px]">
+                                          <thead>
+                                            <tr className="bg-secondary/30 border-b border-border/40 text-muted-foreground font-bold uppercase text-[9.5px]">
+                                              <th className="p-2.5">Fecha</th>
+                                              <th className="p-2.5">Plan</th>
+                                              <th className="p-2.5">Monto</th>
+                                              <th className="p-2.5">Método</th>
+                                              <th className="p-2.5 text-right">Recibo</th>
+                                            </tr>
+                                          </thead>
+                                          <tbody className="divide-y divide-border/30">
+                                            {m.payments.map((p: any) => (
+                                              <tr key={p.id} className="hover:bg-secondary/20 transition-colors">
+                                                <td className="p-2.5 text-muted-foreground">{p.date}</td>
+                                                <td className="p-2.5 font-semibold text-foreground">{p.duration}</td>
+                                                <td className="p-2.5 font-bold text-primary">${p.amount}</td>
+                                                <td className="p-2.5 text-muted-foreground">{p.method}</td>
+                                                <td className="p-2.5 text-right">
+                                                  <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-6 w-6 text-primary hover:bg-primary/10 rounded-md"
+                                                    onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      setViewingReceipt({ member: m, payment: p });
+                                                    }}
+                                                  >
+                                                    <FileText className="w-3.5 h-3.5" />
+                                                  </Button>
+                                                </td>
+                                              </tr>
+                                            ))}
+                                          </tbody>
+                                        </table>
+                                      </div>
+                                    ) : (
+                                      <div className="py-8 my-auto text-center">
+                                        <p className="text-xs text-muted-foreground italic">
+                                          Sin registros de pagos en el historial.
+                                        </p>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Próximas Clases Agendadas Card */}
+                              <div className="bg-card border border-border/50 rounded-2xl p-4.5 space-y-3.5 shadow-none transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-border/80 focus-within:shadow-md focus-within:-translate-y-0.5 h-full flex flex-col justify-between">
+                                <div className="flex flex-col h-full justify-between space-y-3.5">
+                                  <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                                    <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+                                      Próximas Clases Agendadas
+                                    </span>
+                                    <span className="text-[10px] text-muted-foreground/70 font-semibold">
                                       {history.enrolled.length} reservas
                                     </span>
                                   </div>
 
-                                  {history.enrolled.length > 0 ? (
-                                    <div className="flex flex-wrap gap-2 pt-1">
-                                      {history.enrolled.map((e: any, i: number) => (
-                                        <span
-                                          key={i}
-                                          className="text-xs bg-primary/10 text-primary font-bold px-3 py-1.5 rounded-xl border border-primary/20 flex items-center gap-1.5"
-                                        >
-                                          <span className="h-2 w-2 rounded-full bg-primary" />
-                                          {e.className} · {e.day} {e.time}
-                                        </span>
-                                      ))}
-                                    </div>
-                                  ) : (
-                                    <p className="text-xs text-muted-foreground text-center py-3 italic">
-                                      Sin reservas o clases agendadas próximamente.
-                                    </p>
-                                  )}
+                                  <div className="flex-1 flex flex-col justify-center">
+                                    {history.enrolled.length > 0 ? (
+                                      <div className="flex flex-wrap gap-2 pt-1 my-auto">
+                                        {history.enrolled.map((e: any, i: number) => (
+                                          <span
+                                            key={i}
+                                            className="text-xs bg-primary/10 text-primary font-bold px-3 py-1.5 rounded-xl border border-primary/20 flex items-center gap-1.5"
+                                          >
+                                            <span className="h-2 w-2 rounded-full bg-primary" />
+                                            {e.className} · {e.day} {e.time}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    ) : (
+                                      <div className="py-8 my-auto text-center">
+                                        <p className="text-xs text-muted-foreground italic">
+                                          Sin reservas o clases agendadas próximamente.
+                                        </p>
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             </div>
