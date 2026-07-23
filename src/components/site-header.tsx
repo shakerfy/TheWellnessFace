@@ -15,6 +15,7 @@ import {
   User,
   Sparkles,
   Calendar,
+  QrCode,
   BarChart3,
   CreditCard,
   Settings,
@@ -128,8 +129,8 @@ export function SiteHeader() {
 
                     <DropdownMenuItem asChild className="cursor-pointer">
                       <Link to="/app" search={{ tab: "clases" }}>
-                        <Calendar className="mr-2 h-4 w-4 text-emerald-500" />
-                        <span>Reservas</span>
+                        <QrCode className="mr-2 h-4 w-4 text-emerald-500" />
+                        <span>Check-in</span>
                       </Link>
                     </DropdownMenuItem>
 

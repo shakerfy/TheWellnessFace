@@ -65,7 +65,9 @@ import {
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -84,25 +86,19 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Separator } from "@/components/ui/separator";
 
 export const Route = createFileRoute("/dashboard")({
   component: GymDashboard,
 });
 
 const TABS = [
-  // Operación Diaria (Front-desk)
-  { id: "asistencia", label: "Asistencias", icon: Activity, group: "Operación Diaria" },
-  { id: "clases", label: "Clases", icon: Calendar, group: "Operación Diaria" },
-  { id: "tienda", label: "Tienda / POS", icon: ShoppingCart, group: "Operación Diaria" },
-  { id: "miembros", label: "Miembros", icon: Users, group: "Operación Diaria" },
-  // Crecimiento
-  { id: "clases-prueba", label: "Clases de Prueba", icon: HelpCircle, group: "Crecimiento" },
-  { id: "reseñas", label: "Reseñas", icon: MessageCircle, group: "Crecimiento" },
-  // Administración
-  { id: "finanzas", label: "Finanzas & Caja", icon: DollarSign, group: "Administración" },
-  { id: "membresias", label: "Membresías", icon: CreditCard, group: "Administración" },
-  { id: "reportes", label: "Reportes", icon: BarChart2, group: "Administración" },
-  { id: "config", label: "Configuración", icon: Settings, group: "Administración" },
+  { id: "asistencia", label: "Asistencias", icon: Activity },
+  { id: "clases", label: "Clases", icon: Calendar },
+  { id: "miembros", label: "Miembros", icon: Users },
+  { id: "reseñas", label: "Reseñas", icon: MessageCircle },
+  { id: "membresias", label: "Membresías", icon: CreditCard },
+  { id: "config", label: "Configuración", icon: Settings },
 ];
 
 type UserRole = "superadmin" | "manager" | "receptionist" | "coach" | "student";
@@ -677,7 +673,7 @@ function GymDashboard() {
       creditCostMultiplier: 1.2,
     },
   ]);
-  const [selectedBranchId, setSelectedBranchId] = useState("all");
+  const [selectedBranchId, setSelectedBranchId] = useState("matriz");
 
   // 7. Classes List
   const [classesList, setClassesList] = useState<
@@ -1469,25 +1465,7 @@ function GymDashboard() {
     return list.filter((c) => c.branchId === selectedBranchId);
   }, [classesList, selectedBranchId, currentUser]);
 
-  const visibleTabs = useMemo(() => {
-    return TABS.filter((tab) => {
-      if (currentUser.role === "coach") {
-        return tab.id === "clases";
-      }
-      if (currentUser.role === "receptionist") {
-        return (
-          tab.id !== "config" &&
-          tab.id !== "membresias" &&
-          tab.id !== "finanzas" &&
-          tab.id !== "reportes"
-        );
-      }
-      if (currentUser.role === "manager") {
-        return tab.id !== "config" && tab.id !== "membresias";
-      }
-      return true;
-    });
-  }, [currentUser]);
+  const visibleTabs = TABS;
 
   const handleLinkStaffByOtp = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1629,38 +1607,29 @@ function GymDashboard() {
         </div>
 
         <nav className="flex-1 flex flex-col gap-1.5 overflow-y-auto pr-2 pb-10 [&::-webkit-scrollbar]:hidden">
-          {visibleTabs.map((tab, index) => {
+          {visibleTabs.map((tab) => {
             const Icon = tab.icon;
             const hasSubstitutionsBadge = tab.id === "clases" && pendingSubstitutionsCount > 0;
-            const showDivider = index === 0 || visibleTabs[index - 1].group !== tab.group;
 
             return (
-              <Fragment key={tab.id}>
-                {showDivider && (
-                  <div className={`px-4 pb-1 ${index > 0 ? "pt-5" : "pt-2"}`}>
-                    <div className="text-[10px] font-extrabold text-muted-foreground/70 uppercase tracking-wider">
-                      {tab.group}
-                    </div>
-                  </div>
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition ${
+                  activeTab === tab.id
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                }`}
+              >
+                <Icon className="h-4 w-4 shrink-0" />
+                <span className="truncate">{tab.label}</span>
+                {hasSubstitutionsBadge && (
+                  <span className="ml-auto bg-secondary text-white font-extrabold text-[9px] px-2 py-0.5 rounded-full shrink-0 animate-pulse uppercase tracking-wider">
+                    {pendingSubstitutionsCount} suplencia
+                    {pendingSubstitutionsCount > 1 ? "s" : ""}
+                  </span>
                 )}
-                <button
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition ${
-                    activeTab === tab.id
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                  }`}
-                >
-                  <Icon className="h-4 w-4 shrink-0" />
-                  <span className="truncate">{tab.label}</span>
-                  {hasSubstitutionsBadge && (
-                    <span className="ml-auto bg-secondary text-white font-extrabold text-[9px] px-2 py-0.5 rounded-full shrink-0 animate-pulse uppercase tracking-wider">
-                      {pendingSubstitutionsCount} suplencia
-                      {pendingSubstitutionsCount > 1 ? "s" : ""}
-                    </span>
-                  )}
-                </button>
-              </Fragment>
+              </button>
             );
           })}
         </nav>
@@ -1685,20 +1654,7 @@ function GymDashboard() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <select
-              value={selectedBranchId}
-              onChange={(e) => setSelectedBranchId(e.target.value)}
-              disabled={currentUser.role !== "superadmin" && currentUser.role !== "coach"}
-              className="h-9 rounded-xl border border-border bg-card pl-3.5 pr-9 text-xs font-semibold focus-visible:outline-none cursor-pointer hover:bg-secondary/40 transition text-foreground disabled:opacity-70 disabled:cursor-not-allowed"
-            >
-              <option value="all">Sedes: Consolidado (Todas)</option>
-              <option value="matriz">Sede Principal (Palermo)</option>
-              {branchesList.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name}
-                </option>
-              ))}
-            </select>
+
 
             <div className="h-9 w-9 rounded-full bg-secondary flex items-center justify-center relative cursor-pointer">
               <Bell className="h-4 w-4" />
@@ -1707,15 +1663,9 @@ function GymDashboard() {
 
             <div className="flex items-center gap-2">
               <div className="text-right hidden sm:block">
-                <div className="text-xs font-bold text-foreground">{currentUser.name}</div>
+                <div className="text-xs font-bold text-foreground">Administrador</div>
                 <div className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">
-                  {currentUser.role === "superadmin"
-                    ? "👑 Global HQ"
-                    : currentUser.role === "manager"
-                      ? "👤 Gerente"
-                      : currentUser.role === "receptionist"
-                        ? "🔑 Recepción"
-                        : "💪 Coach"}
+                  👑 Admin
                 </div>
               </div>
               <img
@@ -1754,158 +1704,7 @@ function GymDashboard() {
         )}
 
         {/* Staff Operations Checklist (Mejora 4) */}
-        {currentUser.role !== "student" &&
-          (() => {
-            const userRole = currentUser.role;
-            const applicableProtocols = protocols.filter((p) => {
-              if (userRole === "superadmin" || userRole === "manager") return true; // ver todos
-              return p.role === userRole;
-            });
 
-            if (applicableProtocols.length === 0) return null;
-
-            if (!isChecklistVisible) {
-              return (
-                <div className="mb-6">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="rounded-xl text-xs font-bold gap-2 text-muted-foreground border-border bg-card hover:bg-muted"
-                    onClick={() => setIsChecklistVisible(true)}
-                  >
-                    <FileText className="h-3.5 w-3.5" /> Abrir Protocolos Operativos
-                  </Button>
-                </div>
-              );
-            }
-
-            return (
-              <div className="mb-6 p-5 rounded-xl bg-secondary/35 border border-border text-xs space-y-4 transition-all animate-fade-in text-foreground">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <FileText className="h-4.5 w-4.5 text-primary" />
-                    <span className="font-extrabold text-foreground text-sm">
-                      📋 Protocolos Operativos del Turno
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => setIsChecklistVisible(false)}
-                    className="text-muted-foreground hover:text-foreground text-xs font-bold"
-                  >
-                    Ocultar
-                  </button>
-                </div>
-
-                <div className="space-y-4">
-                  {applicableProtocols.map((prot) => {
-                    const isCompleted = !!completedProtocols[prot.id];
-                    const completedInfo = completedProtocols[prot.id];
-
-                    // Check if all items are checked for this protocol
-                    const allChecked = prot.items.every(
-                      (_, idx) => !!protocolItemChecks[`${prot.id}-${idx}`],
-                    );
-
-                    return (
-                      <div
-                        key={prot.id}
-                        className="p-4 rounded-2xl bg-card border border-border/60 space-y-3"
-                      >
-                        <div className="flex items-center justify-between flex-wrap gap-2">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-sm text-foreground">{prot.title}</span>
-                            <span className="text-[9px] bg-secondary text-muted-foreground px-2 py-0.5 rounded-full font-bold uppercase">
-                              {prot.time}
-                            </span>
-                            <span className="text-[9px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold uppercase">
-                              Destinado a: {prot.role}
-                            </span>
-                            {isCompleted && (
-                              <span className="text-[10px] bg-primary/ text-primary px-2 py-0.5 rounded-full font-bold">
-                                ✓ Registrado por {completedInfo.savedBy} a las{" "}
-                                {completedInfo.savedTime}
-                              </span>
-                            )}
-                          </div>
-
-                          {!isCompleted && (
-                            <Button
-                              size="sm"
-                              className="h-8 text-[11px] font-bold rounded-xl"
-                              disabled={!allChecked}
-                              onClick={() => {
-                                const now = new Date();
-                                const dateStr = now.toISOString().split("T")[0];
-                                const timeStr = now.toLocaleTimeString([], {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                });
-                                setCompletedProtocols((prev) => ({
-                                  ...prev,
-                                  [prot.id]: {
-                                    savedBy: currentUser.name.split(" ")[0],
-                                    savedTime: timeStr,
-                                  },
-                                }));
-                                const newLog = {
-                                  id: `log-${Date.now()}`,
-                                  date: dateStr,
-                                  time: timeStr,
-                                  protocolTitle: prot.title,
-                                  staffName: currentUser.name.split(" ")[0],
-                                  role: currentUser.role,
-                                  itemsCount: prot.items.length,
-                                };
-                                setChecklistLogs((prev) => [newLog, ...prev]);
-                                alert(`🎉 Protocolo "${prot.title}" registrado con éxito.`);
-                              }}
-                            >
-                              Registrar Protocolo
-                            </Button>
-                          )}
-                        </div>
-
-                        {!isCompleted ? (
-                          <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
-                            {prot.items.map((item, idx) => {
-                              const checkKey = `${prot.id}-${idx}`;
-                              return (
-                                <label
-                                  key={idx}
-                                  className="flex items-center gap-2.5 p-3 rounded-2xl bg-secondary/15 border border-border/40 hover:bg-secondary/35 transition cursor-pointer select-none"
-                                >
-                                  <input
-                                    type="checkbox"
-                                    checked={!!protocolItemChecks[checkKey]}
-                                    onChange={(e) =>
-                                      setProtocolItemChecks((prev) => ({
-                                        ...prev,
-                                        [checkKey]: e.target.checked,
-                                      }))
-                                    }
-                                    className="h-4.5 w-4.5 accent-primary rounded cursor-pointer shrink-0"
-                                  />
-                                  <span className="text-xs text-foreground font-semibold">
-                                    {item}
-                                  </span>
-                                </label>
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <div className="text-xs text-muted-foreground italic flex items-center gap-1.5 pl-1">
-                            <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                            Todas las tareas de este protocolo han sido verificadas y completadas
-                            para el turno.
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })()}
 
         {activeTab === "asistencia" && (
           <AsistenciasTab selectedBranchId={selectedBranchId} blackoutDays={blackoutDays} />
@@ -1928,15 +1727,7 @@ function GymDashboard() {
             branchesList={branchesList}
           />
         )}
-        {activeTab === "clases-prueba" && (
-          <ClasesPruebaTab
-            trialRequests={trialRequests}
-            setTrialRequests={setTrialRequests}
-            classesList={classesList}
-            trialClassSettings={trialClassSettings}
-            setTrialClassSettings={setTrialClassSettings}
-          />
-        )}
+
         {activeTab === "clases" && (
           <ClasesTab
             classesList={visibleClasses}
@@ -1954,34 +1745,8 @@ function GymDashboard() {
         {activeTab === "reseñas" && (
           <ReseñasTab reviewsList={reviewsList} setReviewsList={setReviewsList} />
         )}
-        {activeTab === "tienda" && (
-          <TiendaTab
-            cashTransactions={cashTransactions}
-            setCashTransactions={setCashTransactions}
-            currentUser={currentUser}
-          />
-        )}
-        {activeTab === "finanzas" && (
-          <FinanzasTab
-            cashTransactions={cashTransactions}
-            setCashTransactions={setCashTransactions}
-            payrollRecords={payrollRecords}
-            setPayrollRecords={setPayrollRecords}
-            staffList={staffList}
-            classesList={classesList}
-            membersList={membersList}
-            setMembersList={setMembersList}
-            currentUser={currentUser}
-          />
-        )}
-        {activeTab === "reportes" && (
-          <ReportesTab
-            classesList={classesList}
-            membersList={membersList}
-            cashTransactions={cashTransactions}
-            membershipsList={membershipsList}
-          />
-        )}
+
+
         {activeTab === "config" && (
           <ConfigTab
             selectedBranchId={selectedBranchId}
@@ -2015,117 +1780,7 @@ function GymDashboard() {
         )}
       </main>
 
-      {/* Floating Role Simulator for testing permissions */}
-      {isSimuladorOpen ? (
-        <div className="fixed bottom-4 right-4 bg-card border border-border p-3.5 rounded-2xl z-50 max-w-sm flex flex-col gap-2 animate-fade-in text-foreground">
-          <div className="flex justify-between items-center mb-1">
-            <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-              Simulador de Permisos (RBAC)
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6 -mr-1"
-              onClick={() => setIsSimuladorOpen(false)}
-            >
-              <X className="w-3 h-3" />
-            </Button>
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] text-muted-foreground font-semibold">
-              Seleccionar Rol Simulado:
-            </label>
-            <select
-              value={`${currentUser.role}-${currentUser.branchId || ""}-${currentUser.staffId || ""}`}
-              onChange={(e) => {
-                const [role, branchId, staffId] = e.target.value.split("-");
-                if (role === "superadmin") {
-                  setCurrentUser({ name: "Alan Kraft (SuperAdmin)", role: "superadmin" });
-                } else if (role === "manager") {
-                  setCurrentUser({
-                    name: "Marcos Pérez (Gerente)",
-                    role: "manager",
-                    branchId: branchId || undefined,
-                  });
-                } else if (role === "receptionist") {
-                  setCurrentUser({
-                    name: "Camila Díaz (Recepción)",
-                    role: "receptionist",
-                    branchId: branchId || undefined,
-                  });
-                } else if (role === "coach") {
-                  setCurrentUser({
-                    name: "Mateo Rossi (Coach)",
-                    role: "coach",
-                    staffId: staffId || undefined,
-                  });
-                } else if (role === "student") {
-                  setCurrentUser({ name: "Agustín Gómez", role: "student" });
-                }
-              }}
-              className="h-8 rounded-lg border border-border bg-background px-2 text-xs font-semibold cursor-pointer focus-visible:outline-none"
-            >
-              <option value="superadmin--">Alan Kraft (👑 HQ SuperAdmin)</option>
-              <option value="manager-1-">Marcos Pérez (👤 Gerente - Sede Belgrano)</option>
-              <option value="receptionist-2-">
-                Camila Díaz (🔑 Recepcionista - Sede Las Cañitas)
-              </option>
-              <option value="coach--1">Mateo Rossi (💪 Coach / Profesor)</option>
-              <option value="student--">Agustín Gómez (🙋‍♂️ Alumno App)</option>
-            </select>
-          </div>
 
-          {/* OTP Linkage Form */}
-          <form
-            onSubmit={handleLinkStaffByOtp}
-            className="border-t border-border/40 pt-2 flex flex-col gap-1.5"
-          >
-            <label className="text-[10px] text-muted-foreground font-semibold">
-              📲 Vincular App Staff (Código 4-dig):
-            </label>
-            <div className="flex gap-1.5">
-              <input
-                type="text"
-                maxLength={4}
-                placeholder="Ej: 7821"
-                value={otpInput}
-                onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, ""))}
-                className="h-7 w-24 rounded-lg border border-border bg-background px-2 text-xs font-mono text-center focus-visible:outline-none text-foreground"
-              />
-              <Button
-                type="submit"
-                size="sm"
-                className="h-7 rounded-lg text-[10px] py-0 px-3 font-bold"
-              >
-                Vincular
-              </Button>
-            </div>
-          </form>
-
-          <p className="text-[9px] text-muted-foreground leading-relaxed mt-0.5">
-            {currentUser.role === "superadmin" &&
-              "Permisos globales HQ. Puede ver todo, cambiar de sede libremente y editar la configuración y membresías."}
-            {currentUser.role === "manager" &&
-              "Permisos limitados a Sede Belgrano. No puede acceder a pestañas de Membresías ni Configuración Global."}
-            {currentUser.role === "receptionist" &&
-              "Permisos limitados a Sede Las Cañitas. Solo gestiona la lista de asistencia de la sucursal asignada."}
-            {currentUser.role === "coach" &&
-              "Permisos limitados a profesor. Solo puede ver y listar los alumnos inscritos en sus clases particulares."}
-            {currentUser.role === "student" && "Vista simplificada de la App del Alumno."}
-          </p>
-        </div>
-      ) : (
-        <Button
-          variant="outline"
-          size="sm"
-          className="fixed bottom-4 right-4 z-50 rounded-full border border-border bg-card/80 backdrop-blur-sm text-xs font-semibold"
-          onClick={() => setIsSimuladorOpen(true)}
-        >
-          <Settings className="w-3.5 h-3.5 mr-2" />
-          RBAC
-        </Button>
-      )}
     </div>
   );
 }
@@ -2162,1833 +1817,11 @@ interface GymFacilityReview {
   reportReason?: string;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// REPORTES TAB
-// ─────────────────────────────────────────────────────────────────────────────
-function ReportesTab({
-  classesList,
-  membersList,
-  cashTransactions,
-  membershipsList,
-}: {
-  classesList: any[];
-  membersList: any[];
-  cashTransactions: { type: string; channel: string; amount: number; date: string }[];
-  membershipsList: { id: string; name: string; price: number; activeCount: number }[];
-}) {
-  const fmtARS = (n: number) => `$${n.toLocaleString("es-AR")}`;
+// ponytail: ReportesTab removed per user request
 
-  // ── RETENTION ──────────────────────────────────────────────────────────────
-  const retActive = membersList.filter((m) => m.status === "activo").length;
-  const retPending = membersList.filter((m) => m.status === "pendiente").length;
-  const retExpired = membersList.filter((m) => m.status === "vencido").length;
-  const retTotal = membersList.length || 1;
-  const retentionRate = Math.round((retActive / retTotal) * 100);
 
-  // ── TOP CLASSES BY FILL RATE ───────────────────────────────────────────────
-  const classByFill = [...classesList]
-    .map((c) => ({
-      name: c.name,
-      fill:
-        c.capacity > 0
-          ? Math.round((Object.keys(c.enrolledSpots || {}).length / c.capacity) * 100)
-          : 0,
-      enrolled: Object.keys(c.enrolledSpots || {}).length,
-      capacity: c.capacity,
-    }))
-    .sort((a, b) => b.fill - a.fill)
-    .slice(0, 8);
+// ponytail: FinanzasTab removed per user request
 
-  // ── REVENUE BY CHANNEL ─────────────────────────────────────────────────────
-  const incomes = cashTransactions.filter((t) => t.type === "income");
-  const totalIncome = incomes.reduce((s, t) => s + t.amount, 0) || 1;
-  const byChannel = (["app", "transfer", "cash"] as const).map((ch) => ({
-    ch,
-    amount: incomes.filter((t) => t.channel === ch).reduce((s, t) => s + t.amount, 0),
-  }));
-
-  // ── PEAK HOURS ─────────────────────────────────────────────────────────────
-  const hourMap: Record<string, { total: number; enrolled: number }> = {};
-  classesList.forEach((c) => {
-    const hour = c.time?.split(":")[0] ?? "?";
-    if (!hourMap[hour]) hourMap[hour] = { total: 0, enrolled: 0 };
-    hourMap[hour].total += c.capacity;
-    hourMap[hour].enrolled += Object.keys(c.enrolledSpots || {}).length;
-  });
-  const peakHours = Object.entries(hourMap)
-    .map(([h, v]) => ({
-      hour: `${h}:00`,
-      pct: v.total > 0 ? Math.round((v.enrolled / v.total) * 100) : 0,
-    }))
-    .sort((a, b) => a.hour.localeCompare(b.hour));
-  const maxPct = Math.max(...peakHours.map((p) => p.pct), 1);
-
-  // ── MOST ACTIVE MEMBERS ────────────────────────────────────────────────────
-  const memberActivity = membersList
-    .map((m) => {
-      const attended = classesList.reduce((s, c) => {
-        const spot = Object.entries(c.enrolledSpots || {}).find(([, n]) => n === m.name);
-        if (!spot) return s;
-        const idx = parseInt(spot[0]);
-        return s + (c.attendance?.[idx] === "presente" ? 1 : 0);
-      }, 0);
-      return { name: m.name, photo: m.photo, plan: m.plan, attended };
-    })
-    .sort((a, b) => b.attended - a.attended);
-
-  // ── MEMBERSHIP REVENUE BREAKDOWN ───────────────────────────────────────────
-  const membershipRevTotal = membershipsList.reduce((s, m) => s + m.price * m.activeCount, 0) || 1;
-
-  const channelColors: Record<string, string> = {
-    app: "bg-primary",
-    transfer: "bg-primary",
-    cash: "bg-primary",
-  };
-  const channelLabels: Record<string, string> = {
-    app: "📱 App",
-    transfer: "🏦 Transferencia",
-    cash: "💵 Efectivo",
-  };
-
-  return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-      <div>
-        <h2 className="text-xl font-bold tracking-tight">Reportes & Analytics</h2>
-        <p className="text-sm text-muted-foreground">
-          Métricas clave del negocio, calculadas en tiempo real sobre los datos actuales.
-        </p>
-      </div>
-
-      {/* ── ROW 1: Retention + Revenue ─────────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Retención */}
-        <Card className="border-border bg-card rounded-3xl">
-          <CardContent className="pt-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Retención de Alumnos
-              </div>
-              <div
-                className={`text-2xl font-extrabold ${retentionRate >= 70 ? "text-primary" : retentionRate >= 50 ? "text-secondary-foreground" : "text-destructive"}`}
-              >
-                {retentionRate}%
-              </div>
-            </div>
-            {/* Stacked bar */}
-            <div className="h-3 rounded-full overflow-hidden flex gap-0.5">
-              <div
-                className="bg-primary rounded-l-full transition-all duration-700"
-                style={{ width: `${(retActive / retTotal) * 100}%` }}
-              />
-              <div
-                className="bg-secondary transition-all duration-700"
-                style={{ width: `${(retPending / retTotal) * 100}%` }}
-              />
-              <div
-                className="bg-destructive rounded-r-full transition-all duration-700"
-                style={{ width: `${(retExpired / retTotal) * 100}%` }}
-              />
-            </div>
-            <div className="grid grid-cols-3 gap-2 text-center">
-              {[
-                { label: "Activos", count: retActive, color: "text-primary", bg: "bg-primary/" },
-                {
-                  label: "Pendientes",
-                  count: retPending,
-                  color: "text-secondary-foreground",
-                  bg: "bg-secondary/",
-                },
-                {
-                  label: "Vencidos",
-                  count: retExpired,
-                  color: "text-destructive",
-                  bg: "bg-destructive/",
-                },
-              ].map((s) => (
-                <div key={s.label} className={`${s.bg} rounded-2xl py-2`}>
-                  <div className={`text-xl font-extrabold ${s.color}`}>{s.count}</div>
-                  <div className="text-[10px] text-muted-foreground font-bold uppercase">
-                    {s.label}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Ingresos por canal */}
-        <Card className="border-border bg-card rounded-3xl">
-          <CardContent className="pt-6 space-y-4">
-            <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Ingresos por Canal
-            </div>
-            <div className="space-y-3">
-              {byChannel.map(({ ch, amount }) => {
-                const pct = Math.round((amount / totalIncome) * 100);
-                return (
-                  <div key={ch} className="space-y-1">
-                    <div className="flex justify-between text-xs font-semibold">
-                      <span>{channelLabels[ch]}</span>
-                      <span className="text-muted-foreground">
-                        {fmtARS(amount)} <span className="text-muted-foreground/60">({pct}%)</span>
-                      </span>
-                    </div>
-                    <div className="h-2 bg-secondary/40 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full ${channelColors[ch]} rounded-full transition-all duration-700`}
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="pt-2 border-t border-border/60 flex justify-between text-xs font-bold">
-              <span className="text-muted-foreground">Total registrado</span>
-              <span>{fmtARS(totalIncome - 1)}</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* ── ROW 2: Clases por Ocupación ───────────────────────────────────── */}
-      <Card className="border-border bg-card rounded-3xl">
-        <CardContent className="pt-6 space-y-3">
-          <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            Top Clases por Tasa de Ocupación
-          </div>
-          <div className="space-y-2.5">
-            {classByFill.map((c, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <div className="text-[10px] font-extrabold text-muted-foreground w-4 shrink-0">
-                  {i + 1}
-                </div>
-                <div className="text-xs font-semibold w-36 shrink-0 truncate">{c.name}</div>
-                <div className="flex-1 h-2 bg-secondary/40 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all duration-700 ${c.fill >= 80 ? "bg-destructive" : c.fill >= 50 ? "bg-secondary" : "bg-primary"}`}
-                    style={{ width: `${c.fill}%` }}
-                  />
-                </div>
-                <div className="text-[10px] font-bold text-muted-foreground w-20 text-right shrink-0">
-                  {c.enrolled}/{c.capacity} · {c.fill}%
-                </div>
-              </div>
-            ))}
-          </div>
-          <p className="text-[10px] text-muted-foreground pt-1">
-            🔴 &gt;80% lleno · 🟡 50-80% · 🟢 &lt;50%
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* ── ROW 3: Peak Hours + Memberships ──────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Horarios de mayor demanda */}
-        <Card className="border-border bg-card rounded-3xl">
-          <CardContent className="pt-6 space-y-3">
-            <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Horarios de Mayor Demanda
-            </div>
-            <div className="flex items-end gap-1.5 h-24">
-              {peakHours.map(({ hour, pct }) => (
-                <div key={hour} className="flex-1 flex flex-col items-center gap-1">
-                  <div className="text-[9px] font-bold text-muted-foreground">{pct}%</div>
-                  <div
-                    className={`w-full rounded-t-md transition-all duration-700 ${pct >= 70 ? "bg-destructive" : pct >= 40 ? "bg-secondary" : "bg-primary/"}`}
-                    style={{ height: `${Math.round((pct / maxPct) * 64)}px`, minHeight: "4px" }}
-                  />
-                  <div className="text-[8px] text-muted-foreground font-semibold">{hour}</div>
-                </div>
-              ))}
-            </div>
-            {peakHours.length === 0 && (
-              <p className="text-xs text-muted-foreground text-center py-4">
-                Sin datos suficientes
-              </p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Membresías activas */}
-        <Card className="border-border bg-card rounded-3xl">
-          <CardContent className="pt-6 space-y-3">
-            <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Membresías — Recaudación Estimada
-            </div>
-            <div className="space-y-3">
-              {membershipsList.map((m) => {
-                const total = m.price * m.activeCount;
-                const pct = Math.round((total / membershipRevTotal) * 100);
-                const palette = ["bg-primary", "bg-primary", "bg-primary"];
-                const color = palette[membershipsList.indexOf(m) % palette.length];
-                return (
-                  <div key={m.id} className="space-y-1">
-                    <div className="flex justify-between text-xs font-semibold">
-                      <span>
-                        {m.name}{" "}
-                        <span className="text-muted-foreground font-normal">
-                          · {m.activeCount} alumnos
-                        </span>
-                      </span>
-                      <span className="text-muted-foreground">{fmtARS(total)}</span>
-                    </div>
-                    <div className="h-2 bg-secondary/40 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full ${color} rounded-full transition-all duration-700`}
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* ── ROW 4: Most Active Members ───────────────────────────────────── */}
-      <Card className="border-border bg-card rounded-3xl">
-        <CardContent className="pt-6 space-y-3">
-          <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            Alumnos Más Activos
-          </div>
-          <div className="space-y-2">
-            {memberActivity.slice(0, 6).map((m, i) => (
-              <div key={m.name} className="flex items-center gap-3 text-xs">
-                <div
-                  className={`w-5 h-5 rounded-full flex items-center justify-center font-extrabold text-[9px] shrink-0 ${
-                    i === 0
-                      ? "bg-secondary text-white"
-                      : i === 1
-                        ? "bg-slate-400 text-white"
-                        : i === 2
-                          ? "bg-orange-700 text-white"
-                          : "bg-secondary text-muted-foreground"
-                  }`}
-                >
-                  {i + 1}
-                </div>
-                <img
-                  src={m.photo}
-                  alt={m.name}
-                  className="w-7 h-7 rounded-xl border border-border shrink-0"
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold truncate">{m.name}</div>
-                  <div className="text-muted-foreground">{m.plan}</div>
-                </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
-                  <span className="font-bold">{m.attended} presencias</span>
-                </div>
-              </div>
-            ))}
-            {memberActivity.every((m) => m.attended === 0) && (
-              <p className="text-xs text-muted-foreground text-center py-4">
-                Aún no hay asistencias registradas en el período.
-              </p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// FINANZAS TAB
-// ─────────────────────────────────────────────────────────────────────────────
-type CashTransaction = {
-  id: string;
-  date: string;
-  type: "income" | "expense";
-  channel: "cash" | "transfer" | "app" | "payroll";
-  description: string;
-  amount: number;
-  registeredBy: string;
-};
-
-type PayrollRecord = {
-  id: string;
-  staffId: string;
-  period: string;
-  classesGiven: number;
-  studentsAttended: number;
-  totalAmount: number;
-  status: "pending" | "paid";
-  paidAt?: string;
-};
-
-function calcCoachPayroll(
-  staff: {
-    payModel?: string;
-    fixedRatePerClass?: number;
-    ratePerStudent?: number;
-    revenuePercent?: number;
-  },
-  classesGiven: number,
-  studentsAttended: number,
-  totalRevenue: number,
-): number {
-  switch (staff.payModel) {
-    case "fixed_class":
-      return classesGiven * (staff.fixedRatePerClass ?? 0);
-    case "per_student":
-      return studentsAttended * (staff.ratePerStudent ?? 0);
-    case "hybrid":
-      return (
-        classesGiven * (staff.fixedRatePerClass ?? 0) +
-        studentsAttended * (staff.ratePerStudent ?? 0)
-      );
-    case "percent":
-      return totalRevenue * ((staff.revenuePercent ?? 0) / 100);
-    default:
-      return classesGiven * 3000;
-  }
-}
-
-const CHANNEL_LABELS: Record<string, string> = {
-  cash: "💵 Efectivo",
-  transfer: "🏦 Transferencia",
-  app: "📱 App (MercadoPago)",
-  payroll: "👨‍🏫 Sueldo Coach",
-};
-
-const PAY_MODEL_LABELS: Record<string, string> = {
-  fixed_class: "Fijo por clase",
-  per_student: "Por alumno presente",
-  hybrid: "Híbrido (Fijo + Por alumno)",
-  percent: "% de recaudación",
-};
-
-const MOCK_PRODUCTS = [
-  {
-    id: "p1",
-    name: "Agua Mineral 500ml",
-    category: "Bebidas",
-    price: 1500,
-    stock: 45,
-    image:
-      "https://images.unsplash.com/photo-1546820228-569d6c2c10b7?auto=format&fit=crop&w=150&q=80",
-  },
-  {
-    id: "p2",
-    name: "Gatorade Frutos Rojos",
-    category: "Bebidas",
-    price: 2500,
-    stock: 20,
-    image:
-      "https://images.unsplash.com/photo-1622543925917-763c34d1a86e?auto=format&fit=crop&w=150&q=80",
-  },
-  {
-    id: "p3",
-    name: "Barra de Proteína",
-    category: "Suplementos",
-    price: 3000,
-    stock: 15,
-    image:
-      "https://images.unsplash.com/photo-1620189507195-68309c04c4d0?auto=format&fit=crop&w=150&q=80",
-  },
-  {
-    id: "p4",
-    name: "Pre-entreno 300g",
-    category: "Suplementos",
-    price: 35000,
-    stock: 8,
-    image:
-      "https://images.unsplash.com/photo-1593095948071-474c5cc2989d?auto=format&fit=crop&w=150&q=80",
-  },
-  {
-    id: "p5",
-    name: "Toalla de microfibra",
-    category: "Accesorios",
-    price: 8000,
-    stock: 12,
-    image:
-      "https://images.unsplash.com/photo-1584947936640-5e608cced9ee?auto=format&fit=crop&w=150&q=80",
-  },
-  {
-    id: "p6",
-    name: "Candado de combinación",
-    category: "Accesorios",
-    price: 6500,
-    stock: 30,
-    image:
-      "https://images.unsplash.com/photo-1551372659-54bc7b99c26b?auto=format&fit=crop&w=150&q=80",
-  },
-];
-
-function TiendaTab({
-  cashTransactions,
-  setCashTransactions,
-  currentUser,
-}: {
-  cashTransactions: CashTransaction[];
-  setCashTransactions: React.Dispatch<React.SetStateAction<CashTransaction[]>>;
-  currentUser: { name: string; role: string };
-}) {
-  const [products, setProducts] = useState(MOCK_PRODUCTS);
-  const [cart, setCart] = useState<{ product: (typeof MOCK_PRODUCTS)[0]; quantity: number }[]>([]);
-  const [txChannel, setTxChannel] = useState<"cash" | "transfer">("cash");
-  const [search, setSearch] = useState("");
-
-  const [isAddProductOpen, setIsAddProductOpen] = useState(false);
-  const [editingProductId, setEditingProductId] = useState<string | null>(null);
-  const [newProductName, setNewProductName] = useState("");
-  const [newProductCategory, setNewProductCategory] = useState("Bebidas");
-  const [newProductPrice, setNewProductPrice] = useState("");
-  const [newProductStock, setNewProductStock] = useState("");
-
-  const openEditProduct = (p: (typeof MOCK_PRODUCTS)[0]) => {
-    setEditingProductId(p.id);
-    setNewProductName(p.name);
-    setNewProductCategory(p.category);
-    setNewProductPrice(p.price.toString());
-    setNewProductStock(p.stock.toString());
-    setIsAddProductOpen(true);
-  };
-
-  const handleDeleteProduct = () => {
-    if (editingProductId && window.confirm("¿Seguro que deseas eliminar este producto?")) {
-      setProducts((prev) => prev.filter((p) => p.id !== editingProductId));
-      setIsAddProductOpen(false);
-    }
-  };
-
-  const handleAddProduct = () => {
-    if (!newProductName || !newProductPrice || !newProductStock) return;
-
-    if (editingProductId) {
-      setProducts((prev) =>
-        prev.map((p) =>
-          p.id === editingProductId
-            ? {
-                ...p,
-                name: newProductName,
-                category: newProductCategory,
-                price: Number(newProductPrice),
-                stock: Number(newProductStock),
-              }
-            : p,
-        ),
-      );
-    } else {
-      const newProduct = {
-        id: "p" + Date.now(),
-        name: newProductName,
-        category: newProductCategory,
-        price: Number(newProductPrice),
-        stock: Number(newProductStock),
-        image:
-          "https://images.unsplash.com/photo-1546820228-569d6c2c10b7?auto=format&fit=crop&w=150&q=80",
-      };
-      setProducts([newProduct, ...products]);
-    }
-
-    setIsAddProductOpen(false);
-    setEditingProductId(null);
-    setNewProductName("");
-    setNewProductPrice("");
-    setNewProductStock("");
-  };
-
-  const filteredProducts = products.filter(
-    (p) =>
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.category.toLowerCase().includes(search.toLowerCase()),
-  );
-
-  const addToCart = (product: (typeof MOCK_PRODUCTS)[0]) => {
-    setCart((prev) => {
-      const existing = prev.find((item) => item.product.id === product.id);
-      if (existing) {
-        if (existing.quantity >= product.stock) return prev; // Cannot add more than stock
-        return prev.map((item) =>
-          item.product.id === product.id ? { ...item, quantity: item.quantity + 1 } : item,
-        );
-      }
-      return [...prev, { product, quantity: 1 }];
-    });
-  };
-
-  const removeFromCart = (productId: string) => {
-    setCart((prev) => {
-      const existing = prev.find((item) => item.product.id === productId);
-      if (existing && existing.quantity > 1) {
-        return prev.map((item) =>
-          item.product.id === productId ? { ...item, quantity: item.quantity - 1 } : item,
-        );
-      }
-      return prev.filter((item) => item.product.id !== productId);
-    });
-  };
-
-  const total = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-
-  const handleCheckout = () => {
-    if (cart.length === 0) return;
-
-    const today = new Date().toISOString().split("T")[0];
-
-    // Add transaction to Finanzas
-    setCashTransactions((prev) => [
-      {
-        id: "tx-pos-" + Date.now(),
-        type: "income",
-        channel: txChannel,
-        amount: total,
-        date: today,
-        description: "Venta en Tienda (POS)",
-        registeredBy: currentUser.name,
-      },
-      ...prev,
-    ]);
-
-    // Deduct stock
-    setProducts((prev) =>
-      prev.map((p) => {
-        const cartItem = cart.find((c) => c.product.id === p.id);
-        if (cartItem) {
-          return { ...p, stock: p.stock - cartItem.quantity };
-        }
-        return p;
-      }),
-    );
-
-    // Clear cart
-    setCart([]);
-    alert("✅ Venta registrada correctamente en Caja");
-  };
-
-  return (
-    <div className="flex flex-col h-full gap-6 lg:flex-row">
-      {/* Catálogo de Productos */}
-      <div className="flex-1 flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-bold tracking-tight">Tienda / POS</h2>
-            <p className="text-sm text-muted-foreground">
-              Vende productos y accesorios en recepción.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="relative w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar producto..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 bg-background/50 backdrop-blur-sm border-white/10"
-              />
-            </div>
-            <Button
-              onClick={() => {
-                setEditingProductId(null);
-                setNewProductName("");
-                setNewProductPrice("");
-                setNewProductStock("");
-                setIsAddProductOpen(true);
-              }}
-              className="rounded-xl"
-            >
-              <Plus className="w-4 h-4 mr-2" /> Nuevo Producto
-            </Button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto pb-20">
-          {filteredProducts.map((p) => (
-            <div
-              key={p.id}
-              onClick={() => p.stock > 0 && addToCart(p)}
-              className={`bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl overflow-hidden cursor-pointer hover:border-primary/50 transition-all hover:-translate-y-1 relative group ${p.stock === 0 ? "opacity-50 grayscale cursor-not-allowed" : ""}`}
-            >
-              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-background/90 rounded-md border border-border">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openEditProduct(p);
-                  }}
-                  className="p-1.5 hover:text-primary"
-                >
-                  <Edit2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
-              <div className="h-32 bg-muted relative">
-                <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
-                {p.stock === 0 && (
-                  <div className="absolute inset-0 bg-background/80 flex items-center justify-center font-bold text-red-400">
-                    Sin stock
-                  </div>
-                )}
-                <Badge
-                  variant="secondary"
-                  className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm"
-                >
-                  {p.category}
-                </Badge>
-              </div>
-              <div className="p-3">
-                <h3 className="font-semibold text-sm line-clamp-1">{p.name}</h3>
-                <div className="flex items-center justify-between mt-2">
-                  <span className="font-bold text-primary">${p.price.toLocaleString()}</span>
-                  <span className="text-xs text-muted-foreground">{p.stock} un.</span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Carrito / Ticket */}
-      <div className="w-full lg:w-96 bg-card/30 backdrop-blur-md border-l border-white/5 p-4 flex flex-col h-full rounded-l-3xl lg:rounded-none lg:-mr-4 lg:-my-4">
-        <h3 className="font-bold mb-4 flex items-center gap-2">
-          <ShoppingCart className="w-5 h-5" /> Ticket Actual
-        </h3>
-
-        <div className="flex-1 overflow-y-auto space-y-3 pr-2">
-          {cart.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-muted-foreground opacity-50 space-y-2">
-              <Package className="w-12 h-12 mb-2" />
-              <p>El carrito está vacío</p>
-              <p className="text-xs">Selecciona productos para vender</p>
-            </div>
-          ) : (
-            cart.map((item) => (
-              <div
-                key={item.product.id}
-                className="flex items-center justify-between bg-background/50 p-3 rounded-xl border border-white/5"
-              >
-                <div className="flex-1 min-w-0 pr-2">
-                  <div className="font-medium text-sm truncate">{item.product.name}</div>
-                  <div className="text-xs text-primary font-bold">
-                    ${item.product.price.toLocaleString()}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 bg-muted/50 rounded-lg p-1">
-                  <button
-                    onClick={() => removeFromCart(item.product.id)}
-                    className="p-1 hover:bg-background rounded-md transition-colors"
-                  >
-                    <MinusCircle className="w-4 h-4" />
-                  </button>
-                  <span className="text-sm font-bold w-4 text-center">{item.quantity}</span>
-                  <button
-                    onClick={() => addToCart(item.product)}
-                    className="p-1 hover:bg-background rounded-md transition-colors"
-                    disabled={item.quantity >= item.product.stock}
-                  >
-                    <PlusCircle className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-
-        <div className="pt-4 mt-4 border-t border-white/10 space-y-4">
-          <div className="flex justify-between items-center text-xl font-black">
-            <span>Total:</span>
-            <span className="text-primary">${total.toLocaleString()}</span>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground">
-              Método de Pago (Cobro Inmediato)
-            </Label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => setTxChannel("cash")}
-                className={`py-2 px-3 rounded-xl text-sm font-bold border transition-all flex items-center justify-center gap-2 ${txChannel === "cash" ? "bg-primary border-primary text-primary-foreground" : "bg-background/50 border-border text-muted-foreground hover:bg-muted"}`}
-              >
-                💵 Efectivo
-              </button>
-              <button
-                onClick={() => setTxChannel("transfer")}
-                className={`py-2 px-3 rounded-xl text-sm font-bold border transition-all flex items-center justify-center gap-2 ${txChannel === "transfer" ? "bg-primary border-primary text-primary-foreground" : "bg-background/50 border-border text-muted-foreground hover:bg-muted"}`}
-              >
-                📱 Transf.
-              </button>
-            </div>
-          </div>
-
-          <Button
-            className="w-full h-12 rounded-xl font-bold text-lg"
-            disabled={cart.length === 0}
-            onClick={handleCheckout}
-          >
-            Cobrar ${total.toLocaleString()}
-          </Button>
-        </div>
-      </div>
-
-      {/* Dialog Nuevo Producto */}
-      <Dialog open={isAddProductOpen} onOpenChange={setIsAddProductOpen}>
-        <DialogContent className="sm:max-w-[425px] rounded-3xl">
-          <DialogHeader>
-            <DialogTitle>{editingProductId ? "Editar Producto" : "Nuevo Producto"}</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label>Nombre del producto</Label>
-              <Input
-                value={newProductName}
-                onChange={(e) => setNewProductName(e.target.value)}
-                placeholder="Ej. Agua sin gas"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Categoría</Label>
-              <select
-                value={newProductCategory}
-                onChange={(e) => setNewProductCategory(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-              >
-                <option value="Bebidas">Bebidas</option>
-                <option value="Suplementos">Suplementos</option>
-                <option value="Accesorios">Accesorios</option>
-              </select>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Precio ($)</Label>
-                <Input
-                  type="number"
-                  value={newProductPrice}
-                  onChange={(e) => setNewProductPrice(e.target.value)}
-                  placeholder="1500"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Stock Inicial</Label>
-                <Input
-                  type="number"
-                  value={newProductStock}
-                  onChange={(e) => setNewProductStock(e.target.value)}
-                  placeholder="20"
-                />
-              </div>
-            </div>
-          </div>
-          <DialogFooter className="flex items-center justify-between mt-4">
-            {editingProductId ? (
-              <Button
-                type="button"
-                variant="destructive"
-                className="rounded-xl flex-1 mr-2"
-                onClick={handleDeleteProduct}
-              >
-                Eliminar
-              </Button>
-            ) : (
-              <Button
-                type="button"
-                variant="outline"
-                className="rounded-xl flex-1 mr-2"
-                onClick={() => setIsAddProductOpen(false)}
-              >
-                Cancelar
-              </Button>
-            )}
-            <Button onClick={handleAddProduct} className="rounded-xl flex-1">
-              {editingProductId ? "Guardar" : "Crear Producto"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-}
-
-function FinanzasTab({
-  cashTransactions,
-  setCashTransactions,
-  payrollRecords,
-  setPayrollRecords,
-  staffList,
-  classesList,
-  membersList,
-  setMembersList,
-  currentUser,
-}: {
-  cashTransactions: CashTransaction[];
-  setCashTransactions: React.Dispatch<React.SetStateAction<CashTransaction[]>>;
-  payrollRecords: PayrollRecord[];
-  setPayrollRecords: React.Dispatch<React.SetStateAction<PayrollRecord[]>>;
-  staffList: any[];
-  classesList: any[];
-  membersList: any[];
-  setMembersList: React.Dispatch<React.SetStateAction<any[]>>;
-  currentUser: { name: string; role: string };
-}) {
-  const [subTab, setSubTab] = useState<"caja" | "balance" | "payroll" | "arqueo" | "deudas">(
-    "balance",
-  );
-
-  // New transaction form state
-  const [txType, setTxType] = useState<"income" | "expense">("income");
-  const [txChannel, setTxChannel] = useState<"cash" | "transfer" | "app">("cash");
-  const [txDescription, setTxDescription] = useState("");
-  const [txAmount, setTxAmount] = useState("");
-
-  // ponytail: useState avoids SSR/client Date mismatch (hydration error)
-  const [today] = useState(() => new Date().toISOString().split("T")[0]);
-
-  // ── METRICS ──────────────────────────────────────────────────────────────
-  const totalIncome = useMemo(
-    () => cashTransactions.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0),
-    [cashTransactions],
-  );
-
-  const totalExpense = useMemo(
-    () => cashTransactions.filter((t) => t.type === "expense").reduce((s, t) => s + t.amount, 0),
-    [cashTransactions],
-  );
-
-  const appIncome = useMemo(
-    () => cashTransactions.filter((t) => t.channel === "app").reduce((s, t) => s + t.amount, 0),
-    [cashTransactions],
-  );
-
-  const shakeComission = Math.round(appIncome * 0.05);
-  const netIncome = totalIncome - shakeComission;
-  const profit = netIncome - totalExpense;
-
-  const todayTransactions = useMemo(
-    () => cashTransactions.filter((t) => t.date === today),
-    [cashTransactions, today],
-  );
-
-  const todayIncome = todayTransactions
-    .filter((t) => t.type === "income")
-    .reduce((s, t) => s + t.amount, 0);
-  const todayExpense = todayTransactions
-    .filter((t) => t.type === "expense")
-    .reduce((s, t) => s + t.amount, 0);
-
-  // ── PAYROLL CALC ─────────────────────────────────────────────────────────
-  // For each coach, compute pending period (current month) from classesList
-  const currentPeriod = new Date()
-    .toLocaleDateString("es-AR", { month: "long", year: "numeric" })
-    .replace(/^\w/, (c) => c.toUpperCase());
-
-  const coaches = staffList.filter((s) => s.role === "coach");
-
-  const pendingPayroll = useMemo(() => {
-    return coaches.map((coach) => {
-      const existing = payrollRecords.find(
-        (p) => p.staffId === coach.id && p.period === currentPeriod,
-      );
-      if (existing) return { coach, record: existing, pending: false };
-
-      // Count classes and attendees for this coach from classesList
-      const coachClasses = classesList.filter((c) => c.staffId === coach.id);
-      const classesGiven = coachClasses.length;
-      const studentsAttended = coachClasses.reduce(
-        (s: number, c: any) => s + Object.keys(c.enrolledSpots || {}).length,
-        0,
-      );
-      const totalRevenue = studentsAttended * 3500; // ponytail: estimate ~$3500/student avg
-      const totalAmount = Math.round(
-        calcCoachPayroll(coach, classesGiven, studentsAttended, totalRevenue),
-      );
-
-      return {
-        coach,
-        record: {
-          id: "",
-          staffId: coach.id,
-          period: currentPeriod,
-          classesGiven,
-          studentsAttended,
-          totalAmount,
-          status: "pending" as const,
-        },
-        pending: true,
-      };
-    });
-  }, [coaches, classesList, payrollRecords, currentPeriod]);
-
-  const handleAddTransaction = () => {
-    const amt = parseFloat(txAmount);
-    if (!txDescription.trim() || isNaN(amt) || amt <= 0) return;
-    setCashTransactions((prev) => [
-      {
-        id: `tx-${Date.now()}`,
-        date: today,
-        type: txType,
-        channel: txChannel,
-        description: txDescription.trim(),
-        amount: amt,
-        registeredBy: currentUser.name,
-      },
-      ...prev,
-    ]);
-    setTxDescription("");
-    setTxAmount("");
-  };
-
-  const handleLiquidate = (item: (typeof pendingPayroll)[0]) => {
-    if (!item.pending) return;
-    const newRecord: PayrollRecord = {
-      ...item.record,
-      id: `pay-${Date.now()}`,
-      status: "paid",
-      paidAt: today,
-    };
-    setPayrollRecords((prev) => [newRecord, ...prev]);
-    // Register as expense in cash register
-    setCashTransactions((prev) => [
-      {
-        id: `tx-payroll-${Date.now()}`,
-        date: today,
-        type: "expense",
-        channel: "payroll",
-        description: `💸 Sueldo ${item.coach.name} - ${currentPeriod}`,
-        amount: item.record.totalAmount,
-        registeredBy: currentUser.name,
-      },
-      ...prev,
-    ]);
-  };
-
-  const fmtARS = (n: number) => `$${n.toLocaleString("es-AR")}`;
-
-  // ── ARQUEO STATE ─────────────────────────────────────────────────────────
-  const [arqueoEfectivo, setArqueoEfectivo] = useState("");
-  const [arqueoTransfer, setArqueoTransfer] = useState("");
-  const [arqueoConfirmed, setArqueoConfirmed] = useState(false);
-  const [arqueoLogs, setArqueoLogs] = useState<
-    {
-      date: string;
-      expectedCash: number;
-      countedCash: number;
-      expectedTransfer: number;
-      countedTransfer: number;
-      diff: number;
-      closedBy: string;
-    }[]
-  >([]);
-
-  const todayCashIncome = todayTransactions
-    .filter((t) => t.type === "income" && t.channel === "cash")
-    .reduce((s, t) => s + t.amount, 0);
-  const todayCashExpense = todayTransactions
-    .filter((t) => t.type === "expense" && (t.channel === "cash" || t.channel === "payroll"))
-    .reduce((s, t) => s + t.amount, 0);
-  const expectedCash = todayCashIncome - todayCashExpense;
-  const expectedTransfer = todayTransactions
-    .filter((t) => t.type === "income" && t.channel === "transfer")
-    .reduce((s, t) => s + t.amount, 0);
-  const countedCash = parseFloat(arqueoEfectivo) || 0;
-  const countedTransfer = parseFloat(arqueoTransfer) || 0;
-  const totalDiff = countedCash - expectedCash + (countedTransfer - expectedTransfer);
-
-  const handleCloseArqueo = () => {
-    setArqueoLogs((prev) => [
-      {
-        date: today,
-        expectedCash,
-        countedCash,
-        expectedTransfer,
-        countedTransfer,
-        diff: totalDiff,
-        closedBy: currentUser.name,
-      },
-      ...prev,
-    ]);
-    setArqueoEfectivo("");
-    setArqueoTransfer("");
-    setArqueoConfirmed(false);
-  };
-
-  // ── DEBT HANDLERS ────────────────────────────────────────────────────────
-  const [debtPayChannel, setDebtPayChannel] = useState<Record<string, "cash" | "transfer" | "app">>(
-    {},
-  );
-
-  const handleRegisterDebtPayment = (memberName: string, amount: number, channel: string) => {
-    // Clear debt on member
-    setMembersList((prev) =>
-      prev.map((m) =>
-        m.name === memberName
-          ? {
-              ...m,
-              debtAmount: 0,
-              status: m.status === "pendiente" || m.status === "vencido" ? "activo" : m.status,
-            }
-          : m,
-      ),
-    );
-    // Register income in caja
-    setCashTransactions((prev) => [
-      {
-        id: `tx-debt-${Date.now()}`,
-        date: today,
-        type: "income",
-        channel: channel as any,
-        description: `💳 Pago de deuda - ${memberName}`,
-        amount,
-        registeredBy: currentUser.name,
-      },
-      ...prev,
-    ]);
-  };
-
-  const debtMembers = useMemo(() => membersList.filter((m) => m.debtAmount > 0), [membersList]);
-  const totalDebt = useMemo(() => debtMembers.reduce((s, m) => s + m.debtAmount, 0), [debtMembers]);
-
-  const subTabClass = (id: string) =>
-    `px-3 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${subTab === id ? "bg-background border border-border text-primary" : "text-muted-foreground hover:text-foreground"}`;
-
-  return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300 text-foreground">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-bold tracking-tight">Finanzas & Caja</h2>
-          <p className="text-sm text-muted-foreground">
-            Ingresos, egresos y liquidación de coaches en tiempo real.
-          </p>
-        </div>
-        <div className="flex p-1 bg-secondary/30 border border-border/80 rounded-2xl overflow-x-auto gap-0.5">
-          <button className={subTabClass("balance")} onClick={() => setSubTab("balance")}>
-            📊 Balance
-          </button>
-          <button className={subTabClass("caja")} onClick={() => setSubTab("caja")}>
-            💵 Caja
-          </button>
-          <button className={subTabClass("arqueo")} onClick={() => setSubTab("arqueo")}>
-            🧾 Arqueo
-            {totalDiff !== 0 && arqueoEfectivo && <span className="ml-1 text-destructive">!</span>}
-          </button>
-          <button className={subTabClass("deudas")} onClick={() => setSubTab("deudas")}>
-            💳 Deudas
-            {debtMembers.length > 0 && (
-              <span className="ml-1.5 bg-destructive text-white rounded-full px-1.5 py-0 text-[9px] font-extrabold">
-                {debtMembers.length}
-              </span>
-            )}
-          </button>
-          <button className={subTabClass("payroll")} onClick={() => setSubTab("payroll")}>
-            👨‍🏫 Sueldos
-          </button>
-        </div>
-      </div>
-
-      {/* ── SUB-TAB: BALANCE ─────────────────────────────────────────────── */}
-      {subTab === "balance" && (
-        <div className="space-y-6">
-          {/* KPI Row */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              {
-                label: "Ingresos Brutos",
-                value: fmtARS(totalIncome),
-                icon: ArrowUpRight,
-                color: "text-primary",
-                bg: "bg-primary/",
-              },
-              {
-                label: "Comisión Shakerfy (5%)",
-                value: `- ${fmtARS(shakeComission)}`,
-                icon: PiggyBank,
-                color: "text-primary",
-                bg: "bg-primary/",
-              },
-              {
-                label: "Egresos Operativos",
-                value: `- ${fmtARS(totalExpense)}`,
-                icon: ArrowDownRight,
-                color: "text-destructive",
-                bg: "bg-destructive/",
-              },
-              {
-                label: "Margen Neto",
-                value: fmtARS(profit),
-                icon: TrendingUp,
-                color: profit >= 0 ? "text-primary" : "text-destructive",
-                bg: profit >= 0 ? "bg-primary/" : "bg-destructive/",
-              },
-            ].map((kpi) => (
-              <Card key={kpi.label} className="border-border bg-card rounded-3xl">
-                <CardContent className="pt-5 pb-4 space-y-2">
-                  <div className={`w-9 h-9 rounded-xl ${kpi.bg} flex items-center justify-center`}>
-                    <kpi.icon className={`w-5 h-5 ${kpi.color}`} />
-                  </div>
-                  <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                    {kpi.label}
-                  </div>
-                  <div className={`text-2xl font-extrabold ${kpi.color}`}>{kpi.value}</div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Channel breakdown */}
-          <Card className="border-border bg-card rounded-3xl">
-            <CardContent className="pt-6 space-y-4">
-              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Desglose por Canal de Cobro
-              </div>
-              {(["app", "transfer", "cash"] as const).map((ch) => {
-                const amt = cashTransactions
-                  .filter((t) => t.type === "income" && t.channel === ch)
-                  .reduce((s, t) => s + t.amount, 0);
-                const pct = totalIncome > 0 ? Math.round((amt / totalIncome) * 100) : 0;
-                const colors: Record<string, string> = {
-                  app: "bg-primary",
-                  transfer: "bg-primary",
-                  cash: "bg-primary",
-                };
-                return (
-                  <div key={ch} className="space-y-1">
-                    <div className="flex justify-between text-xs font-semibold">
-                      <span>{CHANNEL_LABELS[ch]}</span>
-                      <span>
-                        {fmtARS(amt)} <span className="text-muted-foreground">({pct}%)</span>
-                      </span>
-                    </div>
-                    <div className="h-2 bg-secondary/50 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full ${colors[ch]} rounded-full transition-all duration-500`}
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </CardContent>
-          </Card>
-
-          {/* Today summary */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Card className="border-border bg-card rounded-3xl">
-              <CardContent className="pt-5 pb-4">
-                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
-                  Ingresos de Hoy
-                </div>
-                <div className="text-3xl font-extrabold text-primary">{fmtARS(todayIncome)}</div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {todayTransactions.filter((t) => t.type === "income").length} transacciones
-                  registradas hoy
-                </p>
-              </CardContent>
-            </Card>
-            <Card className="border-border bg-card rounded-3xl">
-              <CardContent className="pt-5 pb-4">
-                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
-                  Egresos de Hoy
-                </div>
-                <div className="text-3xl font-extrabold text-destructive">
-                  {fmtARS(todayExpense)}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {todayTransactions.filter((t) => t.type === "expense").length} gastos registrados
-                  hoy
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      )}
-
-      {/* ── SUB-TAB: CAJA DIARIA ─────────────────────────────────────────── */}
-      {subTab === "caja" && (
-        <div className="space-y-5">
-          {/* Quick register form */}
-          <Card className="border-border bg-card rounded-3xl">
-            <CardContent className="pt-6 space-y-4">
-              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Registrar Movimiento
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
-                    Tipo
-                  </label>
-                  <div className="flex gap-2">
-                    {(["income", "expense"] as const).map((t) => (
-                      <button
-                        key={t}
-                        onClick={() => setTxType(t)}
-                        className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all ${
-                          txType === t
-                            ? t === "income"
-                              ? "bg-primary text-white border-primary"
-                              : "bg-destructive text-white border-destructive"
-                            : "bg-background border-border text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        {t === "income" ? "📈 Ingreso" : "📉 Egreso"}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
-                    Canal
-                  </label>
-                  <select
-                    value={txChannel}
-                    onChange={(e) => setTxChannel(e.target.value as any)}
-                    className="flex h-9 w-full rounded-xl border border-border bg-background px-3 py-1 text-xs focus-visible:outline-none text-foreground font-semibold"
-                  >
-                    <option value="cash">💵 Efectivo</option>
-                    <option value="transfer">🏦 Transferencia</option>
-                    <option value="app">📱 App (MercadoPago)</option>
-                  </select>
-                </div>
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
-                  Descripción
-                </label>
-                <Input
-                  placeholder="Ej: Pase mensual - Juan Pérez / Compra de insumos..."
-                  value={txDescription}
-                  onChange={(e) => setTxDescription(e.target.value)}
-                  className="rounded-xl text-xs h-9"
-                />
-              </div>
-              <div className="flex gap-3 items-end">
-                <div className="space-y-1 flex-1">
-                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
-                    Monto (ARS $)
-                  </label>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    value={txAmount}
-                    onChange={(e) => setTxAmount(e.target.value)}
-                    className="rounded-xl text-xs h-9"
-                    min={0}
-                  />
-                </div>
-                <Button
-                  onClick={handleAddTransaction}
-                  className="h-9 px-5 rounded-xl text-xs font-bold"
-                  disabled={!txDescription.trim() || !txAmount || parseFloat(txAmount) <= 0}
-                >
-                  <Plus className="w-3.5 h-3.5 mr-1.5" /> Registrar
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Transaction list */}
-          <div className="space-y-2">
-            <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">
-              Historial de Movimientos ({cashTransactions.length})
-            </div>
-            {cashTransactions.map((tx) => (
-              <div
-                key={tx.id}
-                className={`flex items-center gap-3 p-3.5 rounded-2xl border text-xs ${tx.type === "income" ? "bg-primary/ border-primary/" : "bg-destructive/ border-destructive/"}`}
-              >
-                <div
-                  className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${tx.type === "income" ? "bg-primary/" : "bg-destructive/"}`}
-                >
-                  {tx.type === "income" ? (
-                    <ArrowUpRight className="w-4 h-4 text-primary" />
-                  ) : (
-                    <ArrowDownRight className="w-4 h-4 text-destructive" />
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-foreground truncate">{tx.description}</div>
-                  <div className="text-muted-foreground">
-                    {tx.date} · {CHANNEL_LABELS[tx.channel]} · por {tx.registeredBy}
-                  </div>
-                </div>
-                <div
-                  className={`font-extrabold shrink-0 ${tx.type === "income" ? "text-primary dark:text-primary" : "text-destructive dark:text-destructive"}`}
-                >
-                  {tx.type === "income" ? "+" : "-"}
-                  {fmtARS(tx.amount)}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── SUB-TAB: LIQUIDACIÓN DE SUELDOS ──────────────────────────────── */}
-      {subTab === "payroll" && (
-        <div className="space-y-5">
-          {/* Info banner */}
-          <div className="flex items-start gap-3 p-4 bg-primary/ border border-blue-500/30 rounded-3xl text-xs">
-            <Receipt className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-            <div>
-              <div className="font-bold text-primary dark:text-primary mb-0.5">
-                Liquidación Automática Basada en Asistencias Reales
-              </div>
-              <p className="text-muted-foreground font-medium">
-                El monto calculado surge de las clases dadas y los alumnos presentes registrados en
-                la pestaña de <strong>Clases</strong>, según el modelo de contrato configurado para
-                cada coach.
-              </p>
-            </div>
-          </div>
-
-          {/* Current period payroll cards */}
-          <div className="space-y-2">
-            <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">
-              Período Actual: {currentPeriod}
-            </div>
-            {pendingPayroll.map(({ coach, record, pending }) => (
-              <Card
-                key={coach.id}
-                className={`border bg-card rounded-3xl ${pending ? "border-border/" : "border-primary/ bg-primary/[0.02]"}`}
-              >
-                <CardContent className="p-5">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                    <img
-                      src={coach.photo}
-                      alt={coach.name}
-                      className="w-12 h-12 rounded-2xl border border-border shrink-0"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-bold text-foreground">{coach.name}</span>
-                        <Badge
-                          variant="secondary"
-                          className="text-[9px] uppercase font-extrabold rounded-full"
-                        >
-                          {PAY_MODEL_LABELS[coach.payModel ?? "fixed_class"]}
-                        </Badge>
-                        {!pending && (
-                          <Badge className="text-[9px] bg-primary/ border-primary/ text-primary dark:text-primary font-extrabold rounded-full">
-                            ✅ Liquidado {record.paidAt}
-                          </Badge>
-                        )}
-                        {pending && (
-                          <Badge className="text-[9px] bg-secondary/ border-border/ text-secondary-foreground dark:text-secondary-foreground font-extrabold rounded-full">
-                            ⏳ Pendiente de Pago
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="text-[11px] text-muted-foreground mt-1">
-                        {record.classesGiven} clases · {record.studentsAttended} presentes
-                        {coach.payModel === "hybrid" &&
-                          ` · $${coach.fixedRatePerClass?.toLocaleString("es-AR")} fijo + $${coach.ratePerStudent?.toLocaleString("es-AR")}/alumno`}
-                        {coach.payModel === "fixed_class" &&
-                          ` · $${coach.fixedRatePerClass?.toLocaleString("es-AR")} por clase`}
-                        {coach.payModel === "per_student" &&
-                          ` · $${coach.ratePerStudent?.toLocaleString("es-AR")} por alumno`}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4 shrink-0">
-                      <div className="text-right">
-                        <div className="text-[10px] text-muted-foreground uppercase font-bold">
-                          Total a Pagar
-                        </div>
-                        <div className="text-2xl font-extrabold text-foreground">
-                          {fmtARS(record.totalAmount)}
-                        </div>
-                      </div>
-                      {pending && (
-                        <Button
-                          onClick={() => handleLiquidate({ coach, record, pending })}
-                          className="h-9 px-4 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90"
-                        >
-                          <Wallet className="w-3.5 h-3.5 mr-1.5" /> Liquidar y Pagar
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Historical payroll */}
-          {payrollRecords.length > 0 && (
-            <div className="space-y-2">
-              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">
-                Historial de Pagos Anteriores
-              </div>
-              {payrollRecords.map((record) => {
-                const coach = staffList.find((s) => s.id === record.staffId);
-                if (!coach) return null;
-                return (
-                  <div
-                    key={record.id}
-                    className="flex items-center gap-3 p-3.5 rounded-2xl border border-border bg-card text-xs"
-                  >
-                    <img
-                      src={coach.photo}
-                      alt={coach.name}
-                      className="w-8 h-8 rounded-xl border border-border shrink-0"
-                    />
-                    <div className="flex-1">
-                      <div className="font-semibold">{coach.name}</div>
-                      <div className="text-muted-foreground">
-                        {record.period} · {record.classesGiven} clases · {record.studentsAttended}{" "}
-                        presentes · Pagado {record.paidAt}
-                      </div>
-                    </div>
-                    <div className="font-extrabold text-foreground shrink-0">
-                      {fmtARS(record.totalAmount)}
-                    </div>
-                    <Badge className="text-[9px] bg-primary/ border-primary/ text-primary dark:text-primary font-extrabold rounded-full shrink-0">
-                      ✅ Pagado
-                    </Badge>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── SUB-TAB: ARQUEO DE CAJA ──────────────────────────────────────── */}
-      {subTab === "arqueo" && (
-        <div className="space-y-5">
-          <div className="flex items-start gap-3 p-4 bg-primary/10 border border-primary/30 rounded-3xl text-xs">
-            <Receipt className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-            <div>
-              <div className="font-bold text-primary mb-0.5">Cierre y Arqueo de Caja Diario</div>
-              <p className="text-muted-foreground font-medium">
-                Contá el dinero físico en el cajón y las transferencias recibidas. El sistema
-                compara con lo registrado y calcula la diferencia.
-              </p>
-            </div>
-          </div>
-
-          {/* System expected values */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Card className="border-border bg-card rounded-3xl">
-              <CardContent className="pt-5 pb-4">
-                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-3">
-                  💵 Efectivo — Esperado por Sistema
-                </div>
-                <div className="text-3xl font-extrabold text-foreground">
-                  {fmtARS(expectedCash)}
-                </div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  Ingresos efectivo: {fmtARS(todayCashIncome)} — Egresos: {fmtARS(todayCashExpense)}
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="border-border bg-card rounded-3xl">
-              <CardContent className="pt-5 pb-4">
-                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-3">
-                  🏦 Transferencias — Esperado por Sistema
-                </div>
-                <div className="text-3xl font-extrabold text-foreground">
-                  {fmtARS(expectedTransfer)}
-                </div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  Total de transferencias ingresadas hoy
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Physical count inputs */}
-          <Card className="border-border bg-card rounded-3xl">
-            <CardContent className="pt-6 space-y-4">
-              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Conteo Físico Real
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
-                    💵 Efectivo contado (ARS $)
-                  </label>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    value={arqueoEfectivo}
-                    onChange={(e) => setArqueoEfectivo(e.target.value)}
-                    className="rounded-xl text-sm h-10 font-bold"
-                    min={0}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
-                    🏦 Transferencias contadas (ARS $)
-                  </label>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    value={arqueoTransfer}
-                    onChange={(e) => setArqueoTransfer(e.target.value)}
-                    className="rounded-xl text-sm h-10 font-bold"
-                    min={0}
-                  />
-                </div>
-              </div>
-
-              {/* Difference result */}
-              {(arqueoEfectivo || arqueoTransfer) && (
-                <div
-                  className={`p-4 rounded-2xl border text-center ${
-                    totalDiff === 0
-                      ? "bg-primary/ border-primary/"
-                      : totalDiff > 0
-                        ? "bg-primary/ border-blue-500/30"
-                        : "bg-destructive/ border-destructive/"
-                  }`}
-                >
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                    Diferencia Total
-                  </div>
-                  <div
-                    className={`text-3xl font-extrabold ${
-                      totalDiff === 0
-                        ? "text-primary"
-                        : totalDiff > 0
-                          ? "text-primary"
-                          : "text-destructive"
-                    }`}
-                  >
-                    {totalDiff > 0 ? "+" : ""}
-                    {fmtARS(totalDiff)}
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-1 font-semibold">
-                    {totalDiff === 0 && "✅ Caja cuadrada — Sin diferencias"}
-                    {totalDiff > 0 && "🔵 Sobrante — Verificar transacciones no registradas"}
-                    {totalDiff < 0 && "🔴 Faltante — Verificar egresos o diferencias de cambio"}
-                  </div>
-                </div>
-              )}
-
-              {/* Confirm and close */}
-              {(arqueoEfectivo || arqueoTransfer) && !arqueoConfirmed && (
-                <Button
-                  onClick={() => setArqueoConfirmed(true)}
-                  variant="outline"
-                  className="w-full rounded-xl font-bold text-xs h-9 border-primary/50 text-primary hover:bg-primary/10"
-                >
-                  🔒 Confirmar y Cerrar Caja del Día
-                </Button>
-              )}
-
-              {arqueoConfirmed && (
-                <div className="p-4 bg-secondary/ border border-border/ rounded-2xl space-y-3">
-                  <div className="text-xs font-bold text-secondary-foreground dark:text-secondary-foreground">
-                    ⚠️ Confirmación de Cierre
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Estás por cerrar la caja de hoy <strong>{today}</strong> con una diferencia de{" "}
-                    <strong>{fmtARS(totalDiff)}</strong>. Esta acción quedará registrada en el
-                    historial.
-                  </p>
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={handleCloseArqueo}
-                      className="flex-1 h-8 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90"
-                    >
-                      ✅ Confirmar Cierre
-                    </Button>
-                    <Button
-                      onClick={() => setArqueoConfirmed(false)}
-                      variant="outline"
-                      className="flex-1 h-8 rounded-xl text-xs font-bold"
-                    >
-                      Cancelar
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Arqueo history */}
-          {arqueoLogs.length > 0 && (
-            <div className="space-y-2">
-              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">
-                Historial de Arqueos
-              </div>
-              {arqueoLogs.map((log, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-3 p-3.5 rounded-2xl border border-border bg-card text-xs"
-                >
-                  <div
-                    className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${log.diff === 0 ? "bg-primary/" : log.diff > 0 ? "bg-primary/" : "bg-destructive/"}`}
-                  >
-                    <Receipt
-                      className={`w-4 h-4 ${log.diff === 0 ? "text-primary" : log.diff > 0 ? "text-primary" : "text-destructive"}`}
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-semibold">
-                      {log.date} — Cerrado por {log.closedBy}
-                    </div>
-                    <div className="text-muted-foreground">
-                      Efectivo: esperado {fmtARS(log.expectedCash)} / contado{" "}
-                      {fmtARS(log.countedCash)} · Transf.: esperado {fmtARS(log.expectedTransfer)} /
-                      contado {fmtARS(log.countedTransfer)}
-                    </div>
-                  </div>
-                  <div
-                    className={`font-extrabold shrink-0 ${log.diff === 0 ? "text-primary" : log.diff > 0 ? "text-primary" : "text-destructive"}`}
-                  >
-                    {log.diff > 0 ? "+" : ""}
-                    {fmtARS(log.diff)}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── SUB-TAB: CUENTAS CORRIENTES / DEUDAS ─────────────────────────── */}
-      {subTab === "deudas" && (
-        <div className="space-y-5">
-          {/* Summary KPI */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Card
-              className={`border rounded-3xl ${debtMembers.length > 0 ? "border-destructive/ bg-destructive/" : "border-primary/ bg-primary/"}`}
-            >
-              <CardContent className="pt-5 pb-4">
-                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
-                  Alumnos con Deuda
-                </div>
-                <div
-                  className={`text-3xl font-extrabold ${debtMembers.length > 0 ? "text-destructive" : "text-primary"}`}
-                >
-                  {debtMembers.length}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {debtMembers.length === 0
-                    ? "Sin deudas pendientes 🎉"
-                    : "de " + membersList.length + " miembros totales"}
-                </p>
-              </CardContent>
-            </Card>
-            <Card
-              className={`border rounded-3xl ${totalDebt > 0 ? "border-destructive/ bg-destructive/" : "border-primary/ bg-primary/"}`}
-            >
-              <CardContent className="pt-5 pb-4">
-                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
-                  Deuda Total Pendiente
-                </div>
-                <div
-                  className={`text-3xl font-extrabold ${totalDebt > 0 ? "text-destructive" : "text-primary"}`}
-                >
-                  {fmtARS(totalDebt)}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Suma total de todas las deudas activas
-                </p>
-              </CardContent>
-            </Card>
-            <Card className="border-border bg-card rounded-3xl">
-              <CardContent className="pt-5 pb-4">
-                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
-                  Tasa de Cobranza
-                </div>
-                <div className="text-3xl font-extrabold text-foreground">
-                  {membersList.length > 0
-                    ? Math.round(
-                        ((membersList.length - debtMembers.length) / membersList.length) * 100,
-                      )
-                    : 100}
-                  %
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">Alumnos al día con sus pagos</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Debt member list */}
-          {debtMembers.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center space-y-3">
-              <div className="text-4xl">🎉</div>
-              <div className="font-bold text-foreground">Sin deudas pendientes</div>
-              <p className="text-xs text-muted-foreground max-w-xs">
-                Todos los alumnos están al día con sus cuotas. El balance de cuentas corrientes está
-                perfecto.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">
-                Alumnos con Saldo Pendiente ({debtMembers.length})
-              </div>
-              {debtMembers.map((member) => {
-                const ch = debtPayChannel[member.name] ?? "cash";
-                return (
-                  <Card
-                    key={member.name}
-                    className="border-destructive/ bg-destructive/[0.02] rounded-3xl"
-                  >
-                    <CardContent className="p-5">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                        <img
-                          src={member.photo}
-                          alt={member.name}
-                          className="w-12 h-12 rounded-2xl border border-border shrink-0"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-bold text-foreground">{member.name}</span>
-                            <Badge
-                              variant="outline"
-                              className="text-[9px] border-destructive text-destructive bg-destructive/ font-extrabold"
-                            >
-                              {member.status === "vencido"
-                                ? "❌ Membresía Vencida"
-                                : "⏳ Pago Pendiente"}
-                            </Badge>
-                          </div>
-                          <div className="text-xs text-muted-foreground mt-0.5">
-                            {member.plan} · {member.email} · {member.phone}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            Vencimiento: {member.end}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3 shrink-0 flex-wrap">
-                          <div className="text-right">
-                            <div className="text-[10px] text-muted-foreground uppercase font-bold">
-                              Deuda
-                            </div>
-                            <div className="text-xl font-extrabold text-destructive">
-                              {fmtARS(member.debtAmount)}
-                            </div>
-                          </div>
-                          <select
-                            value={ch}
-                            onChange={(e) =>
-                              setDebtPayChannel((prev) => ({
-                                ...prev,
-                                [member.name]: e.target.value as any,
-                              }))
-                            }
-                            className="h-8 rounded-xl border border-border bg-background px-2 text-xs font-semibold focus-visible:outline-none"
-                          >
-                            <option value="cash">💵 Efectivo</option>
-                            <option value="transfer">🏦 Transferencia</option>
-                            <option value="app">📱 App</option>
-                          </select>
-                          <Button
-                            onClick={() =>
-                              handleRegisterDebtPayment(member.name, member.debtAmount, ch)
-                            }
-                            className="h-8 px-3 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90"
-                          >
-                            <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Registrar Pago
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
 
 function ReseñasTab({
   reviewsList,
@@ -3997,675 +1830,245 @@ function ReseñasTab({
   reviewsList: Review[];
   setReviewsList: React.Dispatch<React.SetStateAction<Review[]>>;
 }) {
-  const [reviewCategory, setReviewCategory] = useState<"classes" | "facilities">("classes");
-  const [filterActivity, setFilterActivity] = useState("all");
-  const [filterCoach, setFilterCoach] = useState("all");
-  const [filterRating, setFilterRating] = useState("all");
-  const [filterReported, setFilterReported] = useState("all");
-  const [filterVerification, setFilterVerification] = useState("all");
-  const [replyTexts, setReplyTexts] = useState<Record<string, string>>({});
-  const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
-
-  // Sample data for General Gym/Facility Reviews (from app.tsx modal)
-  const [facilityReviews, setFacilityReviews] = useState<GymFacilityReview[]>([
+  const [allReviews, setAllReviews] = useState<GymFacilityReview[]>([
     {
-      id: "fac-1",
-      date: "2026-07-01",
+      id: "rev-1",
+      date: "2026-07-20",
       studentName: "Agustín Gómez",
       studentPhoto:
         "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80",
-      ratingCleanliness: 5,
-      ratingEquipment: 4,
-      ratingStaff: 5,
-      ratingPrice: 4,
-      overallRating: 4.5,
+      ratingCleanliness: 4.8,
+      ratingEquipment: 4.9,
+      ratingStaff: 5.0,
+      ratingPrice: 4.7,
+      overallRating: 4.9,
       comment:
-        "Instalaciones impecables, los vestuarios siempre están ordenados y limpios. Muy buena atención en la entrada.",
-      reply: "",
+        "Excelente gimnasio. La atención del personal es de 10 y las máquinas son de última generación. Muy limpio siempre.",
+      reply: "¡Muchas gracias Agustín por tu comentario! Nos alegra mucho que disfrutes del centro.",
     },
     {
-      id: "fac-2",
-      date: "2026-06-28",
+      id: "rev-2",
+      date: "2026-07-18",
       studentName: "Camila Díaz",
       studentPhoto:
         "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80",
-      ratingCleanliness: 3,
-      ratingEquipment: 5,
-      ratingStaff: 4,
-      ratingPrice: 3,
-      overallRating: 3.8,
-      comment:
-        "Las máquinas de musculación son de primera calidad. Le bajaría un punto a la ventilación en hora pico.",
-      reply:
-        "Hola Cami! Tomamos nota. Estamos instalando 2 nuevos extractores de aire en la sala principal esta semana.",
+      ratingCleanliness: 5.0,
+      ratingEquipment: 4.8,
+      ratingStaff: 5.0,
+      ratingPrice: 4.6,
+      overallRating: 4.8,
+      comment: "Vestuarios impecables y excelente ambiente para entrenar. El staff siempre muy atento.",
+      reply: "",
+    },
+    {
+      id: "rev-3",
+      date: "2026-07-12",
+      studentName: "Lucas Peralta",
+      studentPhoto:
+        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80",
+      ratingCleanliness: 4.7,
+      ratingEquipment: 5.0,
+      ratingStaff: 5.0,
+      ratingPrice: 4.8,
+      overallRating: 4.9,
+      comment: "Muy buena relación precio-calidad. Variedad de pesas y áreas bien cuidadas.",
+      reply: "",
     },
   ]);
 
-  const activitiesList = useMemo(() => {
-    return Array.from(new Set(reviewsList.map((r) => r.className))).sort();
-  }, [reviewsList]);
+  const [replyTexts, setReplyTexts] = useState<Record<string, string>>({});
+  const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
 
-  const coachesList = useMemo(() => {
-    return Array.from(new Set(reviewsList.map((r) => r.coachName))).sort();
-  }, [reviewsList]);
+  const totalEvaluationsCount = 312 + (allReviews.length - 3);
 
-  // Combined metrics for Class reviews
-  const classAvgRating = useMemo(() => {
-    if (reviewsList.length === 0) return "0.0";
-    const total = reviewsList.reduce((acc, r) => acc + r.rating, 0);
-    return (total / reviewsList.length).toFixed(1);
-  }, [reviewsList]);
+  const avgCleanliness = useMemo(() => {
+    const sum = allReviews.reduce((acc, r) => acc + r.ratingCleanliness, 0);
+    return (sum / allReviews.length).toFixed(1);
+  }, [allReviews]);
 
-  // Combined metrics for Facility reviews
-  const facilityAvgRating = useMemo(() => {
-    if (facilityReviews.length === 0) return "0.0";
-    const total = facilityReviews.reduce((acc, r) => acc + r.overallRating, 0);
-    return (total / facilityReviews.length).toFixed(1);
-  }, [facilityReviews]);
+  const avgEquipment = useMemo(() => {
+    const sum = allReviews.reduce((acc, r) => acc + r.ratingEquipment, 0);
+    return (sum / allReviews.length).toFixed(1);
+  }, [allReviews]);
 
-  const currentAvg = reviewCategory === "classes" ? classAvgRating : facilityAvgRating;
-  const currentTotal = reviewCategory === "classes" ? reviewsList.length : facilityReviews.length;
+  const avgStaff = useMemo(() => {
+    const sum = allReviews.reduce((acc, r) => acc + r.ratingStaff, 0);
+    return (sum / allReviews.length).toFixed(1);
+  }, [allReviews]);
 
-  const filteredClassReviews = useMemo(() => {
-    return reviewsList.filter((r) => {
-      const matchActivity = filterActivity === "all" || r.className === filterActivity;
-      const matchCoach = filterCoach === "all" || r.coachName === filterCoach;
-      const matchRating = filterRating === "all" || r.rating.toString() === filterRating;
-      const matchReported =
-        filterReported === "all" ||
-        (filterReported === "reported" && r.reported) ||
-        (filterReported === "normal" && !r.reported);
-      const matchVerification =
-        filterVerification === "all" ||
-        (filterVerification === "app_payment" && r.verificationType === "app_payment") ||
-        (filterVerification === "attendance" && r.verificationType === "attendance");
-      return matchActivity && matchCoach && matchRating && matchReported && matchVerification;
-    });
-  }, [reviewsList, filterActivity, filterCoach, filterRating, filterReported, filterVerification]);
+  const avgPrice = useMemo(() => {
+    const sum = allReviews.reduce((acc, r) => acc + r.ratingPrice, 0);
+    return (sum / allReviews.length).toFixed(1);
+  }, [allReviews]);
 
-  const filteredFacilityReviews = useMemo(() => {
-    return facilityReviews.filter((r) => {
-      const matchRating =
-        filterRating === "all" || Math.round(r.overallRating).toString() === filterRating;
-      const matchReported =
-        filterReported === "all" ||
-        (filterReported === "reported" && r.reported) ||
-        (filterReported === "normal" && !r.reported);
-      return matchRating && matchReported;
-    });
-  }, [facilityReviews, filterRating, filterReported]);
+  const overallAvg = useMemo(() => {
+    const sum = allReviews.reduce((acc, r) => acc + r.overallRating, 0);
+    return (sum / allReviews.length).toFixed(1);
+  }, [allReviews]);
 
-  const handleToggleFeatured = (id: string) => {
-    setReviewsList((prev) => prev.map((r) => (r.id === id ? { ...r, featured: !r.featured } : r)));
-  };
-
-  const handleSendClassReply = (id: string) => {
+  const handleSendReply = (id: string) => {
     const text = replyTexts[id];
     if (!text?.trim()) return;
-    setReviewsList((prev) => prev.map((r) => (r.id === id ? { ...r, reply: text.trim() } : r)));
+    setAllReviews((prev) => prev.map((r) => (r.id === id ? { ...r, reply: text.trim() } : r)));
     setReplyTexts((prev) => ({ ...prev, [id]: "" }));
     setActiveReplyId(null);
-  };
-
-  const handleSendFacilityReply = (id: string) => {
-    const text = replyTexts[id];
-    if (!text?.trim()) return;
-    setFacilityReviews((prev) => prev.map((r) => (r.id === id ? { ...r, reply: text.trim() } : r)));
-    setReplyTexts((prev) => ({ ...prev, [id]: "" }));
-    setActiveReplyId(null);
-  };
-
-  const handleReportClassReview = (id: string) => {
-    const reason = prompt(
-      "Describe el motivo del reporte (ej: Spam, Insulto, Usuario falso, Información errónea):",
-    );
-    if (!reason?.trim()) return;
-    setReviewsList((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, reported: true, reportReason: reason.trim() } : r)),
-    );
-    alert(
-      "Reseña reportada correctamente a la moderación central. Permanecerá visible con etiqueta de investigación.",
-    );
-  };
-
-  const handleReportFacilityReview = (id: string) => {
-    const reason = prompt(
-      "Describe el motivo del reporte (ej: Spam, Insulto, Usuario falso, Información errónea):",
-    );
-    if (!reason?.trim()) return;
-    setFacilityReviews((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, reported: true, reportReason: reason.trim() } : r)),
-    );
-    alert("Reseña reportada correctamente a la moderación central.");
-  };
-
-  const isAnyFilterActive =
-    filterActivity !== "all" ||
-    filterCoach !== "all" ||
-    filterRating !== "all" ||
-    filterReported !== "all" ||
-    filterVerification !== "all";
-
-  const clearAllFilters = () => {
-    setFilterActivity("all");
-    setFilterCoach("all");
-    setFilterRating("all");
-    setFilterReported("all");
-    setFilterVerification("all");
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300 text-foreground">
-      {/* Header Banner - Google Standard Policy */}
-      <div className="flex items-start gap-3 p-4 bg-secondary/ border border-border/ rounded-3xl text-xs">
-        <ShieldAlert className="w-5 h-5 text-secondary-foreground shrink-0 mt-0.5" />
-        <div className="space-y-1">
-          <div className="font-bold text-secondary-foreground dark:text-secondary-foreground">
-            Política Transparente Estilo Google
-          </div>
-          <p className="text-muted-foreground font-medium">
-            Las reseñas no se pueden borrar ni alterar por la administración del gimnasio para
-            preservar la veracidad del servicio. Todas las opiniones cuentan en el promedio general.
-            Si identificas contenido falso o inapropiado, utiliza el botón de{" "}
-            <strong>Reportar Infracción</strong>.
-          </p>
-        </div>
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300 text-foreground max-w-4xl">
+      {/* Top Header: Overall Score */}
+      <div className="flex items-center gap-2 text-2xl sm:text-3xl font-black tracking-tight pb-2 border-b border-border/40">
+        <span className="text-foreground">★ {overallAvg}</span>
+        <span className="text-muted-foreground font-semibold">· {totalEvaluationsCount} evaluaciones</span>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-bold tracking-tight">Gestión de Reseñas</h2>
-          <p className="text-sm text-muted-foreground">
-            Monitorea la experiencia del alumno y responde públicamente.
-          </p>
-        </div>
+      {/* Average Ratings Section (Reference Image Inspired) */}
+      <div className="bg-card border border-border p-6 rounded-3xl space-y-6">
+        <h3 className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
+          Calificaciones Promedio
+        </h3>
 
-        {/* Category Toggle Controls */}
-        <div className="inline-flex p-1 bg-secondary/30 border border-border/80 rounded-2xl">
-          <button
-            onClick={() => setReviewCategory("classes")}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-              reviewCategory === "classes"
-                ? "bg-background border border-border text-primary"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            💪 Clases & Coaches ({reviewsList.length})
-          </button>
-          <button
-            onClick={() => setReviewCategory("facilities")}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-              reviewCategory === "facilities"
-                ? "bg-background border border-border text-primary"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            🏢 Gimnasio & Instalaciones ({facilityReviews.length})
-          </button>
-        </div>
-      </div>
-
-      {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="border border-border bg-card flex flex-col justify-between rounded-xl overflow-hidden p-6">
-          <div>
-            <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              Promedio Transparente
-            </div>
-            <div className="flex items-baseline gap-2 mt-2">
-              <span className="text-4xl font-extrabold">{currentAvg}</span>
-              <span className="text-xs text-muted-foreground">de 5.0 estrellas</span>
-            </div>
-            <div className="flex items-center gap-0.5 mt-2">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Star
-                  key={star}
-                  className={`w-4 h-4 ${star <= Math.round(Number(currentAvg)) ? "text-secondary-foreground fill-amber-500" : "text-border"}`}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-5">
+          {[
+            { label: "Limpieza", score: avgCleanliness },
+            { label: "Equipamiento", score: avgEquipment },
+            { label: "Atención del Staff", score: avgStaff },
+            { label: "Relación Calidad/Precio", score: avgPrice },
+          ].map((cat) => (
+            <div key={cat.label} className="space-y-1.5">
+              <div className="flex justify-between items-center text-sm font-semibold">
+                <span>{cat.label}</span>
+                <span className="font-extrabold text-foreground">{cat.score}</span>
+              </div>
+              <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-foreground rounded-full transition-all duration-700"
+                  style={{ width: `${(parseFloat(cat.score.toString()) / 5) * 100}%` }}
                 />
-              ))}
+              </div>
             </div>
-          </div>
-        </div>
-
-        <div className="border border-border bg-card flex flex-col justify-between rounded-xl overflow-hidden p-6">
-          <div>
-            <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              Total de Opiniones
-            </div>
-            <div className="text-4xl font-extrabold mt-2">{currentTotal}</div>
-            <p className="text-xs text-muted-foreground mt-2 font-medium">
-              {reviewCategory === "classes"
-                ? "Valoraciones registradas tras finalizar cada clase."
-                : "Evaluaciones de limpieza, equipamiento y atención."}
-            </p>
-          </div>
-        </div>
-
-        <div className="border border-border bg-card flex flex-col justify-between rounded-xl overflow-hidden p-6">
-          <div>
-            <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              Garantía de Veracidad
-            </div>
-            <div className="flex items-center gap-2 mt-2 text-primary dark:text-primary font-bold text-sm">
-              <CheckCircle2 className="w-5 h-5" /> 100% Opiniones Verificadas
-            </div>
-            <p className="text-xs text-muted-foreground mt-2 font-medium">
-              Solo los alumnos que asistieron al gimnasio pueden emitir valoraciones.
-            </p>
-          </div>
+          ))}
         </div>
       </div>
 
-      {/* ClassPass-Style Multi-Dimensional Filter Controls */}
-      <div className="p-4 bg-secondary/20 border border-border rounded-xl space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-bold text-foreground uppercase tracking-wider">
-            Filtros Avanzados (Estilo ClassPass):
-          </span>
-          {isAnyFilterActive && (
-            <button
-              onClick={clearAllFilters}
-              className="text-xs font-bold text-destructive hover:text-destructive hover:underline"
-            >
-              Limpiar todos los filtros
-            </button>
-          )}
-        </div>
+      {/* Reviews List */}
+      <div className="space-y-4">
+        <h3 className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
+          Opiniones de los Alumnos ({allReviews.length})
+        </h3>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {/* Filter 1: Activity / Discipline */}
-          {reviewCategory === "classes" && (
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
-                Actividad / Disciplina
-              </label>
-              <select
-                value={filterActivity}
-                onChange={(e) => setFilterActivity(e.target.value)}
-                className="flex h-9 w-full rounded-xl border border-border bg-background px-3 py-1 text-xs focus-visible:outline-none text-foreground font-semibold"
-              >
-                <option value="all">Todas las actividades</option>
-                {activitiesList.map((act) => (
-                  <option key={act} value={act}>
-                    {act}
-                  </option>
-                ))}
-              </select>
+        <div className="space-y-4">
+          {allReviews.map((rev) => (
+            <div
+              key={rev.id}
+              className="bg-card border border-border p-5 rounded-3xl space-y-3 transition-colors hover:border-border/80"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <img
+                    src={rev.studentPhoto}
+                    alt={rev.studentName}
+                    className="w-10 h-10 rounded-full object-cover border border-border shrink-0"
+                  />
+                  <div>
+                    <div className="font-bold text-sm text-foreground">{rev.studentName}</div>
+                    <div className="text-xs text-muted-foreground">{rev.date}</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1 font-extrabold text-sm bg-secondary/30 px-3 py-1 rounded-full border border-border/50">
+                  <span className="text-amber-500">★</span>
+                  <span>{rev.overallRating.toFixed(1)}</span>
+                </div>
+              </div>
+
+              <p className="text-sm leading-relaxed text-foreground/90 font-medium">
+                "{rev.comment}"
+              </p>
+
+              {/* Sub-ratings badges */}
+              <div className="flex flex-wrap gap-2 text-[11px] text-muted-foreground pt-1">
+                <span className="px-2.5 py-0.5 rounded-full bg-secondary/50 font-medium">
+                  Limpieza: <strong className="text-foreground">{rev.ratingCleanliness}</strong>
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full bg-secondary/50 font-medium">
+                  Equipamiento: <strong className="text-foreground">{rev.ratingEquipment}</strong>
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full bg-secondary/50 font-medium">
+                  Staff: <strong className="text-foreground">{rev.ratingStaff}</strong>
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full bg-secondary/50 font-medium">
+                  Precio: <strong className="text-foreground">{rev.ratingPrice}</strong>
+                </span>
+              </div>
+
+              {/* Official Reply section */}
+              {rev.reply ? (
+                <div className="mt-3 p-3.5 rounded-2xl bg-secondary/25 border border-border/60 text-xs space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-extrabold text-primary flex items-center gap-1.5">
+                      <MessageCircle className="w-3.5 h-3.5" /> Respuesta oficial del centro
+                    </span>
+                    <button
+                      onClick={() => {
+                        setReplyTexts((prev) => ({ ...prev, [rev.id]: rev.reply }));
+                        setActiveReplyId(rev.id);
+                      }}
+                      className="text-[10px] text-muted-foreground hover:text-foreground font-semibold underline"
+                    >
+                      Editar
+                    </button>
+                  </div>
+                  <p className="text-muted-foreground leading-relaxed">{rev.reply}</p>
+                </div>
+              ) : (
+                activeReplyId !== rev.id && (
+                  <button
+                    onClick={() => setActiveReplyId(rev.id)}
+                    className="text-xs font-semibold text-primary hover:underline flex items-center gap-1.5 pt-1"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" /> Responder como Administrador
+                  </button>
+                )
+              )}
+
+              {activeReplyId === rev.id && (
+                <div className="space-y-2 pt-2 animate-fade-in">
+                  <textarea
+                    rows={2}
+                    value={replyTexts[rev.id] || ""}
+                    onChange={(e) =>
+                      setReplyTexts((prev) => ({ ...prev, [rev.id]: e.target.value }))
+                    }
+                    placeholder="Escribe la respuesta oficial..."
+                    className="flex w-full rounded-2xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none text-foreground placeholder:text-muted-foreground"
+                  />
+                  <div className="flex gap-2 justify-end">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl text-xs"
+                      onClick={() => {
+                        setActiveReplyId(null);
+                        setReplyTexts((prev) => ({ ...prev, [rev.id]: "" }));
+                      }}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="rounded-xl text-xs bg-primary text-primary-foreground"
+                      onClick={() => handleSendReply(rev.id)}
+                    >
+                      Publicar Respuesta
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-
-          {/* Filter 2: Coach / Staff */}
-          {reviewCategory === "classes" && (
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
-                Profesor / Coach
-              </label>
-              <select
-                value={filterCoach}
-                onChange={(e) => setFilterCoach(e.target.value)}
-                className="flex h-9 w-full rounded-xl border border-border bg-background px-3 py-1 text-xs focus-visible:outline-none text-foreground font-semibold"
-              >
-                <option value="all">Todos los profesores</option>
-                {coachesList.map((coach) => (
-                  <option key={coach} value={coach}>
-                    {coach}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {/* Filter 3: Rating */}
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
-              Puntuación
-            </label>
-            <select
-              value={filterRating}
-              onChange={(e) => setFilterRating(e.target.value)}
-              className="flex h-9 w-full rounded-xl border border-border bg-background px-3 py-1 text-xs focus-visible:outline-none text-foreground font-semibold"
-            >
-              <option value="all">Todas las calificaciones</option>
-              <option value="5">⭐⭐⭐⭐⭐ (5 estrellas)</option>
-              <option value="4">⭐⭐⭐⭐ (4 estrellas)</option>
-              <option value="3">⭐⭐⭐ (3 estrellas)</option>
-              <option value="2">⭐⭐ (2 estrellas)</option>
-              <option value="1">⭐ (1 estrella)</option>
-            </select>
-          </div>
-
-          {/* Filter 4: Verification & Moderation */}
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
-              Verificación & Moderación
-            </label>
-            <select
-              value={
-                filterVerification !== "all"
-                  ? filterVerification
-                  : filterReported !== "all"
-                    ? filterReported
-                    : "all"
-              }
-              onChange={(e) => {
-                const val = e.target.value;
-                if (val === "reported" || val === "normal") {
-                  setFilterReported(val);
-                  setFilterVerification("all");
-                } else if (val === "app_payment" || val === "attendance") {
-                  setFilterVerification(val);
-                  setFilterReported("all");
-                } else {
-                  setFilterReported("all");
-                  setFilterVerification("all");
-                }
-              }}
-              className="flex h-9 w-full rounded-xl border border-border bg-background px-3 py-1 text-xs focus-visible:outline-none text-foreground font-semibold"
-            >
-              <option value="all">Todos los estados</option>
-              <option value="app_payment">🛡️ Pago Verificado en App</option>
-              <option value="attendance">📍 Asistencia Verificada</option>
-              <option value="reported">🚩 Reportadas a revisión</option>
-            </select>
-          </div>
+          ))}
         </div>
       </div>
-
-      {/* List of Class Reviews */}
-      {reviewCategory === "classes" && (
-        <div className="overflow-x-auto border border-border rounded-xl">
-          <table className="w-full text-left text-xs min-w-[700px]">
-            <thead className="bg-muted font-bold text-muted-foreground border-b border-border">
-              <tr>
-                <th className="p-3">Alumno</th>
-                <th className="p-3">Clase & Coach</th>
-                <th className="p-3">Calificación</th>
-                <th className="p-3 w-1/3">Comentario</th>
-                <th className="p-3 text-right">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {filteredClassReviews.map((rev) => (
-                <tr
-                  key={rev.id}
-                  className={`hover:bg-muted/30 transition-colors ${rev.reported ? "bg-secondary/[0.03]" : rev.featured ? "bg-secondary-foreground/5" : ""}`}
-                >
-                  <td className="p-3 align-top">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={rev.studentPhoto}
-                        alt={rev.studentName}
-                        className="w-8 h-8 rounded-full border border-border shrink-0"
-                      />
-                      <div>
-                        <div className="font-bold text-foreground">{rev.studentName}</div>
-                        <div className="text-[10px] text-muted-foreground">{rev.date}</div>
-                        {rev.verificationType === "app_payment" && (
-                          <div className="text-[9px] text-secondary-foreground font-bold mt-0.5">
-                            🛡️ Verificado App
-                          </div>
-                        )}
-                        {rev.verificationType === "attendance" && (
-                          <div className="text-[9px] text-primary font-bold mt-0.5">
-                            📍 Asistencia
-                          </div>
-                        )}
-                        {rev.reported && (
-                          <div className="text-[9px] text-secondary-foreground font-bold mt-0.5">
-                            🚩 Reportada: {rev.reportReason}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="p-3 align-top">
-                    <div className="font-bold">{rev.className}</div>
-                    <div className="text-[10px] text-muted-foreground">{rev.coachName}</div>
-                  </td>
-                  <td className="p-3 align-top">
-                    <div className="flex items-center gap-0.5">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Star
-                          key={star}
-                          className={`w-3.5 h-3.5 ${star <= rev.rating ? "text-secondary-foreground fill-amber-500" : "text-border"}`}
-                        />
-                      ))}
-                    </div>
-                  </td>
-                  <td className="p-3 align-top space-y-2">
-                    <p className="font-medium text-foreground">"{rev.comment}"</p>
-
-                    {/* Public Response Block */}
-                    {rev.reply ? (
-                      <div className="p-2 rounded-lg bg-secondary/35 border border-border/80 text-xs">
-                        <div className="flex items-center gap-1.5 font-bold text-primary mb-1">
-                          <MessageCircle className="w-3.5 h-3.5" />
-                          <span>Respuesta oficial:</span>
-                        </div>
-                        <p className="text-muted-foreground">{rev.reply}</p>
-                        <button
-                          onClick={() => {
-                            setReplyTexts((prev) => ({ ...prev, [rev.id]: rev.reply }));
-                            setActiveReplyId(rev.id);
-                          }}
-                          className="text-[10px] text-primary hover:underline font-bold mt-1"
-                        >
-                          Editar Respuesta
-                        </button>
-                      </div>
-                    ) : (
-                      activeReplyId !== rev.id && (
-                        <button
-                          onClick={() => setActiveReplyId(rev.id)}
-                          className="text-[10px] text-primary hover:underline font-bold flex items-center gap-1"
-                        >
-                          <MessageCircle className="w-3 h-3" /> Responder
-                        </button>
-                      )
-                    )}
-
-                    {activeReplyId === rev.id && (
-                      <div className="space-y-2 animate-fade-in mt-2">
-                        <textarea
-                          rows={2}
-                          value={replyTexts[rev.id] || ""}
-                          onChange={(e) =>
-                            setReplyTexts((prev) => ({ ...prev, [rev.id]: e.target.value }))
-                          }
-                          placeholder="Escribe la respuesta..."
-                          className="flex w-full rounded-lg border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none"
-                        />
-                        <div className="flex gap-2 justify-end">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-6 text-[10px]"
-                            onClick={() => {
-                              setActiveReplyId(null);
-                              setReplyTexts((prev) => ({ ...prev, [rev.id]: "" }));
-                            }}
-                          >
-                            Cancelar
-                          </Button>
-                          <Button
-                            size="sm"
-                            className="h-6 text-[10px]"
-                            onClick={() => handleSendClassReply(rev.id)}
-                          >
-                            Publicar
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </td>
-                  <td className="p-3 align-top text-right space-y-2">
-                    <button
-                      onClick={() => handleReportClassReview(rev.id)}
-                      className="text-[10px] font-bold text-muted-foreground hover:text-secondary-foreground flex items-center justify-end gap-1 w-full"
-                    >
-                      <Flag className="w-3.5 h-3.5" /> Reportar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {filteredClassReviews.length === 0 && (
-            <div className="text-center p-8 text-muted-foreground italic font-medium text-xs">
-              No se encontraron opiniones de clases con los filtros seleccionados.
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* List of Facility/Gym Reviews */}
-      {reviewCategory === "facilities" && (
-        <div className="overflow-x-auto border border-border rounded-xl">
-          <table className="w-full text-left text-xs min-w-[700px]">
-            <thead className="bg-muted font-bold text-muted-foreground border-b border-border">
-              <tr>
-                <th className="p-3">Alumno</th>
-                <th className="p-3">Métricas (Limpieza, Equip., Staff, Precio)</th>
-                <th className="p-3">General</th>
-                <th className="p-3 w-1/3">Comentario</th>
-                <th className="p-3 text-right">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {filteredFacilityReviews.map((fac) => (
-                <tr
-                  key={fac.id}
-                  className={`hover:bg-muted/30 transition-colors ${fac.reported ? "bg-secondary/[0.03]" : ""}`}
-                >
-                  <td className="p-3 align-top">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={fac.studentPhoto}
-                        alt={fac.studentName}
-                        className="w-8 h-8 rounded-full border border-border shrink-0"
-                      />
-                      <div>
-                        <div className="font-bold text-foreground">{fac.studentName}</div>
-                        <div className="text-[10px] text-muted-foreground">{fac.date}</div>
-                        {fac.reported && (
-                          <div className="text-[9px] text-secondary-foreground font-bold mt-0.5">
-                            🚩 Reportada: {fac.reportReason}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="p-3 align-top">
-                    <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[10px]">
-                      <div>
-                        <span className="text-muted-foreground">Limpieza:</span>{" "}
-                        <b>{fac.ratingCleanliness}/5</b>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Equip.:</span>{" "}
-                        <b>{fac.ratingEquipment}/5</b>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Staff:</span>{" "}
-                        <b>{fac.ratingStaff}/5</b>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Precio:</span>{" "}
-                        <b>{fac.ratingPrice}/5</b>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="p-3 align-top">
-                    <div className="flex items-center gap-1 font-extrabold text-sm">
-                      <Star className="w-3.5 h-3.5 text-secondary-foreground fill-amber-500" />
-                      {fac.overallRating.toFixed(1)}
-                    </div>
-                  </td>
-                  <td className="p-3 align-top space-y-2">
-                    <p className="font-medium text-foreground">"{fac.comment}"</p>
-
-                    {/* Response Block */}
-                    {fac.reply ? (
-                      <div className="p-2 rounded-lg bg-secondary/35 border border-border/80 text-xs">
-                        <div className="flex items-center gap-1.5 font-bold text-primary mb-1">
-                          <MessageCircle className="w-3.5 h-3.5" />
-                          <span>Respuesta oficial:</span>
-                        </div>
-                        <p className="text-muted-foreground">{fac.reply}</p>
-                        <button
-                          onClick={() => {
-                            setReplyTexts((prev) => ({ ...prev, [fac.id]: fac.reply }));
-                            setActiveReplyId(fac.id);
-                          }}
-                          className="text-[10px] text-primary hover:underline font-bold mt-1"
-                        >
-                          Editar Respuesta
-                        </button>
-                      </div>
-                    ) : (
-                      activeReplyId !== fac.id && (
-                        <button
-                          onClick={() => setActiveReplyId(fac.id)}
-                          className="text-[10px] text-primary hover:underline font-bold flex items-center gap-1"
-                        >
-                          <MessageCircle className="w-3 h-3" /> Responder
-                        </button>
-                      )
-                    )}
-
-                    {activeReplyId === fac.id && (
-                      <div className="space-y-2 animate-fade-in mt-2">
-                        <textarea
-                          rows={2}
-                          value={replyTexts[fac.id] || ""}
-                          onChange={(e) =>
-                            setReplyTexts((prev) => ({ ...prev, [fac.id]: e.target.value }))
-                          }
-                          placeholder="Escribe la respuesta..."
-                          className="flex w-full rounded-lg border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none"
-                        />
-                        <div className="flex gap-2 justify-end">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-6 text-[10px]"
-                            onClick={() => {
-                              setActiveReplyId(null);
-                              setReplyTexts((prev) => ({ ...prev, [fac.id]: "" }));
-                            }}
-                          >
-                            Cancelar
-                          </Button>
-                          <Button
-                            size="sm"
-                            className="h-6 text-[10px]"
-                            onClick={() => handleSendFacilityReply(fac.id)}
-                          >
-                            Publicar
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </td>
-                  <td className="p-3 align-top text-right space-y-2">
-                    <button
-                      onClick={() => handleReportFacilityReview(fac.id)}
-                      className="text-[10px] font-bold text-muted-foreground hover:text-secondary-foreground flex items-center justify-end gap-1 w-full"
-                    >
-                      <Flag className="w-3.5 h-3.5" /> Reportar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {filteredFacilityReviews.length === 0 && (
-            <div className="text-center p-8 text-muted-foreground italic font-medium text-xs">
-              No se encontraron opiniones del gimnasio con los filtros seleccionados.
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }
@@ -5925,38 +3328,92 @@ function MiembrosTab({
                       </td>
                     </tr>
 
-                    {/* Expanded accordion: history */}
+                    {/* Expanded accordion: history & details */}
                     {isOpen && (
                       <tr className="bg-secondary/5 border-b border-border/40">
                         <td colSpan={6} className="p-0">
-                          <div className="p-6 space-y-4 animate-fade-in border-t border-border/40">
-                            {/* Stats row */}
+                          <div className="p-6 space-y-5 animate-fade-in border-t border-border/40 bg-card/40">
+                            {/* Sub-header with key member details */}
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                              <div className="flex items-center gap-3.5">
+                                <img
+                                  src={m.photo}
+                                  alt={m.name}
+                                  className="h-12 w-12 rounded-full object-cover border-2 border-primary/20 shrink-0"
+                                />
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <h4 className="font-bold text-base text-foreground">{m.name}</h4>
+                                    <span
+                                      className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold capitalize ${m.color}`}
+                                    >
+                                      {m.status}
+                                    </span>
+                                  </div>
+                                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground mt-0.5">
+                                    {m.dni && <span>DNI: <strong className="text-foreground font-semibold">{m.dni}</strong></span>}
+                                    {m.dob && <span>Nac: <strong className="text-foreground font-semibold">{m.dob}</strong></span>}
+                                    <span>Plan: <strong className="text-foreground font-semibold">{m.plan}</strong></span>
+                                    <span>Vence: <strong className="text-foreground font-semibold">{m.end}</strong></span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="rounded-xl text-xs font-bold gap-1.5 h-8 border-border hover:bg-secondary"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setRenewMemberId(m.name);
+                                  }}
+                                >
+                                  <CreditCard className="w-3.5 h-3.5 text-primary" /> Renovar
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="rounded-xl text-xs font-bold gap-1.5 h-8 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleValidateApto(m.name);
+                                  }}
+                                >
+                                  <CheckCircle2 className="w-3.5 h-3.5" /> Validar Apto
+                                </Button>
+                              </div>
+                            </div>
+
+                            <Separator />
+
+                            {/* Metric Stats Cards */}
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                              <div className="bg-card border border-border/50 rounded-xl p-3 text-center">
-                                <div className="text-lg font-black text-primary">
+                              <div className="bg-background border border-border/60 rounded-2xl p-3.5 text-center shadow-2xs">
+                                <div className="text-xl font-black text-primary">
                                   {history.attended.length}
                                 </div>
-                                <div className="text-[10px] text-muted-foreground font-semibold">
-                                  Clases asistidas
+                                <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mt-0.5">
+                                  Clases Asistidas
                                 </div>
                               </div>
-                              <div className="bg-card border border-border/50 rounded-xl p-3 text-center">
-                                <div className="text-lg font-black text-primary">
+                              <div className="bg-background border border-border/60 rounded-2xl p-3.5 text-center shadow-2xs">
+                                <div className="text-xl font-black text-primary">
                                   {history.enrolled.length}
                                 </div>
-                                <div className="text-[10px] text-muted-foreground font-semibold">
-                                  Próximas agendadas
+                                <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mt-0.5">
+                                  Próximas Agendadas
                                 </div>
                               </div>
-                              <div className="bg-card border border-border/50 rounded-xl p-3 text-center">
+                              <div className="bg-background border border-border/60 rounded-2xl p-3.5 text-center shadow-2xs">
                                 <div
-                                  className={`text-lg font-black ${
+                                  className={`text-xl font-black ${
                                     history.attendanceRate === null
                                       ? "text-muted-foreground"
                                       : history.attendanceRate >= 70
-                                        ? "text-primary"
+                                        ? "text-emerald-600 dark:text-emerald-400"
                                         : history.attendanceRate >= 40
-                                          ? "text-secondary-foreground"
+                                          ? "text-amber-500"
                                           : "text-destructive"
                                   }`}
                                 >
@@ -5964,37 +3421,37 @@ function MiembrosTab({
                                     ? `${history.attendanceRate}%`
                                     : "—"}
                                 </div>
-                                <div className="text-[10px] text-muted-foreground font-semibold">
-                                  Tasa asistencia
+                                <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mt-0.5">
+                                  Tasa de Asistencia
                                 </div>
                               </div>
-                              <div className="bg-card border border-border/50 rounded-xl p-3 text-center">
-                                <div className="text-[11px] font-bold text-foreground leading-tight">
+                              <div className="bg-background border border-border/60 rounded-2xl p-3.5 text-center shadow-2xs flex flex-col justify-center items-center">
+                                <div className="text-xs font-bold text-foreground truncate mt-0.5">
                                   {history.lastClass ? `${history.lastClass.day}` : "—"}
                                 </div>
-                                <div className="text-[10px] text-muted-foreground font-semibold">
-                                  Última clase
+                                <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mt-0.5">
+                                  Última Asistencia
                                 </div>
                               </div>
                             </div>
 
-                            {/* Churn alert */}
+                            {/* Churn Alert (if risk) */}
                             {history.isChurnRisk && (
-                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-destructive/ border border-destructive/ rounded-2xl text-xs text-destructive">
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-destructive/10 border border-destructive/30 rounded-2xl text-xs text-destructive">
                                 <div className="flex items-start gap-2.5">
                                   <span className="text-base shrink-0">⚠️</span>
                                   <div>
                                     <div className="font-bold">Riesgo de Baja Detectado</div>
-                                    <div className="text-[11px] text-destructive/80 mt-0.5">
-                                      Este alumno no tiene clases asistidas recientes registradas.
-                                      Considerá contactarlo para retenerlo.
+                                    <div className="text-[11px] opacity-90 mt-0.5 leading-relaxed">
+                                      Este alumno no registra asistencias recientes. Te sugerimos contactarlo para retenerlo.
                                     </div>
                                   </div>
                                 </div>
                                 <Button
                                   size="sm"
                                   className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold gap-1 text-[11px] h-8 shrink-0"
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    e.stopPropagation();
                                     const cleanedPhone = m.phone.replace(/[^0-9]/g, "");
                                     const text = encodeURIComponent(
                                       `¡Hola ${m.name}! Te extrañamos en Studio Pulse. Notamos que hace unos días no vienes a entrenar y queríamos saber si estaba todo bien o si necesitabas ayuda con tus reservas. ¡Te esperamos! 💪`,
@@ -6006,135 +3463,144 @@ function MiembrosTab({
                                   }}
                                 >
                                   <MessageCircle className="w-3.5 h-3.5" />
-                                  <span>Enviar Rescate WhatsApp</span>
+                                  <span>Enviar WhatsApp</span>
                                 </Button>
                               </div>
                             )}
 
-                            {/* Two-Column Details */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                              {/* Col 1: Ficha Médica y Pagos */}
-                              <div className="space-y-4">
-                                <div className="bg-card border border-border/50 rounded-xl p-4 space-y-3">
-                                  <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                                    Ficha Médica & Salud
-                                  </h4>
+                            <Separator />
+
+                            {/* Detailed Information Grid */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              {/* Left Column: Ficha Médica y Pagos */}
+                              <div className="space-y-5">
+                                {/* Ficha Médica Card */}
+                                <div className="bg-background border border-border/60 rounded-2xl p-4 space-y-3 shadow-2xs">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-xs font-bold text-foreground uppercase tracking-wider">
+                                      🏥 Salud & Emergencia
+                                    </span>
+                                    <span className="text-[10px] text-muted-foreground font-semibold">
+                                      Ficha Médica
+                                    </span>
+                                  </div>
+
                                   <div className="space-y-2 text-xs">
-                                    <div>
-                                      <span className="font-bold text-muted-foreground">
-                                        Obra Social / Prepaga:{" "}
-                                      </span>
-                                      <span className="text-foreground font-medium">
+                                    <div className="flex justify-between items-center py-1">
+                                      <span className="text-muted-foreground font-semibold">Obra Social / Prepaga:</span>
+                                      <span className="font-bold text-foreground">
                                         {m.medicalInsurance || "No declarada"}
+                                        {m.affiliateNumber && ` (${m.affiliateNumber})`}
                                       </span>
-                                      {m.affiliateNumber && (
-                                        <span className="text-muted-foreground">
-                                          {" "}
-                                          (Nro: {m.affiliateNumber})
-                                        </span>
-                                      )}
                                     </div>
-                                    <div>
-                                      <span className="font-bold text-muted-foreground">
-                                        Contacto de Emergencia:{" "}
-                                      </span>
-                                      <span className="text-foreground font-medium">
+
+                                    <Separator />
+
+                                    <div className="flex justify-between items-center py-1">
+                                      <span className="text-muted-foreground font-semibold">Contacto Emergencia:</span>
+                                      <span className="font-bold text-foreground">
                                         {m.emergencyContactName || "No especificado"}
+                                        {m.emergencyContactPhone && ` · ${m.emergencyContactPhone}`}
                                       </span>
-                                      {m.emergencyContactPhone && (
-                                        <span className="text-muted-foreground">
-                                          {" "}
-                                          ({m.emergencyContactPhone})
-                                        </span>
-                                      )}
                                     </div>
-                                    <div className="border-t border-border/30 pt-2 flex flex-col gap-1.5">
-                                      <div>
-                                        <span className="font-bold text-muted-foreground">
-                                          Certificado Apto Médico:{" "}
-                                        </span>
-                                        <span
-                                          className={`font-semibold ${m.hasApto === "Entregado" ? "text-primary" : m.hasApto === "Vencido" ? "text-destructive" : "text-secondary-foreground"}`}
-                                        >
-                                          {m.hasApto === "Entregado"
-                                            ? `Entregado (Vence: ${m.aptoExp})`
+
+                                    <Separator />
+
+                                    <div className="flex justify-between items-center py-1">
+                                      <span className="text-muted-foreground font-semibold">Certificado Apto Físico:</span>
+                                      <span
+                                        className={`font-bold px-2 py-0.5 rounded-full text-[10px] ${
+                                          m.hasApto === "Entregado"
+                                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
                                             : m.hasApto === "Vencido"
-                                              ? "Vencido"
-                                              : "Pendiente"}
-                                        </span>
-                                      </div>
-                                      {m.aptoDocUrl && (
-                                        <div>
-                                          <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="h-7 text-[10px] rounded-lg gap-1"
-                                            onClick={() => {
-                                              const win = window.open();
-                                              win?.document.write(
-                                                `<iframe src="${m.aptoDocUrl}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`,
-                                              );
-                                            }}
-                                          >
-                                            <Eye className="w-3 h-3" /> Ver Certificado Cargado
-                                          </Button>
-                                        </div>
-                                      )}
+                                              ? "bg-destructive/10 text-destructive border border-destructive/20"
+                                              : "bg-amber-500/10 text-amber-600 border border-amber-500/20"
+                                        }`}
+                                      >
+                                        {m.hasApto === "Entregado"
+                                          ? `Vigente (${m.aptoExp || "1 año"})`
+                                          : m.hasApto === "Vencido"
+                                            ? "Vencido"
+                                            : "Pendiente"}
+                                      </span>
                                     </div>
-                                    {m.medicalNotes && (
-                                      <div className="border-t border-border/30 pt-2 space-y-1">
-                                        <span className="font-bold text-muted-foreground block">
-                                          Observaciones Médicas / Lesiones:
-                                        </span>
-                                        <p className="text-destructive dark:text-destructive font-medium leading-relaxed bg-destructive/ p-2 rounded-lg border border-destructive/">
-                                          {m.medicalNotes}
-                                        </p>
+
+                                    {m.aptoDocUrl && (
+                                      <div className="pt-1">
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          className="w-full h-8 text-[11px] rounded-xl gap-1.5 font-semibold"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            const win = window.open();
+                                            win?.document.write(
+                                              `<iframe src="${m.aptoDocUrl}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`,
+                                            );
+                                          }}
+                                        >
+                                          <Eye className="w-3.5 h-3.5" /> Ver Documento Adjunto
+                                        </Button>
                                       </div>
+                                    )}
+
+                                    {m.medicalNotes && (
+                                      <>
+                                        <Separator />
+                                        <div className="space-y-1 pt-1">
+                                          <span className="text-muted-foreground font-bold block">
+                                            Observaciones Médicas / Lesiones:
+                                          </span>
+                                          <p className="text-destructive font-semibold leading-relaxed bg-destructive/5 p-2.5 rounded-xl border border-destructive/20 text-[11px]">
+                                            {m.medicalNotes}
+                                          </p>
+                                        </div>
+                                      </>
                                     )}
                                   </div>
                                 </div>
 
-                                <div className="bg-card border border-border/50 rounded-xl p-4 space-y-3">
-                                  <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                                    Historial de Pagos
-                                  </h4>
+                                {/* Historial de Pagos Card */}
+                                <div className="bg-background border border-border/60 rounded-2xl p-4 space-y-3 shadow-2xs">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-xs font-bold text-foreground uppercase tracking-wider">
+                                      💳 Historial de Pagos
+                                    </span>
+                                    <span className="text-[10px] text-muted-foreground font-semibold">
+                                      {m.payments?.length || 0} registros
+                                    </span>
+                                  </div>
+
                                   {m.payments && m.payments.length > 0 ? (
-                                    <div className="overflow-x-auto rounded-lg border border-border/30">
+                                    <div className="overflow-x-auto rounded-xl border border-border/40">
                                       <table className="w-full text-left text-[11px]">
                                         <thead>
-                                          <tr className="bg-secondary/30 border-b border-border/40 text-muted-foreground font-bold">
-                                            <th className="p-2">Fecha</th>
-                                            <th className="p-2">Plan</th>
-                                            <th className="p-2">Monto</th>
-                                            <th className="p-2">Método</th>
-                                            <th className="p-2 text-right">Recibo</th>
+                                          <tr className="bg-secondary/30 border-b border-border/40 text-muted-foreground font-bold uppercase text-[9.5px]">
+                                            <th className="p-2.5">Fecha</th>
+                                            <th className="p-2.5">Plan</th>
+                                            <th className="p-2.5">Monto</th>
+                                            <th className="p-2.5">Método</th>
+                                            <th className="p-2.5 text-right">Recibo</th>
                                           </tr>
                                         </thead>
                                         <tbody className="divide-y divide-border/30">
                                           {m.payments.map((p: any) => (
-                                            <tr key={p.id} className="hover:bg-secondary/20">
-                                              <td className="p-2 text-muted-foreground">
-                                                {p.date}
-                                              </td>
-                                              <td className="p-2 font-medium text-foreground">
-                                                {p.duration}
-                                              </td>
-                                              <td className="p-2 font-bold text-primary">
-                                                ${p.amount}
-                                              </td>
-                                              <td className="p-2 text-muted-foreground">
-                                                {p.method}
-                                              </td>
-                                              <td className="p-2 text-right">
+                                            <tr key={p.id} className="hover:bg-secondary/20 transition-colors">
+                                              <td className="p-2.5 text-muted-foreground">{p.date}</td>
+                                              <td className="p-2.5 font-semibold text-foreground">{p.duration}</td>
+                                              <td className="p-2.5 font-bold text-primary">${p.amount}</td>
+                                              <td className="p-2.5 text-muted-foreground">{p.method}</td>
+                                              <td className="p-2.5 text-right">
                                                 <Button
                                                   variant="ghost"
                                                   size="icon"
                                                   className="h-6 w-6 text-primary hover:bg-primary/10 rounded-md"
-                                                  onClick={() =>
-                                                    setViewingReceipt({ member: m, payment: p })
-                                                  }
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setViewingReceipt({ member: m, payment: p });
+                                                  }}
                                                 >
-                                                  <FileText className="w-3 h-3" />
+                                                  <FileText className="w-3.5 h-3.5" />
                                                 </Button>
                                               </td>
                                             </tr>
@@ -6143,96 +3609,83 @@ function MiembrosTab({
                                       </table>
                                     </div>
                                   ) : (
-                                    <p className="text-[11px] text-muted-foreground text-center py-2">
-                                      Sin registros de pago en este periodo.
+                                    <p className="text-xs text-muted-foreground text-center py-3 italic">
+                                      Sin registros de pagos en el historial.
                                     </p>
                                   )}
                                 </div>
                               </div>
 
-                              {/* Col 2: Clases e Historial */}
-                              <div className="space-y-4">
-                                {history.attended.length > 0 && (
-                                  <div className="space-y-1.5">
-                                    <span className="text-[10px] font-bold text-muted-foreground uppercase">
-                                      Historial de Clases Asistidas
+                              {/* Right Column: Clases e Historial */}
+                              <div className="space-y-5">
+                                {/* Clases Asistidas Card */}
+                                <div className="bg-background border border-border/60 rounded-2xl p-4 space-y-3 shadow-2xs">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-xs font-bold text-foreground uppercase tracking-wider">
+                                      🏋️ Historial de Clases Asistidas
                                     </span>
+                                    <span className="text-[10px] text-muted-foreground font-semibold">
+                                      {history.attended.length} asistencias
+                                    </span>
+                                  </div>
+
+                                  {history.attended.length > 0 ? (
                                     <div className="overflow-x-auto rounded-xl border border-border/40">
-                                      <table className="w-full text-left text-[11px] min-w-[320px]">
+                                      <table className="w-full text-left text-[11px] min-w-[280px]">
                                         <thead>
-                                          <tr className="bg-secondary/30 border-b border-border/40 text-muted-foreground font-bold">
+                                          <tr className="bg-secondary/30 border-b border-border/40 text-muted-foreground font-bold uppercase text-[9.5px]">
                                             <th className="p-2.5">Clase</th>
                                             <th className="p-2.5">Día</th>
                                             <th className="p-2.5">Horario</th>
-                                            <th className="p-2.5 text-center">Calificación dada</th>
                                           </tr>
                                         </thead>
                                         <tbody className="divide-y divide-border/30">
-                                          {history.attended.map((h, i) => (
-                                            <tr key={i} className="hover:bg-secondary/20">
-                                              <td className="p-2.5 font-semibold text-foreground">
-                                                {h.className}
-                                              </td>
-                                              <td className="p-2.5 text-muted-foreground">
-                                                {h.day}
-                                              </td>
-                                              <td className="p-2.5 text-muted-foreground">
-                                                {h.time}
-                                              </td>
-                                              <td className="p-2.5 text-center">
-                                                {h.rating ? (
-                                                  <span className="inline-flex items-center gap-1 text-secondary-foreground font-bold">
-                                                    {Array(5)
-                                                      .fill(0)
-                                                      .map((_, si) => (
-                                                        <span
-                                                          key={si}
-                                                          className={
-                                                            si < h.rating!.stars ? "" : "opacity-20"
-                                                          }
-                                                        >
-                                                          ★
-                                                        </span>
-                                                      ))}
-                                                  </span>
-                                                ) : (
-                                                  <span className="text-muted-foreground/50 text-[10px]">
-                                                    Sin calificar
-                                                  </span>
-                                                )}
-                                              </td>
+                                          {history.attended.map((h: any, i: number) => (
+                                            <tr key={i} className="hover:bg-secondary/20 transition-colors">
+                                              <td className="p-2.5 font-bold text-foreground">{h.className}</td>
+                                              <td className="p-2.5 text-muted-foreground">{h.day}</td>
+                                              <td className="p-2.5 text-muted-foreground">{h.time}</td>
                                             </tr>
                                           ))}
                                         </tbody>
                                       </table>
                                     </div>
-                                  </div>
-                                )}
+                                  ) : (
+                                    <p className="text-xs text-muted-foreground text-center py-3 italic">
+                                      Sin clases asistidas registradas en el sistema.
+                                    </p>
+                                  )}
+                                </div>
 
-                                {history.attended.length === 0 && (
-                                  <p className="text-[11px] text-muted-foreground text-center py-3">
-                                    Sin clases asistidas registradas en el sistema actual.
-                                  </p>
-                                )}
-
-                                {/* Upcoming classes */}
-                                {history.enrolled.length > 0 && (
-                                  <div className="space-y-1.5">
-                                    <span className="text-[10px] font-bold text-muted-foreground uppercase">
-                                      Próximas Clases Agendadas
+                                {/* Próximas Clases Agendadas Card */}
+                                <div className="bg-background border border-border/60 rounded-2xl p-4 space-y-3 shadow-2xs">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-xs font-bold text-foreground uppercase tracking-wider">
+                                      📅 Próximas Clases Agendadas
                                     </span>
-                                    <div className="flex flex-wrap gap-1.5">
-                                      {history.enrolled.map((e, i) => (
+                                    <span className="text-[10px] text-muted-foreground font-semibold">
+                                      {history.enrolled.length} reservas
+                                    </span>
+                                  </div>
+
+                                  {history.enrolled.length > 0 ? (
+                                    <div className="flex flex-wrap gap-2 pt-1">
+                                      {history.enrolled.map((e: any, i: number) => (
                                         <span
                                           key={i}
-                                          className="text-[10px] bg-primary/10 text-primary font-semibold px-2.5 py-1 rounded-xl border border-primary/20"
+                                          className="text-xs bg-primary/10 text-primary font-bold px-3 py-1.5 rounded-xl border border-primary/20 flex items-center gap-1.5"
                                         >
+                                          <span className="h-2 w-2 rounded-full bg-primary" />
                                           {e.className} · {e.day} {e.time}
                                         </span>
                                       ))}
                                     </div>
-                                  </div>
-                                )}
+                                  ) : (
+                                    <p className="text-xs text-muted-foreground text-center py-3 italic">
+                                      Sin reservas o clases agendadas próximamente.
+                                    </p>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -6659,307 +4112,329 @@ function MembresiasTab({
         </div>
         <Button
           size="sm"
-          className="rounded-xl gap-1.5"
-          onClick={() => setShowAddForm(!showAddForm)}
+          className="rounded-full bg-black hover:bg-black/90 text-white dark:bg-white dark:hover:bg-white/90 dark:text-black font-bold gap-1.5 px-4"
+          onClick={() => {
+            setName("");
+            setPrice("");
+            setOriginalPrice("");
+            setPeriodicity("Mensual");
+            setSelectedServices([]);
+            setTag("Pase Libre");
+            setPassType("Pase Libre");
+            setCreditsCount("12");
+            setAccessHoursType("Todo Horario");
+            setSearchActivity("");
+            setIncludedActivities([]);
+            setRegistrationFee("0");
+            setFreezeDays("0");
+            setDailyClassLimit("Ilimitado");
+            setShowAddForm(true);
+          }}
         >
-          <Plus className="h-4 w-4" /> {showAddForm ? "Cancelar" : "Nuevo Plan"}
+          <Plus className="h-4 w-4" /> Nuevo Plan
         </Button>
       </div>
 
-      {showAddForm && (
-        <form
-          onSubmit={handleAddMembership}
-          className="rounded-3xl border border-border bg-card p-6 max-w-xl space-y-4 animate-fade-up"
-        >
-          <h3 className="text-sm font-bold text-muted-foreground uppercase">Agregar Nuevo Plan</h3>
+      {/* Modal: Crear Plan de Membresía */}
+      <Dialog open={showAddForm} onOpenChange={setShowAddForm}>
+        <DialogContent className="max-w-xl border border-border bg-card rounded-3xl p-6 max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold text-foreground">
+              Agregar Nuevo Plan de Membresía
+            </DialogTitle>
+          </DialogHeader>
 
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="space-y-1.5 sm:col-span-1">
-              <label className="text-xs font-semibold text-muted-foreground">Nombre del Plan</label>
-              <input
-                type="text"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
-                placeholder="Pase Libre"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">Precio ($)</label>
-              <input
-                type="number"
-                required
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
-                placeholder="25000"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">
-                Original/Tachado ($)
-              </label>
-              <input
-                type="number"
-                value={originalPrice}
-                onChange={(e) => setOriginalPrice(e.target.value)}
-                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
-                placeholder="Opcional"
-              />
-            </div>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground block">
-                Periodicidad del Cobro
-              </label>
-              <select
-                value={periodicity}
-                onChange={(e) => setPeriodicity(e.target.value)}
-                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
-              >
-                <option value="Semanal">Semanal</option>
-                <option value="Mensual">Mensual</option>
-                <option value="Trimestral">Trimestral</option>
-                <option value="Semestral">Semestral</option>
-                <option value="Anual">Anual</option>
-              </select>
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground block">
-                Etiqueta/Categoría del Plan
-              </label>
-              <select
-                value={tag}
-                onChange={(e) => setTag(e.target.value)}
-                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
-              >
-                <option value="Pase Libre">Pase Libre</option>
-                <option value="Planes Premium">Planes Premium</option>
-                <option value="Solo Clases">Solo Clases</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Pass Type & Credits configuration */}
-          <div className="grid gap-4 sm:grid-cols-2 border-t border-border/40 pt-3">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground block">
-                Tipo de Acceso
-              </label>
-              <select
-                value={passType}
-                onChange={(e) => setPassType(e.target.value)}
-                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
-              >
-                <option value="Pase Libre">Pase Libre (Acceso ilimitado)</option>
-                <option value="Por Créditos">Por Créditos (Límite de clases)</option>
-              </select>
-            </div>
-            {passType === "Por Créditos" && (
+          <form onSubmit={handleAddMembership} className="space-y-4 pt-2 text-xs text-foreground">
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="space-y-1.5 sm:col-span-1">
+                <label className="text-xs font-semibold text-muted-foreground">Nombre del Plan</label>
+                <input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none font-semibold text-foreground"
+                  placeholder="Ej: Pase Libre"
+                />
+              </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">
-                  Créditos/Clases Incluidas
-                </label>
+                <label className="text-xs font-semibold text-muted-foreground">Precio ($)</label>
                 <input
                   type="number"
                   required
-                  value={creditsCount}
-                  onChange={(e) => setCreditsCount(e.target.value)}
-                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
-                  placeholder="12"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none font-semibold text-foreground"
+                  placeholder="25000"
                 />
               </div>
-            )}
-          </div>
-
-          {/* Time access restrictions */}
-          <div className="grid gap-4 sm:grid-cols-2 border-t border-border/40 pt-3">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground block">
-                Horario de Acceso
-              </label>
-              <select
-                value={accessHoursType}
-                onChange={(e) => setAccessHoursType(e.target.value)}
-                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
-              >
-                <option value="Todo Horario">Todo Horario (Full Access)</option>
-                <option value="Off-Peak">Off-Peak (Franja horaria especial)</option>
-              </select>
-            </div>
-            {accessHoursType === "Off-Peak" && (
-              <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-semibold text-muted-foreground">Desde</label>
-                  <input
-                    type="text"
-                    value={offPeakStart}
-                    onChange={(e) => setOffPeakStart(e.target.value)}
-                    className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none"
-                    placeholder="12:00"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-semibold text-muted-foreground">Hasta</label>
-                  <input
-                    type="text"
-                    value={offPeakEnd}
-                    onChange={(e) => setOffPeakEnd(e.target.value)}
-                    className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none"
-                    placeholder="16:00"
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Advanced business settings */}
-          <div className="grid gap-4 sm:grid-cols-2 border-t border-border/40 pt-3">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground block">
-                Costo de Matrícula ($)
-              </label>
-              <input
-                type="number"
-                value={registrationFee}
-                onChange={(e) => setRegistrationFee(e.target.value)}
-                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
-                placeholder="0 = Sin matrícula"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground block">
-                Días de Congelamiento por Año
-              </label>
-              <input
-                type="number"
-                value={freezeDays}
-                onChange={(e) => setFreezeDays(e.target.value)}
-                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
-                placeholder="Ej: 15 días"
-              />
-            </div>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2 border-t border-border/40 pt-3">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground block">
-                Límite Diario de Reservas
-              </label>
-              <select
-                value={dailyClassLimit}
-                onChange={(e) => setDailyClassLimit(e.target.value)}
-                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
-              >
-                <option value="Ilimitado">Ilimitado</option>
-                <option value="1 clase por día">1 clase por día</option>
-                <option value="2 clases por día">2 clases por día</option>
-              </select>
-            </div>
-            <div className="space-y-1.5 flex flex-col justify-end">
-              <label className="text-xs font-semibold text-muted-foreground flex items-center gap-2 cursor-pointer pb-2.5">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Original/Tachado ($)
+                </label>
                 <input
-                  type="checkbox"
-                  checked={isMultisede}
-                  onChange={(e) => setIsMultisede(e.target.checked)}
-                  className="rounded border-border text-primary focus:ring-primary h-4 w-4 bg-background"
+                  type="number"
+                  value={originalPrice}
+                  onChange={(e) => setOriginalPrice(e.target.value)}
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground"
+                  placeholder="Opcional"
                 />
-                <span>Acceso Multisede (Habilitar en otras sedes)</span>
-              </label>
+              </div>
             </div>
-          </div>
 
-          {/* Activities Multi-select Search Box */}
-          <div className="space-y-2 border-t border-border/40 pt-3 relative">
-            <label className="text-xs font-semibold text-muted-foreground block">
-              Actividades Incluidas
-            </label>
-            <div className="flex flex-wrap gap-1.5 mb-2">
-              {includedActivities.map((act) => (
-                <span
-                  key={act}
-                  className="inline-flex items-center gap-1 bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full"
-                >
-                  {act}
-                  <button
-                    type="button"
-                    onClick={() => setIncludedActivities((prev) => prev.filter((x) => x !== act))}
-                    className="hover:text-foreground"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
-              ))}
-              {includedActivities.length === 0 && (
-                <span className="text-xs text-muted-foreground italic">
-                  Todas las actividades del centro incluidas por defecto.
-                </span>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground block">
+                  Periodicidad del Cobro
+                </label>
+                <Select value={periodicity} onValueChange={setPeriodicity}>
+                  <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold">
+                    <SelectValue placeholder="Selecciona periodicidad..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Semanal">Semanal</SelectItem>
+                    <SelectItem value="Mensual">Mensual</SelectItem>
+                    <SelectItem value="Trimestral">Trimestral</SelectItem>
+                    <SelectItem value="Semestral">Semestral</SelectItem>
+                    <SelectItem value="Anual">Anual</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground block">
+                  Etiqueta/Categoría del Plan
+                </label>
+                <Select value={tag} onValueChange={setTag}>
+                  <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold">
+                    <SelectValue placeholder="Selecciona categoría..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Pase Libre">Pase Libre</SelectItem>
+                    <SelectItem value="Planes Premium">Planes Premium</SelectItem>
+                    <SelectItem value="Solo Clases">Solo Clases</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Pass Type & Credits configuration */}
+            <div className="grid gap-4 sm:grid-cols-2 border-t border-border/40 pt-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground block">
+                  Tipo de Acceso
+                </label>
+                <Select value={passType} onValueChange={setPassType}>
+                  <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold">
+                    <SelectValue placeholder="Tipo de acceso..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Pase Libre">Pase Libre (Acceso ilimitado)</SelectItem>
+                    <SelectItem value="Por Créditos">Por Créditos (Límite de clases)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {passType === "Por Créditos" && (
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground">
+                    Créditos/Clases Incluidas
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    value={creditsCount}
+                    onChange={(e) => setCreditsCount(e.target.value)}
+                    className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none font-semibold text-foreground"
+                    placeholder="12"
+                  />
+                </div>
               )}
             </div>
 
-            <input
-              type="text"
-              value={searchActivity}
-              onChange={(e) => setSearchActivity(e.target.value)}
-              className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
-              placeholder="Buscar actividades a restringir/incluir..."
-            />
+            {/* Time access restrictions */}
+            <div className="grid gap-4 sm:grid-cols-2 border-t border-border/40 pt-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground block">
+                  Horario de Acceso
+                </label>
+                <Select value={accessHoursType} onValueChange={setAccessHoursType}>
+                  <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold">
+                    <SelectValue placeholder="Horario..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Todo Horario">Todo Horario (Full Access)</SelectItem>
+                    <SelectItem value="Off-Peak">Off-Peak (Franja horaria especial)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {accessHoursType === "Off-Peak" && (
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-semibold text-muted-foreground">Desde</label>
+                    <input
+                      type="text"
+                      value={offPeakStart}
+                      onChange={(e) => setOffPeakStart(e.target.value)}
+                      className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none text-foreground font-semibold"
+                      placeholder="12:00"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-semibold text-muted-foreground">Hasta</label>
+                    <input
+                      type="text"
+                      value={offPeakEnd}
+                      onChange={(e) => setOffPeakEnd(e.target.value)}
+                      className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none text-foreground font-semibold"
+                      placeholder="16:00"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
 
-            {filteredActivities.length > 0 && (
-              <div className="absolute left-0 right-0 mt-1 bg-card border border-border rounded-xl max-h-48 overflow-y-auto z-10 p-1 space-y-0.5">
-                {filteredActivities.map((act) => (
-                  <button
-                    type="button"
+            {/* Advanced business settings */}
+            <div className="grid gap-4 sm:grid-cols-3 border-t border-border/40 pt-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground block">
+                  Costo de Matrícula ($)
+                </label>
+                <input
+                  type="number"
+                  value={registrationFee}
+                  onChange={(e) => setRegistrationFee(e.target.value)}
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground font-semibold"
+                  placeholder="0 = Sin matrícula"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground block">
+                  Días Congelamiento/Año
+                </label>
+                <input
+                  type="number"
+                  value={freezeDays}
+                  onChange={(e) => setFreezeDays(e.target.value)}
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground font-semibold"
+                  placeholder="Ej: 15 días"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground block">
+                  Límite Diario de Reservas
+                </label>
+                <Select value={dailyClassLimit} onValueChange={setDailyClassLimit}>
+                  <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold">
+                    <SelectValue placeholder="Límite..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Ilimitado">Ilimitado</SelectItem>
+                    <SelectItem value="1 clase por día">1 clase por día</SelectItem>
+                    <SelectItem value="2 clases por día">2 clases por día</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Activities Multi-select Search Box */}
+            <div className="space-y-2 border-t border-border/40 pt-3 relative">
+              <label className="text-xs font-semibold text-muted-foreground block">
+                Actividades Incluidas
+              </label>
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {includedActivities.map((act) => (
+                  <span
                     key={act}
-                    onClick={() => {
-                      setIncludedActivities((prev) => [...prev, act]);
-                      setSearchActivity("");
-                    }}
-                    className="w-full text-left px-3 py-2 text-xs hover:bg-secondary rounded-lg transition"
+                    className="inline-flex items-center gap-1 bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full"
                   >
                     {act}
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => setIncludedActivities((prev) => prev.filter((x) => x !== act))}
+                      className="hover:text-foreground"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
                 ))}
+                {includedActivities.length === 0 && (
+                  <span className="text-xs text-muted-foreground italic">
+                    Todas las actividades del centro incluidas por defecto.
+                  </span>
+                )}
               </div>
-            )}
-          </div>
 
-          <div className="space-y-2 border-t border-border/40 pt-3">
-            <label className="text-xs font-semibold text-muted-foreground block">
-              Amenities y Servicios Incluidos
-            </label>
-            {activeAmenities.length === 0 ? (
-              <p className="text-xs text-muted-foreground">
-                No tienes amenities activos en la pestaña de Configuración.
-              </p>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                {activeAmenities.map((a) => (
-                  <button
-                    type="button"
-                    key={a.id}
-                    onClick={() => toggleService(a.id)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition ${
-                      selectedServices.includes(a.id)
-                        ? "bg-primary/10 border-primary text-primary"
-                        : "bg-background border-border text-muted-foreground hover:border-foreground/20"
-                    }`}
-                  >
-                    {a.name}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+              <input
+                type="text"
+                value={searchActivity}
+                onChange={(e) => setSearchActivity(e.target.value)}
+                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground font-semibold"
+                placeholder="Buscar actividades a incluir..."
+              />
 
-          <Button type="submit" className="rounded-xl">
-            Crear Plan
-          </Button>
-        </form>
-      )}
+              {filteredActivities.length > 0 && (
+                <div className="absolute left-0 right-0 mt-1 bg-card border border-border rounded-xl max-h-48 overflow-y-auto z-10 p-1 space-y-0.5">
+                  {filteredActivities.map((act) => (
+                    <button
+                      type="button"
+                      key={act}
+                      onClick={() => {
+                        setIncludedActivities((prev) => [...prev, act]);
+                        setSearchActivity("");
+                      }}
+                      className="w-full text-left px-3 py-2 text-xs hover:bg-secondary rounded-lg transition text-foreground"
+                    >
+                      {act}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2 border-t border-border/40 pt-3">
+              <label className="text-xs font-semibold text-muted-foreground block">
+                Amenities y Servicios Incluidos
+              </label>
+              {activeAmenities.length === 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  No tienes amenities activos en la pestaña de Configuración.
+                </p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {activeAmenities.map((a) => (
+                    <button
+                      type="button"
+                      key={a.id}
+                      onClick={() => toggleService(a.id)}
+                      className={`px-3.5 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                        selectedServices.includes(a.id)
+                          ? "bg-foreground text-background border-foreground font-bold shadow-sm"
+                          : "bg-background border-border text-muted-foreground hover:border-foreground/40 hover:text-foreground"
+                      }`}
+                    >
+                      {a.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <DialogFooter className="pt-3 gap-2 sm:gap-0">
+              <Button
+                type="button"
+                variant="outline"
+                className="rounded-xl text-xs font-bold"
+                onClick={() => setShowAddForm(false)}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" className="rounded-xl text-xs font-bold bg-primary text-primary-foreground">
+                Crear Plan
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <div className="grid gap-6 md:grid-cols-3">
         {membershipsList.map((m, i) => (
@@ -7012,14 +4487,6 @@ function MembresiasTab({
                     {m.registrationFee && m.registrationFee > 0
                       ? `Matrícula: $${m.registrationFee.toLocaleString("es-AR")}`
                       : "Matrícula Bonificada 🎉"}
-                  </span>
-                </div>
-                <div className="text-xs text-muted-foreground flex items-center gap-1.5">
-                  <span>🏢</span>
-                  <span>
-                    {m.isMultisede
-                      ? "Acceso Multisede (Toda la red)"
-                      : "Solo Sede Matriz (Palermo)"}
                   </span>
                 </div>
                 {m.freezeDays && m.freezeDays > 0 ? (
@@ -7107,23 +4574,16 @@ function MembresiasTab({
         ))}
       </div>
 
-      {/* Edit Membership Modal */}
-      {editingPlan && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 z-50 animate-fade-in text-foreground">
-          <form
-            onSubmit={handleSaveEditMembership}
-            className="relative bg-card border border-border w-full max-w-xl rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto"
-          >
-            <button
-              type="button"
-              onClick={() => setEditingPlan(null)}
-              className="absolute right-4 top-4 p-2 rounded-full hover:bg-secondary transition"
-            >
-              <X className="h-5 w-5" />
-            </button>
+      {/* Edit Membership Modal Dialog */}
+      <Dialog open={!!editingPlan} onOpenChange={(open) => !open && setEditingPlan(null)}>
+        <DialogContent className="max-w-xl border border-border bg-card rounded-3xl p-6 max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold text-foreground">
+              Editar Plan de Membresía
+            </DialogTitle>
+          </DialogHeader>
 
-            <h3 className="text-base font-bold tracking-tight">Editar Plan de Membresía</h3>
-
+          <form onSubmit={handleSaveEditMembership} className="space-y-4 pt-2 text-xs text-foreground">
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="space-y-1.5 sm:col-span-1">
                 <label className="text-xs font-semibold text-muted-foreground">
@@ -7134,7 +4594,7 @@ function MembresiasTab({
                   required
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none font-semibold text-foreground"
                 />
               </div>
               <div className="space-y-1.5">
@@ -7144,7 +4604,7 @@ function MembresiasTab({
                   required
                   value={editPrice}
                   onChange={(e) => setEditPrice(e.target.value)}
-                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none font-semibold text-foreground"
                 />
               </div>
               <div className="space-y-1.5">
@@ -7155,7 +4615,7 @@ function MembresiasTab({
                   type="number"
                   value={editOriginalPrice}
                   onChange={(e) => setEditOriginalPrice(e.target.value)}
-                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground"
                   placeholder="Opcional"
                 />
               </div>
@@ -7166,31 +4626,33 @@ function MembresiasTab({
                 <label className="text-xs font-semibold text-muted-foreground block">
                   Periodicidad del Cobro
                 </label>
-                <select
-                  value={editPeriodicity}
-                  onChange={(e) => setEditPeriodicity(e.target.value)}
-                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
-                >
-                  <option value="Semanal">Semanal</option>
-                  <option value="Mensual">Mensual</option>
-                  <option value="Trimestral">Trimestral</option>
-                  <option value="Semestral">Semestral</option>
-                  <option value="Anual">Anual</option>
-                </select>
+                <Select value={editPeriodicity} onValueChange={setEditPeriodicity}>
+                  <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold">
+                    <SelectValue placeholder="Periodicidad..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Semanal">Semanal</SelectItem>
+                    <SelectItem value="Mensual">Mensual</SelectItem>
+                    <SelectItem value="Trimestral">Trimestral</SelectItem>
+                    <SelectItem value="Semestral">Semestral</SelectItem>
+                    <SelectItem value="Anual">Anual</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground block">
                   Etiqueta/Categoría del Plan
                 </label>
-                <select
-                  value={editTag}
-                  onChange={(e) => setEditTag(e.target.value)}
-                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
-                >
-                  <option value="Pase Libre">Pase Libre</option>
-                  <option value="Planes Premium">Planes Premium</option>
-                  <option value="Solo Clases">Solo Clases</option>
-                </select>
+                <Select value={editTag} onValueChange={setEditTag}>
+                  <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold">
+                    <SelectValue placeholder="Categoría..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Pase Libre">Pase Libre</SelectItem>
+                    <SelectItem value="Planes Premium">Planes Premium</SelectItem>
+                    <SelectItem value="Solo Clases">Solo Clases</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -7200,14 +4662,15 @@ function MembresiasTab({
                 <label className="text-xs font-semibold text-muted-foreground block">
                   Tipo de Acceso
                 </label>
-                <select
-                  value={editPassType}
-                  onChange={(e) => setEditPassType(e.target.value)}
-                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
-                >
-                  <option value="Pase Libre">Pase Libre (Acceso ilimitado)</option>
-                  <option value="Por Créditos">Por Créditos (Límite de clases)</option>
-                </select>
+                <Select value={editPassType} onValueChange={setEditPassType}>
+                  <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold">
+                    <SelectValue placeholder="Tipo de acceso..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Pase Libre">Pase Libre (Acceso ilimitado)</SelectItem>
+                    <SelectItem value="Por Créditos">Por Créditos (Límite de clases)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               {editPassType === "Por Créditos" && (
                 <div className="space-y-1.5">
@@ -7219,7 +4682,7 @@ function MembresiasTab({
                     required
                     value={editCreditsCount}
                     onChange={(e) => setEditCreditsCount(e.target.value)}
-                    className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                    className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none font-semibold text-foreground"
                   />
                 </div>
               )}
@@ -7231,14 +4694,15 @@ function MembresiasTab({
                 <label className="text-xs font-semibold text-muted-foreground block">
                   Horario de Acceso
                 </label>
-                <select
-                  value={editAccessHoursType}
-                  onChange={(e) => setEditAccessHoursType(e.target.value)}
-                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
-                >
-                  <option value="Todo Horario">Todo Horario (Full Access)</option>
-                  <option value="Off-Peak">Off-Peak (Franja horaria especial)</option>
-                </select>
+                <Select value={editAccessHoursType} onValueChange={setEditAccessHoursType}>
+                  <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold">
+                    <SelectValue placeholder="Horario..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Todo Horario">Todo Horario (Full Access)</SelectItem>
+                    <SelectItem value="Off-Peak">Off-Peak (Franja horaria especial)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               {editAccessHoursType === "Off-Peak" && (
                 <div className="grid grid-cols-2 gap-2">
@@ -7248,7 +4712,7 @@ function MembresiasTab({
                       type="text"
                       value={editOffPeakStart}
                       onChange={(e) => setEditOffPeakStart(e.target.value)}
-                      className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none"
+                      className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none text-foreground font-semibold"
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -7257,7 +4721,7 @@ function MembresiasTab({
                       type="text"
                       value={editOffPeakEnd}
                       onChange={(e) => setEditOffPeakEnd(e.target.value)}
-                      className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none"
+                      className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none text-foreground font-semibold"
                     />
                   </div>
                 </div>
@@ -7265,7 +4729,7 @@ function MembresiasTab({
             </div>
 
             {/* Advanced business settings */}
-            <div className="grid gap-4 sm:grid-cols-2 border-t border-border/40 pt-3">
+            <div className="grid gap-4 sm:grid-cols-3 border-t border-border/40 pt-3">
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground block">
                   Costo de Matrícula ($)
@@ -7274,49 +4738,36 @@ function MembresiasTab({
                   type="number"
                   value={editRegistrationFee}
                   onChange={(e) => setEditRegistrationFee(e.target.value)}
-                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground font-semibold"
                   placeholder="0 = Sin matrícula"
                 />
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground block">
-                  Días de Congelamiento por Año
+                  Días Congelamiento/Año
                 </label>
                 <input
                   type="number"
                   value={editFreezeDays}
                   onChange={(e) => setEditFreezeDays(e.target.value)}
-                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground font-semibold"
                   placeholder="Ej: 15 días"
                 />
               </div>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2 border-t border-border/40 pt-3">
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground block">
                   Límite Diario de Reservas
                 </label>
-                <select
-                  value={editDailyClassLimit}
-                  onChange={(e) => setEditDailyClassLimit(e.target.value)}
-                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
-                >
-                  <option value="Ilimitado">Ilimitado</option>
-                  <option value="1 clase por día">1 clase por día</option>
-                  <option value="2 clases por día">2 clases por día</option>
-                </select>
-              </div>
-              <div className="space-y-1.5 flex flex-col justify-end">
-                <label className="text-xs font-semibold text-muted-foreground flex items-center gap-2 cursor-pointer pb-2.5">
-                  <input
-                    type="checkbox"
-                    checked={editIsMultisede}
-                    onChange={(e) => setEditIsMultisede(e.target.checked)}
-                    className="rounded border-border text-primary focus:ring-primary h-4 w-4 bg-background"
-                  />
-                  <span>Acceso Multisede (Habilitar en otras sedes)</span>
-                </label>
+                <Select value={editDailyClassLimit} onValueChange={setEditDailyClassLimit}>
+                  <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold">
+                    <SelectValue placeholder="Límite..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Ilimitado">Ilimitado</SelectItem>
+                    <SelectItem value="1 clase por día">1 clase por día</SelectItem>
+                    <SelectItem value="2 clases por día">2 clases por día</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -7354,8 +4805,8 @@ function MembresiasTab({
                 type="text"
                 value={editSearchActivity}
                 onChange={(e) => setEditSearchActivity(e.target.value)}
-                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
-                placeholder="Buscar actividades a restringir/incluir..."
+                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground font-semibold"
+                placeholder="Buscar actividades a incluir..."
               />
 
               {editFilteredActivities.length > 0 && (
@@ -7368,7 +4819,7 @@ function MembresiasTab({
                         setEditIncludedActivities((prev) => [...prev, act]);
                         setEditSearchActivity("");
                       }}
-                      className="w-full text-left px-3 py-2 text-xs hover:bg-secondary rounded-lg transition"
+                      className="w-full text-left px-3 py-2 text-xs hover:bg-secondary rounded-lg transition text-foreground"
                     >
                       {act}
                     </button>
@@ -7388,10 +4839,10 @@ function MembresiasTab({
                     type="button"
                     key={a.id}
                     onClick={() => toggleEditService(a.id)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition ${
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-medium border transition-all ${
                       editSelectedServices.includes(a.id)
-                        ? "bg-primary/10 border-primary text-primary"
-                        : "bg-background border-border text-muted-foreground hover:border-foreground/20"
+                        ? "bg-foreground text-background border-foreground font-bold shadow-sm"
+                        : "bg-background border-border text-muted-foreground hover:border-foreground/40 hover:text-foreground"
                     }`}
                   >
                     {a.name}
@@ -7400,22 +4851,22 @@ function MembresiasTab({
               </div>
             </div>
 
-            <div className="pt-2 flex gap-3">
-              <Button type="submit" className="rounded-xl flex-1">
-                Guardar Cambios
-              </Button>
+            <DialogFooter className="pt-3 gap-2 sm:gap-0">
               <Button
                 type="button"
                 variant="outline"
-                className="rounded-xl flex-1"
+                className="rounded-xl text-xs font-bold"
                 onClick={() => setEditingPlan(null)}
               >
                 Cancelar
               </Button>
-            </div>
+              <Button type="submit" className="rounded-xl text-xs font-bold bg-primary text-primary-foreground">
+                Guardar Cambios
+              </Button>
+            </DialogFooter>
           </form>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Membership Modal */}
       {deletingPlan && (
@@ -7569,6 +5020,7 @@ function ClasesTab({
   const [day, setDay] = useState(0);
   const [viewMode, setViewMode] = useState<"list" | "calendar">("calendar");
   const [selectedCalendarSalaId, setSelectedCalendarSalaId] = useState("");
+  const [customCapacity, setCustomCapacity] = useState(20);
 
   // Recurrence settings
   const [isRecurrent, setIsRecurrent] = useState(false);
@@ -7578,70 +5030,11 @@ function ClasesTab({
   const [selectedFilterCoachId, setSelectedFilterCoachId] = useState("");
   const [selectedFilterActivity, setSelectedFilterActivity] = useState("");
 
-  // 10x10 Seat Layout state: Array of 100 booleans
-  const [currentLayout, setCurrentLayout] = useState<boolean[]>(Array(100).fill(true));
-  const capacity = currentLayout.filter(Boolean).length;
-
-  // Layout templates list
-  const [layoutTemplates, setLayoutTemplates] = useState<
-    { id: string; name: string; layout: boolean[] }[]
-  >([
-    {
-      id: "t1",
-      name: "Sala Spinning (15 bicis)",
-      layout: Array(100)
-        .fill(false)
-        .map((_, i) => i < 15),
-    },
-    {
-      id: "t2",
-      name: "Sala Pilates (12 reformers)",
-      layout: Array(100)
-        .fill(false)
-        .map((_, i) => i < 12),
-    },
-    {
-      id: "t3",
-      name: "Box CrossFit (20 personas)",
-      layout: Array(100)
-        .fill(false)
-        .map((_, i) => i < 20),
-    },
-  ]);
-  const [newTemplateName, setNewTemplateName] = useState("");
-
-  const handleSaveTemplate = () => {
-    if (!newTemplateName.trim()) return;
-    const newT = {
-      id: Math.random().toString(),
-      name: newTemplateName,
-      layout: [...currentLayout],
-    };
-    setLayoutTemplates((prev) => [...prev, newT]);
-    setNewTemplateName("");
-  };
-
-  useEffect(() => {
-    setClassBranchId(selectedBranchId === "all" ? "matriz" : selectedBranchId);
-    setSalaId("");
-  }, [selectedBranchId]);
-
-  const activeFormBranchId = selectedBranchId === "all" ? classBranchId : selectedBranchId;
-
-  const availableSalas = useMemo(() => {
-    return salasList.filter((s) => s.branchId === activeFormBranchId);
-  }, [salasList, activeFormBranchId]);
-
-  const activeBranchRooms = useMemo(() => {
-    return salasList.filter((s) => s.branchId === activeFormBranchId);
-  }, [salasList, activeFormBranchId]);
-
   const availabilityWarning = useMemo(() => {
     if (!staffId || !time) return null;
     const coach = staffList.find((s) => s.id === staffId);
     if (!coach || !coach.availability || coach.availability.length === 0) return null;
 
-    // We check availability for the selected class day of the week
     const weekdayNames = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
     const targetDayName = weekdayNames[day];
     const DayAvail = coach.availability.find((a) => a.day === targetDayName);
@@ -7650,7 +5043,7 @@ function ClasesTab({
       const activeDays = coach.availability
         .filter((a) => a.intervals && a.intervals.length > 0)
         .map((a) => a.day);
-      return `⚠️ Alerta: El instructor no tiene disponibilidad los ${targetDayName}. (Disponibilidad: ${activeDays.length > 0 ? activeDays.join(", ") : "Ningún día asignado"})`;
+      return `⚠️ Alerta: El instructor no tiene disponibilidad los ${targetDayName}.`;
     }
 
     try {
@@ -7663,7 +5056,6 @@ function ClasesTab({
       const classStart = toMinutes(classFrom);
       const classEnd = toMinutes(classTo);
 
-      // Check if it fits inside at least one interval
       const fits = DayAvail.intervals.some((interval) => {
         const intervalStart = toMinutes(interval.from);
         const intervalEnd = toMinutes(interval.to);
@@ -7672,7 +5064,7 @@ function ClasesTab({
 
       if (!fits) {
         const intervalsStr = DayAvail.intervals.map((i) => `${i.from} a ${i.to}`).join(" o ");
-        return `⚠️ Alerta: El horario de la clase (${time}) está fuera del rango disponible para el instructor los ${targetDayName} (${intervalsStr}).`;
+        return `⚠️ Alerta: El horario (${time}) está fuera de la disponibilidad del instructor (${intervalsStr}).`;
       }
     } catch (e) {
       // ignore
@@ -7680,7 +5072,6 @@ function ClasesTab({
     return null;
   }, [staffId, time, day, staffList]);
 
-  // Helper to check if two time ranges overlap (HH:MM - HH:MM)
   const isTimeOverlapping = (time1: string, time2: string) => {
     try {
       const toMinutes = (timeStr: string) => {
@@ -7697,7 +5088,6 @@ function ClasesTab({
     }
   };
 
-  // Memo conflict check
   const conflictWarning = useMemo(() => {
     if (!staffId || !time) return null;
     const conflictingClass = classesList.find((c) => {
@@ -7707,7 +5097,7 @@ function ClasesTab({
       return matchesDay && matchesStaff && isNotSelf && isTimeOverlapping(c.time, time);
     });
     if (conflictingClass) {
-      return `⚠️ Conflicto: El instructor ya tiene asignada la clase "${conflictingClass.name}" el mismo día en el horario ${conflictingClass.time} hs.`;
+      return `⚠️ Conflicto: El instructor ya tiene asignada la clase "${conflictingClass.name}" el mismo día a las ${conflictingClass.time} hs.`;
     }
     return null;
   }, [staffId, time, day, classesList, editingClassId]);
@@ -7721,6 +5111,11 @@ function ClasesTab({
       return;
     }
 
+    const finalCap = Number(customCapacity) || 20;
+    const computedLayout = Array(100)
+      .fill(false)
+      .map((_, i) => i < finalCap);
+
     if (editingClassId) {
       setClassesList((prev) =>
         prev.map((c) => {
@@ -7730,11 +5125,11 @@ function ClasesTab({
               name,
               staffId,
               time,
-              capacity: capacity, // computed from active layout cells
+              capacity: finalCap,
               salaId: salaId || undefined,
               day: day,
               creditsCost: parseInt(creditsCost) || 1,
-              layout: [...currentLayout],
+              layout: computedLayout,
             };
           }
           return c;
@@ -7750,14 +5145,13 @@ function ClasesTab({
             name,
             staffId,
             time,
-            capacity: capacity,
+            capacity: finalCap,
             booked: 0,
             enrolledSpots: {},
-            branchId: activeFormBranchId === "matriz" ? undefined : activeFormBranchId,
             salaId: salaId || undefined,
             day: day,
             creditsCost: parseInt(creditsCost) || 1,
-            layout: [...currentLayout],
+            layout: computedLayout,
             status: "activa" as const,
             weekOffset: i,
           });
@@ -7769,14 +5163,13 @@ function ClasesTab({
           name,
           staffId,
           time,
-          capacity: capacity, // computed from active layout cells
+          capacity: finalCap,
           booked: 0,
           enrolledSpots: {},
-          branchId: activeFormBranchId === "matriz" ? undefined : activeFormBranchId,
           salaId: salaId || undefined,
           day: day,
           creditsCost: parseInt(creditsCost) || 1,
-          layout: [...currentLayout],
+          layout: computedLayout,
           status: "activa" as const,
           weekOffset: 0,
         };
@@ -7791,7 +5184,7 @@ function ClasesTab({
     setSalaId("");
     setDay(0);
     setCreditsCost("1");
-    setCurrentLayout(Array(100).fill(true));
+    setCustomCapacity(20);
     setShowAddForm(false);
   };
 
@@ -8239,153 +5632,71 @@ function ClasesTab({
                   </div>
                 )}
 
-              {/* Seating Layout Card */}
+              {/* Resumen de Capacidad y Estado */}
               {c.status !== "cancelada" && (
                 <div className="bg-secondary/15 border border-border/60 p-4 rounded-2xl space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-foreground uppercase tracking-wider">
-                      Mapa de Distribución (10x10)
+                      Estado de la Clase
                     </span>
-                    <span className="text-[10px] text-muted-foreground font-semibold">
-                      Toca un lugar
+                    <span className="text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                      Activa
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-10 gap-1 mx-auto p-2 bg-background rounded-xl border border-border/40 max-w-[320px]">
-                    {Array(100)
-                      .fill(false)
-                      .map((_, index) => {
-                        const isActive = c.layout ? c.layout[index] : index < c.capacity;
-                        const studentName = c.enrolledSpots ? c.enrolledSpots[index] : null;
-                        const isReleasedLate = c.releasedSpots && c.releasedSpots[index];
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="bg-background border border-border/40 p-2.5 rounded-xl">
+                      <span className="text-[10px] text-muted-foreground font-semibold block">Inscriptos</span>
+                      <span className="font-black text-sm text-foreground">{c.booked} / {c.capacity}</span>
+                    </div>
+                    <div className="bg-background border border-border/40 p-2.5 rounded-xl">
+                      <span className="text-[10px] text-muted-foreground font-semibold block">Créditos</span>
+                      <span className="font-black text-sm text-foreground">{c.creditsCost || 1} cred.</span>
+                    </div>
+                  </div>
 
-                        if (!isActive) {
-                          return (
-                            <div key={index} className="aspect-square w-full bg-transparent" />
+                  {canManageClasses && c.booked < c.capacity && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="w-full text-xs font-bold gap-1.5 rounded-xl bg-primary text-primary-foreground py-2"
+                      onClick={() => {
+                        const nameInput = prompt(
+                          "Ingresa el nombre del alumno para inscribirlo en esta clase:",
+                        );
+                        if (nameInput?.trim()) {
+                          const typedName = nameInput.trim();
+                          setClassesList((prev) =>
+                            prev.map((item) => {
+                              if (item.id === c.id) {
+                                const copySpots = { ...item.enrolledSpots } || {};
+                                let nextIdx = 0;
+                                while (copySpots[nextIdx]) {
+                                  nextIdx++;
+                                }
+                                copySpots[nextIdx] = typedName;
+                                return {
+                                  ...item,
+                                  enrolledSpots: copySpots,
+                                  booked: Object.keys(copySpots).length,
+                                };
+                              }
+                              return item;
+                            }),
                           );
                         }
-
-                        const displayStudentName = studentName
-                          ? getDisplayStudentName(studentName)
-                          : null;
-                        const isStudentPrivateName =
-                          studentName &&
-                          !canManageClasses &&
-                          (isProfilePrivate || isStudentPrivate(studentName));
-
-                        const currentAttendance = c.attendance?.[index] || "pendiente";
-
-                        return (
-                          <button
-                            key={index}
-                            type="button"
-                            title={
-                              studentName
-                                ? `Lugar ${index + 1}: ${displayStudentName} (${currentAttendance.toUpperCase()})`
-                                : isReleasedLate
-                                  ? `Lugar ${index + 1}: Liberado por ${c.releasedSpots![index].originalStudent}`
-                                  : `Lugar ${index + 1} (Disponible)`
-                            }
-                            onClick={() => {
-                              if (studentName) {
-                                handleCancelSpot(index, studentName);
-                              } else {
-                                const nameInput = prompt(
-                                  `Ingresa el nombre del alumno para reservar el lugar ${index + 1}:`,
-                                );
-                                if (nameInput?.trim()) {
-                                  const typedName = nameInput.trim();
-                                  setClassesList((prev) =>
-                                    prev.map((item) => {
-                                      if (item.id === c.id) {
-                                        const copySpots = {
-                                          ...item.enrolledSpots,
-                                          [index]: typedName,
-                                        };
-                                        const copyReleased = { ...item.releasedSpots } || {};
-
-                                        if (copyReleased[index]) {
-                                          const original = copyReleased[index].originalStudent;
-                                          const cost = copyReleased[index].creditsCost;
-                                          delete copyReleased[index];
-                                          alert(
-                                            `🎉 ¡Lugar re-reservado! Se han reembolsado ${cost} crédito(s) a ${original}.`,
-                                          );
-                                        }
-
-                                        return {
-                                          ...item,
-                                          enrolledSpots: copySpots,
-                                          releasedSpots: copyReleased,
-                                          booked: Object.keys(copySpots).length,
-                                        };
-                                      }
-                                      return item;
-                                    }),
-                                  );
-                                }
-                              }
-                            }}
-                            className={`aspect-square w-full rounded-full text-[8.5px] font-bold transition-all border flex items-center justify-center p-0 overflow-hidden ${
-                              studentName
-                                ? currentAttendance === "presente"
-                                  ? "border-2 border-emerald-500 bg-emerald-50"
-                                  : currentAttendance === "ausente"
-                                    ? "border-2 border-destructive bg-destructive/5"
-                                    : "border-2 border-amber-500 bg-amber-50"
-                                : isReleasedLate
-                                  ? "bg-secondary/20 border-border/60 text-secondary-foreground animate-pulse hover:bg-secondary hover:text-white"
-                                  : "bg-card border-border text-foreground hover:bg-primary/10 hover:text-primary hover:border-primary"
-                            }`}
-                          >
-                            {studentName ? (
-                              isStudentPrivateName ? (
-                                <div className="w-full h-full flex items-center justify-center bg-muted text-[10px] text-muted-foreground">
-                                  🔒
-                                </div>
-                              ) : (
-                                <img
-                                  src={getStudentPhoto(studentName)}
-                                  alt={studentName}
-                                  className="w-full h-full object-cover rounded-full"
-                                />
-                              )
-                            ) : isReleasedLate ? (
-                              "🔄"
-                            ) : (
-                              index + 1
-                            )}
-                          </button>
-                        );
-                      })}
-                  </div>
-
-                  {/* Legend */}
-                  <div className="flex items-center justify-center flex-wrap gap-x-4 gap-y-1.5 text-[9.5px] text-muted-foreground pt-1.5 border-t border-border/20">
-                    <span className="flex items-center gap-1">
-                      <span className="h-2.5 w-2.5 rounded-full bg-card border border-border" />{" "}
-                      Libre
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <span className="h-2.5 w-2.5 rounded-full bg-amber-500" /> Pendiente
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" /> Presente
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <span className="h-2.5 w-2.5 rounded-full bg-destructive" /> Ausente
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <span className="h-2.5 w-2.5 rounded-full bg-secondary" /> Re-reserva
-                    </span>
-                  </div>
+                      }}
+                    >
+                      <Plus className="h-4 w-4" /> Inscribir Alumno
+                    </Button>
+                  )}
 
                   {c.booked >= c.capacity && (
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="w-full text-xs font-bold gap-1 bg-secondary/ border-border/ text-secondary-foreground hover:bg-secondary hover:text-white rounded-xl py-2"
+                      className="w-full text-xs font-bold gap-1 bg-secondary/ border-border/ text-secondary-foreground hover:bg-secondary rounded-xl py-2"
                       onClick={() => {
                         const studentName = prompt(
                           "Ingresa el nombre del alumno para anotarse en la lista de espera:",
@@ -8467,7 +5778,7 @@ function ClasesTab({
                             setCreditsCost((c.creditsCost || 1).toString());
                             setSalaId(c.salaId || "");
                             setDay(c.day);
-                            setCurrentLayout(c.layout ? [...c.layout] : Array(100).fill(true));
+                            setCustomCapacity(c.capacity || 20);
                             setEditingClassId(c.id);
                             setShowAddForm(true);
                             setSelectedClass(null);
@@ -8899,23 +6210,19 @@ function ClasesTab({
               size="sm"
               className="rounded-full bg-black hover:bg-black/90 text-white dark:bg-white dark:hover:bg-white/90 dark:text-black font-bold gap-1.5 px-4"
               onClick={() => {
-                if (showAddForm) {
-                  setShowAddForm(false);
-                  setEditingClassId(null);
-                  setName("");
-                  setStaffId("");
-                  setStartTime("08:00");
-                  setEndTime("09:00");
-                  setSalaId("");
-                  setDay(0);
-                  setCreditsCost("1");
-                  setCurrentLayout(Array(100).fill(true));
-                } else {
-                  setShowAddForm(true);
-                }
+                setEditingClassId(null);
+                setName("");
+                setStaffId("");
+                setStartTime("08:00");
+                setEndTime("09:00");
+                setSalaId("");
+                setDay(0);
+                setCreditsCost("1");
+                setCustomCapacity(20);
+                setShowAddForm(true);
               }}
             >
-              <Plus className="h-4 w-4" /> {showAddForm ? "Cancelar" : "Crear clase"}
+              <Plus className="h-4 w-4" /> Crear clase
             </Button>
           )}
         </div>
@@ -8967,54 +6274,60 @@ function ClasesTab({
         </span>
 
         {/* Room Filter */}
-        <select
-          value={selectedCalendarSalaId}
-          onChange={(e) => setSelectedCalendarSalaId(e.target.value)}
-          className="h-8 rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none text-foreground font-semibold"
+        <Select
+          value={selectedCalendarSalaId || "all"}
+          onValueChange={(val) => setSelectedCalendarSalaId(val === "all" ? "" : val)}
         >
-          <option value="">Todas las salas</option>
-          {salasList
-            .filter(
-              (s) =>
-                selectedBranchId === "all" ||
-                (selectedBranchId === "matriz" ? !s.branchId : s.branchId === selectedBranchId),
-            )
-            .map((s) => (
-              <option key={s.id} value={s.id}>
+          <SelectTrigger className="h-8 rounded-xl border border-border bg-background px-3 text-xs text-foreground font-semibold w-[160px]">
+            <SelectValue placeholder="Todas las salas" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todas las salas</SelectItem>
+            {salasList.map((s) => (
+              <SelectItem key={s.id} value={s.id}>
                 {s.name}
-              </option>
+              </SelectItem>
             ))}
-        </select>
+          </SelectContent>
+        </Select>
 
         {/* Coach Filter */}
-        <select
-          value={selectedFilterCoachId}
-          onChange={(e) => setSelectedFilterCoachId(e.target.value)}
-          className="h-8 rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none text-foreground font-semibold"
+        <Select
+          value={selectedFilterCoachId || "all"}
+          onValueChange={(val) => setSelectedFilterCoachId(val === "all" ? "" : val)}
         >
-          <option value="">Todos los profesores</option>
-          {staffList.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger className="h-8 rounded-xl border border-border bg-background px-3 text-xs text-foreground font-semibold w-[170px]">
+            <SelectValue placeholder="Todos los profesores" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos los profesores</SelectItem>
+            {staffList.map((s) => (
+              <SelectItem key={s.id} value={s.id}>
+                {s.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         {/* Activity Filter */}
-        <select
-          value={selectedFilterActivity}
-          onChange={(e) => setSelectedFilterActivity(e.target.value)}
-          className="h-8 rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none text-foreground font-semibold"
+        <Select
+          value={selectedFilterActivity || "all"}
+          onValueChange={(val) => setSelectedFilterActivity(val === "all" ? "" : val)}
         >
-          <option value="">Todas las actividades</option>
-          {Array.from(new Set(classesList.map((c) => c.name)))
-            .sort()
-            .map((name) => (
-              <option key={name} value={name}>
-                {name}
-              </option>
-            ))}
-        </select>
+          <SelectTrigger className="h-8 rounded-xl border border-border bg-background px-3 text-xs text-foreground font-semibold w-[170px]">
+            <SelectValue placeholder="Todas las actividades" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todas las actividades</SelectItem>
+            {Array.from(new Set(classesList.map((c) => c.name)))
+              .sort()
+              .map((actName) => (
+                <SelectItem key={actName} value={actName}>
+                  {actName}
+                </SelectItem>
+              ))}
+          </SelectContent>
+        </Select>
 
         {/* Clear Filters Button */}
         {(selectedCalendarSalaId || selectedFilterCoachId || selectedFilterActivity) && (
@@ -9032,462 +6345,339 @@ function ClasesTab({
         )}
       </div>
 
-      {showAddForm && (
-        <form
-          onSubmit={handleAddClass}
-          className="rounded-3xl border border-border bg-card p-6 max-w-xl space-y-4 animate-fade-up text-foreground"
-        >
-          <h3 className="text-sm font-bold text-muted-foreground uppercase">
-            {editingClassId ? "Editar Clase" : "Crear Nueva Clase"}
-          </h3>
-          <div className="grid gap-4 sm:grid-cols-2">
+      {/* Modal Dialog: Crear / Editar Clase */}
+      <Dialog open={showAddForm} onOpenChange={setShowAddForm}>
+        <DialogContent className="max-w-lg border border-border bg-card rounded-3xl p-6">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold text-foreground">
+              {editingClassId ? "Editar Clase" : "Crear Nueva Clase"}
+            </DialogTitle>
+          </DialogHeader>
+
+          <form onSubmit={handleAddClass} className="space-y-4 pt-2 text-xs text-foreground">
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-muted-foreground">Actividad</label>
-              <select
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-foreground"
-              >
-                <option value="">Selecciona una actividad...</option>
-                <optgroup label="Fuerza y Musculación">
-                  <option value="CrossFit">CrossFit</option>
-                  <option value="Entrenamiento Funcional">Entrenamiento Funcional</option>
-                  <option value="Levantamiento Olímpico">Levantamiento Olímpico</option>
-                  <option value="Powerlifting">Powerlifting</option>
-                  <option value="Calistenia">Calistenia</option>
-                  <option value="Fuerza de Potencia">Fuerza de Potencia</option>
-                </optgroup>
-                <optgroup label="Cardio y Combate">
-                  <option value="Spinning">Spinning / Cycling</option>
-                  <option value="HIIT / Tabata">HIIT / Tabata</option>
-                  <option value="Boxeo Recreativo">Boxeo Recreativo</option>
-                  <option value="Kickboxing">Kickboxing</option>
-                  <option value="Zumba">Zumba Fitness</option>
-                  <option value="Ritmos / Dance">Ritmos / Dance</option>
-                </optgroup>
-                <optgroup label="Flexibilidad y Cuerpo-Mente">
-                  <option value="Yoga Vinyasa">Yoga Vinyasa</option>
-                  <option value="Yoga Hatha">Yoga Hatha</option>
-                  <option value="Pilates Reformer">Pilates Reformer</option>
-                  <option value="Pilates Mat">Pilates Mat</option>
-                  <option value="Barré">Barré</option>
-                  <option value="Estiramiento / Flex">Estiramiento & Flexibilidad</option>
-                  <option value="Meditación">Meditación & Mindfulness</option>
-                </optgroup>
-                <optgroup label="Especializadas y Localizadas">
-                  <option value="GAP">GAP (Glúteo-Abdo-Pierna)</option>
-                  <option value="AquaGym">AquaGym</option>
-                  <option value="Running Club">Running Club</option>
-                  <option value="Tercera Edad Adaptada">Tercera Edad Adaptada</option>
-                </optgroup>
-              </select>
+              <Select value={name} onValueChange={setName}>
+                <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold">
+                  <SelectValue placeholder="Selecciona una actividad..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Fuerza y Musculación</SelectLabel>
+                    <SelectItem value="CrossFit">CrossFit</SelectItem>
+                    <SelectItem value="Entrenamiento Funcional">Entrenamiento Funcional</SelectItem>
+                    <SelectItem value="Levantamiento Olímpico">Levantamiento Olímpico</SelectItem>
+                    <SelectItem value="Powerlifting">Powerlifting</SelectItem>
+                    <SelectItem value="Calistenia">Calistenia</SelectItem>
+                    <SelectItem value="Fuerza de Potencia">Fuerza de Potencia</SelectItem>
+                  </SelectGroup>
+                  <SelectGroup>
+                    <SelectLabel>Cardio y Combate</SelectLabel>
+                    <SelectItem value="Spinning">Spinning / Cycling</SelectItem>
+                    <SelectItem value="HIIT / Tabata">HIIT / Tabata</SelectItem>
+                    <SelectItem value="Boxeo Recreativo">Boxeo Recreativo</SelectItem>
+                    <SelectItem value="Kickboxing">Kickboxing</SelectItem>
+                    <SelectItem value="Zumba">Zumba Fitness</SelectItem>
+                    <SelectItem value="Ritmos / Dance">Ritmos / Dance</SelectItem>
+                  </SelectGroup>
+                  <SelectGroup>
+                    <SelectLabel>Flexibilidad y Cuerpo-Mente</SelectLabel>
+                    <SelectItem value="Yoga Vinyasa">Yoga Vinyasa</SelectItem>
+                    <SelectItem value="Yoga Hatha">Yoga Hatha</SelectItem>
+                    <SelectItem value="Pilates Reformer">Pilates Reformer</SelectItem>
+                    <SelectItem value="Pilates Mat">Pilates Mat</SelectItem>
+                    <SelectItem value="Barré">Barré</SelectItem>
+                    <SelectItem value="Estiramiento / Flex">Estiramiento & Flexibilidad</SelectItem>
+                    <SelectItem value="Meditación">Meditación & Mindfulness</SelectItem>
+                  </SelectGroup>
+                  <SelectGroup>
+                    <SelectLabel>Especializadas y Localizadas</SelectLabel>
+                    <SelectItem value="GAP">GAP (Glúteo-Abdo-Pierna)</SelectItem>
+                    <SelectItem value="AquaGym">AquaGym</SelectItem>
+                    <SelectItem value="Running Club">Running Club</SelectItem>
+                    <SelectItem value="Tercera Edad Adaptada">Tercera Edad Adaptada</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
             </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">
-                Horario de la Clase
-              </label>
-              <div className="flex items-center gap-2">
-                <select
-                  value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
-                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground"
-                >
-                  {[
-                    "07:00",
-                    "07:30",
-                    "08:00",
-                    "08:30",
-                    "09:00",
-                    "09:30",
-                    "10:00",
-                    "10:30",
-                    "11:00",
-                    "11:30",
-                    "12:00",
-                    "12:30",
-                    "13:00",
-                    "13:30",
-                    "14:00",
-                    "14:30",
-                    "15:00",
-                    "15:30",
-                    "16:00",
-                    "16:30",
-                    "17:00",
-                    "17:30",
-                    "18:00",
-                    "18:30",
-                    "19:00",
-                    "19:30",
-                    "20:00",
-                    "20:30",
-                    "21:00",
-                    "21:30",
-                    "22:00",
-                  ].map((t) => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
-                  ))}
-                </select>
-                <span className="text-xs font-bold text-muted-foreground">a</span>
-                <select
-                  value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
-                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground"
-                >
-                  {[
-                    "07:30",
-                    "08:00",
-                    "08:30",
-                    "09:00",
-                    "09:30",
-                    "10:00",
-                    "10:30",
-                    "11:00",
-                    "11:30",
-                    "12:00",
-                    "12:30",
-                    "13:00",
-                    "13:30",
-                    "14:00",
-                    "14:30",
-                    "15:00",
-                    "15:30",
-                    "16:00",
-                    "16:30",
-                    "17:00",
-                    "17:30",
-                    "18:00",
-                    "18:30",
-                    "19:00",
-                    "19:30",
-                    "20:00",
-                    "20:30",
-                    "21:00",
-                    "21:30",
-                    "22:00",
-                    "22:30",
-                  ].map((t) => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">
-                Instructor de Staff
-              </label>
-              <select
-                required
-                value={staffId}
-                onChange={(e) => setStaffId(e.target.value)}
-                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-foreground"
-              >
-                <option value="">Selecciona un entrenador...</option>
-                {staffList.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name} ({s.specialty})
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">
-                Día de la Semana
-              </label>
-              <select
-                required
-                value={day}
-                onChange={(e) => setDay(Number(e.target.value))}
-                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-foreground"
-              >
-                <option value={0}>Lunes</option>
-                <option value={1}>Martes</option>
-                <option value={2}>Miércoles</option>
-                <option value={3}>Jueves</option>
-                <option value={4}>Viernes</option>
-                <option value={5}>Sábado</option>
-                <option value={6}>Domingo</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground block">
-                Cupos Totales (de distribución)
-              </label>
-              <div className="flex h-10 items-center justify-between px-3 bg-secondary/20 border border-border rounded-xl text-sm font-bold text-foreground">
-                <span>{capacity} lugares activos</span>
-                <span className="text-[10px] text-muted-foreground font-semibold">
-                  Usa la cuadrícula
-                </span>
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">
-                Créditos Necesarios
-              </label>
-              <input
-                type="number"
-                required
-                min="1"
-                value={creditsCost}
-                onChange={(e) => setCreditsCost(e.target.value)}
-                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-foreground"
-              />
-            </div>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            {selectedBranchId === "all" ? (
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">
-                  Sede / Sucursal
+                  Instructor de Staff
                 </label>
-                <select
-                  required
-                  value={classBranchId}
-                  onChange={(e) => {
-                    setClassBranchId(e.target.value);
-                    setSalaId("");
-                  }}
-                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground"
-                >
-                  <option value="matriz">Sede Principal (Palermo)</option>
-                  {branchesList.map((b) => (
-                    <option key={b.id} value={b.id}>
-                      {b.name}
-                    </option>
-                  ))}
-                </select>
+                <Select value={staffId} onValueChange={setStaffId}>
+                  <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold">
+                    <SelectValue placeholder="Selecciona un entrenador..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {staffList.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>
+                        {s.name} ({s.specialty})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            ) : (
+
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">Sala / Salón</label>
-                <select
-                  required
-                  value={salaId}
-                  onChange={(e) => {
-                    setSalaId(e.target.value);
-                    const selectedSala = availableSalas.find((s) => s.id === e.target.value);
-                    if (selectedSala && selectedSala.capacity) {
-                      const cap = selectedSala.capacity;
-                      setCurrentLayout(
-                        Array(100)
-                          .fill(false)
-                          .map((_, i) => i < cap),
-                      );
-                    }
-                  }}
-                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground"
-                >
-                  <option value="">Selecciona una sala...</option>
-                  {availableSalas.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name} (Capacidad: {s.capacity || "N/A"})
-                    </option>
-                  ))}
-                </select>
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Día de la Semana
+                </label>
+                <Select value={day.toString()} onValueChange={(val) => setDay(Number(val))}>
+                  <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold">
+                    <SelectValue placeholder="Selecciona un día..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0">Lunes</SelectItem>
+                    <SelectItem value="1">Martes</SelectItem>
+                    <SelectItem value="2">Miércoles</SelectItem>
+                    <SelectItem value="3">Jueves</SelectItem>
+                    <SelectItem value="4">Viernes</SelectItem>
+                    <SelectItem value="5">Sábado</SelectItem>
+                    <SelectItem value="6">Domingo</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-            )}
+            </div>
 
-            {selectedBranchId === "all" && (
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">Sala / Salón</label>
-                <select
-                  required
-                  value={salaId}
-                  onChange={(e) => {
-                    setSalaId(e.target.value);
-                    const selectedSala = availableSalas.find((s) => s.id === e.target.value);
-                    if (selectedSala && selectedSala.capacity) {
-                      const cap = selectedSala.capacity;
-                      setCurrentLayout(
-                        Array(100)
-                          .fill(false)
-                          .map((_, i) => i < cap),
-                      );
-                    }
-                  }}
-                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground"
-                >
-                  <option value="">Selecciona una sala...</option>
-                  {availableSalas.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name} (Capacidad: {s.capacity || "N/A"})
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-          </div>
-
-          {/* Template Loading & Saving */}
-          <div className="border-t border-border/60 pt-3 space-y-3">
-            <span className="text-xs font-bold text-muted-foreground uppercase block">
-              Plantilla de Distribución (10x10)
-            </span>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-1">
-                <label className="text-[10px] font-semibold text-muted-foreground">
-                  Cargar Plantilla Guardada
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Horario de la Clase
                 </label>
-                <select
-                  onChange={(e) => {
-                    const temp = layoutTemplates.find((t) => t.id === e.target.value);
-                    if (temp) {
-                      setCurrentLayout([...temp.layout]);
-                    }
-                  }}
-                  className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none text-foreground"
-                >
-                  <option value="">Selecciona plantilla...</option>
-                  {layoutTemplates.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.name} ({t.layout.filter(Boolean).length} cupos)
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] font-semibold text-muted-foreground">
-                  Guardar Distribución como Plantilla
-                </label>
-                <div className="flex gap-1.5">
-                  <input
-                    type="text"
-                    placeholder="Nombre, ej: Spinning 15"
-                    value={newTemplateName}
-                    onChange={(e) => setNewTemplateName(e.target.value)}
-                    className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none text-foreground"
-                  />
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={handleSaveTemplate}
-                    className="rounded-xl h-9 text-xs px-2.5 font-bold shrink-0 text-foreground border-border hover:bg-secondary/20"
-                  >
-                    Guardar
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 10x10 Interactive Grid */}
-          <div className="space-y-2 border-t border-border/60 pt-3">
-            <div className="flex justify-between items-center text-xs">
-              <span className="font-semibold text-muted-foreground">
-                Distribución de lugares en la Sala (Toca para activar/desactivar)
-              </span>
-              <button
-                type="button"
-                onClick={() => setCurrentLayout(Array(100).fill(true))}
-                className="text-[10px] font-bold text-primary hover:underline"
-              >
-                Activar Todos
-              </button>
-            </div>
-            <div className="grid grid-cols-10 gap-1 mx-auto p-2 bg-secondary/15 rounded-2xl border border-border/40 max-w-[340px]">
-              {currentLayout.map((active, index) => {
-                const row = Math.floor(index / 10) + 1;
-                const col = (index % 10) + 1;
-                return (
-                  <button
-                    key={index}
-                    type="button"
-                    title={`Fila ${row}, Columna ${col}`}
-                    onClick={() => {
-                      const copy = [...currentLayout];
-                      copy[index] = !copy[index];
-                      setCurrentLayout(copy);
-                    }}
-                    className={`aspect-square w-full rounded-md border text-[8px] font-semibold transition-all flex items-center justify-center ${
-                      active
-                        ? "bg-primary border-primary text-white"
-                        : "bg-background border-dashed border-border/70 text-muted-foreground/40 hover:bg-secondary/20"
-                    }`}
-                  >
-                    {index + 1}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {availabilityWarning && (
-            <div className="p-3 bg-secondary/ border border-border/ text-secondary-foreground rounded-xl text-xs font-semibold animate-fade-in flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 shrink-0" />
-              <span>{availabilityWarning}</span>
-            </div>
-          )}
-
-          {conflictWarning && (
-            <div className="p-3 bg-destructive/ border border-destructive/ text-destructive rounded-xl text-xs font-semibold animate-fade-in flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 shrink-0" />
-              <span>{conflictWarning}</span>
-            </div>
-          )}
-
-          {!editingClassId && (
-            <div className="p-4 border border-border/60 bg-secondary/15 rounded-2xl space-y-3">
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="isRecurrent"
-                  checked={isRecurrent}
-                  onChange={(e) => setIsRecurrent(e.target.checked)}
-                  className="rounded border-border bg-background focus:ring-primary text-primary h-4 w-4"
-                />
-                <label
-                  htmlFor="isRecurrent"
-                  className="text-xs font-bold text-foreground cursor-pointer select-none"
-                >
-                  🔁 Programar como Clase Recurrente (semanal)
-                </label>
-              </div>
-              {isRecurrent && (
-                <div className="space-y-1 pl-6 animate-fade-in">
-                  <label className="text-[11px] text-muted-foreground font-semibold">
-                    Repetir semanalmente durante:
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <select
-                      value={recurrentWeeks}
-                      onChange={(e) => setRecurrentWeeks(Number(e.target.value))}
-                      className="flex h-8 w-24 rounded-lg border border-border bg-background px-2 text-xs focus-visible:outline-none text-foreground font-bold"
-                    >
-                      {[2, 3, 4, 6, 8, 12].map((w) => (
-                        <option key={w} value={w}>
-                          {w} semanas
-                        </option>
+                <div className="flex items-center gap-2">
+                  <Select value={startTime} onValueChange={setStartTime}>
+                    <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-2 py-2 text-xs text-foreground font-semibold">
+                      <SelectValue placeholder="Inicio" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[
+                        "07:00",
+                        "07:30",
+                        "08:00",
+                        "08:30",
+                        "09:00",
+                        "09:30",
+                        "10:00",
+                        "10:30",
+                        "11:00",
+                        "11:30",
+                        "12:00",
+                        "12:30",
+                        "13:00",
+                        "13:30",
+                        "14:00",
+                        "14:30",
+                        "15:00",
+                        "15:30",
+                        "16:00",
+                        "16:30",
+                        "17:00",
+                        "17:30",
+                        "18:00",
+                        "18:30",
+                        "19:00",
+                        "19:30",
+                        "20:00",
+                        "20:30",
+                        "21:00",
+                        "21:30",
+                        "22:00",
+                      ].map((t) => (
+                        <SelectItem key={t} value={t}>
+                          {t}
+                        </SelectItem>
                       ))}
-                    </select>
-                    <span className="text-[11px] text-muted-foreground">
-                      Generará {recurrentWeeks} clases en total.
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+                    </SelectContent>
+                  </Select>
 
-          <Button type="submit" className="rounded-xl">
-            {editingClassId ? "Guardar Cambios" : "Programar Clase"}
-          </Button>
-        </form>
-      )}
+                  <span className="text-xs font-bold text-muted-foreground">a</span>
+
+                  <Select value={endTime} onValueChange={setEndTime}>
+                    <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-2 py-2 text-xs text-foreground font-semibold">
+                      <SelectValue placeholder="Fin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[
+                        "07:30",
+                        "08:00",
+                        "08:30",
+                        "09:00",
+                        "09:30",
+                        "10:00",
+                        "10:30",
+                        "11:00",
+                        "11:30",
+                        "12:00",
+                        "12:30",
+                        "13:00",
+                        "13:30",
+                        "14:00",
+                        "14:30",
+                        "15:00",
+                        "15:30",
+                        "16:00",
+                        "16:30",
+                        "17:00",
+                        "17:30",
+                        "18:00",
+                        "18:30",
+                        "19:00",
+                        "19:30",
+                        "20:00",
+                        "20:30",
+                        "21:00",
+                        "21:30",
+                        "22:00",
+                        "22:30",
+                      ].map((t) => (
+                        <SelectItem key={t} value={t}>
+                          {t}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground">Sala / Salón</label>
+                <Select
+                  value={salaId}
+                  onValueChange={(val) => {
+                    setSalaId(val);
+                    const selectedSala = salasList.find((s) => s.id === val);
+                    if (selectedSala && selectedSala.capacity) {
+                      setCustomCapacity(selectedSala.capacity);
+                    }
+                  }}
+                >
+                  <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold">
+                    <SelectValue placeholder="Selecciona una sala..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {salasList.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>
+                        {s.name} (Capacidad: {s.capacity || "N/A"})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Cupos / Capacidad Máxima
+                </label>
+                <input
+                  type="number"
+                  required
+                  min="1"
+                  max="100"
+                  value={customCapacity}
+                  onChange={(e) => setCustomCapacity(Number(e.target.value))}
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground font-semibold"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Créditos Necesarios
+                </label>
+                <input
+                  type="number"
+                  required
+                  min="1"
+                  value={creditsCost}
+                  onChange={(e) => setCreditsCost(e.target.value)}
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground font-semibold"
+                />
+              </div>
+            </div>
+
+            {availabilityWarning && (
+              <div className="p-3 bg-secondary/ border border-border/ text-secondary-foreground rounded-xl text-xs font-semibold animate-fade-in flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                <span>{availabilityWarning}</span>
+              </div>
+            )}
+
+            {conflictWarning && (
+              <div className="p-3 bg-destructive/ border border-destructive/ text-destructive rounded-xl text-xs font-semibold animate-fade-in flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                <span>{conflictWarning}</span>
+              </div>
+            )}
+
+            {!editingClassId && (
+              <div className="p-3.5 border border-border/60 bg-secondary/15 rounded-2xl space-y-2.5">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="isRecurrent"
+                    checked={isRecurrent}
+                    onChange={(e) => setIsRecurrent(e.target.checked)}
+                    className="rounded border-border bg-background focus:ring-primary text-primary h-4 w-4 cursor-pointer"
+                  />
+                  <label
+                    htmlFor="isRecurrent"
+                    className="text-xs font-bold text-foreground cursor-pointer select-none"
+                  >
+                    🔁 Programar como Clase Recurrente (semanal)
+                  </label>
+                </div>
+                {isRecurrent && (
+                  <div className="space-y-1 pl-6 animate-fade-in">
+                    <label className="text-[11px] text-muted-foreground font-semibold">
+                      Repetir semanalmente durante:
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <Select
+                        value={recurrentWeeks.toString()}
+                        onValueChange={(val) => setRecurrentWeeks(Number(val))}
+                      >
+                        <SelectTrigger className="flex h-8 w-28 rounded-lg border border-border bg-background px-2 text-xs text-foreground font-bold">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[2, 3, 4, 6, 8, 12].map((w) => (
+                            <SelectItem key={w} value={w.toString()}>
+                              {w} semanas
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <span className="text-[11px] text-muted-foreground">
+                        Generará {recurrentWeeks} clases en total.
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <DialogFooter className="pt-3 gap-2 sm:gap-0">
+              <Button
+                type="button"
+                variant="outline"
+                className="rounded-xl text-xs font-bold"
+                onClick={() => setShowAddForm(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                className="rounded-xl text-xs font-bold bg-primary text-primary-foreground"
+              >
+                {editingClassId ? "Guardar Cambios" : "Programar Clase"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {activeBlackout && (
         <div className="p-4 bg-destructive/ border border-destructive/ text-destructive rounded-3xl text-xs font-semibold flex items-center gap-3">
@@ -9997,426 +7187,7 @@ interface ConfigTabProps {
   >;
 }
 
-// --- Pestaña de Clases de Prueba ---
-function ClasesPruebaTab({
-  trialRequests,
-  setTrialRequests,
-  classesList,
-  trialClassSettings,
-  setTrialClassSettings,
-}: any) {
-  const [filterStatus, setFilterStatus] = useState("all");
-  const [rescheduleData, setRescheduleData] = useState<any>(null);
 
-  const filteredRequests = useMemo(() => {
-    return trialRequests.filter((r: any) => filterStatus === "all" || r.status === filterStatus);
-  }, [trialRequests, filterStatus]);
-
-  const totalRequests = trialRequests.length;
-  const asistencias = trialRequests.filter(
-    (r: any) => r.status === "converted" || r.status === "attended_no_buy",
-  ).length;
-  const converted = trialRequests.filter((r: any) => r.status === "converted").length;
-  const conversionRate = asistencias > 0 ? Math.round((converted / asistencias) * 100) : 0;
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "pending":
-        return (
-          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-200">
-            Pendiente
-          </Badge>
-        );
-      case "approved":
-        return (
-          <Badge variant="secondary" className="bg-primary text-primary border-blue-200">
-            Aprobada
-          </Badge>
-        );
-      case "converted":
-        return (
-          <Badge className="bg-indigo-100 text-indigo-800 border-indigo-200 hover:bg-indigo-100">
-            Convertido a Alumno
-          </Badge>
-        );
-      case "no_show":
-        return (
-          <Badge
-            variant="destructive"
-            className="bg-red-100 text-red-800 border-red-200 hover:bg-red-100"
-          >
-            No se presentó
-          </Badge>
-        );
-      case "attended_no_buy":
-        return (
-          <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-200">
-            Vino - Sin Compra
-          </Badge>
-        );
-      default:
-        return null;
-    }
-  };
-
-  const handleUpdateStatus = (id: string, status: string) => {
-    setTrialRequests((prev: any) => prev.map((r: any) => (r.id === id ? { ...r, status } : r)));
-  };
-
-  const handleRescheduleSubmit = () => {
-    if (rescheduleData) {
-      setTrialRequests((prev: any) =>
-        prev.map((r: any) =>
-          r.id === rescheduleData.id
-            ? {
-                ...r,
-                classId: rescheduleData.newClassId,
-                date: rescheduleData.newDate,
-                status: "pending",
-              }
-            : r,
-        ),
-      );
-      setRescheduleData(null);
-    }
-  };
-
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Clases de Prueba</h2>
-          <p className="text-sm text-muted-foreground">
-            Gestioná las solicitudes de nuevos prospectos que quieren probar el centro.
-          </p>
-        </div>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className=" border-border">
-          <CardContent className="p-6">
-            <div className="text-sm font-medium text-muted-foreground">Solicitudes Totales</div>
-            <div className="text-3xl font-bold mt-2">{totalRequests}</div>
-            <p className="text-xs text-muted-foreground mt-1">Este mes</p>
-          </CardContent>
-        </Card>
-        <Card className=" border-border">
-          <CardContent className="p-6">
-            <div className="text-sm font-medium text-muted-foreground">Asistencias a Prueba</div>
-            <div className="text-3xl font-bold mt-2">{asistencias}</div>
-            <p className="text-xs text-muted-foreground mt-1">Vino y completó la clase</p>
-          </CardContent>
-        </Card>
-        <Card className=" border-border">
-          <CardContent className="p-6">
-            <div className="text-sm font-medium text-muted-foreground">Tasa de Conversión</div>
-            <div className="text-3xl font-bold mt-2 text-green-600">{conversionRate}%</div>
-            <p className="text-xs text-muted-foreground mt-1">De los que asistieron a la prueba</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card className="border border-border">
-        <CardContent className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex items-center gap-3.5 shrink-0">
-            <div className="p-2.5 bg-primary/10 rounded-xl text-primary shrink-0">
-              <Settings className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="font-bold text-sm text-foreground">
-                Configuración Activa de Clases de Prueba
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Ajustes generales y valor comercial para la primera visita del prospecto.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-6 sm:gap-8 border-t md:border-t-0 pt-3 md:pt-0 border-border">
-            <div className="flex items-center gap-3">
-              <Label htmlFor="trial-switch" className="text-xs font-semibold cursor-pointer">
-                Ofrecer Clase de Prueba
-              </Label>
-              <Switch
-                id="trial-switch"
-                checked={trialClassSettings.enabled}
-                onCheckedChange={(c) =>
-                  setTrialClassSettings({ ...trialClassSettings, enabled: c })
-                }
-              />
-            </div>
-            {trialClassSettings.enabled && (
-              <div className="flex items-center gap-2 border-l border-border pl-6 sm:pl-8">
-                <Label className="text-xs font-semibold whitespace-nowrap">
-                  Precio (0 = Gratis):
-                </Label>
-                <div className="relative w-28">
-                  <span className="absolute left-2.5 top-1.5 text-xs text-muted-foreground font-bold">
-                    $
-                  </span>
-                  <Input
-                    type="number"
-                    className="pl-6 h-8 text-xs font-bold rounded-xl"
-                    value={trialClassSettings.price}
-                    onChange={(e) =>
-                      setTrialClassSettings({
-                        ...trialClassSettings,
-                        price: Number(e.target.value),
-                      })
-                    }
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="rounded-xl border border-border bg-card">
-        <div className="p-4 border-b border-border flex flex-wrap gap-2">
-          <Button
-            variant={filterStatus === "all" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setFilterStatus("all")}
-          >
-            Todas
-          </Button>
-          <Button
-            variant={filterStatus === "pending" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setFilterStatus("pending")}
-          >
-            Pendientes
-          </Button>
-          <Button
-            variant={filterStatus === "approved" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setFilterStatus("approved")}
-          >
-            Aprobadas
-          </Button>
-          <Button
-            variant={filterStatus === "no_show" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setFilterStatus("no_show")}
-          >
-            No-shows
-          </Button>
-          <Button
-            variant={filterStatus === "attended_no_buy" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setFilterStatus("attended_no_buy")}
-          >
-            Vino sin compra
-          </Button>
-          <Button
-            variant={filterStatus === "converted" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setFilterStatus("converted")}
-          >
-            Convertidos
-          </Button>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-muted/50 text-muted-foreground uppercase text-xs border-b border-border">
-              <tr>
-                <th className="px-6 py-4 font-medium">Prospecto</th>
-                <th className="px-6 py-4 font-medium">Contacto</th>
-                <th className="px-6 py-4 font-medium">Clase Solicitada</th>
-                <th className="px-6 py-4 font-medium">Fecha</th>
-                <th className="px-6 py-4 font-medium">Estado</th>
-                <th className="px-6 py-4 font-medium text-right">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {filteredRequests.map((r: any) => {
-                const targetClass = classesList.find((c: any) => c.id === r.classId);
-                return (
-                  <tr key={r.id} className="hover:bg-muted/30 transition-colors">
-                    <td className="px-6 py-4 font-medium">{r.name}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col gap-1">
-                        <span className="text-xs text-muted-foreground">{r.email}</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs">{r.phone}</span>
-                          <a
-                            href={`https://wa.me/${r.phone.replace(/[^0-9]/g, "")}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-green-500 hover:text-green-600 transition-colors"
-                          >
-                            <MessageCircle className="w-4 h-4" />
-                          </a>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      {targetClass ? targetClass.name : "Clase eliminada"}
-                    </td>
-                    <td className="px-6 py-4 text-muted-foreground">{r.date}</td>
-                    <td className="px-6 py-4">{getStatusBadge(r.status)}</td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        {r.status === "pending" && (
-                          <Button
-                            size="sm"
-                            className="rounded-xl h-8 px-3 text-xs font-semibold"
-                            onClick={() => handleUpdateStatus(r.id, "approved")}
-                          >
-                            Aprobar
-                          </Button>
-                        )}
-                        {r.status === "approved" && (
-                          <Button
-                            size="sm"
-                            className="rounded-xl h-8 px-3 text-xs font-semibold bg-green-600 hover:bg-green-700 text-white"
-                            onClick={() => handleUpdateStatus(r.id, "converted")}
-                          >
-                            <Check className="w-3.5 h-3.5 mr-1" /> Hizo Compra
-                          </Button>
-                        )}
-                        {r.status === "no_show" && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="rounded-xl h-8 px-3 text-xs font-semibold"
-                            onClick={() =>
-                              setRescheduleData({
-                                id: r.id,
-                                newClassId: r.classId,
-                                newDate: r.date,
-                              })
-                            }
-                          >
-                            Reprogramar
-                          </Button>
-                        )}
-                        {(r.status === "converted" || r.status === "attended_no_buy") && (
-                          <span className="inline-flex items-center text-xs font-medium text-muted-foreground mr-1">
-                            <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-green-500" /> Listo
-                          </span>
-                        )}
-
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0 rounded-xl hover:bg-secondary/80"
-                              title="Más acciones"
-                            >
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent
-                            align="end"
-                            className="w-48 rounded-xl border border-border bg-card p-1 text-xs"
-                          >
-                            {r.status === "approved" && (
-                              <>
-                                <DropdownMenuItem
-                                  className="rounded-lg cursor-pointer py-1.5 font-medium"
-                                  onClick={() => handleUpdateStatus(r.id, "attended_no_buy")}
-                                >
-                                  👤 Vino sin compra
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  className="rounded-lg cursor-pointer py-1.5 font-medium text-destructive hover:text-destructive"
-                                  onClick={() => handleUpdateStatus(r.id, "no_show")}
-                                >
-                                  ❌ No asistió (No-show)
-                                </DropdownMenuItem>
-                              </>
-                            )}
-                            {r.status !== "pending" && r.status !== "approved" && (
-                              <DropdownMenuItem
-                                className="rounded-lg cursor-pointer py-1.5 font-medium"
-                                onClick={() => handleUpdateStatus(r.id, "approved")}
-                              >
-                                ✔️ Marcar como Aprobada
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuItem
-                              className="rounded-lg cursor-pointer py-1.5 font-medium"
-                              onClick={() =>
-                                setRescheduleData({
-                                  id: r.id,
-                                  newClassId: r.classId,
-                                  newDate: r.date,
-                                })
-                              }
-                            >
-                              📅 Reprogramar clase
-                            </DropdownMenuItem>
-                            {r.status !== "pending" && (
-                              <DropdownMenuItem
-                                className="rounded-lg cursor-pointer py-1.5 font-medium text-muted-foreground"
-                                onClick={() => handleUpdateStatus(r.id, "pending")}
-                              >
-                                🔄 Volver a Pendiente
-                              </DropdownMenuItem>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <Dialog open={!!rescheduleData} onOpenChange={(open) => !open && setRescheduleData(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Reprogramar Clase de Prueba</DialogTitle>
-          </DialogHeader>
-          {rescheduleData && (
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label>Nueva Fecha</Label>
-                <Input
-                  type="date"
-                  value={rescheduleData.newDate}
-                  onChange={(e) =>
-                    setRescheduleData({ ...rescheduleData, newDate: e.target.value })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Clase Seleccionada</Label>
-                <Select
-                  value={rescheduleData.newClassId}
-                  onValueChange={(val) => setRescheduleData({ ...rescheduleData, newClassId: val })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar clase" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {classesList.map((c: any) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setRescheduleData(null)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleRescheduleSubmit}>Guardar y Pendiente</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-}
 
 function ConfigTab({
   selectedBranchId,
@@ -10855,11 +7626,9 @@ function ConfigTab({
           { id: "politicas", label: "Políticas" },
           { id: "amenities", label: "Amenities & Servicios" },
           { id: "equipamiento", label: "Equipamiento" },
-          { id: "protocolos", label: "Protocolos / Checklists" },
           { id: "requisitos", label: "Normas de Ingreso" },
           { id: "staff", label: "Equipo (Staff)" },
           { id: "salas", label: "Salas / Salones" },
-          { id: "sedes", label: "Sucursales (Sedes)" },
           { id: "cierres", label: "Días de Cierre" },
         ].map((sub) => (
           <button
@@ -10876,21 +7645,7 @@ function ConfigTab({
         ))}
       </div>
 
-      {selectedBranchId === "all" && subTab !== "staff" && subTab !== "sedes" ? (
-        <div className="flex flex-col items-center justify-center text-center p-12 bg-card border border-border rounded-3xl min-h-[300px] text-muted-foreground animate-fade-in">
-          <MapPin className="h-10 w-10 mb-3 text-primary animate-pulse" />
-          <h3 className="font-bold text-sm text-foreground">Configuración de Sede Requerida</h3>
-          <p className="text-xs max-w-sm mt-1 leading-relaxed">
-            Las fotos, horarios comerciales, amenidades, políticas locales y normas de ingreso se
-            gestionan de forma individual por cada sucursal ("Airbnb style").
-          </p>
-          <p className="text-xs text-primary font-semibold mt-3">
-            Por favor, selecciona una sede específica (Palermo, Belgrano, etc.) en el selector del
-            encabezado principal para poder configurarla.
-          </p>
-        </div>
-      ) : (
-        <>
+      <>
           {/* Subtab 1: Basic Config & 7-Day Scheduler */}
           {subTab === "basico" && (
             <div className="space-y-6 max-w-3xl">
@@ -11271,178 +8026,31 @@ function ConfigTab({
 
           {/* Subtab: Equipamiento */}
           {subTab === "equipamiento" && (
-            <div className="space-y-6 max-w-4xl bg-card border border-border p-6 rounded-3xl animate-fade-in">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <Dumbbell className="w-5 h-5 text-primary" />
-                    <h3 className="font-bold text-base text-foreground">
-                      Equipamiento e Infraestructura Deportiva
-                    </h3>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Selecciona la maquinaria de tu sede o supervisa el desgaste operativo vinculado
-                    a las rutinas de los alumnos.
-                  </p>
-                </div>
-
-                <div className="flex items-center bg-secondary/40 p-1 rounded-xl border border-border/60 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => setEquipViewMode("catalog")}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                      equipViewMode === "catalog"
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>Selección de Sede</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setEquipViewMode("maintenance")}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                      equipViewMode === "maintenance"
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <Wrench className="w-3.5 h-3.5" />
-                    <span>Mantenimiento & Desgaste</span>
-                  </button>
-                </div>
-              </div>
-
-              {equipViewMode === "catalog" ? (
-                <>
-                  <div className="p-4 rounded-2xl bg-secondary/ border border-border/ flex items-start gap-3">
-                    <AlertCircle className="w-5 h-5 text-secondary-foreground shrink-0 mt-0.5" />
-                    <div className="text-xs text-secondary-foreground/90 leading-relaxed">
-                      <span className="font-bold text-secondary-foreground">
-                        Nota sobre imágenes representativas:
-                      </span>{" "}
-                      Las fotografías e ilustraciones de esta sección son de carácter{" "}
-                      <strong className="underline">genérico e ilustrativo</strong> para reflejar
-                      los estándares de calidad de la plataforma, y no corresponden necesariamente a
-                      las marcas o modelos exactos de cada centro o sala.
-                    </div>
-                  </div>
-
-                  <div className="space-y-6 pt-2">
-                    {equipmentCategories.map((category) => (
-                      <div key={category} className="space-y-3">
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-primary border-b border-border/80 pb-1.5 flex items-center justify-between">
-                          <span>{category}</span>
-                          <span className="text-[10px] bg-secondary px-2 py-0.5 rounded-full font-normal text-muted-foreground">
-                            {equipment.filter((e) => e.category === category && e.checked).length} /{" "}
-                            {equipment.filter((e) => e.category === category).length} activos
-                          </span>
-                        </h4>
-                        <div className="grid gap-3 sm:grid-cols-2">
-                          {equipment
-                            .filter((e) => e.category === category)
-                            .map((e) => (
-                              <div
-                                key={e.id}
-                                onClick={() => handleToggleEquipment(e.id)}
-                                className={`flex items-center justify-between p-3.5 rounded-2xl border transition cursor-pointer ${
-                                  e.checked
-                                    ? "bg-primary/5 border-primary/40 text-foreground"
-                                    : "bg-secondary/20 border-transparent text-muted-foreground hover:bg-secondary/40 hover:text-foreground"
-                                }`}
-                              >
-                                <div className="flex items-center gap-3 pr-2 overflow-hidden flex-1">
-                                  <div className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 bg-secondary border border-border/60">
-                                    {e.photo ? (
-                                      <img
-                                        src={e.photo}
-                                        alt={e.name}
-                                        className="w-full h-full object-cover"
-                                      />
-                                    ) : (
-                                      <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                                        <Dumbbell className="w-5 h-5" />
-                                      </div>
-                                    )}
-                                  </div>
-                                  <div className="min-w-0 flex-1">
-                                    <div className="flex items-center gap-1.5">
-                                      <span className="text-sm font-semibold truncate">
-                                        {e.name}
-                                      </span>
-                                      {e.status === "maintenance_due" && (
-                                        <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-destructive/ text-destructive border border-destructive/ shrink-0">
-                                          ⚠️ Revisar
-                                        </span>
-                                      )}
-                                    </div>
-                                    <div className="flex items-center gap-1.5 mt-1 text-[10px] text-muted-foreground">
-                                      <span className="px-1.5 py-0.5 rounded bg-secondary text-foreground/80 font-medium shrink-0">
-                                        {e.trackingType === "direct"
-                                          ? "⚡ Tracking Exacto"
-                                          : e.trackingType === "volume"
-                                            ? "🏋️ Volumen"
-                                            : "🧘 Por Sesión"}
-                                      </span>
-                                      <span className="truncate">🛠️ {e.maintenanceRule}</span>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                <div className="flex items-center shrink-0 pl-2">
-                                  <input
-                                    type="checkbox"
-                                    checked={e.checked}
-                                    onChange={() => {}} // Controlled by parent div click
-                                    className="h-5 w-5 accent-primary rounded cursor-pointer shrink-0 pointer-events-none"
-                                  />
-                                </div>
-                              </div>
-                            ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <div className="space-y-6 animate-fade-in">
-                  <div className="p-4 rounded-2xl bg-primary/10 border border-primary/30 flex items-start gap-3.5">
-                    <Zap className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                    <div className="space-y-1 text-xs">
-                      <div className="font-bold text-foreground">
-                        Inteligencia Operativa & Mantenimiento Predictivo
-                      </div>
-                      <div className="text-muted-foreground leading-relaxed">
-                        Este panel conecta el uso real en las rutinas de los alumnos (kilogramos
-                        levantados, horas de cardio, sesiones completadas) con el ciclo de vida del
-                        equipamiento de esta sede. Permite programar mantenimientos antes de que
-                        ocurran averías y optimizar la futura compra de máquinas según su mapa de
-                        calor y demanda real.
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                        Equipamiento Activo en esta Sede (
-                        {equipment.filter((e) => e.checked).length} ítems)
-                      </h4>
-                      <span className="text-[11px] text-muted-foreground">
-                        Actualizado en tiempo real por rutinas completadas
+            <div className="space-y-6 max-w-4xl bg-card border border-border p-6 rounded-3xl animate-fade-in text-foreground">
+              <div className="space-y-6">
+                {equipmentCategories.map((category) => (
+                  <div key={category} className="space-y-3">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-primary border-b border-border/80 pb-1.5 flex items-center justify-between">
+                      <span>{category}</span>
+                      <span className="text-[10px] bg-secondary px-2 py-0.5 rounded-full font-normal text-muted-foreground">
+                        {equipment.filter((e) => e.category === category && e.checked).length} /{" "}
+                        {equipment.filter((e) => e.category === category).length} seleccionados
                       </span>
-                    </div>
-
-                    <div className="divide-y divide-border/60 rounded-2xl border border-border/80 bg-secondary/10 overflow-hidden">
+                    </h4>
+                    <div className="grid gap-3 sm:grid-cols-2">
                       {equipment
-                        .filter((e) => e.checked)
+                        .filter((e) => e.category === category)
                         .map((e) => (
                           <div
                             key={e.id}
-                            className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-secondary/20 transition"
+                            onClick={() => handleToggleEquipment(e.id)}
+                            className={`flex items-center justify-between p-3.5 rounded-2xl border transition cursor-pointer ${
+                              e.checked
+                                ? "bg-primary/5 border-primary/40 text-foreground"
+                                : "bg-secondary/20 border-transparent text-muted-foreground hover:bg-secondary/40 hover:text-foreground"
+                            }`}
                           >
-                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                            <div className="flex items-center gap-3 pr-2 overflow-hidden flex-1">
                               <div className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 bg-secondary border border-border/60">
                                 {e.photo ? (
                                   <img
@@ -11457,83 +8065,26 @@ function ConfigTab({
                                 )}
                               </div>
                               <div className="min-w-0 flex-1">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-sm font-bold text-foreground truncate">
-                                    {e.name}
-                                  </span>
-                                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground font-medium shrink-0">
-                                    {e.category}
-                                  </span>
-                                </div>
-                                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs text-muted-foreground">
-                                  <span className="font-semibold text-primary">
-                                    {e.trackingType === "direct"
-                                      ? "⚡ Exacto (Reps/Hs)"
-                                      : e.trackingType === "volume"
-                                        ? "🏋️ Volumen Acumulado"
-                                        : "🧘 Ocurrencia / Sesión"}
-                                  </span>
-                                  <span>•</span>
-                                  <span>
-                                    📊{" "}
-                                    <strong className="text-foreground">
-                                      {e.stats || "Sin datos"}
-                                    </strong>
-                                  </span>
-                                  <span>•</span>
-                                  <span>🛠️ {e.maintenanceRule}</span>
-                                </div>
+                                <span className="text-sm font-semibold truncate block">
+                                  {e.name}
+                                </span>
                               </div>
                             </div>
 
-                            <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 border-t sm:border-t-0 pt-3 sm:pt-0 border-border/40">
-                              <div>
-                                {e.status === "maintenance_due" ? (
-                                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold bg-destructive/ text-destructive border border-destructive/">
-                                    <AlertCircle className="w-3.5 h-3.5" /> Requiere Atención
-                                  </span>
-                                ) : e.status === "warning" ? (
-                                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold bg-secondary/ text-secondary-foreground border border-border/">
-                                    <Clock className="w-3.5 h-3.5" /> Revisión Próxima
-                                  </span>
-                                ) : (
-                                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold bg-primary/ text-primary border border-primary/">
-                                    <CheckCircle2 className="w-3.5 h-3.5" /> Estado Óptimo
-                                  </span>
-                                )}
-                              </div>
-
-                              <Button
-                                size="sm"
-                                variant={
-                                  e.status === "maintenance_due" || e.status === "warning"
-                                    ? "default"
-                                    : "outline"
-                                }
-                                className="rounded-xl text-xs font-semibold h-8"
-                                onClick={() => {
-                                  setEquipment((prev) =>
-                                    prev.map((item) =>
-                                      item.id === e.id
-                                        ? {
-                                            ...item,
-                                            status: "ok",
-                                            stats: "Mantenimiento registrado hoy",
-                                          }
-                                        : item,
-                                    ),
-                                  );
-                                }}
-                              >
-                                <Wrench className="w-3.5 h-3.5 mr-1.5" /> Registrar Mantenimiento
-                              </Button>
+                            <div className="flex items-center shrink-0 pl-2">
+                              <input
+                                type="checkbox"
+                                checked={e.checked}
+                                onChange={() => {}} // Controlled by parent div click
+                                className="h-5 w-5 accent-primary rounded cursor-pointer shrink-0 pointer-events-none"
+                              />
                             </div>
                           </div>
                         ))}
                     </div>
                   </div>
-                </div>
-              )}
+                ))}
+              </div>
             </div>
           )}
 
@@ -12383,332 +8934,7 @@ function ConfigTab({
               </div>
             </DialogContent>
           </Dialog>
-          {/* Subtab 6: Sucursales / Sedes */}
-          {subTab === "sedes" && (
-            <div className="space-y-6 max-w-2xl bg-card border border-border p-6 rounded-3xl animate-fade-up">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <h3 className="font-bold text-sm">Sucursales y Sedes</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Administra las ubicaciones físicas asociadas a tu red de gimnasios.
-                  </p>
-                </div>
-                <Button
-                  onClick={() => setIsCreateSedeOpen(true)}
-                  size="sm"
-                  className="rounded-xl font-bold text-xs gap-1.5 shrink-0"
-                >
-                  <Plus className="h-4 w-4" /> Agregar Sucursal
-                </Button>
-              </div>
-
-              <Dialog open={isCreateSedeOpen} onOpenChange={setIsCreateSedeOpen}>
-                <DialogContent className="max-w-xl border border-border bg-card">
-                  <DialogHeader>
-                    <DialogTitle>Agregar Sucursal</DialogTitle>
-                  </DialogHeader>
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      if (!newBranchName || !newBranchAddress) return;
-                      setBranchesList((prev) => [
-                        ...prev,
-                        {
-                          id: Math.random().toString(),
-                          name: newBranchName,
-                          address: newBranchAddress,
-                          manager: newBranchManager || undefined,
-                          lat: newBranchLat ? parseFloat(newBranchLat) : undefined,
-                          lng: newBranchLng ? parseFloat(newBranchLng) : undefined,
-                          creditCostMultiplier: newBranchMultiplier
-                            ? parseFloat(newBranchMultiplier)
-                            : 1.0,
-                        },
-                      ]);
-                      setNewBranchName("");
-                      setNewBranchAddress("");
-                      setNewBranchManager("");
-                      setNewBranchLat("");
-                      setNewBranchLng("");
-                      setNewBranchMultiplier("1.0");
-                      setIsCreateSedeOpen(false);
-                    }}
-                    className="space-y-4 pt-2"
-                  >
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="space-y-1">
-                        <label className="text-xs text-muted-foreground font-semibold">
-                          Nombre de la Sede
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={newBranchName}
-                          onChange={(e) => setNewBranchName(e.target.value)}
-                          className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none"
-                          placeholder="Sede Belgrano"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs text-muted-foreground font-semibold">
-                          Dirección Física
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={newBranchAddress}
-                          onChange={(e) => setNewBranchAddress(e.target.value)}
-                          className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none"
-                          placeholder="Av. Cabildo 1820, CABA"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="space-y-1">
-                        <label className="text-xs text-muted-foreground font-semibold">
-                          Responsable de Sede (Manager)
-                        </label>
-                        <input
-                          type="text"
-                          value={newBranchManager}
-                          onChange={(e) => setNewBranchManager(e.target.value)}
-                          className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none"
-                          placeholder="Carlos Gómez"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs text-muted-foreground font-semibold">
-                          Multiplicador de Créditos (Wellhub / ClassPass)
-                        </label>
-                        <input
-                          type="number"
-                          step="0.1"
-                          min="0.5"
-                          max="3.0"
-                          value={newBranchMultiplier}
-                          onChange={(e) => setNewBranchMultiplier(e.target.value)}
-                          className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none"
-                          placeholder="1.2"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="space-y-1">
-                        <label className="text-xs text-muted-foreground font-semibold">
-                          Coordenada Latitud (GPS)
-                        </label>
-                        <input
-                          type="number"
-                          step="0.0001"
-                          value={newBranchLat}
-                          onChange={(e) => setNewBranchLat(e.target.value)}
-                          className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none"
-                          placeholder="-34.5612"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs text-muted-foreground font-semibold">
-                          Coordenada Longitud (GPS)
-                        </label>
-                        <input
-                          type="number"
-                          step="0.0001"
-                          value={newBranchLng}
-                          onChange={(e) => setNewBranchLng(e.target.value)}
-                          className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none"
-                          placeholder="-58.4568"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex justify-end gap-2 pt-4 border-t border-border">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="rounded-xl"
-                        onClick={() => setIsCreateSedeOpen(false)}
-                      >
-                        Cancelar
-                      </Button>
-                      <Button size="sm" type="submit" className="rounded-xl">
-                        Agregar Sede
-                      </Button>
-                    </div>
-                  </form>
-                </DialogContent>
-              </Dialog>
-
-              {/* Edit Sede Dialog */}
-              <Dialog open={!!editingSede} onOpenChange={(o) => !o && setEditingSede(null)}>
-                <DialogContent className="max-w-md border border-border bg-card">
-                  <DialogHeader>
-                    <DialogTitle>Editar Sucursal</DialogTitle>
-                  </DialogHeader>
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      if (!editingSede || !editingSede.name) return;
-                      setBranchesList((prev) =>
-                        prev.map((b) => (b.id === editingSede.id ? editingSede : b)),
-                      );
-                      setEditingSede(null);
-                    }}
-                    className="space-y-4 pt-2 text-sm"
-                  >
-                    <div className="space-y-1">
-                      <label className="text-xs text-muted-foreground font-semibold">
-                        Nombre de Sucursal
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={editingSede?.name || ""}
-                        onChange={(e) => setEditingSede({ ...editingSede, name: e.target.value })}
-                        className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none text-foreground"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs text-muted-foreground font-semibold">
-                        Dirección Física
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={editingSede?.address || ""}
-                        onChange={(e) =>
-                          setEditingSede({ ...editingSede, address: e.target.value })
-                        }
-                        className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none text-foreground"
-                      />
-                    </div>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="space-y-1">
-                        <label className="text-xs text-muted-foreground font-semibold">
-                          Responsable / Manager
-                        </label>
-                        <input
-                          type="text"
-                          value={editingSede?.manager || ""}
-                          onChange={(e) =>
-                            setEditingSede({ ...editingSede, manager: e.target.value })
-                          }
-                          className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none text-foreground"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs text-muted-foreground font-semibold">
-                          Multiplicador de Crédito
-                        </label>
-                        <input
-                          type="number"
-                          step="0.1"
-                          min="0.5"
-                          max="3.0"
-                          value={editingSede?.creditCostMultiplier || 1.0}
-                          onChange={(e) =>
-                            setEditingSede({
-                              ...editingSede,
-                              creditCostMultiplier: parseFloat(e.target.value) || 1.0,
-                            })
-                          }
-                          className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none text-foreground"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex justify-end gap-2 pt-4 border-t border-border">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="rounded-xl"
-                        onClick={() => setEditingSede(null)}
-                      >
-                        Cancelar
-                      </Button>
-                      <Button size="sm" type="submit" className="rounded-xl">
-                        Guardar Cambios
-                      </Button>
-                    </div>
-                  </form>
-                </DialogContent>
-              </Dialog>
-
-              {/* Branches list */}
-              <div className="space-y-2 border-t border-border pt-4">
-                <h4 className="text-xs font-bold text-muted-foreground uppercase">
-                  Sedes Registradas
-                </h4>
-                <div className="divide-y divide-border">
-                  <div className="py-3 flex items-center justify-between">
-                    <div>
-                      <div className="text-sm font-semibold text-foreground">
-                        Sede Principal (Palermo)
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        Av. Santa Fe 3421, Palermo, CABA
-                      </div>
-                      <div className="flex gap-3 mt-1 text-[10px] text-muted-foreground">
-                        <span>👤 Manager: Alan Kraft</span>
-                        <span>📍 GPS: -34.5829, -58.4115</span>
-                        <span>💎 Multiplicador: 1.0x</span>
-                      </div>
-                    </div>
-                    <span className="text-[10px] bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-bold uppercase shrink-0">
-                      Matriz
-                    </span>
-                  </div>
-                  {branchesList.map((branch) => (
-                    <div key={branch.id} className="py-3 flex items-center justify-between">
-                      <div>
-                        <div className="text-sm font-semibold text-foreground">{branch.name}</div>
-                        <div className="text-xs text-muted-foreground">{branch.address}</div>
-                        <div className="flex gap-3 mt-1 text-[10px] text-muted-foreground flex-wrap">
-                          {branch.manager && <span>👤 Manager: {branch.manager}</span>}
-                          {branch.lat && branch.lng && (
-                            <span>
-                              📍 GPS: {branch.lat.toFixed(4)}, {branch.lng.toFixed(4)}
-                            </span>
-                          )}
-                          {branch.creditCostMultiplier && (
-                            <span>💎 Multiplicador: {branch.creditCostMultiplier.toFixed(1)}x</span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => setEditingSede({ ...branch })}
-                          className="p-1.5 text-muted-foreground hover:bg-secondary rounded-lg transition"
-                          title="Editar sucursal"
-                        >
-                          <Edit2 className="h-3.5 w-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setDeletingItem({ type: "sede", id: branch.id, name: branch.name });
-                            setDeleteConfirmText("");
-                          }}
-                          className="p-1.5 text-destructive hover:bg-destructive/ rounded-lg transition"
-                          title="Eliminar sucursal"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                  {branchesList.length === 0 && (
-                    <p className="text-xs text-muted-foreground italic py-3">
-                      No hay sucursales secundarias registradas.
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
+          {/* ponytail: Sucursales / Sedes subtab removed per user request */}
 
           {/* Subtab: Salas / Salones de Sede */}
           {subTab === "salas" && (
@@ -12950,383 +9176,6 @@ function ConfigTab({
             </div>
           )}
 
-          {/* Subtab 7: Días de Cierre (Blackout Days) */}
-          {subTab === "protocolos" && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-xl font-bold tracking-tight text-foreground">
-                    Protocolos Operativos
-                  </h2>
-                  <p className="text-sm text-muted-foreground">
-                    Configura los checklists diarios obligatorios por rol y horario.
-                  </p>
-                </div>
-                {protocolViewMode === "list" && (
-                  <Button
-                    className="rounded-xl font-bold animate-fade-in"
-                    onClick={() => {
-                      setNewProtocolTitle("");
-                      setNewProtocolRole("receptionist");
-                      setNewProtocolTime("Mañana");
-                      setNewProtocolItemsText("");
-                      setEditingProtocol(null);
-                      setIsCreateProtocolOpen(true);
-                    }}
-                  >
-                    <Plus className="w-4 h-4 mr-2" /> Nuevo Protocolo
-                  </Button>
-                )}
-              </div>
-
-              {/* Segmented Control Toggle */}
-              <div className="flex bg-secondary/30 p-1 rounded-xl w-fit border border-border/50">
-                <button
-                  onClick={() => setProtocolViewMode("list")}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    protocolViewMode === "list"
-                      ? "bg-card text-foreground border border-border"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Protocolos Activos ({protocols.length})
-                </button>
-                <button
-                  onClick={() => setProtocolViewMode("logs")}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    protocolViewMode === "logs"
-                      ? "bg-card text-foreground border border-border"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Historial de Auditoría ({checklistLogs.length})
-                </button>
-              </div>
-
-              {protocolViewMode === "list" ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {protocols.map((prot) => (
-                    <Card
-                      key={prot.id}
-                      className="border-border bg-card hover:border-primary/50 transition-colors animate-fade-in"
-                    >
-                      <CardHeader className="pb-2">
-                        <div className="flex justify-between items-start gap-2">
-                          <CardTitle className="text-sm font-bold truncate max-w-[160px]">
-                            {prot.title}
-                          </CardTitle>
-                          <Badge
-                            variant="secondary"
-                            className="text-[10px] uppercase font-bold shrink-0"
-                          >
-                            {prot.role === "receptionist"
-                              ? "🔑 Recepción"
-                              : prot.role === "coach"
-                                ? "💪 Coach"
-                                : prot.role === "manager"
-                                  ? "👤 Gerente"
-                                  : prot.role}
-                          </Badge>
-                        </div>
-                        <CardDescription className="text-xs flex items-center gap-1 mt-1">
-                          <Clock className="w-3 h-3" /> {prot.time}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <ul className="space-y-2 mt-2">
-                          {prot.items.map((item, idx) => (
-                            <li
-                              key={idx}
-                              className="flex items-start gap-2 text-xs text-muted-foreground"
-                            >
-                              <CheckCircle2 className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
-                              <span>{item}</span>
-                            </li>
-                          ))}
-                        </ul>
-                        <div className="mt-4 pt-4 border-t border-border flex justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 text-[11px] text-muted-foreground font-semibold"
-                            onClick={() => {
-                              setEditingProtocol(prot);
-                              setNewProtocolTitle(prot.title);
-                              setNewProtocolRole(prot.role);
-                              setNewProtocolTime(prot.time);
-                              setNewProtocolItemsText(prot.items.join("\n"));
-                              setIsCreateProtocolOpen(true);
-                            }}
-                          >
-                            <Edit2 className="w-3 h-3 mr-1" /> Editar
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 text-[11px] text-destructive hover:text-destructive hover:bg-destructive/10 font-semibold"
-                            onClick={() => {
-                              if (
-                                confirm(`¿Estás seguro de eliminar el protocolo "${prot.title}"?`)
-                              ) {
-                                setProtocols((prev) => prev.filter((p) => p.id !== prot.id));
-                              }
-                            }}
-                          >
-                            <Trash2 className="w-3 h-3 mr-1" /> Eliminar
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {/* Filtros de Auditoría */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 bg-secondary/15 border border-border/80 rounded-2xl animate-fade-in text-foreground">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
-                        Filtrar por Rol
-                      </label>
-                      <select
-                        value={logFilterRole}
-                        onChange={(e) => setLogFilterRole(e.target.value)}
-                        className="flex h-9 w-full rounded-xl border border-border bg-background px-3 py-1 text-xs focus-visible:outline-none text-foreground font-semibold"
-                      >
-                        <option value="all">Todos los Roles</option>
-                        <option value="receptionist">🔑 Recepción</option>
-                        <option value="coach">💪 Coach / Profesor</option>
-                        <option value="manager">👤 Gerente</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
-                        Filtrar por Personal
-                      </label>
-                      <select
-                        value={logFilterStaff}
-                        onChange={(e) => setLogFilterStaff(e.target.value)}
-                        className="flex h-9 w-full rounded-xl border border-border bg-background px-3 py-1 text-xs focus-visible:outline-none text-foreground font-semibold"
-                      >
-                        <option value="all">Todo el Personal</option>
-                        {uniqueStaffNames.map((name) => (
-                          <option key={name} value={name}>
-                            {name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
-                        Filtrar por Fecha
-                      </label>
-                      <input
-                        type="date"
-                        value={logFilterDate}
-                        onChange={(e) => setLogFilterDate(e.target.value)}
-                        className="flex h-9 w-full rounded-xl border border-border bg-background px-3 py-1 text-xs focus-visible:outline-none text-foreground font-semibold"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Tabla de Resultados */}
-                  <div className="bg-card border border-border rounded-2xl overflow-hidden animate-fade-in">
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-xs text-left border-collapse text-foreground">
-                        <thead>
-                          <tr className="bg-secondary/40 border-b border-border text-muted-foreground font-bold">
-                            <th className="p-4">Fecha / Hora</th>
-                            <th className="p-4">Protocolo</th>
-                            <th className="p-4">Staff Responsable</th>
-                            <th className="p-4 text-center">Tareas Verificadas</th>
-                            <th className="p-4 text-right">Estado</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {filteredLogs.map((log) => (
-                            <tr
-                              key={log.id}
-                              className="border-b border-border last:border-0 hover:bg-secondary/15 transition-colors"
-                            >
-                              <td className="p-4 font-semibold whitespace-nowrap">
-                                {log.date}{" "}
-                                <span className="text-muted-foreground font-medium ml-1.5">
-                                  {log.time} hs
-                                </span>
-                              </td>
-                              <td className="p-4 font-bold text-sm">{log.protocolTitle}</td>
-                              <td className="p-4">
-                                <div className="flex items-center gap-1.5">
-                                  <span className="font-semibold">{log.staffName}</span>
-                                  <Badge
-                                    variant="secondary"
-                                    className="text-[9px] uppercase font-semibold scale-90"
-                                  >
-                                    {log.role === "receptionist"
-                                      ? "Recepción"
-                                      : log.role === "coach"
-                                        ? "Coach"
-                                        : log.role === "manager"
-                                          ? "Gerente"
-                                          : log.role}
-                                  </Badge>
-                                </div>
-                              </td>
-                              <td className="p-4 text-center font-bold text-primary">
-                                {log.itemsCount} tareas
-                              </td>
-                              <td className="p-4 text-right">
-                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-primary/ text-primary border border-primary/">
-                                  ✓ Completado
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
-                          {filteredLogs.length === 0 && (
-                            <tr>
-                              <td
-                                colSpan={5}
-                                className="p-8 text-center text-muted-foreground italic font-medium"
-                              >
-                                No se encontraron registros que coincidan con los filtros
-                                seleccionados.
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <Dialog open={isCreateProtocolOpen} onOpenChange={setIsCreateProtocolOpen}>
-                <DialogContent className="max-w-md border border-border bg-card rounded-3xl">
-                  <DialogHeader>
-                    <DialogTitle className="text-base font-extrabold">
-                      {editingProtocol ? "Editar Protocolo" : "Crear Nuevo Protocolo"}
-                    </DialogTitle>
-                  </DialogHeader>
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      if (!newProtocolTitle.trim() || !newProtocolItemsText.trim()) {
-                        alert("Por favor completa el título y los ítems del protocolo.");
-                        return;
-                      }
-
-                      const itemsList = newProtocolItemsText
-                        .split("\n")
-                        .map((x) => x.trim())
-                        .filter(Boolean);
-
-                      if (editingProtocol) {
-                        setProtocols((prev) =>
-                          prev.map((p) =>
-                            p.id === editingProtocol.id
-                              ? {
-                                  ...p,
-                                  title: newProtocolTitle.trim(),
-                                  role: newProtocolRole,
-                                  time: newProtocolTime,
-                                  items: itemsList,
-                                }
-                              : p,
-                          ),
-                        );
-                      } else {
-                        const newProt = {
-                          id: Date.now().toString(),
-                          title: newProtocolTitle.trim(),
-                          role: newProtocolRole,
-                          time: newProtocolTime,
-                          items: itemsList,
-                        };
-                        setProtocols((prev) => [...prev, newProt]);
-                      }
-                      setIsCreateProtocolOpen(false);
-                    }}
-                    className="space-y-4 pt-2 text-sm text-foreground"
-                  >
-                    <div className="space-y-1.5">
-                      <Label htmlFor="protocol-title" className="font-bold">
-                        Título del Protocolo
-                      </Label>
-                      <Input
-                        id="protocol-title"
-                        placeholder="Ej: Protocolo de Cierre"
-                        value={newProtocolTitle}
-                        onChange={(e) => setNewProtocolTitle(e.target.value)}
-                        className="rounded-xl"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
-                        <Label htmlFor="protocol-role" className="font-bold">
-                          Rol Responsable
-                        </Label>
-                        <select
-                          id="protocol-role"
-                          value={newProtocolRole}
-                          onChange={(e) => setNewProtocolRole(e.target.value)}
-                          className="flex h-9 w-full rounded-xl border border-border bg-background px-3 py-1 text-xs focus-visible:outline-none text-foreground font-semibold"
-                        >
-                          <option value="receptionist">🔑 Recepcionista</option>
-                          <option value="coach">💪 Coach / Profesor</option>
-                          <option value="manager">👤 Gerente</option>
-                        </select>
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label htmlFor="protocol-time" className="font-bold">
-                          Horario / Frecuencia
-                        </Label>
-                        <Input
-                          id="protocol-time"
-                          placeholder="Ej: Mañana, Noche, Antes de clases"
-                          value={newProtocolTime}
-                          onChange={(e) => setNewProtocolTime(e.target.value)}
-                          className="rounded-xl font-semibold"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label htmlFor="protocol-items" className="font-bold">
-                        Tareas / Ítems (Uno por línea)
-                      </Label>
-                      <textarea
-                        id="protocol-items"
-                        rows={5}
-                        value={newProtocolItemsText}
-                        onChange={(e) => setNewProtocolItemsText(e.target.value)}
-                        className="flex w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none text-foreground placeholder:text-muted-foreground font-medium"
-                        placeholder="Escribe cada tarea en una línea nueva.&#10;Ejemplo:&#10;Controlar aires acondicionados&#10;Verificar caja de cobros&#10;Repasar desinfección de colchonetas&#10;Activar alarma perimetral"
-                      />
-                    </div>
-
-                    <DialogFooter className="pt-2 gap-2 sm:gap-0">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="rounded-xl font-bold"
-                        onClick={() => setIsCreateProtocolOpen(false)}
-                      >
-                        Cancelar
-                      </Button>
-                      <Button
-                        type="submit"
-                        className="rounded-xl font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/95"
-                      >
-                        {editingProtocol ? "Guardar Cambios" : "Crear Protocolo"}
-                      </Button>
-                    </DialogFooter>
-                  </form>
-                </DialogContent>
-              </Dialog>
-            </div>
-          )}
 
           {subTab === "cierres" && (
             <div className="space-y-6 max-w-2xl bg-card border border-border p-6 rounded-3xl animate-fade-up text-foreground">
@@ -13698,7 +9547,6 @@ function ConfigTab({
             </DialogContent>
           </Dialog>
         </>
-      )}
     </div>
   );
 }

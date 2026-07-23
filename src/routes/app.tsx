@@ -17,6 +17,13 @@ import { Tooltip as ShadcnTooltip, TooltipContent, TooltipProvider, TooltipTrigg
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { 
   AlertDialog,
   AlertDialogContent,
@@ -141,7 +148,7 @@ export const Route = createFileRoute("/app")({
 const TABS = [
   { id: "inicio", label: "Inicio", icon: User },
   { id: "diario", label: "AI Coach", icon: Sparkles },
-  { id: "clases", label: "Reservas", icon: Calendar },
+  { id: "clases", label: "Check-in", icon: QrCode },
   { id: "progreso", label: "Mi Progreso", icon: BarChart3 },
   { id: "pagos", label: "Suscripción", icon: CreditCard },
   { id: "config", label: "Configuración", icon: Settings },
@@ -219,7 +226,7 @@ function StudentDashboard() {
 
         {activeTab === "inicio" && <InicioTab />}
         {activeTab === "diario" && <DiarioTab />}
-        {activeTab === "clases" && <ClasesTab />}
+        {activeTab === "clases" && <ClasesTab onOpenQr={() => setQrOpen(true)} />}
         {activeTab === "progreso" && <ProgresoTab />}
         {activeTab === "pagos" && <PagosTab />}
         {activeTab === "config" && <ConfigTab />}
@@ -419,77 +426,976 @@ function InicioTab() {
   return <Index hideHeader={true} />;
 }
 
-// Subcomponent: Clases Tab
-function ClasesTab() {
-  const [filter, setFilter] = useState("Todos");
-  const disciplines = ["Todos", "CrossFit", "Yoga", "Funcional", "Pilates"];
+// Subcomponent: User Class Detail Modal
+function UserClassDetailModal({
+  classData,
+  isOpen,
+  onClose,
+  onOpenQr,
+  onBook,
+  onCancel,
+}: {
+  classData: any | null;
+  isOpen: boolean;
+  onClose: () => void;
+  onOpenQr?: () => void;
+  onBook?: (classId: string, spotIndex: number | null) => void;
+  onCancel?: (classId: string) => void;
+}) {
+  if (!classData) return null;
 
-  const classes = [
-    { name: "CrossFit WOD", instructor: "Mateo", time: "08:00 hs", slots: "10 cupos", status: "available" },
-    { name: "Yoga Ashtanga", instructor: "Valeria", time: "09:30 hs", slots: "Últimos 2 cupos", status: "urgent" },
-    { name: "Entrenamiento Funcional", instructor: "Daniel", time: "18:00 hs", slots: "Completo", status: "full" },
-    { name: "CrossFit WOD", instructor: "Mateo", time: "19:00 hs", slots: "Reservado", status: "booked" },
-    { name: "Pilates Reformer", instructor: "Sofía", time: "20:00 hs", slots: "5 cupos", status: "available" },
+  const [selectedSpot, setSelectedSpot] = useState<number | null>(classData.userSpotIndex ?? 4);
+  const [isUserProfilePublic, setIsUserProfilePublic] = useState<boolean>(true);
+
+  // Interactive Waitlist state
+  const [isOnWaitlist, setIsOnWaitlist] = useState<boolean>(classData.isUserOnWaitlist ?? false);
+  const [waitlistCount, setWaitlistCount] = useState<number>(classData.waitlistCount ?? 3);
+
+  // Interactive Surrender / Ceder lugar state
+  const [isSpotSurrendered, setIsSpotSurrendered] = useState<boolean>(classData.isSpotSurrendered ?? false);
+
+  // Enrolled students mock with privacy state
+  const enrolledStudents = classData.enrolledStudents || [
+    {
+      name: "Agustín Gómez (Tú)",
+      isUser: true,
+      isPublic: isUserProfilePublic,
+      photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      spotIndex: isSpotSurrendered ? -1 : 4,
+    },
+    {
+      name: "Camila Díaz",
+      isUser: false,
+      isPublic: true,
+      photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
+      spotIndex: 1,
+    },
+    {
+      name: "Lucas Torres",
+      isUser: false,
+      isPublic: false,
+      photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+      spotIndex: 3,
+    },
+    {
+      name: "Paula Cáceres",
+      isUser: false,
+      isPublic: true,
+      photo: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&auto=format&fit=crop&q=80",
+      spotIndex: 7,
+    },
+    {
+      name: "Sofía Martínez",
+      isUser: false,
+      isPublic: true,
+      photo: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80",
+      spotIndex: 10,
+    },
+    {
+      name: "Mateo R.",
+      isUser: false,
+      isPublic: false,
+      photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
+      spotIndex: 12,
+    },
   ];
 
+  // 16 circular spots in room layout grid
+  const spots = Array.from({ length: 16 }, (_, i) => {
+    const isUserSpot = !isSpotSurrendered && i === (classData.userSpotIndex ?? 4) && classData.status === "booked";
+    const occupant = enrolledStudents.find((st: any) => st.spotIndex === i);
+    const occupiedByOther = !isUserSpot && !!occupant;
+
+    return {
+      index: i + 1,
+      isUserSpot,
+      occupiedByOther,
+      occupant,
+      isAvailable: !isUserSpot && !occupiedByOther,
+    };
+  });
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">Reserva de Clases</h2>
-        <p className="text-sm text-muted-foreground">Calendario semanal de actividades.</p>
-      </div>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0 gap-0 border border-border bg-card rounded-3xl">
+        {/* Banner Header */}
+        <div className="relative p-6 bg-gradient-to-br from-zinc-950 via-neutral-900 to-black border-b border-border text-white overflow-hidden">
+          {/* Ambient Glow */}
+          <div className="absolute -right-10 -top-10 w-48 h-48 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
 
-      {/* Filters */}
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {disciplines.map((d) => (
-          <button
-            key={d}
-            onClick={() => setFilter(d)}
-            className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-semibold border transition ${
-              filter === d 
-                ? "border-foreground bg-foreground text-background"
-                : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground"
-            }`}
-          >
-            {d}
-          </button>
-        ))}
-      </div>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative z-10">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold uppercase">
+                {classData.gymName || "Centro Deportivo"}
+              </Badge>
 
-      {/* Class List */}
-      <div className="rounded-2xl border border-border overflow-hidden">
-        <div className="bg-muted px-4 py-3 text-xs font-bold text-muted-foreground border-b border-border">
-          Clases para hoy
+              {classData.status === "booked" ? (
+                isSpotSurrendered ? (
+                  <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold">
+                    🟡 Lugar Cedido (Re-reserva en curso)
+                  </Badge>
+                ) : (
+                  <Badge className="bg-emerald-500 text-black text-xs font-black">
+                    ✓ Tu Reserva Confirmada
+                  </Badge>
+                )
+              ) : classData.status === "urgent" ? (
+                <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-semibold">
+                  ⚠️ Últimos cupos
+                </Badge>
+              ) : classData.status === "full" ? (
+                <Badge variant="secondary" className="text-xs font-semibold">
+                  Completo
+                </Badge>
+              ) : (
+                <Badge className="bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs font-semibold">
+                  Cupos Disponibles
+                </Badge>
+              )}
+
+              <Badge variant="outline" className="text-xs font-bold border-white/20 text-white bg-white/5">
+                🪙 {classData.creditsCost || 1} Crédito
+              </Badge>
+            </div>
+          </div>
+
+          <div className="mt-4 relative z-10">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">{classData.name}</h2>
+            <p className="text-xs text-zinc-300 mt-1 flex items-center gap-2">
+              <span className="flex items-center gap-1">
+                <MapPin className="w-3.5 h-3.5 text-emerald-400" />
+                {classData.salaName || "Sala Principal WOD"} · {classData.location || "Palermo, CABA"}
+              </span>
+            </p>
+          </div>
         </div>
-        <ul className="divide-y divide-border">
-          {classes.map((c, i) => (
-            <li key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-4">
+
+        <div className="p-6 space-y-6">
+          {/* User Privacy Control Banner */}
+          <div className="p-3.5 rounded-2xl bg-secondary/40 border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2">
+              <Shield className="w-4 h-4 text-emerald-500 shrink-0" />
               <div>
-                <div className="text-sm font-semibold">{c.name}</div>
-                <div className="text-xs text-muted-foreground mt-0.5">{c.instructor} · {c.time}</div>
+                <span className="font-bold text-foreground block">Visibilidad de tu Perfil en Clase</span>
+                <span className="text-muted-foreground text-[11px]">
+                  {isUserProfilePublic
+                    ? "🟢 Tu perfil es Público. Otros alumnos pueden ver tu foto y lugar asignado."
+                    : "🔒 Tu perfil es Privado. Tu foto y nombre están ocultos para los demás alumnos."}
+                </span>
               </div>
-              <div className="flex items-center gap-4 justify-between sm:justify-start">
-                <span className={`text-xs font-medium ${
-                  c.status === "urgent" ? "text-amber-500" :
-                  c.status === "booked" ? "text-emerald-500" :
-                  c.status === "full" ? "text-muted-foreground" : "text-muted-foreground"
-                }`}>
-                  {c.slots}
+            </div>
+
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsUserProfilePublic(!isUserProfilePublic)}
+              className="rounded-full text-xs font-semibold shrink-0"
+            >
+              {isUserProfilePublic ? "Cambiar a Privado" : "Cambiar a Público"}
+            </Button>
+          </div>
+
+          {/* Coach & Session Stats */}
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="p-4 rounded-2xl border border-border/80 bg-secondary/30 flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-500 font-extrabold text-base flex items-center justify-center border border-emerald-500/30 shrink-0">
+                {classData.instructor ? classData.instructor.charAt(0) : "M"}
+              </div>
+              <div>
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Profesor / Coach</span>
+                <span className="text-sm font-bold text-foreground block">{classData.instructor || "Mateo Rossi"}</span>
+                <span className="text-xs text-emerald-500 font-semibold flex items-center gap-1 mt-0.5">
+                  ★ 4.9 <span className="text-muted-foreground font-normal">(124 reseñas)</span>
+                </span>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl border border-border/80 bg-secondary/30 grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <span className="text-muted-foreground block text-[10px] font-bold uppercase">Horario</span>
+                <span className="font-bold text-foreground mt-0.5 block flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5 text-amber-500" />
+                  {classData.time || "19:00 hs"}
+                </span>
+              </div>
+
+              <div>
+                <span className="text-muted-foreground block text-[10px] font-bold uppercase">Intensidad</span>
+                <span className="font-bold text-foreground mt-0.5 block flex items-center gap-1">
+                  <Activity className="w-3.5 h-3.5 text-emerald-500" />
+                  {classData.intensity || "Alta / Avanzado"}
+                </span>
+              </div>
+
+              <div>
+                <span className="text-muted-foreground block text-[10px] font-bold uppercase">Ocupación</span>
+                <span className="font-bold text-foreground mt-0.5 block">
+                  {classData.slots || "10/12 cupos"}
+                </span>
+              </div>
+
+              <div>
+                <span className="text-muted-foreground block text-[10px] font-bold uppercase">Duración</span>
+                <span className="font-bold text-foreground mt-0.5 block">
+                  {classData.duration || "60 min"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* CIRCULAR SEAT / STUDIO LAYOUT GRID */}
+          <div className="space-y-4 p-5 rounded-2xl border border-border bg-card">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <Dumbbell className="w-4 h-4 text-emerald-500" />
+                <span>Mapa de Círculos / Fotos de Asistencia</span>
+              </span>
+              <span className="text-[11px] text-muted-foreground font-medium">
+                {classData.status === "booked"
+                  ? isSpotSurrendered
+                    ? "Lugar #5 cedido a la comunidad"
+                    : "Lugar #5 asignado a ti"
+                  : selectedSpot !== null
+                  ? `Lugar #${selectedSpot + 1} seleccionado (Toca de nuevo para des-elegir)`
+                  : "Toca un círculo libre para reservarlo"}
+              </span>
+            </div>
+
+            {/* Room Screen / Coach Stage indicator */}
+            <div className="w-full bg-muted/60 text-center py-1.5 rounded-xl text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground border border-border/50 shadow-inner">
+              🏋️ Escenario / Frente del Coach
+            </div>
+
+            {/* Circular Grid (4x4) */}
+            <div className="grid grid-cols-4 gap-3 py-2 justify-items-center">
+              {spots.map((spot, idx) => {
+                const isSelected = selectedSpot === idx;
+                const occupant = spot.occupant;
+
+                return (
+                  <div key={idx} className="flex flex-col items-center gap-1">
+                    <button
+                      type="button"
+                      disabled={spot.occupiedByOther}
+                      onClick={() => {
+                        // TOGGLE SPOT SELECTION / DESELECT IF CLICKED AGAIN
+                        if (spot.occupiedByOther) return;
+                        setSelectedSpot((prev) => (prev === idx ? null : idx));
+                      }}
+                      className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center relative transition-all duration-200 ${
+                        spot.isUserSpot
+                          ? "ring-4 ring-emerald-500 ring-offset-2 ring-offset-card shadow-lg shadow-emerald-500/20 scale-105"
+                          : isSelected
+                          ? "ring-4 ring-emerald-400 ring-offset-2 ring-offset-card shadow-lg shadow-emerald-500/20 scale-105"
+                          : spot.occupiedByOther
+                          ? "cursor-not-allowed opacity-95"
+                          : "border-2 border-dashed border-emerald-500/40 bg-emerald-500/5 hover:border-emerald-500 hover:bg-emerald-500/15 hover:scale-105 cursor-pointer"
+                      }`}
+                    >
+                      {/* USER SPOT CIRCLE */}
+                      {spot.isUserSpot ? (
+                        <div className="w-full h-full rounded-full overflow-hidden relative border-2 border-emerald-400">
+                          {isUserProfilePublic ? (
+                            <img
+                              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
+                              alt="Tú"
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-zinc-900 text-emerald-400 flex items-center justify-center">
+                              <User className="w-6 h-6" />
+                            </div>
+                          )}
+                          <span className="absolute bottom-0 inset-x-0 bg-emerald-500 text-black text-[9px] font-black text-center py-0.5 leading-none">
+                            TÚ
+                          </span>
+                        </div>
+                      ) : isSelected && !spot.occupiedByOther ? (
+                        /* SELECTED OPEN SPOT CIRCLE (CAN BE TOGGLED OFF) */
+                        <div className="w-full h-full rounded-full bg-emerald-500 text-black flex flex-col items-center justify-center font-black text-xs shadow-md relative">
+                          <Check className="w-5 h-5 stroke-[3]" />
+                          <span className="text-[8px] leading-none mt-0.5">#{spot.index}</span>
+                        </div>
+                      ) : spot.occupiedByOther ? (
+                        /* OCCUPIED SPOT CIRCLE (PUBLIC vs PRIVATE PHOTO) */
+                        <div className="w-full h-full rounded-full overflow-hidden relative border-2 border-zinc-700/60 bg-secondary/80">
+                          {occupant && occupant.isPublic ? (
+                            <img
+                              src={occupant.photo}
+                              alt={occupant.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-zinc-900 text-zinc-400 flex flex-col items-center justify-center">
+                              <User className="w-5 h-5 opacity-60" />
+                              <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-tighter">Privado</span>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        /* FREE SPOT CIRCLE */
+                        <div className="flex flex-col items-center justify-center text-emerald-500">
+                          <span className="text-xs font-bold">#{spot.index}</span>
+                          <span className="text-[8px] text-muted-foreground font-semibold">Libre</span>
+                        </div>
+                      )}
+                    </button>
+
+                    {/* Circle Label Subtitle */}
+                    <span className="text-[10px] font-semibold text-center text-muted-foreground truncate max-w-[70px]">
+                      {spot.isUserSpot
+                        ? "Agustín (Tú)"
+                        : isSelected
+                        ? `Lugar #${spot.index} (Elegido)`
+                        : spot.occupiedByOther
+                        ? occupant?.isPublic
+                          ? occupant.name
+                          : "Privado"
+                        : `Lugar #${spot.index}`}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Legend */}
+            <div className="flex items-center justify-center gap-5 text-[11px] text-muted-foreground pt-2 border-t border-border/50">
+              <span className="flex items-center gap-1.5 font-medium">
+                <span className="w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-emerald-500/30" /> Tu lugar
+              </span>
+              <span className="flex items-center gap-1.5 font-medium">
+                <span className="w-3 h-3 rounded-full border-2 border-emerald-500/50 bg-emerald-500/10" /> Libre
+              </span>
+              <span className="flex items-center gap-1.5 font-medium">
+                <span className="w-3 h-3 rounded-full bg-zinc-800 border border-zinc-600" /> Ocupado
+              </span>
+            </div>
+          </div>
+
+          {/* Lista de Espera Section (Interactive join & cancel waitlist) */}
+          {(classData.status === "full" || waitlistCount > 0 || isOnWaitlist) && (
+            <div className="p-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 space-y-3 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-amber-400 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+                  <Clock className="w-3.5 h-3.5 text-amber-500" />
+                  Lista de Espera Activa
+                </span>
+                <Badge variant="outline" className="bg-amber-500/20 text-amber-300 border-amber-500/40 text-[10px] font-bold">
+                  {isOnWaitlist ? `Puesto #1 en espera (${waitlistCount} alumnos)` : `${waitlistCount} Alumnos aguardando`}
+                </Badge>
+              </div>
+
+              <p className="text-[11px] text-amber-200/90 leading-relaxed">
+                {isOnWaitlist
+                  ? "✓ Estás registrado en la Lista de Espera. Si algún alumno cancela o cede su lugar, serás inscripto automáticamente y se debitará 1 crédito de tu cuenta."
+                  : "Esta clase se encuentra al 100% de su capacidad. Al unirte a la lista de espera, la app te asignará automáticamente el lugar si se libera un cupo."}
+              </p>
+
+              <div className="pt-2 flex items-center justify-between border-t border-amber-500/20">
+                <span className="text-[10px] text-amber-300 font-semibold">
+                  {isOnWaitlist ? "Posición #1 · Notificación instantánea" : "Orden de asignación: Por horario de solicitud"}
                 </span>
 
-                <Button 
-                  size="sm" 
-                  variant={c.status === "booked" ? "outline" : c.status === "full" ? "secondary" : "default"}
-                  disabled={c.status === "full"}
-                  className="rounded-full min-w-[90px]"
-                >
-                  {c.status === "booked" ? "Ver Detalles" : c.status === "full" ? "Completo" : "Reservar"}
-                </Button>
+                {isOnWaitlist && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setIsOnWaitlist(false);
+                      setWaitlistCount((prev) => Math.max(0, prev - 1));
+                      alert("Has salido de la Lista de Espera exitosamente.");
+                    }}
+                    className="rounded-full text-[10px] h-7 px-3 border-amber-500/40 text-amber-300 hover:bg-amber-500/20"
+                  >
+                    Salir de la Lista de Espera
+                  </Button>
+                )}
               </div>
-            </li>
-          ))}
-        </ul>
+            </div>
+          )}
+
+          {/* Requisitos & Qué Traer */}
+          <div className="p-4 rounded-2xl border border-border bg-secondary/20 text-xs space-y-2">
+            <span className="font-bold text-foreground block">📋 Qué traer a la clase:</span>
+            <ul className="grid sm:grid-cols-3 gap-2 text-muted-foreground">
+              <li className="flex items-center gap-1.5">
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" /> Toalla de entrenamiento
+              </li>
+              <li className="flex items-center gap-1.5">
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" /> Botella de agua (1L)
+              </li>
+              <li className="flex items-center gap-1.5">
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" /> Calzado deportivo técnico
+              </li>
+            </ul>
+          </div>
+
+          {/* Cancellation & Spot Surrender Policy Banner */}
+          <div className={`p-4 rounded-2xl border text-xs flex items-start gap-3 ${
+            classData.cannotCancel
+              ? isSpotSurrendered
+                ? "bg-amber-500/10 border-amber-500/30 text-amber-200"
+                : "bg-destructive/10 border-destructive/30 text-destructive-foreground"
+              : "bg-amber-500/10 border-amber-500/20 text-amber-200"
+          }`}>
+            <ShieldAlert className={`w-4 h-4 shrink-0 mt-0.5 ${
+              classData.cannotCancel ? (isSpotSurrendered ? "text-amber-400" : "text-destructive") : "text-amber-500"
+            }`} />
+            <div className="space-y-1">
+              <span className={`font-bold block ${
+                classData.cannotCancel ? (isSpotSurrendered ? "text-amber-400" : "text-destructive") : "text-amber-400"
+              }`}>
+                {classData.cannotCancel
+                  ? isSpotSurrendered
+                    ? "🟡 Lugar Cedido a la Comunidad (Re-reserva Activa)"
+                    : `⚠️ Política Post-Límite (${classData.cancellationPolicyHours || 2} hs de anticipación)`
+                  : `✓ Cancelación Estándar (${classData.cancellationPolicyHours || 2} hs de anticipación)`}
+              </span>
+              <p className="text-[11px] opacity-90 leading-relaxed">
+                {classData.cannotCancel ? (
+                  isSpotSurrendered ? (
+                    <>
+                      Has puesto tu lugar a disposición para <strong>Re-reserva</strong>. Si otro alumno o un usuario de la lista de espera se inscribe en tu lugar, <strong>recuperarás automáticamente tu crédito (🪙 1)</strong>. Puedes cancelar esta cesión y recuperar tu lugar mientras no haya sido reservado por alguien más.
+                    </>
+                  ) : (
+                    <>
+                      Faltan menos de {classData.cancellationPolicyHours || 2} horas para iniciar. La política estándar ya no permite cancelación directa, pero puedes <strong>Ceder tu Lugar para Re-reserva</strong>: Si otro alumno toma tu lugar cedido, ¡recuperarás tu crédito (🪙 1)!
+                    </>
+                  )
+                ) : (
+                  <>
+                    Cancelación sin penalización disponible hasta 2 horas antes de iniciar la clase. Al cancelar ahora, se reembolsará automáticamente 🪙 1 crédito a tu saldo.
+                  </>
+                )}
+              </p>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-2 border-t border-border">
+            <Button variant="outline" onClick={onClose} className="rounded-full w-full sm:w-auto">
+              Cerrar
+            </Button>
+
+            {classData.status === "booked" ? (
+              <>
+                {classData.cannotCancel ? (
+                  /* POST 2H CANCELATION WINDOW: CEDER / RE-RESERVA SYSTEM */
+                  isSpotSurrendered ? (
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setIsSpotSurrendered(false);
+                        alert("¡Has recuperado tu lugar en la clase! Tu reserva vuelve a estar activa.");
+                      }}
+                      className="rounded-full w-full sm:w-auto font-semibold border-amber-500/40 text-amber-300 hover:bg-amber-500/20"
+                    >
+                      ↩️ Recuperar mi Lugar
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="destructive"
+                      onClick={() => {
+                        if (confirm("⚠️ Han pasado las 2 horas de cancelación sin costo.\n\n¿Deseas Ceder tu Lugar para Re-reserva?\nSi otro alumno se inscribe en tu lugar, ¡recuperarás tu crédito (🪙 1)! Podrás arrepentirte y recuperar tu lugar mientras siga libre.")) {
+                          setIsSpotSurrendered(true);
+                          alert("Tu lugar se ha puesto a disposición para Re-reserva. Te notificaremos si otro alumno se inscribe para acreditarte 1 crédito.");
+                        }
+                      }}
+                      className="rounded-full w-full sm:w-auto font-semibold"
+                    >
+                      Ceder Lugar (Re-reserva con Crédito 🪙)
+                    </Button>
+                  )
+                ) : (
+                  /* STANDARD CANCELATION WINDOW (>2H) */
+                  <Button
+                    variant="destructive"
+                    onClick={() => {
+                      if (confirm("¿Confirmas cancelar tu reserva para esta clase?\nSe reembolsará 1 crédito a tu cuenta.")) {
+                        if (onCancel) onCancel(classData.id);
+                        alert("Reserva cancelada exitosamente. Se ha reembolsado 1 crédito a tu saldo.");
+                        onClose();
+                      }
+                    }}
+                    className="rounded-full w-full sm:w-auto font-semibold"
+                  >
+                    Cancelar Reserva (🪙 Reembolso)
+                  </Button>
+                )}
+
+                {onOpenQr && !isSpotSurrendered && (
+                  <Button
+                    onClick={() => {
+                      onClose();
+                      onOpenQr();
+                    }}
+                    className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400 font-bold gap-2 w-full sm:w-auto shadow-lg"
+                  >
+                    <QrCode className="w-4 h-4" />
+                    <span>Ver Pase QR / Check-in</span>
+                  </Button>
+                )}
+              </>
+            ) : classData.status === "full" ? (
+              isOnWaitlist ? (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsOnWaitlist(false);
+                    setWaitlistCount((prev) => Math.max(0, prev - 1));
+                    alert("Has salido de la Lista de Espera exitosamente.");
+                  }}
+                  className="rounded-full border-amber-500/40 text-amber-300 font-bold w-full sm:w-auto"
+                >
+                  Salir de la Lista de Espera
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => {
+                    setIsOnWaitlist(true);
+                    setWaitlistCount((prev) => prev + 1);
+                    alert("¡Te has inscripto a la Lista de Espera! Puesto #1. Te avisaremos automáticamente si se libera un cupo.");
+                  }}
+                  className="rounded-full bg-amber-500 text-black hover:bg-amber-400 font-extrabold gap-2 w-full sm:w-auto shadow-lg"
+                >
+                  <Clock className="w-4 h-4" />
+                  <span>Sumarse a Lista de Espera ({waitlistCount} en espera)</span>
+                </Button>
+              )
+            ) : (
+              <Button
+                onClick={() => {
+                  if (onBook) onBook(classData.id, selectedSpot);
+                  alert(`¡Reserva confirmada en ${classData.name}! ${selectedSpot !== null ? `Lugar asignado: #${selectedSpot + 1}` : "Lugar automático asignado"}`);
+                  onClose();
+                }}
+                className="rounded-full bg-foreground text-background hover:opacity-90 font-bold gap-2 w-full sm:w-auto shadow-lg"
+              >
+                <Check className="w-4 h-4" />
+                <span>Reservar Cupo (🪙 1 Crédito)</span>
+              </Button>
+            )}
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Subcomponent: Clases / Check-in Tab
+function ClasesTab({ onOpenQr }: { onOpenQr?: () => void }) {
+  const [selectedGymId, setSelectedGymId] = useState<string | null>(null);
+  const [filter, setFilter] = useState("Todos");
+  const [selectedClassDetail, setSelectedClassDetail] = useState<any | null>(null);
+
+  const memberships = [
+    {
+      id: "kraft-club",
+      gymName: "Kraft Club",
+      planName: "Pase Libre Total",
+      badge: "VIP PASSPORT",
+      code: "KC-884291",
+      status: "Activa",
+      validUntil: "15 Ago 2026",
+      location: "Palermo, CABA",
+      color: "from-zinc-950 via-zinc-900 to-black border-zinc-700/60 shadow-xl",
+      accentBg: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
+      accentGlow: "shadow-emerald-500/10",
+      logoIcon: "🏋️",
+    },
+    {
+      id: "fitflow-studio",
+      gymName: "FitFlow Studio",
+      planName: "Pase 8 Clases / Mes",
+      badge: "YOGA & PILATES",
+      code: "FF-330194",
+      status: "Activa (5/8 rest.)",
+      validUntil: "30 Jul 2026",
+      location: "Recoleta, CABA",
+      color: "from-slate-950 via-indigo-950 to-slate-900 border-indigo-500/40 shadow-xl",
+      accentBg: "bg-indigo-500/10 text-indigo-300 border-indigo-500/30",
+      accentGlow: "shadow-indigo-500/10",
+      logoIcon: "🧘",
+    },
+    {
+      id: "box-central",
+      gymName: "Box Central",
+      planName: "CrossFit 12 Sesiones",
+      badge: "OFFICIAL BOX",
+      code: "BC-772105",
+      status: "Activa",
+      validUntil: "10 Sep 2026",
+      location: "Belgrano, CABA",
+      color: "from-stone-950 via-amber-950/90 to-neutral-950 border-amber-500/40 shadow-xl",
+      accentBg: "bg-amber-500/10 text-amber-300 border-amber-500/30",
+      accentGlow: "shadow-amber-500/10",
+      logoIcon: "⚡",
+    },
+  ];
+
+  const upcomingReservations = [
+    {
+      id: "res-1",
+      gymId: "box-central",
+      gymName: "Box Central",
+      name: "CrossFit WOD",
+      instructor: "Mateo Rossi",
+      date: "Hoy",
+      time: "19:00 hs",
+      timeLabel: "Hoy, 19:00 hs",
+      location: "Belgrano, CABA",
+      status: "Confirmada",
+      cannotCancel: true,
+      timeRemainingLabel: "45 minutos",
+    },
+    {
+      id: "res-2",
+      gymId: "fitflow-studio",
+      gymName: "FitFlow Studio",
+      name: "Yoga Vinyasa Flow",
+      instructor: "Valeria Soto",
+      date: "Hoy",
+      time: "22:00 hs",
+      timeLabel: "Hoy, 22:00 hs",
+      location: "Recoleta, CABA",
+      status: "Confirmada",
+      cannotCancel: false,
+      timeRemainingLabel: "3 horas y 45 min",
+    },
+    {
+      id: "res-3",
+      gymId: "kraft-club",
+      gymName: "Kraft Club",
+      name: "Musculación & Funcional",
+      instructor: "Daniel Gómez",
+      date: "Mañana",
+      time: "10:00 hs",
+      timeLabel: "Mañana, 10:00 hs",
+      location: "Palermo, CABA",
+      status: "Confirmada",
+      cannotCancel: false,
+      timeRemainingLabel: "15 horas",
+    },
+  ];
+
+  const disciplines = ["Todos", "CrossFit", "Yoga", "Funcional", "Pilates"];
+
+  const allClasses = [
+    { id: "c1", gymId: "box-central", gymName: "Box Central", discipline: "CrossFit", name: "CrossFit WOD Express", instructor: "Mateo Rossi", time: "08:00 hs", slots: "10 cupos", status: "available" },
+    { id: "c2", gymId: "fitflow-studio", gymName: "FitFlow Studio", discipline: "Yoga", name: "Yoga Ashtanga & Meditación", instructor: "Valeria Soto", time: "09:30 hs", slots: "Últimos 2 cupos", status: "urgent" },
+    { id: "c3", gymId: "kraft-club", gymName: "Kraft Club", discipline: "Funcional", name: "Entrenamiento Funcional Hiit", instructor: "Daniel Gómez", time: "18:00 hs", slots: "Completo", status: "full" },
+    { id: "c4", gymId: "box-central", gymName: "Box Central", discipline: "CrossFit", name: "CrossFit WOD Noche", instructor: "Mateo Rossi", time: "19:00 hs", slots: "Reservado", status: "booked" },
+    { id: "c5", gymId: "fitflow-studio", gymName: "FitFlow Studio", discipline: "Pilates", name: "Pilates Reformer Core", instructor: "Sofía Martínez", time: "20:00 hs", slots: "5 cupos", status: "available" },
+    { id: "c6", gymId: "kraft-club", gymName: "Kraft Club", discipline: "Funcional", name: "Body Sculpt & Stretch", instructor: "Lucía Fernández", time: "21:00 hs", slots: "7 cupos", status: "available" },
+  ];
+
+  // Filtering upcoming reservations
+  const filteredReservations = upcomingReservations.filter((res) => {
+    if (selectedGymId && res.gymId !== selectedGymId) return false;
+    return true;
+  });
+
+  // Filtering available classes
+  const filteredClasses = allClasses.filter((c) => {
+    if (selectedGymId && c.gymId !== selectedGymId) return false;
+    if (filter !== "Todos" && c.discipline !== filter) return false;
+    return true;
+  });
+
+  const selectedMembership = memberships.find((m) => m.id === selectedGymId);
+
+  return (
+    <div className="space-y-8">
+      {/* Title & Fast QR Access Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold tracking-tight">Check-in & Membresías</h2>
+            <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-xs font-semibold">
+              Socio Activo
+            </Badge>
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">
+            Selecciona un carnet para ingresar, ver tus pases digitales y filtrar tus clases.
+          </p>
+        </div>
+
+        {onOpenQr && (
+          <Button
+            onClick={onOpenQr}
+            className="rounded-full bg-foreground text-background font-semibold shadow-lg hover:opacity-90 transition flex items-center gap-2 self-start sm:self-auto"
+          >
+            <QrCode className="w-4 h-4" />
+            <span>Abrir Pase QR</span>
+          </Button>
+        )}
       </div>
+
+      {/* Carnets de Membresía (Row Carousel) */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            <CreditCard className="w-4 h-4 text-emerald-500" />
+            <span>Mis Carnets de Membresía ({memberships.length})</span>
+          </div>
+          {selectedGymId && (
+            <button
+              onClick={() => setSelectedGymId(null)}
+              className="text-xs text-emerald-500 hover:underline font-semibold flex items-center gap-1"
+            >
+              Ver todas ({memberships.length})
+            </button>
+          )}
+        </div>
+
+        {/* Horizontally Scrollable Membership Cards Container */}
+        <div className="flex gap-4 overflow-x-auto pb-3 pt-1 snap-x scrollbar-none -mx-2 px-2">
+          {memberships.map((card) => {
+            const isSelected = selectedGymId === card.id;
+            return (
+              <div
+                key={card.id}
+                onClick={() => setSelectedGymId(isSelected ? null : card.id)}
+                className={`snap-start flex-shrink-0 w-[300px] sm:w-[320px] rounded-2xl p-5 border cursor-pointer transition-all duration-300 relative overflow-hidden bg-gradient-to-br ${card.color} ${
+                  isSelected
+                    ? "ring-2 ring-emerald-500 scale-[1.02] shadow-2xl border-emerald-500/80"
+                    : "hover:scale-[1.01] hover:border-foreground/40 opacity-90 hover:opacity-100"
+                }`}
+              >
+                {/* Background Ambient Glow */}
+                <div className="absolute -right-8 -bottom-8 w-36 h-36 rounded-full bg-white/5 blur-2xl pointer-events-none" />
+
+                {/* Top Row: Gym name & Badge */}
+                <div className="flex justify-between items-start relative z-10">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">{card.logoIcon}</span>
+                    <div>
+                      <h3 className="font-extrabold text-white text-base tracking-tight leading-none">
+                        {card.gymName}
+                      </h3>
+                      <p className="text-[11px] text-zinc-400 mt-0.5 flex items-center gap-1">
+                        <MapPin className="w-3 h-3 text-zinc-400" />
+                        {card.location}
+                      </p>
+                    </div>
+                  </div>
+
+                  <Badge className={`text-[10px] font-bold uppercase tracking-wider border ${card.accentBg}`}>
+                    {card.badge}
+                  </Badge>
+                </div>
+
+                {/* Card Body: Member Name & Plan */}
+                <div className="mt-6 mb-4 relative z-10">
+                  <div className="text-[10px] uppercase font-bold tracking-widest text-zinc-400">Titular</div>
+                  <div className="text-sm font-extrabold text-white tracking-wide">AGUSTÍN GÓMEZ</div>
+                  <div className="text-xs text-zinc-300 font-medium mt-1">{card.planName}</div>
+                </div>
+
+                {/* Card Footer: Status, Code & Selection Indicator */}
+                <div className="pt-3 border-t border-white/10 flex items-center justify-between relative z-10 text-xs">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="text-zinc-300 font-medium text-[11px]">{card.status}</span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-[10px] text-zinc-400 bg-white/5 px-2 py-0.5 rounded border border-white/10">
+                      {card.code}
+                    </span>
+                    {isSelected && (
+                      <span className="bg-emerald-500 text-black text-[10px] font-extrabold px-2 py-0.5 rounded-full flex items-center gap-0.5">
+                        <Check className="w-3 h-3" /> Filtrado
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Próximas Clases Section */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-emerald-500" />
+            <h3 className="text-lg font-bold tracking-tight">Próximas Clases</h3>
+            {selectedMembership && (
+              <Badge variant="secondary" className="text-xs font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                Filtrado por {selectedMembership.gymName}
+              </Badge>
+            )}
+          </div>
+          <span className="text-xs text-muted-foreground font-medium">
+            {filteredReservations.length} {filteredReservations.length === 1 ? "reserva activa" : "reservas activas"}
+          </span>
+        </div>
+
+        {filteredReservations.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-border p-8 text-center bg-card/50">
+            <Calendar className="w-8 h-8 text-muted-foreground mx-auto mb-2 opacity-50" />
+            <p className="text-sm font-semibold text-foreground">No tienes reservas próximas para este centro</p>
+            <p className="text-xs text-muted-foreground mt-1">Explora el horario de clases disponibles a continuación para reservar tu lugar.</p>
+          </div>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {filteredReservations.map((res) => (
+              <div
+                key={res.id}
+                className="rounded-2xl border border-border bg-card p-4 hover:border-foreground/30 transition flex flex-col justify-between space-y-3 relative overflow-hidden shadow-sm"
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <Badge variant="outline" className="text-[10px] font-bold text-emerald-500 border-emerald-500/30 bg-emerald-500/10 mb-1.5">
+                      {res.gymName}
+                    </Badge>
+                    <h4 className="text-base font-bold text-foreground leading-snug">{res.name}</h4>
+                    <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                      <User className="w-3.5 h-3.5" /> Prof. {res.instructor}
+                    </p>
+                  </div>
+                  <Badge variant="secondary" className="text-[11px] font-semibold flex items-center gap-1">
+                    <Clock className="w-3 h-3 text-amber-500" />
+                    {res.timeLabel || `${res.date}, ${res.time}`}
+                  </Badge>
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-border/60">
+                  <span className="text-xs text-muted-foreground flex items-center gap-1">
+                    <MapPin className="w-3.5 h-3.5" />
+                    {res.location}
+                  </span>
+
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setSelectedClassDetail({ ...res, status: "booked", userSpotIndex: 4, salaName: "Sala 1 - Principal" })}
+                      className="rounded-full text-xs font-semibold h-8 px-3"
+                    >
+                      Ver Detalles
+                    </Button>
+
+                    <Button
+                      size="sm"
+                      variant="default"
+                      onClick={onOpenQr}
+                      className="rounded-full text-xs font-semibold gap-1.5 h-8 px-3.5 bg-foreground text-background hover:opacity-90"
+                    >
+                      <QrCode className="w-3.5 h-3.5" />
+                      <span>Check-in QR</span>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Clases Disponibles Section */}
+      <div className="space-y-4 pt-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-border pt-6">
+          <div>
+            <h3 className="text-lg font-bold tracking-tight">Clases Disponibles</h3>
+            <p className="text-xs text-muted-foreground">Reserva tus próximas sesiones según tu plan activo.</p>
+          </div>
+
+          {/* Discipline Filters */}
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {disciplines.map((d) => (
+              <button
+                key={d}
+                onClick={() => setFilter(d)}
+                className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-semibold border transition ${
+                  filter === d
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground"
+                }`}
+              >
+                {d}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Class List */}
+        <div className="rounded-2xl border border-border overflow-hidden bg-card">
+          <div className="bg-muted px-4 py-3 text-xs font-bold text-muted-foreground border-b border-border flex justify-between items-center">
+            <span>Horarios para hoy</span>
+            {selectedMembership && (
+              <span className="text-emerald-500 text-[11px] font-semibold">
+                Filtrado por: {selectedMembership.gymName}
+              </span>
+            )}
+          </div>
+          {filteredClasses.length === 0 ? (
+            <div className="p-8 text-center text-sm text-muted-foreground">
+              No se encontraron clases disponibles para los filtros seleccionados.
+            </div>
+          ) : (
+            <ul className="divide-y divide-border">
+              {filteredClasses.map((c) => (
+                <li key={c.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-4 hover:bg-muted/30 transition">
+                  <div className="space-y-1 cursor-pointer" onClick={() => setSelectedClassDetail({ ...c, salaName: "Sala 2 - WOD & Studio", location: "Palermo/Belgrano, CABA" })}>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-foreground hover:underline">{c.name}</span>
+                      <Badge variant="outline" className="text-[10px] font-medium text-muted-foreground">
+                        {c.gymName}
+                      </Badge>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Prof. {c.instructor} · {c.time}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 justify-between sm:justify-start">
+                    <span
+                      className={`text-xs font-medium ${
+                        c.status === "urgent"
+                          ? "text-amber-500 font-semibold"
+                          : c.status === "booked"
+                          ? "text-emerald-500 font-semibold flex items-center gap-1"
+                          : c.status === "full"
+                          ? "text-muted-foreground"
+                          : "text-muted-foreground"
+                      }`}
+                    >
+                      {c.status === "booked" && <Check className="w-3.5 h-3.5 inline" />}
+                      {c.slots}
+                    </span>
+
+                    <Button
+                      size="sm"
+                      variant={c.status === "booked" ? "outline" : c.status === "full" ? "secondary" : "default"}
+                      onClick={() => setSelectedClassDetail({ ...c, salaName: "Sala 2 - WOD & Studio", location: "Palermo/Belgrano, CABA" })}
+                      className="rounded-full min-w-[100px]"
+                    >
+                      {c.status === "booked" ? "Ver Detalles" : c.status === "full" ? "Ver Detalles" : "Reservar"}
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+
+      {/* User Class Detail Modal */}
+      <UserClassDetailModal
+        classData={selectedClassDetail}
+        isOpen={!!selectedClassDetail}
+        onClose={() => setSelectedClassDetail(null)}
+        onOpenQr={onOpenQr}
+        onCancel={(classId) => {
+          alert("Reserva cancelada exitosamente. Tu crédito de clase ha sido reembolsado.");
+        }}
+        onBook={(classId, spotIndex) => {
+          // book callback logic
+        }}
+      />
     </div>
   );
 }
