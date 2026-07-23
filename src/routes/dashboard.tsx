@@ -5599,52 +5599,49 @@ function ClasesTab({
             </div>
           </div>
 
-          {/* Body: 2 Columns */}
-          <div className="p-6 grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-            {/* Left Column: Seating Map & Admin Actions (5 cols) */}
-            <div className="md:col-span-5 space-y-5">
-              {/* Alertas */}
-              {c.status === "cancelada" && (
-                <div className="p-3.5 bg-destructive/ border border-destructive/ text-destructive rounded-2xl text-xs font-semibold flex items-start gap-2.5">
-                  <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-                  <div>
-                    <div className="font-bold">Clase Cancelada por Administración</div>
-                    <p className="text-[11px] opacity-80 mt-0.5 leading-relaxed">
-                      Se han reembolsado automáticamente los créditos a todos los alumnos agendados.
-                    </p>
-                  </div>
+          {/* Body: 2 Columns 50/50 Aligned System */}
+          <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5 items-stretch w-full">
+            {/* Row 1 Left: Resumen de Capacidad y Estado */}
+            <div className="bg-card border border-border/50 p-4.5 rounded-2xl space-y-3.5 shadow-none transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-border/80 h-full flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+                    Estado de la Clase
+                  </span>
+                  <span className="text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                    Activa
+                  </span>
                 </div>
-              )}
 
-              {c.waitlist &&
-                c.waitlist.length >= 3 &&
-                canManageClasses &&
-                c.status !== "cancelada" && (
-                  <div className="p-3.5 bg-secondary/ border border-border/ text-secondary-foreground rounded-2xl text-xs font-semibold flex items-start gap-2.5">
-                    <span className="text-base shrink-0">🔥</span>
+                {c.status === "cancelada" && (
+                  <div className="p-3 bg-destructive/10 border border-destructive/20 text-destructive rounded-xl text-xs font-semibold flex items-start gap-2">
+                    <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                     <div>
-                      <div className="font-bold">Alta Demanda Detectada</div>
-                      <p className="text-[10px] text-secondary-foreground/80 mt-0.5 leading-relaxed">
-                        Hay {c.waitlist.length} alumnos en espera. Considerá abrir un nuevo horario
-                        o cambiar a un salón de mayor capacidad.
+                      <div className="font-bold">Clase Cancelada por Administración</div>
+                      <p className="text-[11px] opacity-80 mt-0.5 leading-relaxed">
+                        Se han reembolsado automáticamente los créditos a todos los alumnos agendados.
                       </p>
                     </div>
                   </div>
                 )}
 
-              {/* Resumen de Capacidad y Estado */}
-              {c.status !== "cancelada" && (
-                <div className="bg-secondary/15 border border-border/60 p-4 rounded-2xl space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-foreground uppercase tracking-wider">
-                      Estado de la Clase
-                    </span>
-                    <span className="text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                      Activa
-                    </span>
-                  </div>
+                {c.waitlist &&
+                  c.waitlist.length >= 3 &&
+                  canManageClasses &&
+                  c.status !== "cancelada" && (
+                    <div className="p-3 bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 rounded-xl text-xs font-semibold flex items-start gap-2">
+                      <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                      <div>
+                        <div className="font-bold">Alta Demanda Detectada</div>
+                        <p className="text-[10px] opacity-80 mt-0.5 leading-relaxed">
+                          Hay {c.waitlist.length} alumnos en espera. Considerá abrir un nuevo horario o ampliar capacidad.
+                        </p>
+                      </div>
+                    </div>
+                  )}
 
-                  <div className="grid grid-cols-2 gap-2 text-xs">
+                {c.status !== "cancelada" && (
+                  <div className="grid grid-cols-2 gap-2 text-xs pt-1">
                     <div className="bg-background border border-border/40 p-2.5 rounded-xl">
                       <span className="text-[10px] text-muted-foreground font-semibold block">Inscriptos</span>
                       <span className="font-black text-sm text-foreground">{c.booked} / {c.capacity}</span>
@@ -5654,211 +5651,190 @@ function ClasesTab({
                       <span className="font-black text-sm text-foreground">{c.creditsCost || 1} cred.</span>
                     </div>
                   </div>
+                )}
+              </div>
 
-                  {canManageClasses && c.booked < c.capacity && (
-                    <Button
-                      type="button"
-                      size="sm"
-                      className="w-full text-xs font-bold gap-1.5 rounded-xl bg-primary text-primary-foreground py-2"
-                      onClick={() => {
-                        const nameInput = prompt(
-                          "Ingresa el nombre del alumno para inscribirlo en esta clase:",
-                        );
-                        if (nameInput?.trim()) {
-                          const typedName = nameInput.trim();
-                          setClassesList((prev) =>
-                            prev.map((item) => {
-                              if (item.id === c.id) {
-                                const copySpots = { ...item.enrolledSpots } || {};
-                                let nextIdx = 0;
-                                while (copySpots[nextIdx]) {
-                                  nextIdx++;
-                                }
-                                copySpots[nextIdx] = typedName;
-                                return {
-                                  ...item,
-                                  enrolledSpots: copySpots,
-                                  booked: Object.keys(copySpots).length,
-                                };
-                              }
-                              return item;
-                            }),
-                          );
-                        }
-                      }}
-                    >
-                      <Plus className="h-4 w-4" /> Inscribir Alumno
-                    </Button>
-                  )}
-
-                  {c.booked >= c.capacity && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="w-full text-xs font-bold gap-1 bg-secondary/ border-border/ text-secondary-foreground hover:bg-secondary rounded-xl py-2"
-                      onClick={() => {
-                        const studentName = prompt(
-                          "Ingresa el nombre del alumno para anotarse en la lista de espera:",
-                        );
-                        if (studentName?.trim()) {
-                          const name = studentName.trim();
-                          setClassesList((prev) =>
-                            prev.map((item) => {
-                              if (item.id === c.id) {
-                                const currentWaitlist = item.waitlist || [];
-                                return { ...item, waitlist: [...currentWaitlist, name] };
-                              }
-                              return item;
-                            }),
-                          );
-                          alert(`¡Anotado! ${name} se ha sumado a la lista de espera.`);
-                        }
-                      }}
-                    >
-                      🕒 Sumar a Lista de Espera ({c.waitlist?.length || 0} en cola)
-                    </Button>
-                  )}
-                </div>
+              {c.status !== "cancelada" && canManageClasses && c.booked < c.capacity && (
+                <Button
+                  type="button"
+                  size="sm"
+                  className="w-full text-xs font-bold gap-1.5 rounded-xl bg-primary text-primary-foreground py-2 mt-2"
+                  onClick={() => {
+                    const nameInput = prompt(
+                      "Ingresa el nombre del alumno para inscribirlo en esta clase:",
+                    );
+                    if (nameInput?.trim()) {
+                      const typedName = nameInput.trim();
+                      setClassesList((prev) =>
+                        prev.map((item) => {
+                          if (item.id === c.id) {
+                            const copySpots = { ...item.enrolledSpots } || {};
+                            let nextIdx = 0;
+                            while (copySpots[nextIdx]) {
+                              nextIdx++;
+                            }
+                            copySpots[nextIdx] = typedName;
+                            return {
+                              ...item,
+                              enrolledSpots: copySpots,
+                              booked: Object.keys(copySpots).length,
+                            };
+                          }
+                          return item;
+                        }),
+                      );
+                    }
+                  }}
+                >
+                  <Plus className="h-4 w-4" /> Inscribir Alumno
+                </Button>
               )}
+            </div>
 
-              {/* Actions Card */}
-              {canManageClasses && (
-                <div className="bg-secondary/10 border border-border/60 p-4 rounded-2xl space-y-2">
-                  <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-2">
+            {/* Row 1 Right: Acciones de Gestión */}
+            <div className="bg-card border border-border/50 p-4.5 rounded-2xl space-y-3.5 shadow-none transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-border/80 h-full flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
                     Acciones de Gestión
                   </span>
-                  {c.status === "cancelada" ? (
-                    <div className="grid grid-cols-2 gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="rounded-xl text-xs font-bold text-primary border-primary hover:bg-primary/"
-                        onClick={() => {
-                          setClassesList((prev) =>
-                            prev.map((item) =>
-                              item.id === c.id ? { ...item, status: "activa" } : item,
-                            ),
-                          );
-                          alert(`La clase "${c.name}" ha sido reactivada.`);
-                        }}
-                      >
-                        🟢 Reactivar
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        className="rounded-xl text-xs font-bold"
-                        onClick={() => {
-                          const confirmWord = prompt(
-                            `⚠️ Escribe "Eliminar" para confirmar la eliminación permanente de "${c.name}":`,
-                          );
-                          if (confirmWord?.trim().toLowerCase() === "eliminar") {
-                            setClassesList((prev) => prev.filter((item) => item.id !== c.id));
-                            setSelectedClass(null);
-                          }
-                        }}
-                      >
-                        Eliminar
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
+                  <span className="text-[10px] text-muted-foreground/70 font-semibold">
+                    Configuración
+                  </span>
+                </div>
+
+                {canManageClasses && (
+                  <div className="space-y-2 pt-1">
+                    {c.status === "cancelada" ? (
                       <div className="grid grid-cols-2 gap-2">
                         <Button
                           variant="outline"
                           size="sm"
-                          className="rounded-xl text-xs font-bold border-border hover:bg-secondary"
+                          className="rounded-xl text-xs font-bold text-primary border-primary hover:bg-primary/10"
                           onClick={() => {
-                            setName(c.name);
-                            setStaffId(c.staffId);
-                            const parts = c.time.split("-");
-                            setStartTime(parts[0]?.trim() || "08:00");
-                            setEndTime(parts[1]?.trim() || "09:00");
-                            setCreditsCost((c.creditsCost || 1).toString());
-                            setSalaId(c.salaId || "");
-                            setDay(c.day);
-                            setCustomCapacity(c.capacity || 20);
-                            setEditingClassId(c.id);
-                            setShowAddForm(true);
-                            setSelectedClass(null);
-                            window.scrollTo({ top: 0, behavior: "smooth" });
+                            setClassesList((prev) =>
+                              prev.map((item) =>
+                                item.id === c.id ? { ...item, status: "activa" } : item,
+                              ),
+                            );
+                            alert(`La clase "${c.name}" ha sido reactivada.`);
                           }}
                         >
-                          ✏️ Editar Horario / Config
+                          Reactivar
                         </Button>
                         <Button
-                          variant="outline"
+                          variant="destructive"
                           size="sm"
-                          className="rounded-xl text-xs font-bold text-destructive border-destructive hover:bg-destructive/"
+                          className="rounded-xl text-xs font-bold"
                           onClick={() => {
-                            if (
-                              confirm(
-                                `¿Confirmas cancelar la clase "${c.name}"? Se reembolsarán los créditos a todos los alumnos.`,
-                              )
-                            ) {
-                              setClassesList((prev) =>
-                                prev.map((item) =>
-                                  item.id === c.id
-                                    ? {
-                                        ...item,
-                                        status: "cancelada",
-                                        enrolledSpots: {},
-                                        releasedSpots: {},
-                                        booked: 0,
-                                        attendance: {},
-                                        waitlist: [],
-                                      }
-                                    : item,
-                                ),
-                              );
+                            const confirmWord = prompt(
+                              `⚠️ Escribe "Eliminar" para confirmar la eliminación permanente de "${c.name}":`,
+                            );
+                            if (confirmWord?.trim().toLowerCase() === "eliminar") {
+                              setClassesList((prev) => prev.filter((item) => item.id !== c.id));
+                              setSelectedClass(null);
                             }
                           }}
                         >
-                          🚫 Cancelar Clase
+                          Eliminar
                         </Button>
                       </div>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        className="w-full rounded-xl text-xs font-bold"
-                        onClick={() => {
-                          const confirmWord = prompt(
-                            `⚠️ Escribe "Eliminar" para eliminar permanentemente "${c.name}":`,
-                          );
-                          if (confirmWord?.trim().toLowerCase() === "eliminar") {
-                            setClassesList((prev) => prev.filter((item) => item.id !== c.id));
-                            setSelectedClass(null);
-                          }
-                        }}
-                      >
-                        Eliminar Permanentemente
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              )}
+                    ) : (
+                      <div className="space-y-2">
+                        <div className="grid grid-cols-2 gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="rounded-xl text-xs font-bold border-border hover:bg-secondary"
+                            onClick={() => {
+                              setName(c.name);
+                              setStaffId(c.staffId);
+                              const parts = c.time.split("-");
+                              setStartTime(parts[0]?.trim() || "08:00");
+                              setEndTime(parts[1]?.trim() || "09:00");
+                              setCreditsCost((c.creditsCost || 1).toString());
+                              setSalaId(c.salaId || "");
+                              setDay(c.day);
+                              setCustomCapacity(c.capacity || 20);
+                              setEditingClassId(c.id);
+                              setShowAddForm(true);
+                              setSelectedClass(null);
+                              window.scrollTo({ top: 0, behavior: "smooth" });
+                            }}
+                          >
+                            Editar Horario
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="rounded-xl text-xs font-bold text-destructive border-destructive/30 hover:bg-destructive/10"
+                            onClick={() => {
+                              if (
+                                confirm(
+                                  `¿Confirmas cancelar la clase "${c.name}"? Se reembolsarán los créditos a todos los alumnos.`,
+                                )
+                              ) {
+                                setClassesList((prev) =>
+                                  prev.map((item) =>
+                                    item.id === c.id
+                                      ? {
+                                          ...item,
+                                          status: "cancelada",
+                                          enrolledSpots: {},
+                                          releasedSpots: {},
+                                          booked: 0,
+                                          attendance: {},
+                                          waitlist: [],
+                                        }
+                                      : item,
+                                  ),
+                                );
+                              }
+                            }}
+                          >
+                            Cancelar Clase
+                          </Button>
+                        </div>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="w-full rounded-xl text-xs font-bold"
+                          onClick={() => {
+                            const confirmWord = prompt(
+                              `⚠️ Escribe "Eliminar" para eliminar permanentemente "${c.name}":`,
+                            );
+                            if (confirmWord?.trim().toLowerCase() === "eliminar") {
+                              setClassesList((prev) => prev.filter((item) => item.id !== c.id));
+                              setSelectedClass(null);
+                            }
+                          }}
+                        >
+                          Eliminar Permanentemente
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Right Column: Roster, Attendance & Ratings (7 cols) */}
-            <div className="md:col-span-7 space-y-5">
-              {/* Roster & Attendance Table */}
-              <div className="bg-secondary/15 border border-border/60 p-4 rounded-2xl space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-foreground uppercase tracking-wider">
-                    Lista de Reservas y Asistencia ({c.booked})
+            {/* Row 2 Left: Lista de Reservas y Asistencia */}
+            <div className="bg-card border border-border/50 p-4.5 rounded-2xl space-y-3.5 shadow-none transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-border/80 focus-within:shadow-md h-full flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+                    Lista de Reservas y Asistencia
                   </span>
-                  <span className="text-[10px] text-muted-foreground font-semibold">
-                    Toca para marcar asistencia
+                  <span className="text-[10px] text-muted-foreground/70 font-semibold">
+                    {c.booked} inscriptos
                   </span>
                 </div>
 
                 <div className="overflow-x-auto border border-border/40 rounded-xl bg-background max-h-[260px]">
-                  <table className="w-full text-left text-xs min-w-[420px] border-collapse">
+                  <table className="w-full text-left text-xs min-w-[380px] border-collapse">
                     <thead>
                       <tr className="border-b border-border/40 bg-secondary/30 text-muted-foreground font-bold text-[10px] uppercase">
                         <th className="p-2.5">Alumno</th>
-                        <th className="p-2.5">Plan</th>
                         <th className="p-2.5 text-center">Asistencia</th>
                         <th className="p-2.5 text-center">Lugar</th>
                         <th className="p-2.5 text-right">Acción</th>
@@ -5927,24 +5903,15 @@ function ClasesTab({
                                 </div>
                               </div>
                             </td>
-                            <td className="p-2.5 font-semibold text-foreground/80">
-                              {!isPrivate ? (
-                                <span className="inline-block bg-primary/10 text-primary text-[9.5px] px-2 py-0.5 rounded font-bold">
-                                  {enriched.plan}
-                                </span>
-                              ) : (
-                                "—"
-                              )}
-                            </td>
                             <td className="p-2.5 text-center">
                               <button
                                 type="button"
                                 onClick={handleToggleAttendance}
                                 className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border transition whitespace-nowrap ${
                                   currentAttendance === "presente"
-                                    ? "bg-primary/ border-primary/ text-primary"
+                                    ? "bg-primary/10 border-primary/20 text-primary"
                                     : currentAttendance === "ausente"
-                                      ? "bg-destructive/ border-destructive/ text-destructive"
+                                      ? "bg-destructive/10 border-destructive/20 text-destructive"
                                       : "bg-secondary border-border text-muted-foreground"
                                 }`}
                               >
@@ -5974,7 +5941,7 @@ function ClasesTab({
                       {Object.keys(c.enrolledSpots || {}).length === 0 && (
                         <tr>
                           <td
-                            colSpan={5}
+                            colSpan={4}
                             className="text-xs text-muted-foreground italic text-center py-6"
                           >
                             Ningún alumno reservó lugar todavía.
@@ -5984,163 +5951,94 @@ function ClasesTab({
                     </tbody>
                   </table>
                 </div>
-              </div>
 
-              {/* Waitlist Chips */}
-              {c.waitlist && c.waitlist.length > 0 && (
-                <div className="bg-secondary/ border border-border/ p-4 rounded-2xl space-y-2">
-                  <span className="text-xs font-bold text-secondary-foreground uppercase tracking-wider block">
-                    Lista de Espera ({c.waitlist.length} en cola)
-                  </span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {c.waitlist.map((wName, wIdx) => (
-                      <span
-                        key={wIdx}
-                        className="text-xs bg-secondary/ text-secondary-foreground font-bold px-2.5 py-1 rounded-xl border border-border/"
-                      >
-                        #{wIdx + 1} {wName}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Ratings & Feedback Card */}
-              {presentStudents.length > 0 && (
-                <div className="bg-secondary/ border border-border/ p-4 rounded-2xl space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-foreground uppercase tracking-wide">
-                      ⭐ Calificaciones de la Clase ({ratingValues.length}/{presentStudents.length})
+                {/* Waitlist Chips */}
+                {c.waitlist && c.waitlist.length > 0 && (
+                  <div className="bg-secondary/30 border border-border/40 p-3 rounded-xl space-y-1.5">
+                    <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
+                      Lista de Espera ({c.waitlist.length} en cola)
                     </span>
-                    {avgRating !== null && (
-                      <span className="text-xs font-black text-secondary-foreground flex items-center gap-1 bg-secondary/ px-2 py-0.5 rounded-lg border border-border/">
-                        {Array(5)
-                          .fill(0)
-                          .map((_, i) => (
-                            <span
-                              key={i}
-                              className={
-                                i < Math.round(avgRating)
-                                  ? "text-secondary-foreground"
-                                  : "text-muted-foreground/30"
-                              }
-                            >
-                              ★
-                            </span>
-                          ))}
-                        <span className="text-foreground font-bold ml-0.5">
-                          {avgRating.toFixed(1)}
-                        </span>
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Existing Ratings List */}
-                  {ratingValues.length > 0 ? (
-                    <div className="space-y-2">
-                      {(isCoachView
-                        ? ratingValues
-                        : Object.entries(ratingsMap).map(([name, r]) => ({
-                            ...r,
-                            studentName: name,
-                          }))
-                      ).map((rating, i) => (
-                        <div
-                          key={i}
-                          className="flex items-start gap-2.5 p-3 bg-background border border-border/40 rounded-xl text-xs"
+                    <div className="flex flex-wrap gap-1.5">
+                      {c.waitlist.map((wName, wIdx) => (
+                        <span
+                          key={wIdx}
+                          className="text-xs bg-background text-foreground font-bold px-2.5 py-1 rounded-lg border border-border/40"
                         >
-                          <div className="flex shrink-0 mt-0.5">
-                            {Array(5)
-                              .fill(0)
-                              .map((_, si) => (
-                                <span
-                                  key={si}
-                                  className={`text-xs ${si < rating.stars ? "text-secondary-foreground" : "text-muted-foreground/20"}`}
-                                >
-                                  ★
-                                </span>
-                              ))}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            {!isCoachView && "studentName" in rating && (
-                              <span className="font-bold text-foreground text-xs block">
-                                {(rating as any).studentName}
-                              </span>
-                            )}
-                            {isCoachView && (
-                              <span className="text-xs text-muted-foreground italic block">
-                                Alumno anónimo
-                              </span>
-                            )}
-                            {rating.comment && (
-                              <p className="text-muted-foreground text-xs mt-0.5 leading-relaxed">
-                                {rating.comment}
-                              </p>
-                            )}
-                          </div>
-                        </div>
+                          #{wIdx + 1} {wName}
+                        </span>
                       ))}
                     </div>
-                  ) : (
-                    <p className="text-xs text-muted-foreground italic py-2">
-                      Sin calificaciones aún para esta clase.
-                    </p>
-                  )}
+                  </div>
+                )}
+              </div>
+            </div>
 
-                  {/* Demo Simulation Rating */}
-                  {canManageClasses &&
-                    presentStudents.filter((name) => !ratingsMap[name]).length > 0 && (
-                      <div className="space-y-2 border-t border-border/ pt-3 mt-2">
-                        <span className="text-xs text-muted-foreground font-semibold block">
-                          Simular reseña de alumno presente (demo)
-                        </span>
-                        <div className="flex flex-wrap gap-2">
-                          {presentStudents
-                            .filter((name) => !ratingsMap[name])
-                            .map((studentName) => (
-                              <div
-                                key={studentName}
-                                className="p-2 bg-background rounded-xl border border-border/40 flex items-center gap-2"
+            {/* Row 2 Right: Calificaciones de la Clase */}
+            <div className="bg-card border border-border/50 p-4.5 rounded-2xl space-y-3.5 shadow-none transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-border/80 h-full flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+                    Calificaciones de la Clase
+                  </span>
+                  {avgRating !== null && (
+                    <span className="text-xs font-black text-foreground flex items-center gap-1 bg-secondary/60 px-2 py-0.5 rounded-lg border border-border/40">
+                      ★ {avgRating.toFixed(1)}
+                    </span>
+                  )}
+                </div>
+
+                {/* Existing Ratings List */}
+                {ratingValues.length > 0 ? (
+                  <div className="space-y-2">
+                    {(isCoachView
+                      ? ratingValues
+                      : Object.entries(ratingsMap).map(([name, r]) => ({
+                          ...r,
+                          studentName: name,
+                        }))
+                    ).map((rating, i) => (
+                      <div
+                        key={i}
+                        className="flex items-start gap-2.5 p-3 bg-background border border-border/40 rounded-xl text-xs"
+                      >
+                        <div className="flex shrink-0 mt-0.5">
+                          {Array(5)
+                            .fill(0)
+                            .map((_, si) => (
+                              <span
+                                key={si}
+                                className={`text-xs ${si < rating.stars ? "text-amber-500" : "text-muted-foreground/20"}`}
                               >
-                                <span className="text-xs font-bold text-foreground">
-                                  {studentName}:
-                                </span>
-                                <div className="flex gap-0.5">
-                                  {[1, 2, 3, 4, 5].map((star) => (
-                                    <button
-                                      key={star}
-                                      type="button"
-                                      onClick={() => {
-                                        const comment =
-                                          star <= 3
-                                            ? prompt(`Comentario de ${studentName}:`) || undefined
-                                            : undefined;
-                                        setClassesList((prev) =>
-                                          prev.map((item) => {
-                                            if (item.id !== c.id) return item;
-                                            return {
-                                              ...item,
-                                              ratings: {
-                                                ...item.ratings,
-                                                [studentName]: { stars: star, comment },
-                                              },
-                                            };
-                                          }),
-                                        );
-                                      }}
-                                      className="text-sm text-muted-foreground/30 hover:text-secondary-foreground transition-colors"
-                                    >
-                                      ★
-                                    </button>
-                                  ))}
-                                </div>
-                              </div>
+                                ★
+                              </span>
                             ))}
                         </div>
+                        <div className="flex-1 min-w-0">
+                          {!isCoachView && "studentName" in rating && (
+                            <span className="font-bold text-foreground text-xs block">
+                              {(rating as any).studentName}
+                            </span>
+                          )}
+                          {isCoachView && (
+                            <span className="text-xs text-muted-foreground italic block">
+                              Alumno anónimo
+                            </span>
+                          )}
+                          {rating.comment && (
+                            <p className="text-muted-foreground text-xs mt-0.5 leading-relaxed">
+                              {rating.comment}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                    )}
-                </div>
-              )}
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground italic py-4 text-center">
+                    Sin calificaciones aún para esta clase.
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </DialogContent>
@@ -6229,41 +6127,26 @@ function ClasesTab({
       </div>
 
       {/* Quick Stats Banner */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-card border border-border/60 p-4 rounded-2xl flex items-center gap-3.5">
-          <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center text-lg shrink-0">
-            📊
-          </div>
-          <div>
-            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider block">
-              Ocupación Hoy
-            </span>
-            <span className="text-xl font-black text-foreground">{stats.avgOccupancy}%</span>
-          </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-stretch">
+        <div className="bg-card border border-border/50 p-4.5 rounded-2xl flex flex-col justify-between shadow-none transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-border/80 h-full">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+            Ocupación Hoy
+          </span>
+          <span className="text-2xl font-black text-foreground mt-1 block">{stats.avgOccupancy}%</span>
         </div>
-        <div className="bg-card border border-border/60 p-4 rounded-2xl flex items-center gap-3.5">
-          <div className="h-10 w-10 rounded-xl bg-primary/ text-primary flex items-center justify-center text-lg shrink-0">
-            🎟️
-          </div>
-          <div>
-            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider block">
-              Reservas Activas
-            </span>
-            <span className="text-xl font-black text-foreground">{stats.totalBooked} alumnos</span>
-          </div>
+        <div className="bg-card border border-border/50 p-4.5 rounded-2xl flex flex-col justify-between shadow-none transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-border/80 h-full">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+            Reservas Activas
+          </span>
+          <span className="text-2xl font-black text-foreground mt-1 block">{stats.totalBooked} alumnos</span>
         </div>
-        <div className="bg-card border border-border/60 p-4 rounded-2xl flex items-center gap-3.5">
-          <div className="h-10 w-10 rounded-xl bg-destructive/ text-destructive flex items-center justify-center text-lg shrink-0">
-            🔥
-          </div>
-          <div>
-            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider block">
-              Clases Llenas
-            </span>
-            <span className="text-xl font-black text-foreground">
-              {stats.fullClasses} completadas
-            </span>
-          </div>
+        <div className="bg-card border border-border/50 p-4.5 rounded-2xl flex flex-col justify-between shadow-none transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-border/80 h-full">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+            Clases Llenas
+          </span>
+          <span className="text-2xl font-black text-foreground mt-1 block">
+            {stats.fullClasses} completadas
+          </span>
         </div>
       </div>
 
@@ -6693,13 +6576,18 @@ function ClasesTab({
 
       {/* Main content grid based on viewMode */}
       {viewMode === "list" ? (
-        <div className="grid gap-6 md:grid-cols-1">
-          {/* Left Side: Schedule */}
-          <div className="col-span-1 space-y-4">
-            <div className="rounded-2xl border border-border bg-card p-4">
-              <h3 className="text-xs font-bold text-muted-foreground uppercase mb-4">
-                Lunes (Hoy)
-              </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full items-stretch">
+          {/* Card 1: Schedule (Hoy) */}
+          <div className="bg-card border border-border/50 p-5 rounded-2xl space-y-4 shadow-none transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-border/80 h-full flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+                  Clases Programadas (Hoy)
+                </span>
+                <span className="text-[10px] text-muted-foreground/70 font-semibold">
+                  {classesForToday.length} clases
+                </span>
+              </div>
               <div className="space-y-3">
                 {classesForToday.map((c) => {
                   const instructorName =
@@ -6711,21 +6599,20 @@ function ClasesTab({
                       onClick={() => {
                         setSelectedClass(c.id);
                       }}
-                      className={`p-4 rounded-xl border transition flex items-center justify-between ${
+                      className={`p-4 rounded-xl border transition-all flex items-center justify-between ${
                         c.status === "cancelada"
-                          ? "border-destructive/ bg-destructive/ opacity-60 cursor-pointer"
+                          ? "border-destructive/30 bg-destructive/5 opacity-60 cursor-pointer"
                           : activeBlackout
                             ? "border-border opacity-50 cursor-not-allowed bg-secondary/10"
                             : selectedClass === c.id
-                              ? "border-primary bg-primary/5 cursor-pointer"
-                              : "border-border hover:border-foreground/20 cursor-pointer"
+                              ? "border-primary bg-primary/5 cursor-pointer shadow-xs"
+                              : "border-border/60 hover:border-border hover:bg-secondary/30 cursor-pointer"
                       }`}
                     >
                       <div>
                         <h4
                           className={`font-bold text-sm ${c.status === "cancelada" ? "text-destructive dark:text-destructive line-through" : ""}`}
                         >
-                          {c.status === "cancelada" && "❌ "}
                           {c.name}
                         </h4>
                         <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground flex-wrap">
@@ -6740,12 +6627,12 @@ function ClasesTab({
                         </div>
                       </div>
                       {c.status === "cancelada" ? (
-                        <span className="text-[9px] bg-destructive/ text-destructive px-2 py-0.5 rounded font-bold uppercase tracking-wider">
-                          ❌ Cancelada
+                        <span className="text-[9px] bg-destructive/10 text-destructive px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+                          Cancelada
                         </span>
                       ) : activeBlackout ? (
-                        <span className="text-[9px] bg-destructive/ text-destructive px-2 py-0.5 rounded font-bold uppercase tracking-wider">
-                          ❌ Suspendida
+                        <span className="text-[9px] bg-destructive/10 text-destructive px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+                          Suspendida
                         </span>
                       ) : (
                         <span className="text-xs font-semibold bg-secondary px-2.5 py-1 rounded-full text-foreground">
@@ -6756,10 +6643,51 @@ function ClasesTab({
                   );
                 })}
                 {classesForToday.length === 0 && (
-                  <p className="text-xs text-muted-foreground italic py-6 text-center">
-                    No hay clases programadas para hoy.
+                  <p className="text-xs text-muted-foreground italic py-8 text-center">
+                    No hay clases programadas para el día de hoy.
                   </p>
                 )}
+              </div>
+            </div>
+          </div>
+
+          {/* Card 2: Resumen de Salas y Disponibilidad */}
+          <div className="bg-card border border-border/50 p-5 rounded-2xl space-y-4 shadow-none transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-border/80 h-full flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+                  Estado de Salas y Espacios
+                </span>
+                <span className="text-[10px] text-muted-foreground/70 font-semibold">
+                  {salasList.length} espacios activos
+                </span>
+              </div>
+              <div className="space-y-3">
+                {salasList.map((sala) => {
+                  const currentClassInSala = classesForToday.find((c) => c.salaId === sala.id);
+                  return (
+                    <div
+                      key={sala.id}
+                      className="p-3.5 rounded-xl border border-border/40 bg-background flex items-center justify-between text-xs"
+                    >
+                      <div>
+                        <span className="font-bold text-foreground block">{sala.name}</span>
+                        <span className="text-[10px] text-muted-foreground font-semibold">
+                          Capacidad máxima: {sala.capacity || 20} personas
+                        </span>
+                      </div>
+                      {currentClassInSala ? (
+                        <span className="text-[10px] font-bold bg-primary/10 text-primary px-2.5 py-1 rounded-full border border-primary/20">
+                          {currentClassInSala.name} ({currentClassInSala.time} hs)
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-semibold text-muted-foreground bg-secondary px-2.5 py-1 rounded-full">
+                          Disponible
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -6769,7 +6697,7 @@ function ClasesTab({
           {/* Left 3 columns: Weekly Calendar Grid */}
           <div className="col-span-1 space-y-4">
             {/* Weekly Calendar Grid Container */}
-            <div className="rounded-2xl border border-border bg-card p-6 space-y-6 overflow-x-auto pb-4">
+            <div className="rounded-2xl border border-border/50 bg-card p-6 space-y-6 overflow-x-auto pb-4 shadow-none transition-all duration-200 hover:shadow-md hover:border-border/80">
               <div className="min-w-[680px] space-y-6">
                 {/* Grid Header (Days of the week) */}
                 <div className="grid grid-cols-8 gap-3 text-center select-none font-bold text-xs text-muted-foreground border-b border-border/40 pb-3">
