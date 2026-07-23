@@ -3459,13 +3459,13 @@ function MiembrosTab({
                             {/* Detailed Information Grid - Flat Default & Floating Hover (Equal Heights) */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full items-stretch">
                               {/* Ficha Médica Card */}
-                              <div className="bg-card border border-border/50 rounded-2xl p-4.5 space-y-3.5 shadow-none transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-border/80 focus-within:shadow-md focus-within:-translate-y-0.5 h-full flex flex-col justify-between">
+                              <div className="group rounded-3xl border border-border bg-card p-5 space-y-4 transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg shadow-xs h-full flex flex-col justify-between">
                                 <div className="space-y-3.5">
                                   <div className="flex items-center justify-between pb-2 border-b border-border/40">
                                     <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
                                       Salud & Emergencia
                                     </span>
-                                    <span className="text-[10px] text-muted-foreground/70 font-semibold">
+                                    <span className="text-[10px] text-muted-foreground/70 font-semibold uppercase tracking-wider">
                                       Ficha Médica
                                     </span>
                                   </div>
@@ -3547,20 +3547,20 @@ function MiembrosTab({
                               </div>
 
                               {/* Clases Asistidas Card */}
-                              <div className="bg-card border border-border/50 rounded-2xl p-4.5 space-y-3.5 shadow-none transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-border/80 focus-within:shadow-md focus-within:-translate-y-0.5 h-full flex flex-col justify-between">
+                              <div className="group rounded-3xl border border-border bg-card p-5 space-y-4 transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg shadow-xs h-full flex flex-col justify-between">
                                 <div className="flex flex-col h-full justify-between space-y-3.5">
                                   <div className="flex items-center justify-between pb-2 border-b border-border/40">
                                     <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
                                       Historial de Clases Asistidas
                                     </span>
-                                    <span className="text-[10px] text-muted-foreground/70 font-semibold">
+                                    <span className="text-[10px] text-muted-foreground/70 font-semibold uppercase tracking-wider">
                                       {history.attended.length} asistencias
                                     </span>
                                   </div>
 
                                   <div className="flex-1 flex flex-col justify-center">
                                     {history.attended.length > 0 ? (
-                                      <div className="overflow-x-auto rounded-xl border border-border/40 my-auto">
+                                      <div className="overflow-x-auto rounded-2xl border border-border/40 my-auto">
                                         <table className="w-full text-left text-[11px] min-w-[280px]">
                                           <thead>
                                             <tr className="bg-secondary/30 border-b border-border/40 text-muted-foreground font-bold uppercase text-[9.5px]">
@@ -3592,20 +3592,20 @@ function MiembrosTab({
                               </div>
 
                               {/* Historial de Pagos Card */}
-                              <div className="bg-card border border-border/50 rounded-2xl p-4.5 space-y-3.5 shadow-none transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-border/80 focus-within:shadow-md focus-within:-translate-y-0.5 h-full flex flex-col justify-between">
+                              <div className="group rounded-3xl border border-border bg-card p-5 space-y-4 transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg shadow-xs h-full flex flex-col justify-between">
                                 <div className="flex flex-col h-full justify-between space-y-3.5">
                                   <div className="flex items-center justify-between pb-2 border-b border-border/40">
                                     <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
                                       Historial de Pagos
                                     </span>
-                                    <span className="text-[10px] text-muted-foreground/70 font-semibold">
+                                    <span className="text-[10px] text-muted-foreground/70 font-semibold uppercase tracking-wider">
                                       {m.payments?.length || 0} registros
                                     </span>
                                   </div>
 
                                   <div className="flex-1 flex flex-col justify-center">
                                     {m.payments && m.payments.length > 0 ? (
-                                      <div className="overflow-x-auto rounded-xl border border-border/40 my-auto">
+                                      <div className="overflow-x-auto rounded-2xl border border-border/40 my-auto">
                                         <table className="w-full text-left text-[11px]">
                                           <thead>
                                             <tr className="bg-secondary/30 border-b border-border/40 text-muted-foreground font-bold uppercase text-[9.5px]">
@@ -5022,6 +5022,88 @@ function ClasesTab({
   const [selectedCalendarSalaId, setSelectedCalendarSalaId] = useState("");
   const [customCapacity, setCustomCapacity] = useState(20);
 
+  // Presets de distribución física de sala (10x10 = 100 lugares)
+  const defaultPresets = useMemo(
+    () => [
+      {
+        id: "full",
+        name: "Grilla Completa (100 lugares)",
+        capacity: 100,
+        getLayout: () => Array(100).fill(true),
+      },
+      {
+        id: "spinning-20",
+        name: "Sala Spinning — 20 Bicis (2 filas frontales)",
+        capacity: 20,
+        getLayout: () => Array(100).fill(false).map((_, i) => i < 20),
+      },
+      {
+        id: "box-15",
+        name: "CrossFit Box — 15 Lugares (Grilla central 3x5)",
+        capacity: 15,
+        getLayout: () =>
+          Array(100)
+            .fill(false)
+            .map((_, i) => {
+              const row = Math.floor(i / 10);
+              const col = i % 10;
+              return row >= 1 && row <= 3 && col >= 2 && col <= 6;
+            }),
+      },
+      {
+        id: "pilates-12",
+        name: "Mat Pilates — 12 Mats (2 columnas de 6)",
+        capacity: 12,
+        getLayout: () =>
+          Array(100)
+            .fill(false)
+            .map((_, i) => {
+              const row = Math.floor(i / 10);
+              const col = i % 10;
+              return row >= 1 && row <= 6 && (col === 2 || col === 7);
+            }),
+      },
+      {
+        id: "yoga-16",
+        name: "Yoga Studio — 16 Mats (Matriz centrada 4x4)",
+        capacity: 16,
+        getLayout: () =>
+          Array(100)
+            .fill(false)
+            .map((_, i) => {
+              const row = Math.floor(i / 10);
+              const col = i % 10;
+              return row >= 1 && row <= 4 && col >= 3 && col <= 6;
+            }),
+      },
+      {
+        id: "custom",
+        name: "Personalizada (Edición libre en mapa)",
+        capacity: 20,
+        getLayout: () => Array(100).fill(false).map((_, i) => i < 20),
+      },
+    ],
+    [],
+  );
+
+  const [customPresets, setCustomPresets] = useState<
+    { id: string; name: string; capacity: number; getLayout: () => boolean[] }[]
+  >([]);
+  const [newPresetName, setNewPresetName] = useState("");
+  const [showSavePresetInput, setShowSavePresetInput] = useState(false);
+
+  const ROOM_PRESETS = useMemo(
+    () => [...defaultPresets, ...customPresets],
+    [defaultPresets, customPresets],
+  );
+
+  const [selectedPresetId, setSelectedPresetId] = useState("spinning-20");
+  const [layoutMatrix, setLayoutMatrix] = useState<boolean[]>(
+    Array(100)
+      .fill(false)
+      .map((_, i) => i < 20),
+  );
+
   // Recurrence settings
   const [isRecurrent, setIsRecurrent] = useState(false);
   const [recurrentWeeks, setRecurrentWeeks] = useState(4);
@@ -5112,9 +5194,12 @@ function ClasesTab({
     }
 
     const finalCap = Number(customCapacity) || 20;
-    const computedLayout = Array(100)
-      .fill(false)
-      .map((_, i) => i < finalCap);
+    const computedLayout =
+      layoutMatrix && layoutMatrix.length === 100
+        ? layoutMatrix
+        : Array(100)
+            .fill(false)
+            .map((_, i) => i < finalCap);
 
     if (editingClassId) {
       setClassesList((prev) =>
@@ -5511,533 +5596,674 @@ function ClasesTab({
 
     return (
       <Dialog open={!!selectedClass} onOpenChange={(open) => !open && setSelectedClass(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto border border-border bg-card p-0 gap-0 rounded-3xl">
-          {/* Header Card */}
-          <div className="p-6 bg-gradient-to-r from-secondary/40 via-secondary/20 to-transparent border-b border-border/60">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-2 flex-wrap mb-1.5">
-                  <span className="text-xs bg-primary/10 text-primary font-bold px-2.5 py-0.5 rounded-full border border-primary/20">
-                    {salaName}
-                  </span>
-                  {c.status === "cancelada" ? (
-                    <span className="text-xs bg-destructive/ text-destructive font-bold px-2.5 py-0.5 rounded-full border border-destructive/">
-                      ❌ Clase Cancelada
-                    </span>
-                  ) : c.seekingBackup ? (
-                    <span className="text-xs bg-secondary/ text-secondary-foreground font-bold px-2.5 py-0.5 rounded-full border border-border/">
-                      🟡 Buscando Suplente
-                    </span>
-                  ) : (
-                    <span className="text-xs bg-primary/ text-primary font-bold px-2.5 py-0.5 rounded-full border border-primary/">
-                      🟢 Sesión Activa
-                    </span>
-                  )}
-                  <span className="text-xs bg-secondary border border-border/60 text-foreground font-bold px-2.5 py-0.5 rounded-full">
-                    🪙 {c.creditsCost || 1} {c.creditsCost === 1 ? "crédito" : "créditos"}
-                  </span>
-                </div>
-                <h2 className="text-2xl font-black text-foreground tracking-tight">{c.name}</h2>
-                <p className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
-                  <span>
-                    🕒 Horario: <strong className="text-foreground font-bold">{c.time} hs</strong>
-                  </span>
-                  <span>·</span>
-                  <span>
-                    👥 Ocupación:{" "}
-                    <strong className="text-foreground font-bold">
-                      {c.booked} / {c.capacity} cupos
-                    </strong>
-                  </span>
-                </p>
-              </div>
+        <DialogContent className="max-w-4xl max-h-[88vh] border border-border/60 bg-background dark:bg-background p-0 gap-0 rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+          <div className="overflow-y-auto custom-scrollbar flex-1 bg-muted/35 dark:bg-background/95">
+            {/* Header Card */}
+            <div className="p-6 bg-card border-b border-border/60 sticky top-0 z-20 relative">
+              <button
+                type="button"
+                onClick={() => setSelectedClass(null)}
+                className="absolute right-4 top-4 h-8 w-8 rounded-full bg-secondary/80 hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors border border-border/60 z-30"
+                title="Cerrar ventana"
+              >
+                <X className="h-4 w-4" />
+              </button>
 
-              {/* Coach Card */}
-              <div className="bg-background/80 backdrop-blur border border-border/60 p-3 rounded-2xl flex items-center gap-3 shrink-0">
-                <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-black text-sm border border-primary/20 shrink-0">
-                  {coach?.name
-                    ? coach.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")
-                    : "👨‍🏫"}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pr-8 sm:pr-10">
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap mb-1.5">
+                    <span className="text-xs bg-primary/10 text-primary font-bold px-2.5 py-0.5 rounded-full border border-primary/20">
+                      {salaName}
+                    </span>
+                    {c.status === "cancelada" ? (
+                      <span className="text-xs bg-destructive/10 text-destructive font-bold px-2.5 py-0.5 rounded-full border border-destructive/20">
+                        Clase Cancelada
+                      </span>
+                    ) : c.seekingBackup ? (
+                      <span className="text-xs bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold px-2.5 py-0.5 rounded-full border border-amber-500/20">
+                        Buscando Suplente
+                      </span>
+                    ) : (
+                      <span className="text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                        Sesión Activa
+                      </span>
+                    )}
+                    <span className="text-xs bg-secondary border border-border/60 text-foreground font-bold px-2.5 py-0.5 rounded-full">
+                      {c.creditsCost || 1} {c.creditsCost === 1 ? "crédito" : "créditos"}
+                    </span>
+                  </div>
+                  <h2 className="text-2xl font-black text-foreground tracking-tight">{c.name}</h2>
+                  <p className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
+                    <span>
+                      Horario: <strong className="text-foreground font-bold">{c.time} hs</strong>
+                    </span>
+                    <span>·</span>
+                    <span>
+                      Ocupación:{" "}
+                      <strong className="text-foreground font-bold">
+                        {c.booked} / {c.capacity} cupos
+                      </strong>
+                    </span>
+                  </p>
                 </div>
-                <div className="text-xs">
-                  <span className="text-[10px] text-muted-foreground font-semibold block uppercase">
-                    Profesor / Coach
-                  </span>
-                  <span className="font-bold text-foreground block">
-                    {coach?.name || "Sin asignar"}
-                  </span>
-                  {canManageClasses && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const newCoachId = prompt(
-                          `Sustituir Coach.\nActual: ${coach?.name || "N/A"}\n\nIngresa el ID del nuevo profesor:\n` +
-                            staffList.map((s) => `- ID ${s.id}: ${s.name}`).join("\n"),
-                        );
-                        if (newCoachId && staffList.find((s) => s.id === newCoachId)) {
-                          setClassesList((prev) =>
-                            prev.map((item) =>
-                              item.id === c.id
-                                ? { ...item, staffId: newCoachId, seekingBackup: false }
-                                : item,
-                            ),
+
+                {/* Coach Card */}
+                <div className="bg-background border border-border/60 p-3 rounded-2xl flex items-center gap-3 shrink-0">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-black text-sm border border-primary/20 shrink-0 uppercase">
+                    {coach?.name
+                      ? coach.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")
+                      : "ST"}
+                  </div>
+                  <div className="text-xs">
+                    <span className="text-[10px] text-muted-foreground font-semibold block uppercase tracking-wider">
+                      Profesor / Coach
+                    </span>
+                    <span className="font-bold text-foreground block">
+                      {coach?.name || "Sin asignar"}
+                    </span>
+                    {canManageClasses && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newCoachId = prompt(
+                            `Sustituir Coach.\nActual: ${coach?.name || "N/A"}\n\nIngresa el ID del nuevo profesor:\n` +
+                              staffList.map((s) => `- ID ${s.id}: ${s.name}`).join("\n"),
                           );
-                        } else if (newCoachId) {
-                          alert("ID de profesor no encontrado.");
-                        }
-                      }}
-                      className="text-[9.5px] text-primary hover:underline font-bold mt-0.5 block"
-                    >
-                      🔄 Sustituir Coach
-                    </button>
-                  )}
+                          if (newCoachId && staffList.find((s) => s.id === newCoachId)) {
+                            setClassesList((prev) =>
+                              prev.map((item) =>
+                                item.id === c.id
+                                  ? { ...item, staffId: newCoachId, seekingBackup: false }
+                                  : item,
+                              ),
+                            );
+                          } else if (newCoachId) {
+                            alert("ID de profesor no encontrado.");
+                          }
+                        }}
+                        className="text-[9.5px] text-primary hover:underline font-bold mt-0.5 block"
+                      >
+                        Sustituir Coach
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Body: 2 Columns 50/50 Aligned System */}
-          <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5 items-stretch w-full">
-            {/* Row 1 Left: Resumen de Capacidad y Estado */}
-            <div className="bg-card border border-border/50 p-4.5 rounded-2xl space-y-3.5 shadow-none transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-border/80 h-full flex flex-col justify-between">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b border-border/40">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
-                    Estado de la Clase
-                  </span>
-                  <span className="text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                    Activa
-                  </span>
-                </div>
-
-                {c.status === "cancelada" && (
-                  <div className="p-3 bg-destructive/10 border border-destructive/20 text-destructive rounded-xl text-xs font-semibold flex items-start gap-2">
-                    <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-                    <div>
-                      <div className="font-bold">Clase Cancelada por Administración</div>
-                      <p className="text-[11px] opacity-80 mt-0.5 leading-relaxed">
-                        Se han reembolsado automáticamente los créditos a todos los alumnos agendados.
-                      </p>
-                    </div>
+            {/* Body: 2 Columns 50/50 Aligned System */}
+            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5 items-stretch w-full">
+              {/* Row 1 Left: Estado de la Clase */}
+              <div className="group rounded-3xl border border-border bg-card p-5 space-y-4 transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg shadow-xs h-full flex flex-col justify-between">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+                      Estado de la Clase
+                    </span>
+                    <span className="text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                      Activa
+                    </span>
                   </div>
-                )}
 
-                {c.waitlist &&
-                  c.waitlist.length >= 3 &&
-                  canManageClasses &&
-                  c.status !== "cancelada" && (
-                    <div className="p-3 bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 rounded-xl text-xs font-semibold flex items-start gap-2">
+                  {c.status === "cancelada" && (
+                    <div className="p-3 bg-destructive/10 border border-destructive/20 text-destructive rounded-xl text-xs font-semibold flex items-start gap-2">
                       <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                       <div>
-                        <div className="font-bold">Alta Demanda Detectada</div>
-                        <p className="text-[10px] opacity-80 mt-0.5 leading-relaxed">
-                          Hay {c.waitlist.length} alumnos en espera. Considerá abrir un nuevo horario o ampliar capacidad.
+                        <div className="font-bold">Clase Cancelada por Administración</div>
+                        <p className="text-[11px] opacity-80 mt-0.5 leading-relaxed">
+                          Se han reembolsado automáticamente los créditos a todos los alumnos agendados.
                         </p>
                       </div>
                     </div>
                   )}
 
-                {c.status !== "cancelada" && (
-                  <div className="grid grid-cols-2 gap-2 text-xs pt-1">
-                    <div className="bg-background border border-border/40 p-2.5 rounded-xl">
-                      <span className="text-[10px] text-muted-foreground font-semibold block">Inscriptos</span>
-                      <span className="font-black text-sm text-foreground">{c.booked} / {c.capacity}</span>
+                  {c.waitlist &&
+                    c.waitlist.length >= 3 &&
+                    canManageClasses &&
+                    c.status !== "cancelada" && (
+                      <div className="p-3 bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 rounded-xl text-xs font-semibold flex items-start gap-2">
+                        <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                        <div>
+                          <div className="font-bold">Alta Demanda Detectada</div>
+                          <p className="text-[10px] opacity-80 mt-0.5 leading-relaxed">
+                            Hay {c.waitlist.length} alumnos en espera. Considerá abrir un nuevo horario o ampliar capacidad.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                  {c.status !== "cancelada" && (
+                    <div className="grid grid-cols-2 gap-2.5 text-xs pt-1">
+                      <div className="bg-secondary/40 border border-border/40 p-3 rounded-xl">
+                        <span className="text-[10px] text-muted-foreground font-semibold block uppercase tracking-wider">Inscriptos</span>
+                        <span className="font-black text-base text-foreground mt-0.5 block">{c.booked} / {c.capacity}</span>
+                      </div>
+                      <div className="bg-secondary/40 border border-border/40 p-3 rounded-xl">
+                        <span className="text-[10px] text-muted-foreground font-semibold block uppercase tracking-wider">Créditos</span>
+                        <span className="font-black text-base text-foreground mt-0.5 block">{c.creditsCost || 1} cred.</span>
+                      </div>
                     </div>
-                    <div className="bg-background border border-border/40 p-2.5 rounded-xl">
-                      <span className="text-[10px] text-muted-foreground font-semibold block">Créditos</span>
-                      <span className="font-black text-sm text-foreground">{c.creditsCost || 1} cred.</span>
-                    </div>
-                  </div>
+                  )}
+                </div>
+
+                {c.status !== "cancelada" && canManageClasses && c.booked < c.capacity && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="w-full text-xs font-bold gap-1.5 rounded-xl bg-primary text-primary-foreground py-2 mt-2"
+                    onClick={() => {
+                      const nameInput = prompt(
+                        "Ingresa el nombre del alumno para inscribirlo en esta clase:",
+                      );
+                      if (nameInput?.trim()) {
+                        const typedName = nameInput.trim();
+                        setClassesList((prev) =>
+                          prev.map((item) => {
+                            if (item.id === c.id) {
+                              const copySpots = { ...item.enrolledSpots } || {};
+                              let nextIdx = 0;
+                              while (copySpots[nextIdx]) {
+                                nextIdx++;
+                              }
+                              copySpots[nextIdx] = typedName;
+                              return {
+                                ...item,
+                                enrolledSpots: copySpots,
+                                booked: Object.keys(copySpots).length,
+                              };
+                            }
+                            return item;
+                          }),
+                        );
+                      }
+                    }}
+                  >
+                    <Plus className="h-4 w-4" /> Inscribir Alumno
+                  </Button>
                 )}
               </div>
 
-              {c.status !== "cancelada" && canManageClasses && c.booked < c.capacity && (
-                <Button
-                  type="button"
-                  size="sm"
-                  className="w-full text-xs font-bold gap-1.5 rounded-xl bg-primary text-primary-foreground py-2 mt-2"
-                  onClick={() => {
-                    const nameInput = prompt(
-                      "Ingresa el nombre del alumno para inscribirlo en esta clase:",
-                    );
-                    if (nameInput?.trim()) {
-                      const typedName = nameInput.trim();
-                      setClassesList((prev) =>
-                        prev.map((item) => {
-                          if (item.id === c.id) {
-                            const copySpots = { ...item.enrolledSpots } || {};
-                            let nextIdx = 0;
-                            while (copySpots[nextIdx]) {
-                              nextIdx++;
-                            }
-                            copySpots[nextIdx] = typedName;
-                            return {
-                              ...item,
-                              enrolledSpots: copySpots,
-                              booked: Object.keys(copySpots).length,
-                            };
-                          }
-                          return item;
-                        }),
-                      );
-                    }
-                  }}
-                >
-                  <Plus className="h-4 w-4" /> Inscribir Alumno
-                </Button>
-              )}
-            </div>
+              {/* Row 1 Right: Acciones de Gestión */}
+              <div className="group rounded-3xl border border-border bg-card p-5 space-y-4 transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg shadow-xs h-full flex flex-col justify-between">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+                      Acciones de Gestión
+                    </span>
+                    <span className="text-[10px] text-muted-foreground/70 font-semibold uppercase tracking-wider">
+                      Configuración
+                    </span>
+                  </div>
 
-            {/* Row 1 Right: Acciones de Gestión */}
-            <div className="bg-card border border-border/50 p-4.5 rounded-2xl space-y-3.5 shadow-none transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-border/80 h-full flex flex-col justify-between">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b border-border/40">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
-                    Acciones de Gestión
-                  </span>
-                  <span className="text-[10px] text-muted-foreground/70 font-semibold">
-                    Configuración
-                  </span>
-                </div>
-
-                {canManageClasses && (
-                  <div className="space-y-2 pt-1">
-                    {c.status === "cancelada" ? (
-                      <div className="grid grid-cols-2 gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="rounded-xl text-xs font-bold text-primary border-primary hover:bg-primary/10"
-                          onClick={() => {
-                            setClassesList((prev) =>
-                              prev.map((item) =>
-                                item.id === c.id ? { ...item, status: "activa" } : item,
-                              ),
-                            );
-                            alert(`La clase "${c.name}" ha sido reactivada.`);
-                          }}
-                        >
-                          Reactivar
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          className="rounded-xl text-xs font-bold"
-                          onClick={() => {
-                            const confirmWord = prompt(
-                              `⚠️ Escribe "Eliminar" para confirmar la eliminación permanente de "${c.name}":`,
-                            );
-                            if (confirmWord?.trim().toLowerCase() === "eliminar") {
-                              setClassesList((prev) => prev.filter((item) => item.id !== c.id));
-                              setSelectedClass(null);
-                            }
-                          }}
-                        >
-                          Eliminar
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
+                  {canManageClasses && (
+                    <div className="space-y-2 pt-1">
+                      {c.status === "cancelada" ? (
                         <div className="grid grid-cols-2 gap-2">
                           <Button
                             variant="outline"
                             size="sm"
-                            className="rounded-xl text-xs font-bold border-border hover:bg-secondary"
+                            className="rounded-xl text-xs font-bold text-primary border-primary hover:bg-primary/10"
                             onClick={() => {
-                              setName(c.name);
-                              setStaffId(c.staffId);
-                              const parts = c.time.split("-");
-                              setStartTime(parts[0]?.trim() || "08:00");
-                              setEndTime(parts[1]?.trim() || "09:00");
-                              setCreditsCost((c.creditsCost || 1).toString());
-                              setSalaId(c.salaId || "");
-                              setDay(c.day);
-                              setCustomCapacity(c.capacity || 20);
-                              setEditingClassId(c.id);
-                              setShowAddForm(true);
-                              setSelectedClass(null);
-                              window.scrollTo({ top: 0, behavior: "smooth" });
+                              setClassesList((prev) =>
+                                prev.map((item) =>
+                                  item.id === c.id ? { ...item, status: "activa" } : item,
+                                ),
+                              );
+                              alert(`La clase "${c.name}" ha sido reactivada.`);
                             }}
                           >
-                            Editar Horario
+                            Reactivar
                           </Button>
                           <Button
-                            variant="outline"
+                            variant="destructive"
                             size="sm"
-                            className="rounded-xl text-xs font-bold text-destructive border-destructive/30 hover:bg-destructive/10"
+                            className="rounded-xl text-xs font-bold"
                             onClick={() => {
-                              if (
-                                confirm(
-                                  `¿Confirmas cancelar la clase "${c.name}"? Se reembolsarán los créditos a todos los alumnos.`,
-                                )
-                              ) {
-                                setClassesList((prev) =>
-                                  prev.map((item) =>
-                                    item.id === c.id
-                                      ? {
-                                          ...item,
-                                          status: "cancelada",
-                                          enrolledSpots: {},
-                                          releasedSpots: {},
-                                          booked: 0,
-                                          attendance: {},
-                                          waitlist: [],
-                                        }
-                                      : item,
-                                  ),
-                                );
+                              const confirmWord = prompt(
+                                `⚠️ Escribe "Eliminar" para confirmar la eliminación permanente de "${c.name}":`,
+                              );
+                              if (confirmWord?.trim().toLowerCase() === "eliminar") {
+                                setClassesList((prev) => prev.filter((item) => item.id !== c.id));
+                                setSelectedClass(null);
                               }
                             }}
                           >
-                            Cancelar Clase
+                            Eliminar
                           </Button>
                         </div>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          className="w-full rounded-xl text-xs font-bold"
-                          onClick={() => {
-                            const confirmWord = prompt(
-                              `⚠️ Escribe "Eliminar" para eliminar permanentemente "${c.name}":`,
-                            );
-                            if (confirmWord?.trim().toLowerCase() === "eliminar") {
-                              setClassesList((prev) => prev.filter((item) => item.id !== c.id));
-                              setSelectedClass(null);
-                            }
-                          }}
-                        >
-                          Eliminar Permanentemente
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Row 2 Left: Lista de Reservas y Asistencia */}
-            <div className="bg-card border border-border/50 p-4.5 rounded-2xl space-y-3.5 shadow-none transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-border/80 focus-within:shadow-md h-full flex flex-col justify-between">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b border-border/40">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
-                    Lista de Reservas y Asistencia
-                  </span>
-                  <span className="text-[10px] text-muted-foreground/70 font-semibold">
-                    {c.booked} inscriptos
-                  </span>
-                </div>
-
-                <div className="overflow-x-auto border border-border/40 rounded-xl bg-background max-h-[260px]">
-                  <table className="w-full text-left text-xs min-w-[380px] border-collapse">
-                    <thead>
-                      <tr className="border-b border-border/40 bg-secondary/30 text-muted-foreground font-bold text-[10px] uppercase">
-                        <th className="p-2.5">Alumno</th>
-                        <th className="p-2.5 text-center">Asistencia</th>
-                        <th className="p-2.5 text-center">Lugar</th>
-                        <th className="p-2.5 text-right">Acción</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border/30">
-                      {Object.entries(c.enrolledSpots || {}).map(([spotIdxStr, name]) => {
-                        const idx = parseInt(spotIdxStr);
-                        const displayName = getDisplayStudentName(name);
-                        const isPrivate =
-                          !canManageClasses && (isProfilePrivate || isStudentPrivate(name));
-                        const enriched = getEnrichedStudentInfo(name);
-
-                        const currentAttendance = c.attendance?.[idx] || "pendiente";
-                        const attendanceIcons = { pendiente: "⚪", presente: "🟢", ausente: "🔴" };
-                        const attendanceLabels = {
-                          pendiente: "Pendiente",
-                          presente: "Presente",
-                          ausente: "Ausente",
-                        };
-
-                        const handleToggleAttendance = () => {
-                          const nextStatus =
-                            currentAttendance === "pendiente"
-                              ? "presente"
-                              : currentAttendance === "presente"
-                                ? "ausente"
-                                : "pendiente";
-
-                          setClassesList((prev) =>
-                            prev.map((item) => {
-                              if (item.id === c.id) {
-                                const copyAtt = { ...item.attendance } || {};
-                                copyAtt[idx] = nextStatus;
-                                return { ...item, attendance: copyAtt };
+                      ) : (
+                        <div className="space-y-2">
+                          <div className="grid grid-cols-2 gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="rounded-xl text-xs font-bold border-border hover:bg-secondary"
+                              onClick={() => {
+                                setName(c.name);
+                                setStaffId(c.staffId);
+                                const parts = c.time.split("-");
+                                setStartTime(parts[0]?.trim() || "08:00");
+                                setEndTime(parts[1]?.trim() || "09:00");
+                                setCreditsCost((c.creditsCost || 1).toString());
+                                setSalaId(c.salaId || "");
+                                setDay(c.day);
+                                setCustomCapacity(c.capacity || 20);
+                                setEditingClassId(c.id);
+                                setShowAddForm(true);
+                                setSelectedClass(null);
+                                window.scrollTo({ top: 0, behavior: "smooth" });
+                              }}
+                            >
+                              Editar Horario
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="rounded-xl text-xs font-bold text-destructive border-destructive/30 hover:bg-destructive/10"
+                              onClick={() => {
+                                if (
+                                  confirm(
+                                    `¿Confirmas cancelar la clase "${c.name}"? Se reembolsarán los créditos a todos los alumnos.`,
+                                  )
+                                ) {
+                                  setClassesList((prev) =>
+                                    prev.map((item) =>
+                                      item.id === c.id
+                                        ? {
+                                            ...item,
+                                            status: "cancelada",
+                                            enrolledSpots: {},
+                                            releasedSpots: {},
+                                            booked: 0,
+                                            attendance: {},
+                                            waitlist: [],
+                                          }
+                                        : item,
+                                    ),
+                                  );
+                                }
+                              }}
+                            >
+                              Cancelar Clase
+                            </Button>
+                          </div>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            className="w-full rounded-xl text-xs font-bold"
+                            onClick={() => {
+                              const confirmWord = prompt(
+                                `⚠️ Escribe "Eliminar" para eliminar permanentemente "${c.name}":`,
+                              );
+                              if (confirmWord?.trim().toLowerCase() === "eliminar") {
+                                setClassesList((prev) => prev.filter((item) => item.id !== c.id));
+                                setSelectedClass(null);
                               }
-                              return item;
-                            }),
-                          );
-                        };
+                            }}
+                          >
+                            Eliminar Permanentemente
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
 
-                        return (
-                          <tr key={idx} className="hover:bg-secondary/20 transition-colors">
-                            <td className="p-2.5 font-semibold">
-                              <div className="flex items-center gap-2">
-                                {isPrivate ? (
-                                  <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center text-xs text-muted-foreground shrink-0 border border-border/40">
-                                    🔒
-                                  </div>
-                                ) : (
-                                  <img
-                                    src={enriched.photo}
-                                    alt={displayName}
-                                    className="h-7 w-7 rounded-full object-cover shrink-0 border border-border/30"
-                                  />
-                                )}
-                                <div className="leading-tight flex flex-col">
-                                  <span className="font-bold text-foreground text-xs truncate max-w-[120px]">
-                                    {displayName}
-                                  </span>
-                                  {!isPrivate && (
-                                    <span className="text-[9.5px] text-muted-foreground">
-                                      {enriched.username}
-                                    </span>
+              {/* Row 2 Left: Lista de Reservas y Asistencia */}
+              <div className="group rounded-3xl border border-border bg-card p-5 space-y-4 transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg shadow-xs h-full flex flex-col justify-between">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+                      Lista de Reservas y Asistencia
+                    </span>
+                    <span className="text-[10px] text-muted-foreground/70 font-semibold uppercase tracking-wider">
+                      {c.booked} inscriptos
+                    </span>
+                  </div>
+
+                  <div className="overflow-x-auto border border-border/40 rounded-2xl bg-secondary/20 max-h-[260px]">
+                    <table className="w-full text-left text-xs min-w-[380px] border-collapse">
+                      <thead>
+                        <tr className="border-b border-border/40 bg-secondary/60 text-muted-foreground font-bold text-[10px] uppercase">
+                          <th className="p-2.5">Alumno</th>
+                          <th className="p-2.5 text-center">Asistencia</th>
+                          <th className="p-2.5 text-center">Lugar</th>
+                          <th className="p-2.5 text-right">Acción</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border/30">
+                        {Object.entries(c.enrolledSpots || {}).map(([spotIdxStr, name]) => {
+                          const idx = parseInt(spotIdxStr);
+                          const displayName = getDisplayStudentName(name);
+                          const isPrivate =
+                            !canManageClasses && (isProfilePrivate || isStudentPrivate(name));
+                          const enriched = getEnrichedStudentInfo(name);
+
+                          const currentAttendance = c.attendance?.[idx] || "pendiente";
+                          const attendanceIcons = { pendiente: "⚪", presente: "🟢", ausente: "🔴" };
+                          const attendanceLabels = {
+                            pendiente: "Pendiente",
+                            presente: "Presente",
+                            ausente: "Ausente",
+                          };
+
+                          const handleToggleAttendance = () => {
+                            const nextStatus =
+                              currentAttendance === "pendiente"
+                                ? "presente"
+                                : currentAttendance === "presente"
+                                  ? "ausente"
+                                  : "pendiente";
+
+                            setClassesList((prev) =>
+                              prev.map((item) => {
+                                if (item.id === c.id) {
+                                  const copyAtt = { ...item.attendance } || {};
+                                  copyAtt[idx] = nextStatus;
+                                  return { ...item, attendance: copyAtt };
+                                }
+                                return item;
+                              }),
+                            );
+                          };
+
+                          return (
+                            <tr key={idx} className="hover:bg-background transition-colors">
+                              <td className="p-2.5 font-semibold">
+                                <div className="flex items-center gap-2">
+                                  {isPrivate ? (
+                                    <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center text-xs text-muted-foreground shrink-0 border border-border/40">
+                                      🔒
+                                    </div>
+                                  ) : (
+                                    <img
+                                      src={enriched.photo}
+                                      alt={displayName}
+                                      className="h-7 w-7 rounded-full object-cover shrink-0 border border-border/30"
+                                    />
                                   )}
+                                  <div className="leading-tight flex flex-col">
+                                    <span className="font-bold text-foreground text-xs truncate max-w-[120px]">
+                                      {displayName}
+                                    </span>
+                                    {!isPrivate && (
+                                      <span className="text-[9.5px] text-muted-foreground">
+                                        {enriched.username}
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                            </td>
-                            <td className="p-2.5 text-center">
-                              <button
-                                type="button"
-                                onClick={handleToggleAttendance}
-                                className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border transition whitespace-nowrap ${
-                                  currentAttendance === "presente"
-                                    ? "bg-primary/10 border-primary/20 text-primary"
-                                    : currentAttendance === "ausente"
-                                      ? "bg-destructive/10 border-destructive/20 text-destructive"
-                                      : "bg-secondary border-border text-muted-foreground"
-                                }`}
-                              >
-                                {attendanceIcons[currentAttendance]}{" "}
-                                {attendanceLabels[currentAttendance]}
-                              </button>
-                            </td>
-                            <td className="p-2.5 text-center font-bold">
-                              <span className="bg-muted px-2 py-0.5 rounded font-bold text-[10px] text-foreground">
-                                #{idx + 1}
-                              </span>
-                            </td>
-                            <td className="p-2.5 text-right">
-                              {canManageClasses && (
+                              </td>
+                              <td className="p-2.5 text-center">
                                 <button
                                   type="button"
-                                  onClick={() => handleCancelSpot(idx, name)}
-                                  className="text-destructive hover:text-destructive font-bold hover:underline text-[11px]"
+                                  onClick={handleToggleAttendance}
+                                  className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border transition whitespace-nowrap ${
+                                    currentAttendance === "presente"
+                                      ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+                                      : currentAttendance === "ausente"
+                                        ? "bg-destructive/10 border-destructive/20 text-destructive"
+                                        : "bg-background border-border text-muted-foreground"
+                                  }`}
                                 >
-                                  Quitar
+                                  {attendanceIcons[currentAttendance]}{" "}
+                                  {attendanceLabels[currentAttendance]}
                                 </button>
-                              )}
+                              </td>
+                              <td className="p-2.5 text-center font-bold">
+                                <span className="bg-background px-2 py-0.5 rounded font-bold text-[10px] text-foreground border border-border/40">
+                                  #{idx + 1}
+                                </span>
+                              </td>
+                              <td className="p-2.5 text-right">
+                                {canManageClasses && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleCancelSpot(idx, name)}
+                                    className="text-destructive hover:text-destructive font-bold hover:underline text-[11px]"
+                                  >
+                                    Quitar
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                        {Object.keys(c.enrolledSpots || {}).length === 0 && (
+                          <tr>
+                            <td
+                              colSpan={4}
+                              className="text-xs text-muted-foreground italic text-center py-6"
+                            >
+                              Ningún alumno reservó lugar todavía.
                             </td>
                           </tr>
-                        );
-                      })}
-                      {Object.keys(c.enrolledSpots || {}).length === 0 && (
-                        <tr>
-                          <td
-                            colSpan={4}
-                            className="text-xs text-muted-foreground italic text-center py-6"
-                          >
-                            Ningún alumno reservó lugar todavía.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
+              </div>
 
-                {/* Waitlist Chips */}
-                {c.waitlist && c.waitlist.length > 0 && (
-                  <div className="bg-secondary/30 border border-border/40 p-3 rounded-xl space-y-1.5">
-                    <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
-                      Lista de Espera ({c.waitlist.length} en cola)
+              {/* Row 2 Right: Lista de Espera */}
+              <div className="group rounded-3xl border border-border bg-card p-5 space-y-4 transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg shadow-xs h-full flex flex-col justify-between">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+                      Lista de Espera
                     </span>
-                    <div className="flex flex-wrap gap-1.5">
+                    <span className="text-[10px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 px-2.5 py-0.5 rounded-full border border-amber-500/20">
+                      {c.waitlist?.length || 0} en cola
+                    </span>
+                  </div>
+
+                  {c.waitlist && c.waitlist.length > 0 ? (
+                    <div className="space-y-2">
                       {c.waitlist.map((wName, wIdx) => (
-                        <span
+                        <div
                           key={wIdx}
-                          className="text-xs bg-background text-foreground font-bold px-2.5 py-1 rounded-lg border border-border/40"
+                          className="flex items-center justify-between p-3 bg-secondary/20 border border-border/40 rounded-xl text-xs"
                         >
-                          #{wIdx + 1} {wName}
-                        </span>
+                          <div className="flex items-center gap-2.5">
+                            <span className="h-6 w-6 rounded-full bg-background font-bold text-[10px] flex items-center justify-center border border-border/40 text-muted-foreground">
+                              #{wIdx + 1}
+                            </span>
+                            <span className="font-bold text-foreground text-xs">{wName}</span>
+                          </div>
+                          {canManageClasses && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (confirm(`¿Promover a ${wName} para ocupar un lugar vacante?`)) {
+                                  setClassesList((prev) =>
+                                    prev.map((item) => {
+                                      if (item.id === c.id) {
+                                        const nextWaitlist = (item.waitlist || []).filter(
+                                          (_, idx) => idx !== wIdx,
+                                        );
+                                        const copySpots = { ...item.enrolledSpots } || {};
+                                        let nextSpot = 0;
+                                        while (copySpots[nextSpot]) nextSpot++;
+                                        copySpots[nextSpot] = wName;
+                                        return {
+                                          ...item,
+                                          waitlist: nextWaitlist,
+                                          enrolledSpots: copySpots,
+                                          booked: Object.keys(copySpots).length,
+                                        };
+                                      }
+                                      return item;
+                                    }),
+                                  );
+                                }
+                              }}
+                              className="text-[10.5px] font-bold text-primary hover:underline"
+                            >
+                              Asignar Lugar
+                            </button>
+                          )}
+                        </div>
                       ))}
                     </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Row 2 Right: Calificaciones de la Clase */}
-            <div className="bg-card border border-border/50 p-4.5 rounded-2xl space-y-3.5 shadow-none transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-border/80 h-full flex flex-col justify-between">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b border-border/40">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
-                    Calificaciones de la Clase
-                  </span>
-                  {avgRating !== null && (
-                    <span className="text-xs font-black text-foreground flex items-center gap-1 bg-secondary/60 px-2 py-0.5 rounded-lg border border-border/40">
-                      ★ {avgRating.toFixed(1)}
-                    </span>
+                  ) : (
+                    <p className="text-xs text-muted-foreground italic py-8 text-center">
+                      No hay alumnos en lista de espera para esta clase.
+                    </p>
                   )}
                 </div>
 
-                {/* Existing Ratings List */}
-                {ratingValues.length > 0 ? (
-                  <div className="space-y-2">
-                    {(isCoachView
-                      ? ratingValues
-                      : Object.entries(ratingsMap).map(([name, r]) => ({
-                          ...r,
-                          studentName: name,
-                        }))
-                    ).map((rating, i) => (
-                      <div
-                        key={i}
-                        className="flex items-start gap-2.5 p-3 bg-background border border-border/40 rounded-xl text-xs"
-                      >
-                        <div className="flex shrink-0 mt-0.5">
-                          {Array(5)
-                            .fill(0)
-                            .map((_, si) => (
-                              <span
-                                key={si}
-                                className={`text-xs ${si < rating.stars ? "text-amber-500" : "text-muted-foreground/20"}`}
-                              >
-                                ★
-                              </span>
-                            ))}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          {!isCoachView && "studentName" in rating && (
-                            <span className="font-bold text-foreground text-xs block">
-                              {(rating as any).studentName}
-                            </span>
-                          )}
-                          {isCoachView && (
-                            <span className="text-xs text-muted-foreground italic block">
-                              Alumno anónimo
-                            </span>
-                          )}
-                          {rating.comment && (
-                            <p className="text-muted-foreground text-xs mt-0.5 leading-relaxed">
-                              {rating.comment}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground italic py-4 text-center">
-                    Sin calificaciones aún para esta clase.
-                  </p>
+                {canManageClasses && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="w-full text-xs font-bold border-border/60 hover:bg-secondary rounded-xl py-2 mt-2"
+                    onClick={() => {
+                      const studentName = prompt(
+                        "Ingresa el nombre del alumno para anotarse en la lista de espera:",
+                      );
+                      if (studentName?.trim()) {
+                        const name = studentName.trim();
+                        setClassesList((prev) =>
+                          prev.map((item) => {
+                            if (item.id === c.id) {
+                              const currentWaitlist = item.waitlist || [];
+                              return { ...item, waitlist: [...currentWaitlist, name] };
+                            }
+                            return item;
+                          }),
+                        );
+                      }
+                    }}
+                  >
+                    + Sumar Alumno a Lista de Espera
+                  </Button>
                 )}
+              </div>
+
+              {/* Row 3 Full Width: Mapa de Distribución de Sala (Grilla 10x10) */}
+              <div className="md:col-span-2 group rounded-3xl border border-border bg-card p-5 space-y-4 transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg shadow-xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-border/40 gap-2">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+                    Distribución Física de la Sala (Mapa 10x10)
+                  </span>
+                  <div className="flex items-center gap-3 text-[10px] font-semibold text-muted-foreground flex-wrap">
+                    <span className="flex items-center gap-1.5">
+                      <span className="h-2.5 w-2.5 rounded-full bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 inline-block" />
+                      Ocupado (Alumno)
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="h-2.5 w-2.5 rounded-md border border-primary/40 bg-primary/10 inline-block" />
+                      Disponible
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="h-2.5 w-2.5 rounded-md border border-dashed border-border/40 bg-muted/20 inline-block" />
+                      Inhabilitado
+                    </span>
+                  </div>
+                </div>
+
+                {/* Escenario / Frente */}
+                <div className="bg-secondary/40 border border-border/40 py-1.5 px-4 rounded-xl text-center text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground flex items-center justify-center gap-2">
+                  <span>↑ FRENTE DE SALA / PROFESOR / ESCENARIO ↑</span>
+                </div>
+
+                {/* Grilla 10x10 */}
+                <div className="grid grid-cols-5 sm:grid-cols-10 gap-2.5 p-3 bg-secondary/20 rounded-2xl border border-border/40 overflow-x-auto custom-scrollbar">
+                  {Array(100)
+                    .fill(0)
+                    .map((_, spotIdx) => {
+                      const isEnabled = c.layout ? c.layout[spotIdx] : spotIdx < c.capacity;
+                      const studentName = c.enrolledSpots?.[spotIdx];
+
+                      if (!isEnabled) {
+                        return (
+                          <div
+                            key={spotIdx}
+                            title={`Posición #${spotIdx + 1} (Inhabilitada)`}
+                            className="h-12 sm:h-14 w-full rounded-xl border border-dashed border-border/30 bg-muted/20 opacity-30 flex items-center justify-center text-[9px] font-bold text-muted-foreground/40"
+                          >
+                            {spotIdx + 1}
+                          </div>
+                        );
+                      }
+
+                      if (studentName) {
+                        const studentPhoto = getStudentPhoto(studentName);
+                        const displayName = getDisplayStudentName(studentName);
+                        return (
+                          <div
+                            key={spotIdx}
+                            title={`Lugar #${spotIdx + 1}: ${displayName} (Clic para liberar)`}
+                            onClick={() => {
+                              if (canManageClasses) {
+                                if (
+                                  confirm(
+                                    `¿Liberar el lugar #${spotIdx + 1} reservado por ${displayName}?`,
+                                  )
+                                ) {
+                                  handleCancelSpot(spotIdx, studentName);
+                                }
+                              }
+                            }}
+                            className="group/spot relative flex flex-col items-center justify-center cursor-pointer py-1.5"
+                          >
+                            {/* Enlarged Instagram Story Style Avatar Ring */}
+                            <div className="p-[2.5px] bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 rounded-full shadow-md transition-all duration-200 group-hover/spot:scale-110 group-hover/spot:shadow-xl">
+                              <img
+                                src={studentPhoto}
+                                alt={displayName}
+                                className="h-9 w-9 sm:h-10 sm:w-10 rounded-full object-cover border-2 border-background"
+                              />
+                            </div>
+                            <span className="text-[9px] font-black text-foreground bg-background px-1.5 py-0.2 rounded-full border border-border/60 -mt-2 z-10 shadow-2xs truncate max-w-[52px] text-center">
+                              #{spotIdx + 1}
+                            </span>
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <button
+                          key={spotIdx}
+                          type="button"
+                          title={`Reservar Lugar #${spotIdx + 1}`}
+                          onClick={() => {
+                            if (canManageClasses) {
+                              const nameInput = prompt(
+                                `Inscribir alumno en el lugar #${spotIdx + 1}:`,
+                              );
+                              if (nameInput?.trim()) {
+                                const typedName = nameInput.trim();
+                                setClassesList((prev) =>
+                                  prev.map((item) => {
+                                    if (item.id === c.id) {
+                                      const copySpots = { ...item.enrolledSpots } || {};
+                                      copySpots[spotIdx] = typedName;
+                                      return {
+                                        ...item,
+                                        enrolledSpots: copySpots,
+                                        booked: Object.keys(copySpots).length,
+                                      };
+                                    }
+                                    return item;
+                                  }),
+                                );
+                              }
+                            }
+                          }}
+                          className="h-12 sm:h-14 w-full rounded-xl border border-primary/40 bg-primary/5 hover:bg-primary/20 hover:border-primary hover:scale-105 font-bold text-xs text-primary transition-all duration-200 flex flex-col items-center justify-center shadow-2xs"
+                        >
+                          <span className="text-[11px] font-extrabold">#{spotIdx + 1}</span>
+                          <span className="text-[8.5px] opacity-75 font-semibold">Libre</span>
+                        </button>
+                      );
+                    })}
+                </div>
               </div>
             </div>
           </div>
@@ -6128,23 +6354,23 @@ function ClasesTab({
 
       {/* Quick Stats Banner */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-stretch">
-        <div className="bg-card border border-border/50 p-4.5 rounded-2xl flex flex-col justify-between shadow-none transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-border/80 h-full">
+        <div className="group rounded-3xl border border-border bg-card p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg shadow-xs h-full">
           <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
             Ocupación Hoy
           </span>
-          <span className="text-2xl font-black text-foreground mt-1 block">{stats.avgOccupancy}%</span>
+          <span className="text-2xl font-black text-foreground mt-2 block">{stats.avgOccupancy}%</span>
         </div>
-        <div className="bg-card border border-border/50 p-4.5 rounded-2xl flex flex-col justify-between shadow-none transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-border/80 h-full">
+        <div className="group rounded-3xl border border-border bg-card p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg shadow-xs h-full">
           <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
             Reservas Activas
           </span>
-          <span className="text-2xl font-black text-foreground mt-1 block">{stats.totalBooked} alumnos</span>
+          <span className="text-2xl font-black text-foreground mt-2 block">{stats.totalBooked} alumnos</span>
         </div>
-        <div className="bg-card border border-border/50 p-4.5 rounded-2xl flex flex-col justify-between shadow-none transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-border/80 h-full">
+        <div className="group rounded-3xl border border-border bg-card p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg shadow-xs h-full">
           <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
             Clases Llenas
           </span>
-          <span className="text-2xl font-black text-foreground mt-1 block">
+          <span className="text-2xl font-black text-foreground mt-2 block">
             {stats.fullClasses} completadas
           </span>
         </div>
@@ -6230,59 +6456,60 @@ function ClasesTab({
 
       {/* Modal Dialog: Crear / Editar Clase */}
       <Dialog open={showAddForm} onOpenChange={setShowAddForm}>
-        <DialogContent className="max-w-lg border border-border bg-card rounded-3xl p-6">
-          <DialogHeader>
+        <DialogContent className="max-w-xl max-h-[88vh] border border-border bg-card rounded-3xl p-6 overflow-hidden flex flex-col">
+          <DialogHeader className="shrink-0 pb-2">
             <DialogTitle className="text-lg font-bold text-foreground">
               {editingClassId ? "Editar Clase" : "Crear Nueva Clase"}
             </DialogTitle>
           </DialogHeader>
 
-          <form onSubmit={handleAddClass} className="space-y-4 pt-2 text-xs text-foreground">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">Actividad</label>
-              <Select value={name} onValueChange={setName}>
-                <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold">
-                  <SelectValue placeholder="Selecciona una actividad..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectLabel>Fuerza y Musculación</SelectLabel>
-                    <SelectItem value="CrossFit">CrossFit</SelectItem>
-                    <SelectItem value="Entrenamiento Funcional">Entrenamiento Funcional</SelectItem>
-                    <SelectItem value="Levantamiento Olímpico">Levantamiento Olímpico</SelectItem>
-                    <SelectItem value="Powerlifting">Powerlifting</SelectItem>
-                    <SelectItem value="Calistenia">Calistenia</SelectItem>
-                    <SelectItem value="Fuerza de Potencia">Fuerza de Potencia</SelectItem>
-                  </SelectGroup>
-                  <SelectGroup>
-                    <SelectLabel>Cardio y Combate</SelectLabel>
-                    <SelectItem value="Spinning">Spinning / Cycling</SelectItem>
-                    <SelectItem value="HIIT / Tabata">HIIT / Tabata</SelectItem>
-                    <SelectItem value="Boxeo Recreativo">Boxeo Recreativo</SelectItem>
-                    <SelectItem value="Kickboxing">Kickboxing</SelectItem>
-                    <SelectItem value="Zumba">Zumba Fitness</SelectItem>
-                    <SelectItem value="Ritmos / Dance">Ritmos / Dance</SelectItem>
-                  </SelectGroup>
-                  <SelectGroup>
-                    <SelectLabel>Flexibilidad y Cuerpo-Mente</SelectLabel>
-                    <SelectItem value="Yoga Vinyasa">Yoga Vinyasa</SelectItem>
-                    <SelectItem value="Yoga Hatha">Yoga Hatha</SelectItem>
-                    <SelectItem value="Pilates Reformer">Pilates Reformer</SelectItem>
-                    <SelectItem value="Pilates Mat">Pilates Mat</SelectItem>
-                    <SelectItem value="Barré">Barré</SelectItem>
-                    <SelectItem value="Estiramiento / Flex">Estiramiento & Flexibilidad</SelectItem>
-                    <SelectItem value="Meditación">Meditación & Mindfulness</SelectItem>
-                  </SelectGroup>
-                  <SelectGroup>
-                    <SelectLabel>Especializadas y Localizadas</SelectLabel>
-                    <SelectItem value="GAP">GAP (Glúteo-Abdo-Pierna)</SelectItem>
-                    <SelectItem value="AquaGym">AquaGym</SelectItem>
-                    <SelectItem value="Running Club">Running Club</SelectItem>
-                    <SelectItem value="Tercera Edad Adaptada">Tercera Edad Adaptada</SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="overflow-y-auto custom-scrollbar flex-1 pr-1.5 pt-1">
+            <form onSubmit={handleAddClass} className="space-y-4 text-xs text-foreground pb-2">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground">Actividad</label>
+                <Select value={name} onValueChange={setName}>
+                  <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold">
+                    <SelectValue placeholder="Selecciona una actividad..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Fuerza y Musculación</SelectLabel>
+                      <SelectItem value="CrossFit">CrossFit</SelectItem>
+                      <SelectItem value="Entrenamiento Funcional">Entrenamiento Funcional</SelectItem>
+                      <SelectItem value="Levantamiento Olímpico">Levantamiento Olímpico</SelectItem>
+                      <SelectItem value="Powerlifting">Powerlifting</SelectItem>
+                      <SelectItem value="Calistenia">Calistenia</SelectItem>
+                      <SelectItem value="Fuerza de Potencia">Fuerza de Potencia</SelectItem>
+                    </SelectGroup>
+                    <SelectGroup>
+                      <SelectLabel>Cardio y Combate</SelectLabel>
+                      <SelectItem value="Spinning">Spinning / Cycling</SelectItem>
+                      <SelectItem value="HIIT / Tabata">HIIT / Tabata</SelectItem>
+                      <SelectItem value="Boxeo Recreativo">Boxeo Recreativo</SelectItem>
+                      <SelectItem value="Kickboxing">Kickboxing</SelectItem>
+                      <SelectItem value="Zumba">Zumba Fitness</SelectItem>
+                      <SelectItem value="Ritmos / Dance">Ritmos / Dance</SelectItem>
+                    </SelectGroup>
+                    <SelectGroup>
+                      <SelectLabel>Flexibilidad y Cuerpo-Mente</SelectLabel>
+                      <SelectItem value="Yoga Vinyasa">Yoga Vinyasa</SelectItem>
+                      <SelectItem value="Yoga Hatha">Yoga Hatha</SelectItem>
+                      <SelectItem value="Pilates Reformer">Pilates Reformer</SelectItem>
+                      <SelectItem value="Pilates Mat">Pilates Mat</SelectItem>
+                      <SelectItem value="Barré">Barré</SelectItem>
+                      <SelectItem value="Estiramiento / Flex">Estiramiento & Flexibilidad</SelectItem>
+                      <SelectItem value="Meditación">Meditación & Mindfulness</SelectItem>
+                    </SelectGroup>
+                    <SelectGroup>
+                      <SelectLabel>Especializadas y Localizadas</SelectLabel>
+                      <SelectItem value="GAP">GAP (Glúteo-Abdo-Pierna)</SelectItem>
+                      <SelectItem value="AquaGym">AquaGym</SelectItem>
+                      <SelectItem value="Running Club">Running Club</SelectItem>
+                      <SelectItem value="Tercera Edad Adaptada">Tercera Edad Adaptada</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
@@ -6461,7 +6688,15 @@ function ClasesTab({
                   min="1"
                   max="100"
                   value={customCapacity}
-                  onChange={(e) => setCustomCapacity(Number(e.target.value))}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    setCustomCapacity(val);
+                    const newMatrix = Array(100)
+                      .fill(false)
+                      .map((_, i) => i < val);
+                    setLayoutMatrix(newMatrix);
+                    setSelectedPresetId("custom");
+                  }}
                   className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground font-semibold"
                 />
               </div>
@@ -6478,6 +6713,128 @@ function ClasesTab({
                   onChange={(e) => setCreditsCost(e.target.value)}
                   className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground font-semibold"
                 />
+              </div>
+            </div>
+
+            {/* Plantilla de Distribución de Sala (10x10 Grid) */}
+            <div className="space-y-1.5 pt-1">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Plantilla de Distribución de Sala (10x10)
+                </label>
+                <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
+                  {layoutMatrix.filter(Boolean).length} lugares activos
+                </span>
+              </div>
+              <Select
+                value={selectedPresetId}
+                onValueChange={(val) => {
+                  setSelectedPresetId(val);
+                  const preset = ROOM_PRESETS.find((p) => p.id === val);
+                  if (preset) {
+                    const newLayout = preset.getLayout();
+                    setLayoutMatrix(newLayout);
+                    setCustomCapacity(newLayout.filter(Boolean).length);
+                  }
+                }}
+              >
+                <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold">
+                  <SelectValue placeholder="Selecciona una plantilla de salón..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {ROOM_PRESETS.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Mini Map Preview Grid (10x10) */}
+            <div className="bg-secondary/20 border border-border/40 p-3 rounded-2xl space-y-2">
+              <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                <span>Mapa de Sala (Haz clic para habilitar/deshabilitar)</span>
+                <span>Frente / Escenario ↑</span>
+              </div>
+              <div className="grid grid-cols-10 gap-1 p-1.5 bg-background rounded-xl border border-border/40 max-h-[140px] overflow-y-auto custom-scrollbar">
+                {layoutMatrix.map((isActive, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    title={`Lugar #${idx + 1}`}
+                    onClick={() => {
+                      const updated = [...layoutMatrix];
+                      updated[idx] = !updated[idx];
+                      setLayoutMatrix(updated);
+                      setSelectedPresetId("custom");
+                      setCustomCapacity(updated.filter(Boolean).length);
+                    }}
+                    className={`h-5 w-full rounded-md text-[9px] font-bold transition-all flex items-center justify-center ${
+                      isActive
+                        ? "bg-primary text-primary-foreground shadow-2xs"
+                        : "bg-muted/40 text-muted-foreground/30 border border-dashed border-border/40 hover:bg-muted"
+                    }`}
+                  >
+                    {idx + 1}
+                  </button>
+                ))}
+              </div>
+
+              {/* Guardar esta formación como Plantilla */}
+              <div className="pt-1.5 border-t border-border/40 flex flex-col sm:flex-row items-center justify-between gap-2">
+                {!showSavePresetInput ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowSavePresetInput(true)}
+                    className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1.5 py-0.5"
+                  >
+                    <span>💾 Guardar esta formación como nueva plantilla</span>
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-2 w-full animate-fade-in">
+                    <input
+                      type="text"
+                      placeholder="Ej: Sala Spinning 18 Bicis"
+                      value={newPresetName}
+                      onChange={(e) => setNewPresetName(e.target.value)}
+                      className="flex-1 h-8 rounded-lg border border-border bg-background px-2.5 text-xs text-foreground font-semibold focus-visible:outline-none"
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="h-8 px-3 text-xs font-bold bg-primary text-primary-foreground rounded-lg"
+                      onClick={() => {
+                        if (!newPresetName.trim()) {
+                          alert("Por favor ingresa un nombre para la plantilla.");
+                          return;
+                        }
+                        const currentLayoutCopy = [...layoutMatrix];
+                        const cap = currentLayoutCopy.filter(Boolean).length;
+                        const newPreset = {
+                          id: `preset-${Date.now()}`,
+                          name: `${newPresetName.trim()} (${cap} lugares)`,
+                          capacity: cap,
+                          getLayout: () => currentLayoutCopy,
+                        };
+                        setCustomPresets((prev) => [...prev, newPreset]);
+                        setSelectedPresetId(newPreset.id);
+                        setNewPresetName("");
+                        setShowSavePresetInput(false);
+                        alert(`✓ Plantilla "${newPreset.name}" guardada con éxito.`);
+                      }}
+                    >
+                      Guardar
+                    </Button>
+                    <button
+                      type="button"
+                      onClick={() => setShowSavePresetInput(false)}
+                      className="text-xs text-muted-foreground hover:text-foreground font-semibold px-1"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -6559,8 +6916,9 @@ function ClasesTab({
               </Button>
             </DialogFooter>
           </form>
-        </DialogContent>
-      </Dialog>
+        </div>
+      </DialogContent>
+    </Dialog>
 
       {activeBlackout && (
         <div className="p-4 bg-destructive/ border border-destructive/ text-destructive rounded-3xl text-xs font-semibold flex items-center gap-3">
@@ -6578,13 +6936,13 @@ function ClasesTab({
       {viewMode === "list" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full items-stretch">
           {/* Card 1: Schedule (Hoy) */}
-          <div className="bg-card border border-border/50 p-5 rounded-2xl space-y-4 shadow-none transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-border/80 h-full flex flex-col justify-between">
+          <div className="group rounded-3xl border border-border bg-card p-5 space-y-4 transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg shadow-xs h-full flex flex-col justify-between">
             <div className="space-y-3">
               <div className="flex items-center justify-between pb-2 border-b border-border/40">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
                   Clases Programadas (Hoy)
                 </span>
-                <span className="text-[10px] text-muted-foreground/70 font-semibold">
+                <span className="text-[10px] text-muted-foreground/70 font-semibold uppercase tracking-wider">
                   {classesForToday.length} clases
                 </span>
               </div>
@@ -6599,7 +6957,7 @@ function ClasesTab({
                       onClick={() => {
                         setSelectedClass(c.id);
                       }}
-                      className={`p-4 rounded-xl border transition-all flex items-center justify-between ${
+                      className={`p-4 rounded-2xl border transition-all duration-200 flex items-center justify-between ${
                         c.status === "cancelada"
                           ? "border-destructive/30 bg-destructive/5 opacity-60 cursor-pointer"
                           : activeBlackout
@@ -6652,13 +7010,13 @@ function ClasesTab({
           </div>
 
           {/* Card 2: Resumen de Salas y Disponibilidad */}
-          <div className="bg-card border border-border/50 p-5 rounded-2xl space-y-4 shadow-none transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-border/80 h-full flex flex-col justify-between">
+          <div className="group rounded-3xl border border-border bg-card p-5 space-y-4 transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg shadow-xs h-full flex flex-col justify-between">
             <div className="space-y-3">
               <div className="flex items-center justify-between pb-2 border-b border-border/40">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
                   Estado de Salas y Espacios
                 </span>
-                <span className="text-[10px] text-muted-foreground/70 font-semibold">
+                <span className="text-[10px] text-muted-foreground/70 font-semibold uppercase tracking-wider">
                   {salasList.length} espacios activos
                 </span>
               </div>
@@ -6668,7 +7026,7 @@ function ClasesTab({
                   return (
                     <div
                       key={sala.id}
-                      className="p-3.5 rounded-xl border border-border/40 bg-background flex items-center justify-between text-xs"
+                      className="p-3.5 rounded-2xl border border-border/40 bg-secondary/20 flex items-center justify-between text-xs"
                     >
                       <div>
                         <span className="font-bold text-foreground block">{sala.name}</span>
@@ -6681,7 +7039,7 @@ function ClasesTab({
                           {currentClassInSala.name} ({currentClassInSala.time} hs)
                         </span>
                       ) : (
-                        <span className="text-[10px] font-semibold text-muted-foreground bg-secondary px-2.5 py-1 rounded-full">
+                        <span className="text-[10px] font-semibold text-muted-foreground bg-background px-2.5 py-1 rounded-full border border-border/40">
                           Disponible
                         </span>
                       )}
@@ -6697,7 +7055,7 @@ function ClasesTab({
           {/* Left 3 columns: Weekly Calendar Grid */}
           <div className="col-span-1 space-y-4">
             {/* Weekly Calendar Grid Container */}
-            <div className="rounded-2xl border border-border/50 bg-card p-6 space-y-6 overflow-x-auto pb-4 shadow-none transition-all duration-200 hover:shadow-md hover:border-border/80">
+            <div className="rounded-3xl border border-border bg-card p-6 space-y-6 overflow-x-auto pb-4 transition-all duration-300 hover:border-foreground/30 hover:shadow-lg shadow-xs">
               <div className="min-w-[680px] space-y-6">
                 {/* Grid Header (Days of the week) */}
                 <div className="grid grid-cols-8 gap-3 text-center select-none font-bold text-xs text-muted-foreground border-b border-border/40 pb-3">
