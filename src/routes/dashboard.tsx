@@ -5004,6 +5004,42 @@ function ClasesTab({
   currentUser,
 }: ClasesTabProps) {
   const activeBlackout = blackoutDays.find((b) => b.date === "2026-06-29");
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Limpiador automático de Spot Locks expirados (3 minutos)
+  useEffect(() => {
+    setClassesList((prev) =>
+      prev.map((c) => {
+        if (!c.lockedSpots) return c;
+        const updatedLocks = { ...c.lockedSpots };
+        let changed = false;
+        Object.entries(updatedLocks).forEach(([idxStr, lockInfo]) => {
+          if (lockInfo.expiresAt <= now) {
+            delete updatedLocks[parseInt(idxStr)];
+            changed = true;
+          }
+        });
+        if (changed) {
+          return { ...c, lockedSpots: updatedLocks };
+        }
+        return c;
+      }),
+    );
+  }, [now]);
+
+  const formatCountdown = (expiresAt: number, currentNow: number) => {
+    const diffMs = Math.max(0, expiresAt - currentNow);
+    const totalSec = Math.floor(diffMs / 1000);
+    const mins = Math.floor(totalSec / 60);
+    const secs = totalSec % 60;
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  };
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingClassId, setEditingClassId] = useState<string | null>(null);
@@ -5696,6 +5732,55 @@ function ClasesTab({
 
             {/* Body: 2 Columns 50/50 Aligned System */}
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5 items-stretch w-full">
+              {/* Switch de Privacidad de Perfil (Para usuarios miembros) */}
+              {!canManageClasses ? (
+                <div className="md:col-span-2 p-4 bg-primary/5 border border-primary/20 rounded-2xl flex items-center justify-between gap-3 flex-wrap shadow-2xs">
+                  <div className="flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-base shrink-0 border border-primary/20">
+                      {isProfilePrivate ? "🔒" : "🌐"}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-foreground">
+                          Privacidad de tu Perfil:
+                        </span>
+                        <span
+                          className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${
+                            isProfilePrivate
+                              ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                              : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                          }`}
+                        >
+                          {isProfilePrivate ? "🔒 PRIVADO (Por defecto)" : "🌐 PÚBLICO"}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug max-w-xl">
+                        {isProfilePrivate
+                          ? "Tus reservas son anónimas para otros alumnos y tú no ves quiénes asisten. Los administradores y profesores siempre ven la lista completa."
+                          : "Tu asistencia es visible para otros alumnos públicos y puedes ver quiénes asisten. Los administradores siempre ven la lista completa."}
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsProfilePrivate(!isProfilePrivate)}
+                    className="h-8 text-xs font-bold gap-1.5 rounded-xl border-border hover:bg-secondary shrink-0"
+                  >
+                    {isProfilePrivate ? "🌐 Cambiar a Público" : "🔒 Cambiar a Privado"}
+                  </Button>
+                </div>
+              ) : (
+                <div className="md:col-span-2 p-3 bg-secondary/50 border border-border/60 rounded-2xl flex items-center justify-between text-xs text-muted-foreground font-semibold">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">🔑</span>
+                    <span>
+                      <strong>Modo Administración / Staff:</strong> Tienes acceso total para ver nombres, fotos de Instagram y datos de contacto de todos los asistentes (privados y públicos).
+                    </span>
+                  </div>
+                </div>
+              )}
               {/* Row 1 Left: Estado de la Clase */}
               <div className="group rounded-3xl border border-border bg-card p-5 space-y-4 transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg shadow-xs h-full flex flex-col justify-between">
                 <div className="space-y-3">
@@ -6157,6 +6242,10 @@ function ClasesTab({
                       Ocupado (Alumno)
                     </span>
                     <span className="flex items-center gap-1.5">
+                      <span className="h-2.5 w-2.5 rounded-full bg-amber-500 animate-pulse inline-block" />
+                      🟡 Retenido (Spot Lock 3m)
+                    </span>
+                    <span className="flex items-center gap-1.5">
                       <span className="h-2.5 w-2.5 rounded-md border border-primary/40 bg-primary/10 inline-block" />
                       Disponible
                     </span>
@@ -6166,6 +6255,22 @@ function ClasesTab({
                     </span>
                   </div>
                 </div>
+
+                {/* Banner de Spot Locks Activos */}
+                {Object.keys(c.lockedSpots || {}).length > 0 && (
+                  <div className="p-3 bg-amber-500/15 border border-amber-500/40 text-amber-900 dark:text-amber-200 rounded-2xl flex items-center justify-between text-xs font-bold animate-fade-in gap-2 flex-wrap">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">⏳</span>
+                      <span>
+                        {Object.keys(c.lockedSpots || {}).length}{" "}
+                        {Object.keys(c.lockedSpots || {}).length === 1
+                          ? "lugar retenido"
+                          : "lugares retenidos"}{" "}
+                        temporalmente en Spot Lock (expira en 3 minutos).
+                      </span>
+                    </div>
+                  </div>
+                )}
 
                 {/* Escenario / Frente */}
                 <div className="bg-secondary/40 border border-border/40 py-1.5 px-4 rounded-xl text-center text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground flex items-center justify-center gap-2">
@@ -6179,6 +6284,7 @@ function ClasesTab({
                     .map((_, spotIdx) => {
                       const isEnabled = c.layout ? c.layout[spotIdx] : spotIdx < c.capacity;
                       const studentName = c.enrolledSpots?.[spotIdx];
+                      const lockInfo = c.lockedSpots?.[spotIdx];
 
                       if (!isEnabled) {
                         return (
@@ -6193,12 +6299,13 @@ function ClasesTab({
                       }
 
                       if (studentName) {
+                        const isStudentPriv = !canManageClasses && (isProfilePrivate || isStudentPrivate(studentName));
                         const studentPhoto = getStudentPhoto(studentName);
                         const displayName = getDisplayStudentName(studentName);
                         return (
                           <div
                             key={spotIdx}
-                            title={`Lugar #${spotIdx + 1}: ${displayName} (Clic para liberar)`}
+                            title={`Lugar #${spotIdx + 1}: ${displayName} ${canManageClasses ? "(Clic para liberar)" : ""}`}
                             onClick={() => {
                               if (canManageClasses) {
                                 if (
@@ -6213,15 +6320,86 @@ function ClasesTab({
                             className="group/spot relative flex flex-col items-center justify-center cursor-pointer py-1.5"
                           >
                             {/* Enlarged Instagram Story Style Avatar Ring */}
-                            <div className="p-[2.5px] bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 rounded-full shadow-md transition-all duration-200 group-hover/spot:scale-110 group-hover/spot:shadow-xl">
-                              <img
-                                src={studentPhoto}
-                                alt={displayName}
-                                className="h-9 w-9 sm:h-10 sm:w-10 rounded-full object-cover border-2 border-background"
-                              />
+                            <div
+                              className={`p-[2.5px] rounded-full shadow-md transition-all duration-200 group-hover/spot:scale-110 group-hover/spot:shadow-xl ${
+                                isStudentPriv
+                                  ? "bg-muted border border-border/80"
+                                  : "bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600"
+                              }`}
+                            >
+                              {isStudentPriv ? (
+                                <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-secondary flex items-center justify-center text-xs font-bold text-muted-foreground border-2 border-background">
+                                  🔒
+                                </div>
+                              ) : (
+                                <img
+                                  src={studentPhoto}
+                                  alt={displayName}
+                                  className="h-9 w-9 sm:h-10 sm:w-10 rounded-full object-cover border-2 border-background"
+                                />
+                              )}
                             </div>
                             <span className="text-[9px] font-black text-foreground bg-background px-1.5 py-0.2 rounded-full border border-border/60 -mt-2 z-10 shadow-2xs truncate max-w-[52px] text-center">
                               #{spotIdx + 1}
+                            </span>
+                          </div>
+                        );
+                      }
+
+                      // Casillero en Spot Lock (Retenido temporalmente con temporizador regresivo)
+                      if (lockInfo && lockInfo.expiresAt > now) {
+                        const remainingStr = formatCountdown(lockInfo.expiresAt, now);
+                        return (
+                          <div
+                            key={spotIdx}
+                            title={`Lugar #${spotIdx + 1} RETENIDO por ${lockInfo.studentName} (Expira en ${remainingStr})`}
+                            onClick={() => {
+                              if (canManageClasses) {
+                                if (
+                                  confirm(
+                                    `Lugar #${spotIdx + 1} retendido por ${lockInfo.studentName}.\n\n¿Deseas CONFIRMAR definitivamente la reserva?`,
+                                  )
+                                ) {
+                                  setClassesList((prev) =>
+                                    prev.map((item) => {
+                                      if (item.id === c.id) {
+                                        const copySpots = { ...item.enrolledSpots } || {};
+                                        const copyLocks = { ...item.lockedSpots } || {};
+                                        copySpots[spotIdx] = lockInfo.studentName;
+                                        delete copyLocks[spotIdx];
+                                        return {
+                                          ...item,
+                                          enrolledSpots: copySpots,
+                                          lockedSpots: copyLocks,
+                                          booked: Object.keys(copySpots).length,
+                                        };
+                                      }
+                                      return item;
+                                    }),
+                                  );
+                                } else if (
+                                  confirm(`¿Liberar la retención del lugar #${spotIdx + 1}?`)
+                                ) {
+                                  setClassesList((prev) =>
+                                    prev.map((item) => {
+                                      if (item.id === c.id) {
+                                        const copyLocks = { ...item.lockedSpots } || {};
+                                        delete copyLocks[spotIdx];
+                                        return { ...item, lockedSpots: copyLocks };
+                                      }
+                                      return item;
+                                    }),
+                                  );
+                                }
+                              }
+                            }}
+                            className="group/spot relative flex flex-col items-center justify-center cursor-pointer py-1 h-12 sm:h-14 rounded-xl border-2 border-amber-500 bg-amber-500/15 animate-pulse text-amber-700 dark:text-amber-300 font-bold transition-all hover:scale-105 shadow-xs"
+                          >
+                            <span className="text-[10px] font-black flex items-center gap-0.5">
+                              🔒 #{spotIdx + 1}
+                            </span>
+                            <span className="text-[8px] font-extrabold bg-amber-500 text-amber-950 px-1.5 py-0.2 rounded-full -mt-0.5 shadow-2xs">
+                              ⏳ {remainingStr}
                             </span>
                           </div>
                         );
@@ -6235,19 +6413,21 @@ function ClasesTab({
                           onClick={() => {
                             if (canManageClasses) {
                               const nameInput = prompt(
-                                `Inscribir alumno en el lugar #${spotIdx + 1}:`,
+                                `Retener lugar #${spotIdx + 1} durante 3 minutos (Spot Lock) para alumno:`,
                               );
                               if (nameInput?.trim()) {
                                 const typedName = nameInput.trim();
                                 setClassesList((prev) =>
                                   prev.map((item) => {
                                     if (item.id === c.id) {
-                                      const copySpots = { ...item.enrolledSpots } || {};
-                                      copySpots[spotIdx] = typedName;
+                                      const copyLocks = { ...item.lockedSpots } || {};
+                                      copyLocks[spotIdx] = {
+                                        studentName: typedName,
+                                        expiresAt: Date.now() + 3 * 60 * 1000,
+                                      };
                                       return {
                                         ...item,
-                                        enrolledSpots: copySpots,
-                                        booked: Object.keys(copySpots).length,
+                                        lockedSpots: copyLocks,
                                       };
                                     }
                                     return item;
@@ -6677,6 +6857,203 @@ function ClasesTab({
               </div>
             </div>
 
+            {/* Card Destacada: Plantilla y Mapa de Distribución de Sala (10x10) */}
+            <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl space-y-3">
+              {/* Header with Title */}
+              <div className="flex items-center justify-between flex-wrap gap-2 border-b border-primary/10 pb-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
+                  🗺️ Distribución de Sala (Mapa 10x10)
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10.5px] font-bold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full border border-primary/20">
+                    {layoutMatrix.filter(Boolean).length} lugares activos
+                  </span>
+                </div>
+              </div>
+
+              {/* Selector & Actions Row */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                    Plantilla de Salón:
+                  </label>
+                  {!showSavePresetInput && (
+                    <button
+                      type="button"
+                      onClick={() => setShowSavePresetInput(true)}
+                      className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1"
+                    >
+                      💾 Guardar mapa como plantilla
+                    </button>
+                  )}
+                </div>
+
+                <Select
+                  value={selectedPresetId}
+                  onValueChange={(val) => {
+                    setSelectedPresetId(val);
+                    const preset = ROOM_PRESETS.find((p) => p.id === val);
+                    if (preset) {
+                      const newLayout = preset.getLayout();
+                      setLayoutMatrix(newLayout);
+                      setCustomCapacity(newLayout.filter(Boolean).length);
+                    }
+                  }}
+                >
+                  <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold shadow-2xs">
+                    <SelectValue placeholder="Selecciona una plantilla de salón..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ROOM_PRESETS.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        <div className="flex items-center justify-between w-full">
+                          <span>{p.name}</span>
+                          {p.id.startsWith("preset-") && (
+                            <span className="ml-2 text-[9px] font-bold bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
+                              Tu plantilla
+                            </span>
+                          )}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {/* Inline Save Preset Input when clicked */}
+                {showSavePresetInput && (
+                  <div className="p-2.5 bg-background border border-primary/30 rounded-xl space-y-2 animate-fade-in shadow-2xs">
+                    <label className="text-[10.5px] font-bold text-foreground block">
+                      Nombre para la nueva plantilla:
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        placeholder="Ej: Sala Spinning 18 Bicis"
+                        value={newPresetName}
+                        onChange={(e) => setNewPresetName(e.target.value)}
+                        className="flex-1 h-8 rounded-lg border border-border bg-background px-2.5 text-xs text-foreground font-semibold focus-visible:outline-none"
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="h-8 px-3 text-xs font-bold bg-primary text-primary-foreground rounded-lg"
+                        onClick={() => {
+                          if (!newPresetName.trim()) {
+                            alert("Por favor ingresa un nombre para la plantilla.");
+                            return;
+                          }
+                          const currentLayoutCopy = [...layoutMatrix];
+                          const cap = currentLayoutCopy.filter(Boolean).length;
+                          const newPreset = {
+                            id: `preset-${Date.now()}`,
+                            name: `${newPresetName.trim()} (${cap} lugares)`,
+                            capacity: cap,
+                            getLayout: () => currentLayoutCopy,
+                          };
+                          setCustomPresets((prev) => [...prev, newPreset]);
+                          setSelectedPresetId(newPreset.id);
+                          setNewPresetName("");
+                          setShowSavePresetInput(false);
+                          alert(`✓ Plantilla "${newPreset.name}" guardada con éxito.`);
+                        }}
+                      >
+                        Guardar
+                      </Button>
+                      <button
+                        type="button"
+                        onClick={() => setShowSavePresetInput(false)}
+                        className="text-xs text-muted-foreground hover:text-foreground font-semibold px-1"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Badges de plantillas creadas por ti con botón de eliminar */}
+                {customPresets.length > 0 && (
+                  <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                    <span className="text-[10px] text-muted-foreground font-semibold">
+                      Tus plantillas guardadas:
+                    </span>
+                    {customPresets.map((cp) => (
+                      <span
+                        key={cp.id}
+                        className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-lg border transition-all ${
+                          selectedPresetId === cp.id
+                            ? "bg-primary/15 border-primary/40 text-primary"
+                            : "bg-background border-border/60 text-foreground"
+                        }`}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedPresetId(cp.id);
+                            const newLayout = cp.getLayout();
+                            setLayoutMatrix(newLayout);
+                            setCustomCapacity(newLayout.filter(Boolean).length);
+                          }}
+                          className="hover:underline"
+                        >
+                          {cp.name}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (confirm(`¿Eliminar la plantilla "${cp.name}"?`)) {
+                              setCustomPresets((prev) => prev.filter((p) => p.id !== cp.id));
+                              if (selectedPresetId === cp.id) {
+                                const defaultP = defaultPresets[1] || defaultPresets[0];
+                                setSelectedPresetId(defaultP.id);
+                                const newLayout = defaultP.getLayout();
+                                setLayoutMatrix(newLayout);
+                                setCustomCapacity(newLayout.filter(Boolean).length);
+                              }
+                            }
+                          }}
+                          className="text-destructive/70 hover:text-destructive transition-colors ml-0.5"
+                          title="Eliminar esta plantilla"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Mini Map Preview Grid (10x10) */}
+              <div className="bg-background border border-border/60 p-3 rounded-xl space-y-2">
+                <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                  <span>Haz clic en los casilleros para activarlos/desactivarlos</span>
+                  <span>Frente ↑</span>
+                </div>
+                <div className="grid grid-cols-10 gap-1 p-1.5 bg-secondary/20 rounded-lg border border-border/40 max-h-[160px] overflow-y-auto custom-scrollbar">
+                  {layoutMatrix.map((isActive, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      title={`Lugar #${idx + 1}`}
+                      onClick={() => {
+                        const updated = [...layoutMatrix];
+                        updated[idx] = !updated[idx];
+                        setLayoutMatrix(updated);
+                        setSelectedPresetId("custom");
+                        setCustomCapacity(updated.filter(Boolean).length);
+                      }}
+                      className={`h-5 w-full rounded-md text-[9px] font-bold transition-all flex items-center justify-center ${
+                        isActive
+                          ? "bg-primary text-primary-foreground shadow-2xs"
+                          : "bg-muted/40 text-muted-foreground/30 border border-dashed border-border/40 hover:bg-muted"
+                      }`}
+                    >
+                      {idx + 1}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">
@@ -6713,128 +7090,6 @@ function ClasesTab({
                   onChange={(e) => setCreditsCost(e.target.value)}
                   className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground font-semibold"
                 />
-              </div>
-            </div>
-
-            {/* Plantilla de Distribución de Sala (10x10 Grid) */}
-            <div className="space-y-1.5 pt-1">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-muted-foreground">
-                  Plantilla de Distribución de Sala (10x10)
-                </label>
-                <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
-                  {layoutMatrix.filter(Boolean).length} lugares activos
-                </span>
-              </div>
-              <Select
-                value={selectedPresetId}
-                onValueChange={(val) => {
-                  setSelectedPresetId(val);
-                  const preset = ROOM_PRESETS.find((p) => p.id === val);
-                  if (preset) {
-                    const newLayout = preset.getLayout();
-                    setLayoutMatrix(newLayout);
-                    setCustomCapacity(newLayout.filter(Boolean).length);
-                  }
-                }}
-              >
-                <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold">
-                  <SelectValue placeholder="Selecciona una plantilla de salón..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {ROOM_PRESETS.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {p.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Mini Map Preview Grid (10x10) */}
-            <div className="bg-secondary/20 border border-border/40 p-3 rounded-2xl space-y-2">
-              <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                <span>Mapa de Sala (Haz clic para habilitar/deshabilitar)</span>
-                <span>Frente / Escenario ↑</span>
-              </div>
-              <div className="grid grid-cols-10 gap-1 p-1.5 bg-background rounded-xl border border-border/40 max-h-[140px] overflow-y-auto custom-scrollbar">
-                {layoutMatrix.map((isActive, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    title={`Lugar #${idx + 1}`}
-                    onClick={() => {
-                      const updated = [...layoutMatrix];
-                      updated[idx] = !updated[idx];
-                      setLayoutMatrix(updated);
-                      setSelectedPresetId("custom");
-                      setCustomCapacity(updated.filter(Boolean).length);
-                    }}
-                    className={`h-5 w-full rounded-md text-[9px] font-bold transition-all flex items-center justify-center ${
-                      isActive
-                        ? "bg-primary text-primary-foreground shadow-2xs"
-                        : "bg-muted/40 text-muted-foreground/30 border border-dashed border-border/40 hover:bg-muted"
-                    }`}
-                  >
-                    {idx + 1}
-                  </button>
-                ))}
-              </div>
-
-              {/* Guardar esta formación como Plantilla */}
-              <div className="pt-1.5 border-t border-border/40 flex flex-col sm:flex-row items-center justify-between gap-2">
-                {!showSavePresetInput ? (
-                  <button
-                    type="button"
-                    onClick={() => setShowSavePresetInput(true)}
-                    className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1.5 py-0.5"
-                  >
-                    <span>💾 Guardar esta formación como nueva plantilla</span>
-                  </button>
-                ) : (
-                  <div className="flex items-center gap-2 w-full animate-fade-in">
-                    <input
-                      type="text"
-                      placeholder="Ej: Sala Spinning 18 Bicis"
-                      value={newPresetName}
-                      onChange={(e) => setNewPresetName(e.target.value)}
-                      className="flex-1 h-8 rounded-lg border border-border bg-background px-2.5 text-xs text-foreground font-semibold focus-visible:outline-none"
-                    />
-                    <Button
-                      type="button"
-                      size="sm"
-                      className="h-8 px-3 text-xs font-bold bg-primary text-primary-foreground rounded-lg"
-                      onClick={() => {
-                        if (!newPresetName.trim()) {
-                          alert("Por favor ingresa un nombre para la plantilla.");
-                          return;
-                        }
-                        const currentLayoutCopy = [...layoutMatrix];
-                        const cap = currentLayoutCopy.filter(Boolean).length;
-                        const newPreset = {
-                          id: `preset-${Date.now()}`,
-                          name: `${newPresetName.trim()} (${cap} lugares)`,
-                          capacity: cap,
-                          getLayout: () => currentLayoutCopy,
-                        };
-                        setCustomPresets((prev) => [...prev, newPreset]);
-                        setSelectedPresetId(newPreset.id);
-                        setNewPresetName("");
-                        setShowSavePresetInput(false);
-                        alert(`✓ Plantilla "${newPreset.name}" guardada con éxito.`);
-                      }}
-                    >
-                      Guardar
-                    </Button>
-                    <button
-                      type="button"
-                      onClick={() => setShowSavePresetInput(false)}
-                      className="text-xs text-muted-foreground hover:text-foreground font-semibold px-1"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                )}
               </div>
             </div>
 
