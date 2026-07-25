@@ -1,14 +1,15 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { Index } from "./index";
+import { GYMS } from "@/lib/gyms";
 import { 
   User, Calendar, BarChart3, CreditCard, Settings, 
   LogOut, QrCode, CheckCircle, Clock, AlertTriangle, 
   MapPin, ChevronRight, ChevronLeft, X, Sparkles, Shield, AlertCircle, ShieldAlert, Star, Heart,
   Flame, Coffee, Droplet, TrendingUp, Info, Edit, Sun, Moon, ArrowUpRight, Utensils,
   Camera, Dumbbell, Brain, Activity, Plus, Check, Loader2, ShoppingCart, Copy, Share2,
-  Play, Pause, RotateCcw, Search, ChevronUp, ChevronDown, Trash2, FileDown
+  Play, Pause, RotateCcw, Search, ChevronUp, ChevronDown, Trash2, FileDown, Navigation, Scan, Smartphone
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -149,6 +150,7 @@ const TABS = [
   { id: "inicio", label: "Inicio", icon: User },
   { id: "diario", label: "AI Coach", icon: Sparkles },
   { id: "clases", label: "Check-in", icon: QrCode },
+  { id: "favoritos", label: "Favoritos", icon: Heart },
   { id: "progreso", label: "Mi Progreso", icon: BarChart3 },
   { id: "pagos", label: "Suscripción", icon: CreditCard },
   { id: "config", label: "Configuración", icon: Settings },
@@ -216,7 +218,7 @@ function StudentDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <div className={`min-h-screen ${activeTab === "diario" ? "bg-slate-50/70 dark:bg-background" : "bg-background"} text-foreground flex flex-col transition-colors duration-200`}>
       {/* Site Header with User Dropdown Menu always visible at top */}
       <SiteHeader />
 
@@ -227,32 +229,12 @@ function StudentDashboard() {
         {activeTab === "inicio" && <InicioTab />}
         {activeTab === "diario" && <DiarioTab />}
         {activeTab === "clases" && <ClasesTab onOpenQr={() => setQrOpen(true)} />}
+        {activeTab === "favoritos" && <FavoritosTab />}
         {activeTab === "progreso" && <ProgresoTab />}
         {activeTab === "pagos" && <PagosTab />}
         {activeTab === "config" && <ConfigTab />}
       </main>
       </div>
-
-      {/* Bottom Nav for Mobile */}
-      <nav className="flex md:hidden fixed bottom-0 left-0 right-0 border-t border-border bg-card/90 backdrop-blur px-4 py-2 justify-between z-40">
-        {TABS.map((tab) => {
-          const Icon = tab.icon;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex flex-col items-center gap-1 flex-1 py-1 rounded-xl transition ${
-                activeTab === tab.id
-                  ? "text-foreground"
-                  : "text-muted-foreground"
-              }`}
-            >
-              <Icon className="h-5 w-5" />
-              <span className="text-[10px] font-medium">{tab.label}</span>
-            </button>
-          );
-        })}
-      </nav>
 
       {/* QR Modal Overlay */}
       {qrOpen && (
@@ -426,6 +408,153 @@ function InicioTab() {
   return <Index hideHeader={true} />;
 }
 
+// Subcomponent: Favoritos Tab
+function FavoritosTab() {
+  const navigate = useNavigate();
+  const [favoriteSlugs, setFavoriteSlugs] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("shakerfy_favorites");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setFavoriteSlugs(parsed);
+            return;
+          }
+        } catch (e) {}
+      }
+      // Default sample favorites if none stored
+      const defaults = ["pulsar-fit", "zenith-studio"];
+      setFavoriteSlugs(defaults);
+      localStorage.setItem("shakerfy_favorites", JSON.stringify(defaults));
+    }
+  }, []);
+
+  const favoriteGyms = GYMS.filter((g) => favoriteSlugs.includes(g.slug));
+
+  const removeFavorite = (slug: string) => {
+    const updated = favoriteSlugs.filter((s) => s !== slug);
+    setFavoriteSlugs(updated);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("shakerfy_favorites", JSON.stringify(updated));
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+          Mis Favoritos
+        </div>
+        <h1 className="mt-1 text-2xl font-bold tracking-tight text-foreground">
+          Gimnasios Guardados
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Centros de entrenamiento y studios que has guardado en tus favoritos.
+        </p>
+      </div>
+
+      {favoriteGyms.length === 0 ? (
+        <Card className="p-8 text-center border border-border bg-card rounded-3xl">
+          <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center mx-auto mb-3">
+            <Heart className="h-6 w-6 text-muted-foreground" />
+          </div>
+          <h3 className="text-sm font-semibold text-foreground">No tienes gimnasios guardados</h3>
+          <p className="mt-1 text-xs text-muted-foreground max-w-sm mx-auto">
+            Explora gimnasios en la página principal y presiona el ícono de corazón para guardarlos aquí.
+          </p>
+          <Button
+            onClick={() => navigate({ to: "/" })}
+            className="mt-4 rounded-full text-xs"
+            size="sm"
+          >
+            Explorar gimnasios
+          </Button>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full items-stretch">
+          {favoriteGyms.map((gym) => (
+            <Card
+              key={gym.slug}
+              className="border border-border bg-card shadow-xs rounded-3xl p-5 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg transition-all duration-300 flex flex-col justify-between"
+            >
+              <div>
+                <div className="relative h-40 rounded-2xl overflow-hidden mb-4 bg-muted">
+                  <img
+                    src={gym.images[0]}
+                    alt={gym.name}
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    onClick={() => removeFavorite(gym.slug)}
+                    className="absolute top-3 right-3 p-2 rounded-full bg-background/80 backdrop-blur text-rose-500 hover:bg-background transition"
+                  >
+                    <Heart className="h-4 w-4 fill-rose-500" />
+                  </button>
+                  <div className="absolute bottom-3 left-3 bg-background/90 backdrop-blur px-2.5 py-1 rounded-full text-[11px] font-semibold text-foreground flex items-center gap-1">
+                    <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                    <span>{gym.rating}</span>
+                    <span className="text-muted-foreground">({gym.reviews})</span>
+                  </div>
+                </div>
+
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="font-bold text-base text-foreground">{gym.name}</h3>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                      <MapPin className="h-3 w-3" />
+                      <span>{gym.neighborhood}, {gym.city}</span>
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                      Desde ${gym.priceFrom.toLocaleString()}/mes
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-1.5 mt-3">
+                  {gym.tags.map((t) => (
+                    <Badge key={t} variant="secondary" className="text-[10px] rounded-full">
+                      {t}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-5 pt-3 border-t border-border/60 flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">{gym.hours}</span>
+                <Link
+                  to="/gym/$slug"
+                  params={{ slug: gym.slug }}
+                  className="inline-flex items-center justify-center text-xs font-semibold text-primary hover:underline gap-1"
+                >
+                  <span>Ver detalle</span>
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ponytail: Haversine distance calculation in meters between 2 lat/lon coordinates
+function getHaversineDistanceInMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371e3;
+  const φ1 = (lat1 * Math.PI) / 180;
+  const φ2 = (lat2 * Math.PI) / 180;
+  const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+  const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return Math.round(R * c);
+}
+
 // Subcomponent: User Class Detail Modal
 function UserClassDetailModal({
   classData,
@@ -434,6 +563,8 @@ function UserClassDetailModal({
   onOpenQr,
   onBook,
   onCancel,
+  userMemberships = [],
+  setUserMemberships,
 }: {
   classData: any | null;
   isOpen: boolean;
@@ -441,6 +572,8 @@ function UserClassDetailModal({
   onOpenQr?: () => void;
   onBook?: (classId: string, spotIndex: number | null) => void;
   onCancel?: (classId: string) => void;
+  userMemberships?: any[];
+  setUserMemberships?: React.Dispatch<React.SetStateAction<any[]>>;
 }) {
   if (!classData) return null;
 
@@ -453,6 +586,101 @@ function UserClassDetailModal({
 
   // Interactive Surrender / Ceder lugar state
   const [isSpotSurrendered, setIsSpotSurrendered] = useState<boolean>(classData.isSpotSurrendered ?? false);
+
+  // Check-in QR & Geolocalización states
+  const [isQrScannerOpen, setIsQrScannerOpen] = useState<boolean>(false);
+  const [isGpsVerifying, setIsGpsVerifying] = useState<boolean>(false);
+  const [gpsError, setGpsError] = useState<string | null>(null);
+  const [checkInSuccess, setCheckInSuccess] = useState<{ method: "QR" | "GPS"; time: string; distance?: number } | null>(null);
+
+  // Gym coordinates (Palermo/Belgrano Sede default)
+  const GYM_GPS = { lat: -34.5889, lon: -58.4305 };
+
+  const handleGpsCheckIn = () => {
+    setGpsError(null);
+    setIsGpsVerifying(true);
+
+    if (!navigator.geolocation) {
+      setIsGpsVerifying(false);
+      setGpsError("Tu navegador no soporta geolocalización. Utiliza el escáner QR.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setIsGpsVerifying(false);
+        const userLat = position.coords.latitude;
+        const userLon = position.coords.longitude;
+        const dist = getHaversineDistanceInMeters(userLat, userLon, GYM_GPS.lat, GYM_GPS.lon);
+
+        if (dist <= 50) {
+          setCheckInSuccess({
+            method: "GPS",
+            time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+            distance: dist,
+          });
+        } else {
+          setGpsError(`Te encuentras a ${dist}m de la sede. Debes estar a menos de 50m para confirmar por GPS.`);
+        }
+      },
+      (error) => {
+        setIsGpsVerifying(false);
+        // ponytail: fallback simulated check-in for demo environment if location permission is denied
+        const confirmDemo = confirm(
+          "⚠️ No se obtuvo la ubicación GPS real del navegador.\n\n¿Deseas simular estar a 18 metros del gimnasio para validar la experiencia de Check-in GPS?"
+        );
+        if (confirmDemo) {
+          setCheckInSuccess({
+            method: "GPS",
+            time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+            distance: 18,
+          });
+        } else {
+          setGpsError("Permiso de ubicación no disponible o denegado.");
+        }
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  };
+
+  const handleQrCheckInSuccess = () => {
+    setIsQrScannerOpen(false);
+    setCheckInSuccess({
+      method: "QR",
+      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    });
+  };
+
+  // Active User Plan Validation Logic
+  const userPlan = useMemo(() => {
+    if (!classData || !userMemberships.length) return null;
+    return (
+      userMemberships.find(
+        (m) =>
+          m.id === classData.gymId ||
+          (classData.gymName && m.gymName.toLowerCase().includes(classData.gymName.toLowerCase())) ||
+          (classData.location && m.location.toLowerCase().includes(classData.location.toLowerCase()))
+      ) || userMemberships[0]
+    );
+  }, [classData, userMemberships]);
+
+  const classActivityName = (classData?.discipline || classData?.name || "").toLowerCase();
+
+  const isActivityAllowed = useMemo(() => {
+    if (!userPlan) return true;
+    if (userPlan.passType === "Pase Libre") return true;
+    if (!userPlan.includedActivities || !userPlan.includedActivities.length) return true;
+    return userPlan.includedActivities.some((act: string) => {
+      const a = act.toLowerCase();
+      return a === "todas" || a === "pase libre" || classActivityName.includes(a) || a.includes(classActivityName);
+    });
+  }, [userPlan, classActivityName]);
+
+  const hasEnoughCredits = useMemo(() => {
+    if (!userPlan) return true;
+    if (userPlan.passType === "Pase Libre") return true;
+    return userPlan.remainingCredits !== null && userPlan.remainingCredits > 0;
+  }, [userPlan]);
 
   // Enrolled students mock with privacy state
   const enrolledStudents = classData.enrolledStudents || [
@@ -595,6 +823,128 @@ function UserClassDetailModal({
             </Button>
           </div>
 
+          {/* Active Plan Status Banner */}
+          {userPlan && (
+            <div
+              className={`p-3.5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs ${
+                !isActivityAllowed || !hasEnoughCredits
+                  ? "bg-amber-500/10 border-amber-500/30 text-amber-900 dark:text-amber-200"
+                  : "bg-emerald-500/10 border-emerald-500/30 text-emerald-900 dark:text-emerald-200"
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <CreditCard className="w-4 h-4 shrink-0 text-emerald-500" />
+                <div>
+                  <div className="font-bold">
+                    Plan: {userPlan.planName} ({userPlan.gymName})
+                  </div>
+                  <div className="text-[11px] opacity-80 mt-0.5">
+                    {!isActivityAllowed
+                      ? `⚠️ Esta disciplina no está incluida en tu plan. (Incluye: ${userPlan.includedActivities?.join(", ") || "Disciplinas específicas"})`
+                      : !hasEnoughCredits
+                      ? `⚠️ No tienes créditos disponibles en tu plan (${userPlan.remainingCredits}/${userPlan.creditsCount} rest.).`
+                      : userPlan.passType === "Por Créditos"
+                      ? `Créditos restantes: ${userPlan.remainingCredits} de ${userPlan.creditsCount}`
+                      : "Pase Libre Ilimitado"}
+                  </div>
+                </div>
+              </div>
+
+              <Badge
+                variant="outline"
+                className={`text-[10px] font-bold uppercase tracking-wider shrink-0 ${
+                  !isActivityAllowed || !hasEnoughCredits
+                    ? "border-amber-500/40 bg-amber-500/20 text-amber-300"
+                    : "border-emerald-500/40 bg-emerald-500/20 text-emerald-300"
+                }`}
+              >
+                {!isActivityAllowed ? "Actividad Excluida" : !hasEnoughCredits ? "Sin Créditos" : "Plan Compatible"}
+              </Badge>
+            </div>
+          )}
+
+          {/* Interactive Check-in Options (QR & Geolocation GPS) */}
+          {classData.status === "booked" && !isSpotSurrendered && (
+            <div className="p-5 rounded-2xl border border-border bg-card shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 flex items-center gap-2">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    Confirmar Asistencia a la Clase
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Realiza tu check-in mediante el lector QR físico o validación por GPS al llegar al centro.
+                  </p>
+                </div>
+              </div>
+
+              {checkInSuccess ? (
+                <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center shrink-0 border border-emerald-500/30">
+                      <CheckCircle className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="font-bold text-foreground block text-sm">
+                        Asistencia Confirmada por {checkInSuccess.method === "QR" ? "Escáner QR" : "Geolocalización GPS"}
+                      </span>
+                      <span className="text-muted-foreground text-[11px] block mt-0.5">
+                        Registrado a las {checkInSuccess.time} · {checkInSuccess.distance !== undefined ? `Distancia verificada: ${checkInSuccess.distance}m de la sede.` : "Validación de código QR completada."}
+                      </span>
+                    </div>
+                  </div>
+                  <Badge className="bg-emerald-500 text-black text-[10px] font-extrabold uppercase shrink-0">
+                    Presente
+                  </Badge>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Button 1: QR Scanner */}
+                    <Button
+                      onClick={() => setIsQrScannerOpen(true)}
+                      className="h-auto py-3 px-4 rounded-2xl bg-foreground text-background hover:opacity-90 font-bold flex flex-col items-start gap-1 transition-all duration-300 hover:-translate-y-0.5 shadow-sm"
+                    >
+                      <div className="flex items-center gap-2 text-xs">
+                        <Scan className="w-4 h-4 text-emerald-400" />
+                        <span>Check-in con QR</span>
+                      </div>
+                      <span className="text-[10px] font-normal opacity-80">Escanear código en recepción</span>
+                    </Button>
+
+                    {/* Button 2: Geolocation GPS */}
+                    <Button
+                      onClick={handleGpsCheckIn}
+                      disabled={isGpsVerifying}
+                      variant="outline"
+                      className="h-auto py-3 px-4 rounded-2xl border-border bg-secondary/40 hover:bg-secondary hover:border-foreground/30 font-bold flex flex-col items-start gap-1 transition-all duration-300 hover:-translate-y-0.5 shadow-sm"
+                    >
+                      <div className="flex items-center gap-2 text-xs text-foreground">
+                        {isGpsVerifying ? (
+                          <Loader2 className="w-4 h-4 text-emerald-500 animate-spin" />
+                        ) : (
+                          <Navigation className="w-4 h-4 text-emerald-500" />
+                        )}
+                        <span>Check-in por GPS (50m)</span>
+                      </div>
+                      <span className="text-[10px] font-normal text-muted-foreground">Validar ubicación actual en la sede</span>
+                    </Button>
+                  </div>
+
+                  {gpsError && (
+                    <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-xs flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      <span>{gpsError}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Coach & Session Stats */}
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="p-4 rounded-2xl border border-border/80 bg-secondary/30 flex items-center gap-3">
@@ -644,133 +994,144 @@ function UserClassDetailModal({
           </div>
 
           {/* CIRCULAR SEAT / STUDIO LAYOUT GRID */}
-          <div className="space-y-4 p-5 rounded-2xl border border-border bg-card">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                <Dumbbell className="w-4 h-4 text-emerald-500" />
-                <span>Mapa de Círculos / Fotos de Asistencia</span>
+          {classData.requiresSpotSelection === false ? (
+            <div className="p-4 rounded-2xl border border-border bg-secondary/30 text-center space-y-1.5">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
+                Modo Aforo General (Sin Selección de Lugar)
               </span>
-              <span className="text-[11px] text-muted-foreground font-medium">
-                {classData.status === "booked"
-                  ? isSpotSurrendered
-                    ? "Lugar #5 cedido a la comunidad"
-                    : "Lugar #5 asignado a ti"
-                  : selectedSpot !== null
-                  ? `Lugar #${selectedSpot + 1} seleccionado (Toca de nuevo para des-elegir)`
-                  : "Toca un círculo libre para reservarlo"}
-              </span>
+              <p className="text-xs text-muted-foreground max-w-md mx-auto">
+                Esta actividad no requiere elegir una ubicación numerada. Tu reserva garantiza 1 cupo directo en la sesión.
+              </p>
             </div>
+          ) : (
+            <div className="space-y-4 p-5 rounded-2xl border border-border bg-card">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <Dumbbell className="w-4 h-4 text-emerald-500" />
+                  <span>Mapa de Círculos / Fotos de Asistencia</span>
+                </span>
+                <span className="text-[11px] text-muted-foreground font-medium">
+                  {classData.status === "booked"
+                    ? isSpotSurrendered
+                      ? "Lugar #5 cedido a la comunidad"
+                      : "Lugar #5 asignado a ti"
+                    : selectedSpot !== null
+                    ? `Lugar #${selectedSpot + 1} seleccionado (Toca de nuevo para des-elegir)`
+                    : "Toca un círculo libre para reservarlo"}
+                </span>
+              </div>
 
-            {/* Room Screen / Coach Stage indicator */}
-            <div className="w-full bg-muted/60 text-center py-1.5 rounded-xl text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground border border-border/50 shadow-inner">
-              🏋️ Escenario / Frente del Coach
-            </div>
+              {/* Room Screen / Coach Stage indicator */}
+              <div className="w-full bg-muted/60 text-center py-1.5 rounded-xl text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground border border-border/50 shadow-inner">
+                🏋️ Escenario / Frente del Coach
+              </div>
 
-            {/* Circular Grid (4x4) */}
-            <div className="grid grid-cols-4 gap-3 py-2 justify-items-center">
-              {spots.map((spot, idx) => {
-                const isSelected = selectedSpot === idx;
-                const occupant = spot.occupant;
+              {/* Circular Grid (4x4) */}
+              <div className="grid grid-cols-4 gap-3 py-2 justify-items-center">
+                {spots.map((spot, idx) => {
+                  const isSelected = selectedSpot === idx;
+                  const occupant = spot.occupant;
 
-                return (
-                  <div key={idx} className="flex flex-col items-center gap-1">
-                    <button
-                      type="button"
-                      disabled={spot.occupiedByOther}
-                      onClick={() => {
-                        // TOGGLE SPOT SELECTION / DESELECT IF CLICKED AGAIN
-                        if (spot.occupiedByOther) return;
-                        setSelectedSpot((prev) => (prev === idx ? null : idx));
-                      }}
-                      className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center relative transition-all duration-200 ${
-                        spot.isUserSpot
-                          ? "ring-4 ring-emerald-500 ring-offset-2 ring-offset-card shadow-lg shadow-emerald-500/20 scale-105"
+                  return (
+                    <div key={idx} className="flex flex-col items-center gap-1">
+                      <button
+                        type="button"
+                        disabled={spot.occupiedByOther}
+                        onClick={() => {
+                          // TOGGLE SPOT SELECTION / DESELECT IF CLICKED AGAIN
+                          if (spot.occupiedByOther) return;
+                          setSelectedSpot((prev) => (prev === idx ? null : idx));
+                        }}
+                        className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center relative transition-all duration-200 ${
+                          spot.isUserSpot
+                            ? "ring-4 ring-emerald-500 ring-offset-2 ring-offset-card shadow-lg shadow-emerald-500/20 scale-105"
+                            : isSelected
+                            ? "ring-4 ring-emerald-400 ring-offset-2 ring-offset-card shadow-lg shadow-emerald-500/20 scale-105"
+                            : spot.occupiedByOther
+                            ? "cursor-not-allowed opacity-95"
+                            : "border-2 border-dashed border-emerald-500/40 bg-emerald-500/5 hover:border-emerald-500 hover:bg-emerald-500/15 hover:scale-105 cursor-pointer"
+                        }`}
+                      >
+                        {/* USER SPOT CIRCLE */}
+                        {spot.isUserSpot ? (
+                          <div className="w-full h-full rounded-full overflow-hidden relative border-2 border-emerald-400">
+                            {isUserProfilePublic ? (
+                              <img
+                                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
+                                alt="Tú"
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-zinc-900 text-emerald-400 flex items-center justify-center">
+                                <User className="w-6 h-6" />
+                              </div>
+                            )}
+                            <span className="absolute bottom-0 inset-x-0 bg-emerald-500 text-black text-[9px] font-black text-center py-0.5 leading-none">
+                              TÚ
+                            </span>
+                          </div>
+                        ) : isSelected && !spot.occupiedByOther ? (
+                          /* SELECTED OPEN SPOT CIRCLE (CAN BE TOGGLED OFF) */
+                          <div className="w-full h-full rounded-full bg-emerald-500 text-black flex flex-col items-center justify-center font-black text-xs shadow-md relative">
+                            <Check className="w-5 h-5 stroke-[3]" />
+                            <span className="text-[8px] leading-none mt-0.5">#{spot.index}</span>
+                          </div>
+                        ) : spot.occupiedByOther ? (
+                          /* OCCUPIED SPOT CIRCLE (PUBLIC vs PRIVATE PHOTO) */
+                          <div className="w-full h-full rounded-full overflow-hidden relative border-2 border-zinc-700/60 bg-secondary/80">
+                            {occupant && occupant.isPublic ? (
+                              <img
+                                src={occupant.photo}
+                                alt={occupant.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-zinc-900 text-zinc-400 flex flex-col items-center justify-center">
+                                <User className="w-5 h-5 opacity-60" />
+                                <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-tighter">Privado</span>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          /* FREE SPOT CIRCLE */
+                          <div className="flex flex-col items-center justify-center text-emerald-500">
+                            <span className="text-xs font-bold">#{spot.index}</span>
+                            <span className="text-[8px] text-muted-foreground font-semibold">Libre</span>
+                          </div>
+                        )}
+                      </button>
+
+                      {/* Circle Label Subtitle */}
+                      <span className="text-[10px] font-semibold text-center text-muted-foreground truncate max-w-[70px]">
+                        {spot.isUserSpot
+                          ? "Agustín (Tú)"
                           : isSelected
-                          ? "ring-4 ring-emerald-400 ring-offset-2 ring-offset-card shadow-lg shadow-emerald-500/20 scale-105"
+                          ? `Lugar #${spot.index} (Elegido)`
                           : spot.occupiedByOther
-                          ? "cursor-not-allowed opacity-95"
-                          : "border-2 border-dashed border-emerald-500/40 bg-emerald-500/5 hover:border-emerald-500 hover:bg-emerald-500/15 hover:scale-105 cursor-pointer"
-                      }`}
-                    >
-                      {/* USER SPOT CIRCLE */}
-                      {spot.isUserSpot ? (
-                        <div className="w-full h-full rounded-full overflow-hidden relative border-2 border-emerald-400">
-                          {isUserProfilePublic ? (
-                            <img
-                              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
-                              alt="Tú"
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-zinc-900 text-emerald-400 flex items-center justify-center">
-                              <User className="w-6 h-6" />
-                            </div>
-                          )}
-                          <span className="absolute bottom-0 inset-x-0 bg-emerald-500 text-black text-[9px] font-black text-center py-0.5 leading-none">
-                            TÚ
-                          </span>
-                        </div>
-                      ) : isSelected && !spot.occupiedByOther ? (
-                        /* SELECTED OPEN SPOT CIRCLE (CAN BE TOGGLED OFF) */
-                        <div className="w-full h-full rounded-full bg-emerald-500 text-black flex flex-col items-center justify-center font-black text-xs shadow-md relative">
-                          <Check className="w-5 h-5 stroke-[3]" />
-                          <span className="text-[8px] leading-none mt-0.5">#{spot.index}</span>
-                        </div>
-                      ) : spot.occupiedByOther ? (
-                        /* OCCUPIED SPOT CIRCLE (PUBLIC vs PRIVATE PHOTO) */
-                        <div className="w-full h-full rounded-full overflow-hidden relative border-2 border-zinc-700/60 bg-secondary/80">
-                          {occupant && occupant.isPublic ? (
-                            <img
-                              src={occupant.photo}
-                              alt={occupant.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-zinc-900 text-zinc-400 flex flex-col items-center justify-center">
-                              <User className="w-5 h-5 opacity-60" />
-                              <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-tighter">Privado</span>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        /* FREE SPOT CIRCLE */
-                        <div className="flex flex-col items-center justify-center text-emerald-500">
-                          <span className="text-xs font-bold">#{spot.index}</span>
-                          <span className="text-[8px] text-muted-foreground font-semibold">Libre</span>
-                        </div>
-                      )}
-                    </button>
+                          ? occupant?.isPublic
+                            ? occupant.name
+                            : "Privado"
+                          : `Lugar #${spot.index}`}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
 
-                    {/* Circle Label Subtitle */}
-                    <span className="text-[10px] font-semibold text-center text-muted-foreground truncate max-w-[70px]">
-                      {spot.isUserSpot
-                        ? "Agustín (Tú)"
-                        : isSelected
-                        ? `Lugar #${spot.index} (Elegido)`
-                        : spot.occupiedByOther
-                        ? occupant?.isPublic
-                          ? occupant.name
-                          : "Privado"
-                        : `Lugar #${spot.index}`}
-                    </span>
-                  </div>
-                );
-              })}
+              {/* Legend */}
+              <div className="flex items-center justify-center gap-5 text-[11px] text-muted-foreground pt-2 border-t border-border/50">
+                <span className="flex items-center gap-1.5 font-medium">
+                  <span className="w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-emerald-500/30" /> Tu lugar
+                </span>
+                <span className="flex items-center gap-1.5 font-medium">
+                  <span className="w-3 h-3 rounded-full border-2 border-emerald-500/50 bg-emerald-500/10" /> Libre
+                </span>
+                <span className="flex items-center gap-1.5 font-medium">
+                  <span className="w-3 h-3 rounded-full bg-zinc-800 border border-zinc-600" /> Ocupado
+                </span>
+              </div>
             </div>
-
-            {/* Legend */}
-            <div className="flex items-center justify-center gap-5 text-[11px] text-muted-foreground pt-2 border-t border-border/50">
-              <span className="flex items-center gap-1.5 font-medium">
-                <span className="w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-emerald-500/30" /> Tu lugar
-              </span>
-              <span className="flex items-center gap-1.5 font-medium">
-                <span className="w-3 h-3 rounded-full border-2 border-emerald-500/50 bg-emerald-500/10" /> Libre
-              </span>
-              <span className="flex items-center gap-1.5 font-medium">
-                <span className="w-3 h-3 rounded-full bg-zinc-800 border border-zinc-600" /> Ocupado
-              </span>
-            </div>
-          </div>
+          )}
 
           {/* Lista de Espera Section (Interactive join & cancel waitlist) */}
           {(classData.status === "full" || waitlistCount > 0 || isOnWaitlist) && (
@@ -912,6 +1273,15 @@ function UserClassDetailModal({
                     variant="destructive"
                     onClick={() => {
                       if (confirm("¿Confirmas cancelar tu reserva para esta clase?\nSe reembolsará 1 crédito a tu cuenta.")) {
+                        if (userPlan && userPlan.passType === "Por Créditos" && setUserMemberships) {
+                          setUserMemberships((prev) =>
+                            prev.map((m) =>
+                              m.id === userPlan.id && m.remainingCredits !== null
+                                ? { ...m, remainingCredits: m.remainingCredits + 1 }
+                                : m
+                            )
+                          );
+                        }
                         if (onCancel) onCancel(classData.id);
                         alert("Reserva cancelada exitosamente. Se ha reembolsado 1 crédito a tu saldo.");
                         onClose();
@@ -964,20 +1334,92 @@ function UserClassDetailModal({
               )
             ) : (
               <Button
+                disabled={!isActivityAllowed || !hasEnoughCredits}
                 onClick={() => {
+                  if (!isActivityAllowed) {
+                    alert(`⚠️ Tu plan "${userPlan?.planName}" no incluye la actividad "${classData.name}".\n\nActividades incluidas en tu plan: ${userPlan?.includedActivities?.join(", ") || "Disciplinas seleccionadas"}`);
+                    return;
+                  }
+                  if (!hasEnoughCredits) {
+                    alert(`⚠️ Has agotado los créditos de tu plan "${userPlan?.planName}".\nCréditos disponibles: 0 / ${userPlan?.creditsCount}. Renueva tu membresía para continuar.`);
+                    return;
+                  }
+                  if (userPlan && userPlan.passType === "Por Créditos" && setUserMemberships) {
+                    setUserMemberships((prev) =>
+                      prev.map((m) =>
+                        m.id === userPlan.id && m.remainingCredits !== null
+                          ? { ...m, remainingCredits: Math.max(0, m.remainingCredits - 1) }
+                          : m
+                      )
+                    );
+                  }
                   if (onBook) onBook(classData.id, selectedSpot);
-                  alert(`¡Reserva confirmada en ${classData.name}! ${selectedSpot !== null ? `Lugar asignado: #${selectedSpot + 1}` : "Lugar automático asignado"}`);
+                  alert(`¡Reserva confirmada en ${classData.name}! ${selectedSpot !== null ? `Lugar asignado: #${selectedSpot + 1}` : "Lugar automático asignado"}${userPlan?.passType === "Por Créditos" ? `\nSe descontó 1 crédito. Créditos restantes: ${Math.max(0, (userPlan.remainingCredits || 1) - 1)}` : ""}`);
                   onClose();
                 }}
-                className="rounded-full bg-foreground text-background hover:opacity-90 font-bold gap-2 w-full sm:w-auto shadow-lg"
+                className={`rounded-full font-bold gap-2 w-full sm:w-auto shadow-lg ${
+                  !isActivityAllowed || !hasEnoughCredits
+                    ? "bg-muted text-muted-foreground opacity-60 cursor-not-allowed"
+                    : "bg-foreground text-background hover:opacity-90"
+                }`}
               >
                 <Check className="w-4 h-4" />
-                <span>Reservar Cupo (🪙 1 Crédito)</span>
+                <span>
+                  {!isActivityAllowed
+                    ? "Actividad fuera de Plan"
+                    : !hasEnoughCredits
+                    ? "Sin Créditos Disponibles"
+                    : `Reservar Cupo (${userPlan?.passType === "Por Créditos" ? "🪙 1 Crédito" : "✓ Pase Libre"})`}
+                </span>
               </Button>
             )}
           </div>
         </div>
       </DialogContent>
+
+      {/* QR Camera Scanner Sub-Modal */}
+      <Dialog open={isQrScannerOpen} onOpenChange={setIsQrScannerOpen}>
+        <DialogContent className="sm:max-w-md rounded-3xl border border-border bg-card p-6 gap-0">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold flex items-center gap-2">
+              <Scan className="w-5 h-5 text-emerald-500" /> Escáner de Código QR
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground mt-1">
+              Apunta la cámara de tu dispositivo hacia el código QR físico ubicado en la recepción del gimnasio.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="my-5 relative aspect-square rounded-2xl overflow-hidden bg-zinc-950 border-2 border-emerald-500/40 flex flex-col items-center justify-center shadow-inner">
+            {/* Ambient scanner laser line animation */}
+            <div className="absolute inset-x-6 top-1/3 h-0.5 bg-emerald-400 shadow-[0_0_15px_#10b981] animate-pulse pointer-events-none" />
+
+            <div className="w-44 h-44 border-2 border-dashed border-emerald-400/60 rounded-2xl flex flex-col items-center justify-center bg-emerald-500/5 p-4 text-center">
+              <QrCode className="w-20 h-20 text-emerald-400/50 animate-pulse mb-2" />
+              <span className="text-[10px] text-zinc-400 font-semibold uppercase tracking-wider">Alinear QR en el marco</span>
+            </div>
+
+            <span className="text-[11px] font-medium text-zinc-400 mt-4 animate-pulse">
+              📷 Buscando código QR de la sede...
+            </span>
+          </div>
+
+          <div className="flex gap-2 pt-2 border-t border-border">
+            <Button
+              variant="outline"
+              onClick={() => setIsQrScannerOpen(false)}
+              className="rounded-full flex-1 text-xs font-semibold"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleQrCheckInSuccess}
+              className="rounded-full flex-1 bg-emerald-500 text-black hover:bg-emerald-400 font-bold text-xs gap-1.5 shadow-md"
+            >
+              <Check className="w-4 h-4" /> Simular Escaneo QR
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }
@@ -988,16 +1430,20 @@ function ClasesTab({ onOpenQr }: { onOpenQr?: () => void }) {
   const [filter, setFilter] = useState("Todos");
   const [selectedClassDetail, setSelectedClassDetail] = useState<any | null>(null);
 
-  const memberships = [
+  const [userMemberships, setUserMemberships] = useState([
     {
       id: "kraft-club",
       gymName: "Kraft Club",
       planName: "Pase Libre Total",
       badge: "VIP PASSPORT",
       code: "KC-884291",
-      status: "Activa",
+      status: "Activa (Pase Libre)",
       validUntil: "15 Ago 2026",
       location: "Palermo, CABA",
+      passType: "Pase Libre",
+      creditsCount: null,
+      remainingCredits: null,
+      includedActivities: ["Todas", "Pase Libre", "CrossFit", "Spinning", "Yoga", "Musculación", "HIIT", "Pilates"],
       color: "from-zinc-950 via-zinc-900 to-black border-zinc-700/60 shadow-xl",
       accentBg: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
       accentGlow: "shadow-emerald-500/10",
@@ -1009,9 +1455,13 @@ function ClasesTab({ onOpenQr }: { onOpenQr?: () => void }) {
       planName: "Pase 8 Clases / Mes",
       badge: "YOGA & PILATES",
       code: "FF-330194",
-      status: "Activa (5/8 rest.)",
+      status: "Activa",
       validUntil: "30 Jul 2026",
       location: "Recoleta, CABA",
+      passType: "Por Créditos",
+      creditsCount: 8,
+      remainingCredits: 5,
+      includedActivities: ["Yoga", "Pilates", "Stretch", "Barre"],
       color: "from-slate-950 via-indigo-950 to-slate-900 border-indigo-500/40 shadow-xl",
       accentBg: "bg-indigo-500/10 text-indigo-300 border-indigo-500/30",
       accentGlow: "shadow-indigo-500/10",
@@ -1026,12 +1476,16 @@ function ClasesTab({ onOpenQr }: { onOpenQr?: () => void }) {
       status: "Activa",
       validUntil: "10 Sep 2026",
       location: "Belgrano, CABA",
+      passType: "Por Créditos",
+      creditsCount: 12,
+      remainingCredits: 3,
+      includedActivities: ["CrossFit", "Open Box", "Levantamiento", "Musculación"],
       color: "from-stone-950 via-amber-950/90 to-neutral-950 border-amber-500/40 shadow-xl",
       accentBg: "bg-amber-500/10 text-amber-300 border-amber-500/30",
       accentGlow: "shadow-amber-500/10",
       logoIcon: "⚡",
     },
-  ];
+  ]);
 
   const upcomingReservations = [
     {
@@ -1102,7 +1556,7 @@ function ClasesTab({ onOpenQr }: { onOpenQr?: () => void }) {
     return true;
   });
 
-  const selectedMembership = memberships.find((m) => m.id === selectedGymId);
+  const selectedMembership = userMemberships.find((m) => m.id === selectedGymId);
 
   return (
     <div className="space-y-8">
@@ -1136,21 +1590,21 @@ function ClasesTab({ onOpenQr }: { onOpenQr?: () => void }) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
             <CreditCard className="w-4 h-4 text-emerald-500" />
-            <span>Mis Carnets de Membresía ({memberships.length})</span>
+            <span>Mis Carnets de Membresía ({userMemberships.length})</span>
           </div>
           {selectedGymId && (
             <button
               onClick={() => setSelectedGymId(null)}
               className="text-xs text-emerald-500 hover:underline font-semibold flex items-center gap-1"
             >
-              Ver todas ({memberships.length})
+              Ver todas ({userMemberships.length})
             </button>
           )}
         </div>
 
         {/* Horizontally Scrollable Membership Cards Container */}
         <div className="flex gap-4 overflow-x-auto pb-3 pt-1 snap-x scrollbar-none -mx-2 px-2">
-          {memberships.map((card) => {
+          {userMemberships.map((card) => {
             const isSelected = selectedGymId === card.id;
             return (
               <div
@@ -1196,7 +1650,11 @@ function ClasesTab({ onOpenQr }: { onOpenQr?: () => void }) {
                 <div className="pt-3 border-t border-white/10 flex items-center justify-between relative z-10 text-xs">
                   <div className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <span className="text-zinc-300 font-medium text-[11px]">{card.status}</span>
+                    <span className="text-zinc-300 font-medium text-[11px]">
+                      {card.passType === "Por Créditos"
+                        ? `Activa (${card.remainingCredits}/${card.creditsCount} créditos)`
+                        : card.status}
+                    </span>
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -1389,11 +1847,13 @@ function ClasesTab({ onOpenQr }: { onOpenQr?: () => void }) {
         isOpen={!!selectedClassDetail}
         onClose={() => setSelectedClassDetail(null)}
         onOpenQr={onOpenQr}
+        userMemberships={userMemberships}
+        setUserMemberships={setUserMemberships}
         onCancel={(classId) => {
-          alert("Reserva cancelada exitosamente. Tu crédito de clase ha sido reembolsado.");
+          // Handled inside modal with credit reimbursement
         }}
         onBook={(classId, spotIndex) => {
-          // book callback logic
+          // Handled inside modal with credit deduction
         }}
       />
     </div>

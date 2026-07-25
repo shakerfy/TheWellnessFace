@@ -16,6 +16,7 @@ import "@fontsource/inter/600.css";
 import "@fontsource/inter/700.css";
 import "@fontsource/inter/800.css";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 
 function NotFoundComponent() {
   return (
@@ -132,6 +133,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
+      <MobileBottomNav />
     </QueryClientProvider>
   );
 }

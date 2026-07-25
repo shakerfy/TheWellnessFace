@@ -191,15 +191,9 @@ function GymPage() {
   const [membershipFilter, setMembershipFilter] = useState("Todos");
   const [accessHoursFilter, setAccessHoursFilter] = useState("Todos");
   const [passTypeFilter, setPassTypeFilter] = useState("Todos");
-  const [coverageFilter, setCoverageFilter] = useState("Todos");
   const [disciplineFilter, setDisciplineFilter] = useState("Todos");
-  const [selectedBranchId, setSelectedBranchId] = useState("matriz");
 
-  const activeBranch = useMemo(() => {
-    return gym.branches?.find((b) => b.id === selectedBranchId);
-  }, [gym.branches, selectedBranchId]);
-
-  const activeAddress = activeBranch ? activeBranch.address : gym.address;
+  const activeAddress = gym.address;
 
   const membershipTags = useMemo(() => {
     const tagsSet = new Set<string>();
@@ -223,12 +217,9 @@ function GymPage() {
         (passTypeFilter === "Ilimitado" && m.passType === "Pase Libre") ||
         (passTypeFilter === "Creditos" && m.passType === "Por Créditos");
 
-      const matchesCoverage =
-        coverageFilter === "Todos" || (coverageFilter === "Multisede" && m.isMultisede);
-
-      return matchesTag && matchesHours && matchesPass && matchesCoverage;
+      return matchesTag && matchesHours && matchesPass;
     });
-  }, [gym.memberships, membershipFilter, accessHoursFilter, passTypeFilter, coverageFilter]);
+  }, [gym.memberships, membershipFilter, accessHoursFilter, passTypeFilter]);
 
   const disciplines = useMemo(() => {
     const discSet = new Set<string>();
@@ -239,18 +230,12 @@ function GymPage() {
   }, [gym.classes]);
 
   const classesByBranchAndDay = useMemo(() => {
-    let list = gym.classes;
-    if (selectedBranchId === "matriz") {
-      list = list.filter((c) => !c.branchId);
-    } else {
-      list = list.filter((c) => c.branchId === selectedBranchId);
-    }
-    list = list.filter((c) => c.day === day);
+    let list = gym.classes.filter((c) => c.day === day);
     if (disciplineFilter !== "Todos") {
       list = list.filter((c) => c.name === disciplineFilter);
     }
     return list.sort((a, b) => a.time.localeCompare(b.time));
-  }, [gym.classes, day, disciplineFilter, selectedBranchId]);
+  }, [gym.classes, day, disciplineFilter]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -332,37 +317,6 @@ function GymPage() {
             </div>
 
             {/* Branch / Sede selector */}
-            {gym.branches && gym.branches.length > 0 && (
-              <div className="mt-4 flex items-center gap-2 flex-wrap">
-                <span className="text-[11px] font-bold text-muted-foreground uppercase mr-1">
-                  📍 Sede Activa:
-                </span>
-                <button
-                  onClick={() => setSelectedBranchId("matriz")}
-                  className={`px-3 py-1 rounded-full text-xs font-semibold border transition ${
-                    selectedBranchId === "matriz"
-                      ? "border-foreground bg-foreground text-background"
-                      : "border-border text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Palermo (Matriz)
-                </button>
-                {gym.branches.map((b) => (
-                  <button
-                    key={b.id}
-                    onClick={() => setSelectedBranchId(b.id)}
-                    className={`px-3 py-1 rounded-full text-xs font-semibold border transition ${
-                      selectedBranchId === b.id
-                        ? "border-foreground bg-foreground text-background"
-                        : "border-border text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {b.name.replace("Sede ", "")}
-                  </button>
-                ))}
-              </div>
-            )}
-
             <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
               <span className="inline-flex items-center gap-1.5">
                 <Star className="h-3.5 w-3.5 fill-foreground text-foreground" />{" "}
@@ -387,18 +341,10 @@ function GymPage() {
                 <span>
                   Aforo:{" "}
                   <strong className="text-foreground font-semibold">
-                    {selectedBranchId === "matriz" && "42 / 80"}
-                    {selectedBranchId === "1" && "24 / 50"}
-                    {selectedBranchId === "2" && "18 / 40"}
+                    42 / 80
                   </strong>{" "}
                   <span className="text-xs text-muted-foreground">
-                    (
-                    {selectedBranchId === "matriz"
-                      ? "52%"
-                      : selectedBranchId === "1"
-                        ? "48%"
-                        : "45%"}
-                    )
+                    (52%)
                   </span>
                 </span>
               </span>
@@ -769,29 +715,6 @@ function GymPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                  Sede:
-                </span>
-                <div className="flex gap-1 bg-secondary/35 p-0.5 rounded-lg border border-border/40">
-                  {[
-                    { label: "Cualquiera", value: "Todos" },
-                    { label: "Multisede", value: "Multisede" },
-                  ].map((item) => (
-                    <button
-                      key={item.value}
-                      onClick={() => setCoverageFilter(item.value)}
-                      className={`px-2.5 py-1 rounded-md transition text-[11px] font-medium ${
-                        coverageFilter === item.value
-                          ? "bg-background text-foreground "
-                          : "text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
 
@@ -805,7 +728,6 @@ function GymPage() {
                   setMembershipFilter("Todos");
                   setPassTypeFilter("Todos");
                   setAccessHoursFilter("Todos");
-                  setCoverageFilter("Todos");
                 }}
                 className="mt-3 text-xs font-semibold text-primary hover:underline"
               >
@@ -890,14 +812,7 @@ function GymPage() {
                             : "Matrícula Bonificada 🎉"}
                         </span>
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <span>🏢</span>
-                        <span>
-                          {m.isMultisede
-                            ? "Acceso Multisede (Toda la red)"
-                            : "Solo Sede Matriz (Palermo)"}
-                        </span>
-                      </div>
+
                       {m.freezeDays && m.freezeDays > 0 ? (
                         <div className="flex items-center gap-1.5">
                           <span>❄️</span>

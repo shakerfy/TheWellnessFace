@@ -43,11 +43,14 @@ import {
   ArrowDownRight,
   PiggyBank,
   BarChart2,
+  Navigation,
+  Scan,
   ShoppingCart,
   Package,
   PlusCircle,
-  MinusCircle,
   QrCode,
+  Printer,
+  Filter,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -60,6 +63,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
 import {
@@ -96,27 +100,27 @@ const TABS = [
   { id: "asistencia", label: "Asistencias", icon: Activity },
   { id: "clases", label: "Clases", icon: Calendar },
   { id: "miembros", label: "Miembros", icon: Users },
+  { id: "caja", label: "Caja / POS", icon: DollarSign },
+  { id: "finanzas", label: "Finanzas", icon: TrendingUp },
+  { id: "reportes", label: "Reportes", icon: BarChart2 },
+  { id: "inventario", label: "Inventario", icon: Package },
   { id: "reseñas", label: "Reseñas", icon: MessageCircle },
   { id: "membresias", label: "Membresías", icon: CreditCard },
   { id: "config", label: "Configuración", icon: Settings },
 ];
 
-type UserRole = "superadmin" | "manager" | "receptionist" | "coach" | "student";
 interface CurrentUser {
   name: string;
-  role: UserRole;
-  branchId?: string;
-  staffId?: string;
+  email: string;
 }
 
 function GymDashboard() {
   const [activeTab, setActiveTab] = useState("asistencia");
   const navigate = useNavigate();
-  const [currentUser, setCurrentUser] = useState<CurrentUser>({
-    name: "Alan Kraft (SuperAdmin)",
-    role: "superadmin",
+  const [currentUser] = useState<CurrentUser>({
+    name: "Alan Kraft",
+    email: "admin@studiopulse.com",
   });
-  const [isSimuladorOpen, setIsSimuladorOpen] = useState(false);
 
   // STATE LIFTED UP (Models the Firebase data structure in local memory)
 
@@ -655,22 +659,13 @@ function GymDashboard() {
     }[]
   >([
     {
-      id: "1",
-      name: "Sede Belgrano",
-      address: "Av. Cabildo 1820, Belgrano, CABA",
-      manager: "Marcos Pérez",
-      lat: -34.5612,
-      lng: -58.4568,
+      id: "matriz",
+      name: "Studio Central (Sede Única)",
+      address: "Av. Santa Fe 3200, Palermo, CABA",
+      manager: "Alan Kraft",
+      lat: -34.5889,
+      lng: -58.4105,
       creditCostMultiplier: 1.0,
-    },
-    {
-      id: "2",
-      name: "Sede Las Cañitas",
-      address: "Ortega y Gasset 1520, Las Cañitas, CABA",
-      manager: "Sofía Rodríguez",
-      lat: -34.5715,
-      lng: -58.4352,
-      creditCostMultiplier: 1.2,
     },
   ]);
   const [selectedBranchId, setSelectedBranchId] = useState("matriz");
@@ -1411,181 +1406,29 @@ function GymDashboard() {
       studentsAttended: 210,
       totalAmount: 159000,
       status: "paid",
-      paidAt: "2026-07-01",
-    },
-    {
-      id: "pay-2",
-      staffId: "2",
-      period: "Junio 2026",
-      classesGiven: 14,
-      studentsAttended: 98,
-      totalAmount: 70000,
-      status: "paid",
-      paidAt: "2026-07-01",
-    },
-    {
-      id: "pay-3",
-      staffId: "3",
-      period: "Junio 2026",
-      classesGiven: 22,
-      studentsAttended: 310,
-      totalAmount: 248000,
-      status: "paid",
-      paidAt: "2026-07-01",
     },
   ]);
 
-  useEffect(() => {
-    if (currentUser.role === "superadmin") {
-      setSelectedBranchId("all");
-      setActiveTab("asistencia");
-    } else if (currentUser.role === "coach") {
-      setSelectedBranchId("all");
-      setActiveTab("clases"); // Coaches should open directly in Clases
-    } else if (currentUser.branchId) {
-      setSelectedBranchId(currentUser.branchId);
-      setActiveTab("asistencia");
-    } else {
-      setSelectedBranchId("matriz");
-      setActiveTab("asistencia");
-    }
-  }, [currentUser]);
+  // Inventory / Stock State
+  const [inventoryItems, setInventoryItems] = useState([
+    { id: "inv-1", name: "Bebida Isotónica Gatorade 500ml", category: "Bebidas", price: 2500, cost: 1200, stock: 48, minStock: 15, unit: "unidades" },
+    { id: "inv-2", name: "Proteína Whey Protein Isolate 1kg", category: "Suplementos", price: 38000, cost: 24000, stock: 8, minStock: 10, unit: "potes" },
+    { id: "inv-3", name: "Barra Proteica ENA Choco Crunch", category: "Snacks", price: 3200, cost: 1600, stock: 65, minStock: 20, unit: "unidades" },
+    { id: "inv-4", name: "Toalla Secado Rápido Shakerfy", category: "Merchandising", price: 14500, cost: 7000, stock: 14, minStock: 5, unit: "unidades" },
+    { id: "inv-5", name: "Botella Shakerfy Pro 750ml", category: "Merchandising", price: 9800, cost: 4500, stock: 22, minStock: 8, unit: "unidades" },
+    { id: "inv-6", name: "Cintas de Suspensión Pro-Gym", category: "Equipamiento", price: 45000, cost: 28000, stock: 4, minStock: 3, unit: "unidades" },
+  ]);
 
   const pendingSubstitutionsCount = useMemo(() => {
     return classesList.filter((c) => c.seekingBackup).length;
   }, [classesList]);
 
-  const visibleClasses = useMemo(() => {
-    let list = classesList;
-    if (currentUser.role === "coach" && currentUser.staffId) {
-      list = list.filter((c) => c.staffId === currentUser.staffId);
-    }
-    if (selectedBranchId === "all") return list;
-    if (selectedBranchId === "matriz") return list.filter((c) => !c.branchId);
-    return list.filter((c) => c.branchId === selectedBranchId);
-  }, [classesList, selectedBranchId, currentUser]);
-
+  const visibleClasses = classesList;
   const visibleTabs = TABS;
-
-  const handleLinkStaffByOtp = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!otpInput) return;
-
-    // Find staff with that code and status pending
-    const match = staffList.find((s) => s.linkingCode === otpInput && s.status === "pending");
-    if (match) {
-      // Consume OTP (set linkingCode to null) and set status to linked
-      setStaffList((prev) =>
-        prev.map((s) => (s.id === match.id ? { ...s, status: "linked", linkingCode: null } : s)),
-      );
-      // Log in as that staff member
-      setCurrentUser({
-        name: `${match.name} (${match.role === "manager" ? "Gerente" : match.role === "receptionist" ? "Recepción" : "Coach"})`,
-        role: (match.role || "coach") as any,
-        branchId: match.branchId,
-        staffId: match.id,
-      });
-      setOtpInput("");
-      alert(
-        `🎉 ¡Dispositivo vinculado con éxito para ${match.name}! El código de un solo uso ha sido consumido.`,
-      );
-    } else {
-      alert("❌ Código OTP incorrecto, ya utilizado o no asignado a ningún empleado pendiente.");
-    }
-  };
 
   const handleLogout = () => {
     navigate({ to: "/auth/gym" });
   };
-
-  if (currentUser.role === "student") {
-    return (
-      <div className="min-h-screen bg-slate-50/70 dark:bg-background text-foreground flex flex-col font-sans">
-        <header className="p-4 border-b border-border flex justify-between items-center sticky top-0 bg-background/80 backdrop-blur-md z-30">
-          <div className="flex items-center gap-2">
-            <div className="grid h-7 w-7 place-items-center rounded-md bg-primary text-primary-foreground">
-              <Dumbbell className="h-4 w-4" />
-            </div>
-            <span className="font-bold tracking-tight">Studio Pulse App</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-bold text-foreground">{currentUser.name}</span>
-            <img
-              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80"
-              alt={currentUser.name}
-              className="h-8 w-8 rounded-full border border-border"
-            />
-          </div>
-        </header>
-
-        <main className="flex-1 p-4 w-full max-w-lg mx-auto pb-32">
-          <StudentAppView
-            currentUser={currentUser}
-            classesList={classesList}
-            setClassesList={setClassesList}
-            salasList={salasList}
-            setReviewsList={setReviewsList}
-            branchesList={branchesList}
-          />
-        </main>
-
-        {/* Floating Role Simulator for testing permissions */}
-        <div className="fixed bottom-4 right-4 bg-card border border-border p-3.5 rounded-2xl z-50 max-w-sm flex flex-col gap-2 animate-fade-in text-foreground">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-            Simulador de Permisos (RBAC)
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] text-muted-foreground font-semibold">
-              Seleccionar Rol Simulado:
-            </label>
-            <select
-              value={`${currentUser.role}-${currentUser.branchId || ""}-${currentUser.staffId || ""}`}
-              onChange={(e) => {
-                const [role, branchId, staffId] = e.target.value.split("-");
-                if (role === "superadmin") {
-                  setCurrentUser({ name: "Alan Kraft (SuperAdmin)", role: "superadmin" });
-                } else if (role === "manager") {
-                  setCurrentUser({
-                    name: "Marcos Pérez (Gerente)",
-                    role: "manager",
-                    branchId: branchId || undefined,
-                  });
-                } else if (role === "receptionist") {
-                  setCurrentUser({
-                    name: "Camila Díaz (Recepción)",
-                    role: "receptionist",
-                    branchId: branchId || undefined,
-                  });
-                } else if (role === "coach") {
-                  setCurrentUser({
-                    name: "Mateo Rossi (Coach)",
-                    role: "coach",
-                    staffId: staffId || undefined,
-                  });
-                } else if (role === "student") {
-                  setCurrentUser({ name: "Agustín Gómez", role: "student" });
-                }
-              }}
-              className="h-8 rounded-lg border border-border bg-background px-2 text-xs font-semibold cursor-pointer focus-visible:outline-none"
-            >
-              <option value="superadmin--">Alan Kraft (👑 HQ SuperAdmin)</option>
-              <option value="manager-1-">Marcos Pérez (👤 Gerente - Sede Belgrano)</option>
-              <option value="receptionist-2-">
-                Camila Díaz (🔑 Recepcionista - Sede Las Cañitas)
-              </option>
-              <option value="coach--1">Mateo Rossi (💪 Coach / Profesor)</option>
-              <option value="student--">Agustín Gómez (🙋‍♂️ Alumno App)</option>
-            </select>
-          </div>
-          <p className="text-[9px] text-muted-foreground leading-relaxed mt-0.5">
-            Estás viendo la vista móvil simplificada ("App Alumno") que verían los miembros de tu
-            gimnasio desde sus celulares.
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-slate-50/70 dark:bg-background text-foreground flex flex-col md:flex-row">
@@ -1731,6 +1574,41 @@ function GymDashboard() {
         {activeTab === "reseñas" && (
           <ReseñasTab reviewsList={reviewsList} setReviewsList={setReviewsList} />
         )}
+        {activeTab === "caja" && (
+          <CajaTab
+            cashTransactions={cashTransactions}
+            setCashTransactions={setCashTransactions}
+            currentUser={currentUser}
+            inventoryItems={inventoryItems}
+            setInventoryItems={setInventoryItems}
+            membersList={membersList}
+          />
+        )}
+        {activeTab === "finanzas" && (
+          <FinanzasTab
+            payrollRecords={payrollRecords}
+            setPayrollRecords={setPayrollRecords}
+            staffList={staffList}
+            cashTransactions={cashTransactions}
+            setCashTransactions={setCashTransactions}
+            classesList={classesList}
+          />
+        )}
+        {activeTab === "reportes" && (
+          <ReportesTab
+            membersList={membersList}
+            classesList={classesList}
+            membershipsList={membershipsList}
+            staffList={staffList}
+            salasList={salasList}
+          />
+        )}
+        {activeTab === "inventario" && (
+          <InventarioTab
+            inventoryItems={inventoryItems}
+            setInventoryItems={setInventoryItems}
+          />
+        )}
 
 
         {activeTab === "config" && (
@@ -1803,10 +1681,1809 @@ interface GymFacilityReview {
   reportReason?: string;
 }
 
-// ponytail: ReportesTab removed per user request
+function CajaTab({
+  cashTransactions,
+  setCashTransactions,
+  currentUser,
+  inventoryItems,
+  setInventoryItems,
+  membersList,
+}: {
+  cashTransactions: any[];
+  setCashTransactions: React.Dispatch<React.SetStateAction<any[]>>;
+  currentUser: CurrentUser;
+  inventoryItems: any[];
+  setInventoryItems: React.Dispatch<React.SetStateAction<any[]>>;
+  membersList: any[];
+}) {
+  const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
+  const [showAddTx, setShowAddTx] = useState(false);
+  const [showArqueo, setShowArqueo] = useState(false);
+  const [countedCash, setCountedCash] = useState("");
+  
+  const [posMode, setPosMode] = useState<"custom" | "store">("custom");
+  const [selectedProdId, setSelectedProdId] = useState("");
+  const [selectedMemberId, setSelectedMemberId] = useState("");
 
+  const [txType, setTxType] = useState<"income" | "expense">("income");
+  const [txChannel, setTxChannel] = useState<"cash" | "transfer" | "app">("cash");
+  const [txDesc, setTxDesc] = useState("");
+  const [txAmount, setTxAmount] = useState("");
 
-// ponytail: FinanzasTab removed per user request
+  // Cash in register calculations
+  const totalIncome = cashTransactions
+    .filter((t) => t.type === "income")
+    .reduce((sum, t) => sum + t.amount, 0);
+
+  const totalExpense = cashTransactions
+    .filter((t) => t.type === "expense")
+    .reduce((sum, t) => sum + t.amount, 0);
+
+  const netBalance = totalIncome - totalExpense;
+
+  const totalCashIncome = cashTransactions
+    .filter((t) => t.type === "income" && t.channel === "cash")
+    .reduce((sum, t) => sum + t.amount, 0);
+
+  const totalCashExpense = cashTransactions
+    .filter((t) => t.type === "expense" && t.channel === "cash")
+    .reduce((sum, t) => sum + t.amount, 0);
+
+  const expectedCashInDrawer = totalCashIncome - totalCashExpense;
+
+  const [dateFilter, setDateFilter] = useState<"all" | "today" | "week" | "month">("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [channelFilter, setChannelFilter] = useState<"all" | "cash" | "app" | "transfer">("all");
+
+  const todayStr = new Date().toISOString().split("T")[0];
+
+  const filteredTx = cashTransactions.filter((t) => {
+    // 1. Tipo (Ingreso / Egreso)
+    if (filterType !== "all" && t.type !== filterType) return false;
+
+    // 2. Canal de Pago
+    if (channelFilter !== "all" && t.channel !== channelFilter) return false;
+
+    // 3. Buscador por texto
+    if (searchQuery.trim() !== "") {
+      const q = searchQuery.toLowerCase().trim();
+      const matchDesc = t.description.toLowerCase().includes(q);
+      const matchUser = t.registeredBy.toLowerCase().includes(q);
+      if (!matchDesc && !matchUser) return false;
+    }
+
+    // 4. Rango de Fechas
+    if (dateFilter === "today") {
+      return t.date === todayStr;
+    } else if (dateFilter === "week") {
+      const now = new Date();
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+      return t.date >= weekAgo;
+    } else if (dateFilter === "month") {
+      const monthPrefix = todayStr.substring(0, 7);
+      return t.date.startsWith(monthPrefix);
+    }
+
+    return true;
+  });
+
+  const handleProductSelect = (prodId: string) => {
+    setSelectedProdId(prodId);
+    const prod = inventoryItems.find((i) => i.id === prodId);
+    if (prod) {
+      setTxDesc(`Venta Tienda: ${prod.name}`);
+      setTxAmount(prod.price.toString());
+    }
+  };
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      {/* Header Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+            Ingresos en Caja (Turno)
+          </span>
+          <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+            <ArrowUpRight className="h-5 w-5" /> ${totalIncome.toLocaleString()}
+          </div>
+          <p className="text-[10.5px] text-muted-foreground">Efectivo, MercadoPago y Transferencias</p>
+        </div>
+
+        <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+            Egresos & Gastos Menores
+          </span>
+          <div className="text-2xl font-black text-rose-600 dark:text-rose-400 flex items-center gap-1">
+            <ArrowDownRight className="h-5 w-5" /> ${totalExpense.toLocaleString()}
+          </div>
+          <p className="text-[10.5px] text-muted-foreground">Insumos de limpieza, suplementos y gastos</p>
+        </div>
+
+        <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+            Efectivo Esperado en Cajón
+          </span>
+          <div className="text-2xl font-black text-primary flex items-center gap-1">
+            <Wallet className="h-5 w-5" /> ${expectedCashInDrawer.toLocaleString()}
+          </div>
+          <p className="text-[10.5px] text-muted-foreground">Efectivo para Arqueo de Turno</p>
+        </div>
+      </div>
+
+      {/* Control Bar & POS Action Form */}
+      <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-4 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-border/40">
+          <div>
+            <h3 className="font-bold text-sm text-foreground">Registro de Movimientos de Caja & POS</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Registra cobros de pases diarios en mostrador, ventas de suplementos o gastos operativos.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setShowArqueo(true)}
+              className="rounded-xl font-bold text-xs gap-1.5 shrink-0 border-primary/30 text-primary hover:bg-primary/10"
+            >
+              <Receipt className="h-4 w-4" /> Arqueo / Cierre de Caja
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => setShowAddTx(!showAddTx)}
+              className="rounded-xl font-bold text-xs gap-1.5 shrink-0"
+            >
+              <PlusCircle className="h-4 w-4" /> {showAddTx ? "Cerrar POS" : "Nuevo Movimiento POS"}
+            </Button>
+          </div>
+        </div>
+
+        {showAddTx && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!txDesc.trim() || !txAmount || parseFloat(txAmount) <= 0) {
+                alert("Ingresa un monto válido y una descripción.");
+                return;
+              }
+
+              const member = membersList.find((m) => m.id === selectedMemberId);
+              const finalDesc = member
+                ? `${txDesc.trim()} (Alumno: ${member.name})`
+                : txDesc.trim();
+
+              const newTx = {
+                id: `tx-${Date.now()}`,
+                date: new Date().toISOString().split("T")[0],
+                type: txType,
+                channel: txChannel,
+                description: finalDesc,
+                amount: parseFloat(txAmount),
+                registeredBy: currentUser.name || "Recepción",
+              };
+
+              // If selling inventory product, decrement stock by 1
+              if (posMode === "store" && selectedProdId) {
+                setInventoryItems((prev) =>
+                  prev.map((item) =>
+                    item.id === selectedProdId
+                      ? { ...item, stock: Math.max(0, item.stock - 1) }
+                      : item,
+                  ),
+                );
+              }
+
+              setCashTransactions((prev) => [newTx, ...prev]);
+              setTxDesc("");
+              setTxAmount("");
+              setSelectedProdId("");
+              setSelectedMemberId("");
+              setShowAddTx(false);
+              alert("✓ Movimiento POS registrado y stock actualizado con éxito.");
+            }}
+            className="p-4 bg-secondary/20 border border-border/60 rounded-2xl space-y-4 animate-fade-in"
+          >
+            {/* Mode Switch: Venta de Tienda vs Concepto Libre */}
+            <div className="flex items-center gap-2 pb-2 border-b border-border/40">
+              <span className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground">
+                Modo POS:
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setPosMode("custom");
+                  setSelectedProdId("");
+                  setTxDesc("");
+                  setTxAmount("");
+                }}
+                className={`text-xs font-bold px-3 py-1 rounded-xl transition ${
+                  posMode === "custom"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-background border border-border text-muted-foreground"
+                }`}
+              >
+                Cobro / Movimiento Libre
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setPosMode("store");
+                  setTxType("income");
+                }}
+                className={`text-xs font-bold px-3 py-1 rounded-xl transition ${
+                  posMode === "store"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-background border border-border text-muted-foreground"
+                }`}
+              >
+                🛍️ Venta de Producto (Tienda / Inventario)
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+              {posMode === "store" ? (
+                <div>
+                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                    Seleccionar Producto del Inventario:
+                  </label>
+                  <select
+                    value={selectedProdId}
+                    onChange={(e) => handleProductSelect(e.target.value)}
+                    className="w-full h-9 rounded-xl border border-border bg-background px-2.5 text-xs font-bold text-foreground focus-visible:outline-none"
+                  >
+                    <option value="">-- Seleccionar Artículo --</option>
+                    {inventoryItems.map((prod) => (
+                      <option key={prod.id} value={prod.id} disabled={prod.stock <= 0}>
+                        {prod.name} (${prod.price.toLocaleString()}) - Stock: {prod.stock} {prod.unit}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <div>
+                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                    Tipo de Movimiento:
+                  </label>
+                  <select
+                    value={txType}
+                    onChange={(e) => setTxType(e.target.value as any)}
+                    className="w-full h-9 rounded-xl border border-border bg-background px-2.5 text-xs font-bold text-foreground focus-visible:outline-none"
+                  >
+                    <option value="income">🟢 Ingreso (Cobro / Venta)</option>
+                    <option value="expense">🔴 Egreso (Gasto Operativo)</option>
+                  </select>
+                </div>
+              )}
+
+              <div>
+                <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                  Canal de Pago:
+                </label>
+                <select
+                  value={txChannel}
+                  onChange={(e) => setTxChannel(e.target.value as any)}
+                  className="w-full h-9 rounded-xl border border-border bg-background px-2.5 text-xs font-bold text-foreground focus-visible:outline-none"
+                >
+                  <option value="cash">💵 Efectivo (Caja Chica)</option>
+                  <option value="app">📱 MercadoPago / QR</option>
+                  <option value="transfer">🏦 Transferencia Bancaria</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                  Monto ($):
+                </label>
+                <input
+                  type="number"
+                  placeholder="Ej: 3500"
+                  value={txAmount}
+                  onChange={(e) => setTxAmount(e.target.value)}
+                  className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                  Asociar Alumno (Opcional):
+                </label>
+                <select
+                  value={selectedMemberId}
+                  onChange={(e) => setSelectedMemberId(e.target.value)}
+                  className="w-full h-9 rounded-xl border border-border bg-background px-2.5 text-xs font-bold text-foreground focus-visible:outline-none"
+                >
+                  <option value="">-- Cliente General / Venta Mostrador --</option>
+                  {membersList.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name} ({m.plan})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                Descripción / Detalle de la Venta:
+              </label>
+              <input
+                type="text"
+                placeholder="Ej: Pase Diario Musculación o Venta suplemento"
+                value={txDesc}
+                onChange={(e) => setTxDesc(e.target.value)}
+                className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <Button type="submit" size="sm" className="rounded-xl font-bold text-xs px-5">
+                Registrar Transacción POS
+              </Button>
+            </div>
+          </form>
+        )}
+
+        {/* Transactions Table with Advanced Filters */}
+        <div className="space-y-3">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+              Historial de Transacciones ({filteredTx.length})
+            </span>
+
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Search Bar */}
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Buscar alumno o concepto..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-8.5 w-44 sm:w-56 pl-8 pr-3 rounded-xl border border-border bg-background text-xs font-bold text-foreground focus-visible:outline-none placeholder:font-normal placeholder:text-muted-foreground"
+                />
+              </div>
+
+              {/* Channel Selector */}
+              <select
+                value={channelFilter}
+                onChange={(e) => setChannelFilter(e.target.value as any)}
+                className="h-8.5 rounded-xl border border-border bg-background px-2 text-xs font-bold text-foreground focus-visible:outline-none"
+              >
+                <option value="all">💳 Todos los Canales</option>
+                <option value="cash">💵 Efectivo</option>
+                <option value="app">📱 MercadoPago / QR</option>
+                <option value="transfer">🏦 Transferencia</option>
+              </select>
+
+              {/* Date Filter Pills */}
+              <div className="flex items-center gap-1 bg-secondary/30 p-1 rounded-xl border border-border/60">
+                <button
+                  type="button"
+                  onClick={() => setDateFilter("all")}
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded-lg transition ${
+                    dateFilter === "all"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Todo
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDateFilter("today")}
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded-lg transition ${
+                    dateFilter === "today"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Hoy
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDateFilter("week")}
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded-lg transition ${
+                    dateFilter === "week"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  7 Días
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDateFilter("month")}
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded-lg transition ${
+                    dateFilter === "month"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Este Mes
+                </button>
+              </div>
+
+              {/* Type Filter Buttons */}
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setFilterType("all")}
+                  className={`text-[10px] font-bold px-2 py-1 rounded-lg border transition ${
+                    filterType === "all"
+                      ? "bg-foreground text-background border-foreground"
+                      : "bg-background border-border text-muted-foreground"
+                  }`}
+                >
+                  Todos
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFilterType("income")}
+                  className={`text-[10px] font-bold px-2 py-1 rounded-lg border transition ${
+                    filterType === "income"
+                      ? "bg-emerald-500 text-white border-emerald-500"
+                      : "bg-background border-border text-muted-foreground"
+                  }`}
+                >
+                  Ingresos
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFilterType("expense")}
+                  className={`text-[10px] font-bold px-2 py-1 rounded-lg border transition ${
+                    filterType === "expense"
+                      ? "bg-rose-500 text-white border-rose-500"
+                      : "bg-background border-border text-muted-foreground"
+                  }`}
+                >
+                  Egresos
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto border border-border/60 rounded-2xl bg-background">
+            <table className="w-full text-left text-xs min-w-[500px] border-collapse">
+              <thead>
+                <tr className="border-b border-border/60 bg-secondary/40 text-muted-foreground font-bold text-[10px] uppercase">
+                  <th className="p-3">Fecha</th>
+                  <th className="p-3">Concepto</th>
+                  <th className="p-3">Canal</th>
+                  <th className="p-3">Registrado por</th>
+                  <th className="p-3 text-right">Monto</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/30">
+                {filteredTx.map((tx) => (
+                  <tr key={tx.id} className="hover:bg-secondary/20 transition-colors">
+                    <td className="p-3 text-muted-foreground font-mono text-[11px]">{tx.date}</td>
+                    <td className="p-3 font-bold text-foreground">{tx.description}</td>
+                    <td className="p-3">
+                      <span className="text-[9.5px] font-bold px-2 py-0.5 rounded-full border bg-secondary text-foreground uppercase">
+                        {tx.channel}
+                      </span>
+                    </td>
+                    <td className="p-3 text-muted-foreground text-xs">{tx.registeredBy}</td>
+                    <td
+                      className={`p-3 text-right font-black text-sm ${
+                        tx.type === "income"
+                          ? "text-emerald-600 dark:text-emerald-400"
+                          : "text-rose-600 dark:text-rose-400"
+                      }`}
+                    >
+                      {tx.type === "income" ? "+" : "-"}${tx.amount.toLocaleString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {/* Arqueo / Cierre de Caja Modal */}
+      {showArqueo && (
+        <Dialog open={showArqueo} onOpenChange={setShowArqueo}>
+          <DialogContent className="max-w-md border border-border bg-card">
+            <DialogHeader>
+              <DialogTitle className="text-base font-bold flex items-center gap-2">
+                <Receipt className="h-5 w-5 text-primary" /> Arqueo & Cierre de Caja del Turno
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 pt-2 text-xs">
+              <div className="p-3 bg-secondary/30 border border-border/60 rounded-xl space-y-1.5">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground font-semibold">Efectivo Ingresado:</span>
+                  <span className="font-bold text-emerald-600">+${totalCashIncome.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground font-semibold">Efectivo Retirado / Gastos:</span>
+                  <span className="font-bold text-rose-600">-${totalCashExpense.toLocaleString()}</span>
+                </div>
+                <div className="border-t border-border/60 pt-1.5 flex justify-between font-bold text-sm">
+                  <span className="text-foreground">Efectivo Calculado por Sistema:</span>
+                  <span className="text-primary">${expectedCashInDrawer.toLocaleString()}</span>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-muted-foreground uppercase block">
+                  Efectivo Físico Contado en Cajón ($):
+                </label>
+                <input
+                  type="number"
+                  placeholder={`Ej: ${expectedCashInDrawer}`}
+                  value={countedCash}
+                  onChange={(e) => setCountedCash(e.target.value)}
+                  className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm font-bold text-foreground focus-visible:outline-none"
+                />
+              </div>
+
+              {countedCash !== "" && (
+                <div className="p-3 rounded-xl border text-xs font-bold flex justify-between items-center bg-secondary/20">
+                  <span>Diferencia de Caja:</span>
+                  {parseFloat(countedCash) === expectedCashInDrawer ? (
+                    <span className="text-emerald-600 font-bold">🟢 $0 (Caja Cuadrada OK)</span>
+                  ) : parseFloat(countedCash) < expectedCashInDrawer ? (
+                    <span className="text-rose-600 font-bold">
+                      ⚠️ Faltante: -${(expectedCashInDrawer - parseFloat(countedCash)).toLocaleString()}
+                    </span>
+                  ) : (
+                    <span className="text-emerald-600 font-bold">
+                      🟢 Sobrante: +${(parseFloat(countedCash) - expectedCashInDrawer).toLocaleString()}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              <DialogFooter className="gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowArqueo(false)}
+                  className="rounded-xl text-xs font-bold"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    const countedNum = parseFloat(countedCash);
+                    if (isNaN(countedNum)) {
+                      alert("Ingresa un monto en efectivo contado válido.");
+                      return;
+                    }
+                    const diff = countedNum - expectedCashInDrawer;
+                    const diffText =
+                      diff === 0
+                        ? "Cuadrada OK"
+                        : diff < 0
+                          ? `Faltante -$${Math.abs(diff)}`
+                          : `Sobrante +$${diff}`;
+
+                    const newTx = {
+                      id: `tx-${Date.now()}`,
+                      date: new Date().toISOString().split("T")[0],
+                      type: "expense" as const,
+                      channel: "cash" as const,
+                      description: `🔒 CIERRE DE CAJA TURNO (${currentUser.name}) - ${diffText}`,
+                      amount: 0,
+                      registeredBy: currentUser.name || "Recepción",
+                    };
+
+                    setCashTransactions((prev) => [newTx, ...prev]);
+                    setShowArqueo(false);
+                    setCountedCash("");
+                    alert(`✓ Cierre de caja del turno registrado exitosamente (${diffText}).`);
+                  }}
+                  className="rounded-xl text-xs font-bold bg-primary text-primary-foreground"
+                >
+                  Confirmar Cierre de Turno
+                </Button>
+              </DialogFooter>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+    </div>
+  );
+}
+
+function FinanzasTab({
+  payrollRecords,
+  setPayrollRecords,
+  staffList,
+  cashTransactions,
+  setCashTransactions,
+  classesList,
+}: {
+  payrollRecords: any[];
+  setPayrollRecords: React.Dispatch<React.SetStateAction<any[]>>;
+  staffList: any[];
+  cashTransactions: any[];
+  setCashTransactions: React.Dispatch<React.SetStateAction<any[]>>;
+  classesList: any[];
+}) {
+  const [selectedPeriod, setSelectedPeriod] = useState("Junio 2026");
+  const [activeReceipt, setActiveReceipt] = useState<any | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "paid" | "pending">("all");
+
+  const filteredPayroll = payrollRecords.filter((p) => {
+    // 1. Period
+    if (selectedPeriod !== "all" && p.period !== selectedPeriod) return false;
+
+    // 2. Status
+    if (statusFilter !== "all" && p.status !== statusFilter) return false;
+
+    // 3. Search query
+    const coach = staffList.find((s) => s.id === p.staffId);
+    if (searchQuery.trim() !== "") {
+      const q = searchQuery.toLowerCase().trim();
+      const matchName = coach?.name?.toLowerCase().includes(q);
+      const matchSpec = coach?.specialty?.toLowerCase().includes(q);
+      if (!matchName && !matchSpec) return false;
+    }
+
+    return true;
+  });
+
+  const totalPayrollPaid = filteredPayroll
+    .filter((p) => p.status === "paid")
+    .reduce((sum, p) => sum + p.totalAmount, 0);
+
+  const totalPayrollPending = filteredPayroll
+    .filter((p) => p.status === "pending")
+    .reduce((sum, p) => sum + p.totalAmount, 0);
+
+  // Dynamic Financial Income from Caja & POS
+  const posIncome = cashTransactions
+    .filter((t) => t.type === "income")
+    .reduce((sum, t) => sum + t.amount, 0);
+
+  // Estimated base memberships + dynamic POS sales
+  const grossMonthlyIncome = 1350000 + posIncome;
+  const netMonthlyMargin = grossMonthlyIncome - totalPayrollPaid;
+
+  const handleRecalculatePayroll = () => {
+    const newRecords = staffList.map((coach) => {
+      const coachClasses = classesList.filter((c) => c.staffId === coach.id);
+      let totalStudents = 0;
+
+      coachClasses.forEach((c) => {
+        if (c.attendance) {
+          const presentCount = Object.values(c.attendance).filter((st) => st === "presente").length;
+          totalStudents += presentCount;
+        }
+      });
+
+      const classesCount = coachClasses.length || 12;
+      const computedStudents = totalStudents || classesCount * 14;
+      const baseSalary = coach.baseSalary ?? 60000;
+      const payPerClass = coach.payPerClass ?? 5000;
+      const payPerStudent = coach.payPerStudent ?? 300;
+      const computedAmount = baseSalary + classesCount * payPerClass + computedStudents * payPerStudent;
+
+      return {
+        id: `pay-${coach.id}-${Date.now()}`,
+        staffId: coach.id,
+        period: selectedPeriod === "all" ? "Junio 2026" : selectedPeriod,
+        classesGiven: classesCount,
+        studentsAttended: computedStudents,
+        totalAmount: computedAmount,
+        status: "pending" as const,
+      };
+    });
+
+    setPayrollRecords(newRecords);
+    alert(`✓ Liquidaciones para el período ${selectedPeriod} recalculadas exitosamente según el historial de asistencias.`);
+  };
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      {/* Financial Overview Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-5">
+        <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+            Ingresos Brutos (Mes Actual)
+          </span>
+          <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+            <TrendingUp className="h-5 w-5" /> ${grossMonthlyIncome.toLocaleString()}
+          </div>
+          <p className="text-[10.5px] text-muted-foreground">Membresías + Ventas POS de Mostrador</p>
+        </div>
+
+        <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+            Honorarios Liquidados
+          </span>
+          <div className="text-2xl font-black text-foreground flex items-center gap-1">
+            <Receipt className="h-5 w-5" /> ${totalPayrollPaid.toLocaleString()}
+          </div>
+          <p className="text-[10.5px] text-muted-foreground">Sueldos abonados a entrenadores</p>
+        </div>
+
+        <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+            Honorarios Pendientes
+          </span>
+          <div className="text-2xl font-black text-amber-600 dark:text-amber-400 flex items-center gap-1">
+            <Clock className="h-5 w-5" /> ${totalPayrollPending.toLocaleString()}
+          </div>
+          <p className="text-[10.5px] text-muted-foreground">Por acreditar al cierre del período</p>
+        </div>
+
+        <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+            Margen Operativo Estimado
+          </span>
+          <div className="text-2xl font-black text-primary flex items-center gap-1">
+            <DollarSign className="h-5 w-5" /> ${netMonthlyMargin.toLocaleString()}
+          </div>
+          <p className="text-[10.5px] text-muted-foreground">Ingresos brutos menos honorarios</p>
+        </div>
+      </div>
+
+      {/* Payroll Liquidation Table */}
+      <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-4 shadow-xs">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-border/40">
+          <div>
+            <h3 className="font-bold text-sm text-foreground">
+              Reporte de Liquidaciones de Staff & Coaches ({filteredPayroll.length})
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Cálculo mensual de honorarios por clases dictadas y alumnos asistentes.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Search Bar */}
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Buscar coach o especialidad..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-8.5 w-44 sm:w-52 pl-8 pr-3 rounded-xl border border-border bg-background text-xs font-bold text-foreground focus-visible:outline-none placeholder:font-normal placeholder:text-muted-foreground"
+              />
+            </div>
+
+            {/* Status Filter */}
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as any)}
+              className="h-8.5 rounded-xl border border-border bg-background px-2.5 text-xs font-bold text-foreground focus-visible:outline-none"
+            >
+              <option value="all">Todos los Estados</option>
+              <option value="pending">Pendientes de Pago</option>
+              <option value="paid">Acreditados / Pagados</option>
+            </select>
+
+            {/* Period Selector */}
+            <select
+              value={selectedPeriod}
+              onChange={(e) => setSelectedPeriod(e.target.value)}
+              className="h-8.5 rounded-xl border border-border bg-background px-2.5 text-xs font-bold text-foreground focus-visible:outline-none"
+            >
+              <option value="Junio 2026">Junio 2026</option>
+              <option value="Mayo 2026">Mayo 2026</option>
+              <option value="all">Todos los Períodos</option>
+            </select>
+
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleRecalculatePayroll}
+              className="h-8.5 rounded-xl text-xs font-bold gap-1 bg-primary text-primary-foreground shrink-0"
+            >
+              <Zap className="h-4 w-4" /> Recalcular desde Asistencias
+            </Button>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto border border-border/60 rounded-2xl bg-background">
+          <table className="w-full text-left text-xs min-w-[650px] border-collapse">
+            <thead>
+              <tr className="border-b border-border/60 bg-secondary/40 text-muted-foreground font-bold text-[10px] uppercase">
+                <th className="p-3">Profesor / Coach</th>
+                <th className="p-3">Período</th>
+                <th className="p-3 text-center">Clases Dictadas</th>
+                <th className="p-3 text-center">Alumnos Asistentes</th>
+                <th className="p-3 text-right">Monto Total</th>
+                <th className="p-3 text-center">Estado</th>
+                <th className="p-3 text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/30">
+              {filteredPayroll.map((pay) => {
+                const coach = staffList.find((s) => s.id === pay.staffId);
+                return (
+                  <tr key={pay.id} className="hover:bg-secondary/20 transition-colors">
+                    <td className="p-3 font-bold text-foreground flex items-center gap-2">
+                      <div className="h-7 w-7 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs border border-primary/20 shrink-0 uppercase">
+                        {coach?.name ? coach.name.split(" ").map((n: string) => n[0]).join("") : "CO"}
+                      </div>
+                      <div>
+                        <span className="block font-bold">{coach?.name || "Coach Inactivo"}</span>
+                        <span className="text-[10px] text-muted-foreground">{coach?.specialty || "Staff"}</span>
+                      </div>
+                    </td>
+                    <td className="p-3 text-muted-foreground font-medium">{pay.period}</td>
+                    <td className="p-3 text-center font-bold">{pay.classesGiven} clases</td>
+                    <td className="p-3 text-center font-bold">{pay.studentsAttended} alumnos</td>
+                    <td className="p-3 text-right font-black text-sm text-foreground">
+                      ${pay.totalAmount.toLocaleString()}
+                    </td>
+                    <td className="p-3 text-center">
+                      <span
+                        className={`text-[9.5px] font-bold px-2.5 py-1 rounded-full border ${
+                          pay.status === "paid"
+                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                            : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+                        }`}
+                      >
+                        {pay.status === "paid" ? "Pagado" : "Pendiente"}
+                      </span>
+                    </td>
+                    <td className="p-3 text-right space-x-1.5">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setActiveReceipt(pay)}
+                        className="h-7 text-[10.5px] font-bold rounded-lg border-border gap-1"
+                      >
+                        <FileText className="h-3.5 w-3.5" /> Recibo
+                      </Button>
+
+                      {pay.status === "pending" ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => {
+                            const today = new Date().toISOString().split("T")[0];
+                            setPayrollRecords((prev) =>
+                              prev.map((p) =>
+                                p.id === pay.id ? { ...p, status: "paid", paidAt: today } : p,
+                              ),
+                            );
+
+                            // Post auto-expense to Cash Register
+                            const newExpenseTx = {
+                              id: `tx-pay-${Date.now()}`,
+                              date: today,
+                              type: "expense" as const,
+                              channel: "transfer" as const,
+                              description: `Liquidación Honorarios Coach: ${coach?.name || "Staff"} (${pay.period})`,
+                              amount: pay.totalAmount,
+                              registeredBy: "Administración / Finanzas",
+                            };
+                            setCashTransactions((prev) => [newExpenseTx, ...prev]);
+
+                            alert(
+                              `✓ Liquidación de $${pay.totalAmount.toLocaleString()} acreditada a ${coach?.name}. Se registró el egreso en Caja/POS.`,
+                            );
+                          }}
+                          className="h-7 text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-3"
+                        >
+                          Acreditar Pago
+                        </Button>
+                      ) : (
+                        <span className="text-[10px] text-muted-foreground italic font-medium">
+                          Acreditado ({pay.paidAt})
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Recibo / Comprobante Modal */}
+      {activeReceipt && (
+        <Dialog open={!!activeReceipt} onOpenChange={(o) => !o && setActiveReceipt(null)}>
+          <DialogContent className="max-w-md border border-border bg-card">
+            <DialogHeader>
+              <DialogTitle className="text-base font-bold flex items-center gap-2">
+                <FileText className="h-5 w-5 text-primary" /> Recibo de Liquidación de Honorarios
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-4 pt-2 text-xs">
+              {(() => {
+                const coach = staffList.find((s) => s.id === activeReceipt.staffId);
+                const baseVal = coach?.baseSalary ?? 60000;
+                const payPerClassRate = coach?.payPerClass ?? 5000;
+                const payPerStudentRate = coach?.payPerStudent ?? 300;
+                const perClassVal = activeReceipt.classesGiven * payPerClassRate;
+                const perStudentVal = activeReceipt.studentsAttended * payPerStudentRate;
+
+                return (
+                  <div className="space-y-3">
+                    <div className="p-3.5 bg-secondary/30 border border-border/60 rounded-2xl space-y-1">
+                      <div className="font-bold text-sm text-foreground">{coach?.name || "Coach"}</div>
+                      <div className="text-muted-foreground">{coach?.specialty || "Entrenador Staff"}</div>
+                      <div className="text-[10.5px] text-primary font-bold">Período: {activeReceipt.period}</div>
+                    </div>
+
+                    <div className="space-y-2 border-t border-b border-border/60 py-3">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                        Desglose de Conceptos Liquidados:
+                      </span>
+
+                      <div className="flex justify-between font-medium">
+                        <span>Base Fija Mensual</span>
+                        <span>${baseVal.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between font-medium">
+                        <span>{activeReceipt.classesGiven} Clases Dictadas (${payPerClassRate.toLocaleString()} c/u)</span>
+                        <span>${perClassVal.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between font-medium">
+                        <span>{activeReceipt.studentsAttended} Alumnos Asistentes (${payPerStudentRate.toLocaleString()} c/u)</span>
+                        <span>${perStudentVal.toLocaleString()}</span>
+                      </div>
+                    </div>
+
+                    <div className="p-3 bg-primary/10 border border-primary/20 rounded-xl flex justify-between items-center text-sm font-bold">
+                      <span className="text-foreground">TOTAL A COBRAR:</span>
+                      <span className="text-primary text-base font-black">
+                        ${activeReceipt.totalAmount.toLocaleString()} ARS
+                      </span>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              <DialogFooter className="gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setActiveReceipt(null)}
+                  className="rounded-xl text-xs font-bold"
+                >
+                  Cerrar
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    alert("Imprimiendo recibo oficial de liquidación...");
+                    window.print();
+                  }}
+                  className="rounded-xl text-xs font-bold bg-primary text-primary-foreground gap-1"
+                >
+                  Imprimir / Descargar Recibo
+                </Button>
+              </DialogFooter>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+    </div>
+  );
+}
+
+function ReportesTab({
+  membersList = [],
+  classesList = [],
+  membershipsList = [],
+  staffList = [],
+  salasList = [],
+}: {
+  membersList?: any[];
+  classesList?: any[];
+  membershipsList?: any[];
+  staffList?: any[];
+  salasList?: any[];
+}) {
+  const [timeRange, setTimeRange] = useState<"today" | "week" | "month" | "prev_month" | "quarter">("month");
+  const [selectedDiscipline, setSelectedDiscipline] = useState<string>("all");
+  const [reportSubTab, setReportSubTab] = useState<"finanzas" | "asistencia" | "socios" | "staff">("finanzas");
+
+  // Dynamic calculations based on state
+  const totalActiveMembers = useMemo(() => {
+    return membersList.filter((m) => m.status === "activo" || !m.status).length || 240;
+  }, [membersList]);
+
+  const calculatedRevenue = useMemo(() => {
+    if (!membersList.length) return 4320000;
+    return membersList.reduce((sum, m) => {
+      const plan = membershipsList.find((p) => p.name === m.plan);
+      return sum + (plan?.price || 18000);
+    }, 0);
+  }, [membersList, membershipsList]);
+
+  const avgTicket = useMemo(() => {
+    return totalActiveMembers > 0 ? Math.round(calculatedRevenue / totalActiveMembers) : 18000;
+  }, [calculatedRevenue, totalActiveMembers]);
+
+  const totalClassesCount = useMemo(() => {
+    if (selectedDiscipline === "all") return classesList.length || 42;
+    return classesList.filter((c) => (c.name || "").toLowerCase().includes(selectedDiscipline.toLowerCase())).length || 12;
+  }, [classesList, selectedDiscipline]);
+
+  const totalBookedSpots = useMemo(() => {
+    return classesList.reduce((sum, c) => sum + (c.booked || 0), 0) || 842;
+  }, [classesList]);
+
+  const totalCapacity = useMemo(() => {
+    return classesList.reduce((sum, c) => sum + (c.capacity || 20), 0) || 1080;
+  }, [classesList]);
+
+  const occupancyRate = useMemo(() => {
+    return totalCapacity > 0 ? ((totalBookedSpots / totalCapacity) * 100).toFixed(1) : "78.4";
+  }, [totalBookedSpots, totalCapacity]);
+
+  // CSV Export Handler
+  const handleExportCSV = () => {
+    let headers: string[] = [];
+    let rows: string[][] = [];
+    let filename = `reporte_${reportSubTab}_${timeRange}.csv`;
+
+    if (reportSubTab === "finanzas") {
+      headers = ["Periodo", "Facturacion Total ($)", "Socios Activos", "Ticket Promedio ($)", "Cobros Tarjeta/MP (%)", "Cobros Transf (%)", "Cobros Efectivo (%)"];
+      rows = [
+        [timeRange, calculatedRevenue.toString(), totalActiveMembers.toString(), avgTicket.toString(), "62%", "24%", "14%"],
+      ];
+    } else if (reportSubTab === "asistencia") {
+      headers = ["Clase", "Disciplina", "Profesor", "Capacidad", "Inscritos", "% Ocupacion"];
+      rows = classesList.length > 0
+        ? classesList.map((c) => [c.name, c.discipline || "General", c.staffId, c.capacity.toString(), c.booked.toString(), `${Math.round((c.booked / c.capacity) * 100)}%`])
+        : [["CrossFit WOD", "CrossFit", "Mateo Rossi", "20", "18", "90%"], ["Spinning Pro", "Spinning", "Lucía Fernández", "25", "24", "96%"]];
+    } else if (reportSubTab === "socios") {
+      headers = ["Nombre", "Plan", "Estado", "Vencimiento", "Asistencias Mes"];
+      rows = membersList.length > 0
+        ? membersList.map((m) => [m.name, m.plan, m.status || "Activo", m.expirationDate || "Al día", "8"])
+        : [["Agustín Gómez", "Pase Libre", "Activo", "15/08/2026", "12"]];
+    } else if (reportSubTab === "staff") {
+      headers = ["Profesor/Coach", "Especialidad", "Clases Dictadas", "Asistencia Promedio", "Calificacion"];
+      rows = staffList.length > 0
+        ? staffList.map((s) => [s.name, s.specialty, "18", "16 alumnos", "4.9 ⭐"])
+        : [["Mateo Rossi", "CrossFit", "24", "18 alumnos", "4.9 ⭐"], ["Valeria Soto", "Yoga & Pilates", "16", "14 alumnos", "5.0 ⭐"]];
+    }
+
+    const csvContent = [headers.join(","), ...rows.map((r) => r.map((val) => `"${val}"`).join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  return (
+    <div className="space-y-6 animate-fade-in text-foreground">
+      {/* Header & Controls Toolbar */}
+      <div className="bg-card border border-border p-6 rounded-3xl space-y-4 shadow-xs">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-bold tracking-tight">Reportes & Analítica de Negocio</h2>
+              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-xs font-semibold">
+                Estadísticas en Tiempo Real
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Indicadores ejecutivos de facturación, tasa de retención, ocupación de salones y rendimiento de staff.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportCSV}
+              className="rounded-xl text-xs font-bold gap-2 border-border/80 hover:bg-secondary"
+            >
+              <Download className="h-4 w-4 text-primary" />
+              Exportar CSV
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePrint}
+              className="rounded-xl text-xs font-bold gap-2 border-border/80 hover:bg-secondary"
+            >
+              <Printer className="h-4 w-4 text-muted-foreground" />
+              Imprimir / PDF
+            </Button>
+          </div>
+        </div>
+
+        {/* Filters Controls Row */}
+        <div className="pt-3 border-t border-border/60 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          {/* Sub-Tab Category Selector */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+            <button
+              onClick={() => setReportSubTab("finanzas")}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                reportSubTab === "finanzas"
+                  ? "bg-primary text-primary-foreground shadow-2xs"
+                  : "bg-secondary/40 text-muted-foreground hover:bg-secondary hover:text-foreground"
+              }`}
+            >
+              <DollarSign className="w-3.5 h-3.5" /> Finanzas e Ingresos
+            </button>
+
+            <button
+              onClick={() => setReportSubTab("asistencia")}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                reportSubTab === "asistencia"
+                  ? "bg-primary text-primary-foreground shadow-2xs"
+                  : "bg-secondary/40 text-muted-foreground hover:bg-secondary hover:text-foreground"
+              }`}
+            >
+              <Activity className="w-3.5 h-3.5" /> Asistencia y Ocupación
+            </button>
+
+            <button
+              onClick={() => setReportSubTab("socios")}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                reportSubTab === "socios"
+                  ? "bg-primary text-primary-foreground shadow-2xs"
+                  : "bg-secondary/40 text-muted-foreground hover:bg-secondary hover:text-foreground"
+              }`}
+            >
+              <Users className="w-3.5 h-3.5" /> Retención y Alumnos
+            </button>
+
+            <button
+              onClick={() => setReportSubTab("staff")}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                reportSubTab === "staff"
+                  ? "bg-primary text-primary-foreground shadow-2xs"
+                  : "bg-secondary/40 text-muted-foreground hover:bg-secondary hover:text-foreground"
+              }`}
+            >
+              <Star className="w-3.5 h-3.5" /> Staff & Coaches
+            </button>
+          </div>
+
+          {/* Time & Discipline Selectors */}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 bg-secondary/30 p-1 rounded-xl border border-border/60">
+              <Filter className="w-3.5 h-3.5 text-muted-foreground ml-1.5" />
+              <select
+                value={timeRange}
+                onChange={(e: any) => setTimeRange(e.target.value)}
+                className="bg-transparent text-xs font-bold text-foreground focus:outline-none pr-1 cursor-pointer"
+              >
+                <option value="today">Hoy</option>
+                <option value="week">Últimos 7 días</option>
+                <option value="month">Este Mes</option>
+                <option value="prev_month">Mes Anterior</option>
+                <option value="quarter">Trimestre Actual</option>
+              </select>
+            </div>
+
+            <div className="bg-secondary/30 p-1 rounded-xl border border-border/60">
+              <select
+                value={selectedDiscipline}
+                onChange={(e) => setSelectedDiscipline(e.target.value)}
+                className="bg-transparent text-xs font-bold text-foreground focus:outline-none px-1.5 cursor-pointer"
+              >
+                <option value="all">Todas las Clases</option>
+                <option value="CrossFit">CrossFit</option>
+                <option value="Spinning">Spinning</option>
+                <option value="Yoga">Yoga</option>
+                <option value="Pilates">Pilates</option>
+                <option value="Funcional">Funcional</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* SUBTAB 1: FINANZAS E INGRESOS */}
+      {reportSubTab === "finanzas" && (
+        <div className="space-y-6 animate-fade-in">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-5">
+            <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+                Facturación Estimada ({timeRange})
+              </span>
+              <div className="text-2xl font-black text-foreground">${calculatedRevenue.toLocaleString("es-AR")}</div>
+              <p className="text-[10.5px] text-emerald-600 font-semibold flex items-center gap-1">
+                <TrendingUp className="w-3 h-3" /> +14.2% vs. periodo anterior
+              </p>
+            </div>
+
+            <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+                Ticket Promedio por Socio
+              </span>
+              <div className="text-2xl font-black text-primary">${avgTicket.toLocaleString("es-AR")}</div>
+              <p className="text-[10.5px] text-muted-foreground">Planes mensuales + cuotas</p>
+            </div>
+
+            <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+                Ingresos Recurrentes (Pases)
+              </span>
+              <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">86.5%</div>
+              <p className="text-[10.5px] text-muted-foreground">Suscripciones automáticas</p>
+            </div>
+
+            <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+                Plan Más Vendido
+              </span>
+              <div className="text-xl font-black text-foreground truncate">Pase Libre Total</div>
+              <p className="text-[10.5px] text-muted-foreground">48% de la recaudación</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-4 shadow-xs">
+              <h3 className="font-bold text-sm text-foreground uppercase tracking-wider text-muted-foreground/80 border-b border-border/40 pb-2">
+                Distribución por Métodos de Pago
+              </h3>
+              <div className="space-y-3 pt-1">
+                <div>
+                  <div className="flex justify-between text-xs font-bold mb-1">
+                    <span>MercadoPago / Tarjetas de Crédito y Débito</span>
+                    <span className="text-primary font-black">62% ($2,678,400)</span>
+                  </div>
+                  <div className="h-3 w-full bg-secondary rounded-full overflow-hidden">
+                    <div className="h-full bg-primary rounded-full w-[62%]" />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex justify-between text-xs font-bold mb-1">
+                    <span>Transferencias Bancarias (CBU / CVU)</span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-black">24% ($1,036,800)</span>
+                  </div>
+                  <div className="h-3 w-full bg-secondary rounded-full overflow-hidden">
+                    <div className="h-full bg-emerald-500 rounded-full w-[24%]" />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex justify-between text-xs font-bold mb-1">
+                    <span>Efectivo en Recepción</span>
+                    <span className="text-muted-foreground font-black">14% ($604,800)</span>
+                  </div>
+                  <div className="h-3 w-full bg-secondary rounded-full overflow-hidden">
+                    <div className="h-full bg-muted-foreground/40 rounded-full w-[14%]" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-4 shadow-xs">
+              <h3 className="font-bold text-sm text-foreground uppercase tracking-wider text-muted-foreground/80 border-b border-border/40 pb-2">
+                Resumen de Planes de Membresía
+              </h3>
+              <div className="space-y-3 pt-1">
+                {membershipsList.length > 0 ? (
+                  membershipsList.map((plan) => (
+                    <div key={plan.id} className="p-3 bg-secondary/30 border border-border/60 rounded-2xl flex items-center justify-between">
+                      <div>
+                        <span className="font-bold text-xs block">{plan.name}</span>
+                        <span className="text-[11px] text-muted-foreground">{plan.duration} · ${plan.price.toLocaleString("es-AR")}</span>
+                      </div>
+                      <Badge variant="outline" className="text-xs font-bold border-primary/20 text-primary">
+                        {plan.passType || "Pase Activo"}
+                      </Badge>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-xs text-muted-foreground">No hay planes registrados.</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SUBTAB 2: ASISTENCIA Y OCUPACION */}
+      {reportSubTab === "asistencia" && (
+        <div className="space-y-6 animate-fade-in">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-5">
+            <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+                Asistencias Confirmadas
+              </span>
+              <div className="text-2xl font-black text-foreground">{totalBookedSpots}</div>
+              <p className="text-[10.5px] text-emerald-600 font-semibold">+8.4% vs. mes anterior</p>
+            </div>
+
+            <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+                Ocupación Promedio de Salones
+              </span>
+              <div className="text-2xl font-black text-primary">{occupancyRate}%</div>
+              <p className="text-[10.5px] text-muted-foreground">Capacidad en horas pico</p>
+            </div>
+
+            <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+                Tasa de Ausentismo (No-shows)
+              </span>
+              <div className="text-2xl font-black text-amber-500">5.8%</div>
+              <p className="text-[10.5px] text-muted-foreground">Reservas sin check-in</p>
+            </div>
+
+            <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+                Lista de Espera Convertida
+              </span>
+              <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">38</div>
+              <p className="text-[10.5px] text-muted-foreground">Cupos liberados asignados</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-4 shadow-xs">
+              <h3 className="font-bold text-sm text-foreground uppercase tracking-wider text-muted-foreground/80 border-b border-border/40 pb-2">
+                Ocupación por Franja Horaria (Lunes a Viernes)
+              </h3>
+              <div className="space-y-3 pt-1">
+                <div>
+                  <div className="flex justify-between text-xs font-bold mb-1">
+                    <span>Mañana (08:00 - 11:00 hs)</span>
+                    <span className="text-primary font-black">82% Ocupación</span>
+                  </div>
+                  <div className="h-3 w-full bg-secondary rounded-full overflow-hidden">
+                    <div className="h-full bg-primary rounded-full w-[82%]" />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex justify-between text-xs font-bold mb-1">
+                    <span>Mediodía (12:00 - 15:00 hs)</span>
+                    <span className="text-muted-foreground font-black">54% Ocupación</span>
+                  </div>
+                  <div className="h-3 w-full bg-secondary rounded-full overflow-hidden">
+                    <div className="h-full bg-secondary-foreground/40 rounded-full w-[54%]" />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex justify-between text-xs font-bold mb-1">
+                    <span>Tarde / Noche (18:00 - 21:00 hs) - Hora Pico</span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-black">94% Ocupación</span>
+                  </div>
+                  <div className="h-3 w-full bg-secondary rounded-full overflow-hidden">
+                    <div className="h-full bg-emerald-500 rounded-full w-[94%]" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-4 shadow-xs">
+              <h3 className="font-bold text-sm text-foreground uppercase tracking-wider text-muted-foreground/80 border-b border-border/40 pb-2">
+                Rendimiento por Salón / Espacio
+              </h3>
+              <div className="space-y-3 pt-1">
+                {salasList.length > 0 ? (
+                  salasList.map((sala) => (
+                    <div key={sala.id} className="p-3.5 bg-secondary/30 border border-border/60 rounded-2xl flex items-center justify-between">
+                      <div>
+                        <span className="font-bold text-sm block">{sala.name}</span>
+                        <span className="text-xs text-muted-foreground">Capacidad: {sala.capacity || 20} lugares</span>
+                      </div>
+                      <span className="text-xs font-black bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-3 py-1 rounded-full border border-emerald-500/20">
+                        84% Ocupación
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <>
+                    <div className="p-3.5 bg-secondary/30 border border-border/60 rounded-2xl flex items-center justify-between">
+                      <div>
+                        <span className="font-bold text-sm block">Sala 1 - WOD & CrossFit</span>
+                        <span className="text-xs text-muted-foreground">Capacidad: 25 lugares · 420 inscripciones/mes</span>
+                      </div>
+                      <span className="text-xs font-black bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-3 py-1 rounded-full border border-emerald-500/20">
+                        84% Ocupación
+                      </span>
+                    </div>
+                    <div className="p-3.5 bg-secondary/30 border border-border/60 rounded-2xl flex items-center justify-between">
+                      <div>
+                        <span className="font-bold text-sm block">Sala 2 - Studio & Pilates</span>
+                        <span className="text-xs text-muted-foreground">Capacidad: 18 lugares · 580 inscripciones/mes</span>
+                      </div>
+                      <span className="text-xs font-black bg-primary/10 text-primary px-3 py-1 rounded-full border border-primary/20">
+                        76% Ocupación
+                      </span>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SUBTAB 3: RETENCION Y SOCIOS */}
+      {reportSubTab === "socios" && (
+        <div className="space-y-6 animate-fade-in">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-5">
+            <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+                Socios Activos Totales
+              </span>
+              <div className="text-2xl font-black text-foreground">{totalActiveMembers}</div>
+              <p className="text-[10.5px] text-emerald-600 font-semibold">+18 este mes</p>
+            </div>
+
+            <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+                Tasa de Retención
+              </span>
+              <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">92.4%</div>
+              <p className="text-[10.5px] text-muted-foreground">Renovaciones mensuales</p>
+            </div>
+
+            <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+                Tasa de Cancelación (Churn)
+              </span>
+              <div className="text-2xl font-black text-amber-500">2.6%</div>
+              <p className="text-[10.5px] text-muted-foreground">Bajas registradas</p>
+            </div>
+
+            <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+                En Riesgo de Abandono
+              </span>
+              <div className="text-2xl font-black text-destructive">6</div>
+              <p className="text-[10.5px] text-muted-foreground">14+ días sin check-in</p>
+            </div>
+          </div>
+
+          <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-4 shadow-xs">
+            <div className="flex items-center justify-between border-b border-border/40 pb-2">
+              <h3 className="font-bold text-sm text-foreground uppercase tracking-wider text-muted-foreground/80">
+                ⚠️ Alumnos en Riesgo de Abandono (Sin Asistencias Recientes)
+              </h3>
+              <Badge variant="outline" className="text-xs font-bold border-destructive/30 text-destructive bg-destructive/10">
+                Requiere Seguimiento
+              </Badge>
+            </div>
+
+            <div className="space-y-2 pt-1">
+              <div className="p-3 bg-secondary/30 border border-border/60 rounded-2xl flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-destructive/10 text-destructive flex items-center justify-center font-bold text-xs">
+                    AG
+                  </div>
+                  <div>
+                    <span className="font-bold text-xs block">Agustín Gómez</span>
+                    <span className="text-[11px] text-muted-foreground">Plan Pase 8 Clases · Última asistencia hace 16 días</span>
+                  </div>
+                </div>
+                <Button size="sm" variant="outline" className="rounded-xl text-xs font-bold border-border">
+                  Enviar Recordatorio WhatsApp
+                </Button>
+              </div>
+
+              <div className="p-3 bg-secondary/30 border border-border/60 rounded-2xl flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center font-bold text-xs">
+                    CD
+                  </div>
+                  <div>
+                    <span className="font-bold text-xs block">Camila Díaz</span>
+                    <span className="text-[11px] text-muted-foreground">Plan CrossFit 12 · Última asistencia hace 14 días</span>
+                  </div>
+                </div>
+                <Button size="sm" variant="outline" className="rounded-xl text-xs font-bold border-border">
+                  Enviar Recordatorio WhatsApp
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SUBTAB 4: STAFF Y COACHES */}
+      {reportSubTab === "staff" && (
+        <div className="space-y-6 animate-fade-in">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-5">
+            <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+                Coaches Activos
+              </span>
+              <div className="text-2xl font-black text-foreground">{staffList.length || 6}</div>
+              <p className="text-[10.5px] text-muted-foreground">Instructores del studio</p>
+            </div>
+
+            <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+                Clases Dictadas (Mes)
+              </span>
+              <div className="text-2xl font-black text-primary">{totalClassesCount}</div>
+              <p className="text-[10.5px] text-emerald-600 font-semibold">100% asistidas</p>
+            </div>
+
+            <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+                Promedio Alumnos / Clase
+              </span>
+              <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">16.4</div>
+              <p className="text-[10.5px] text-muted-foreground">Asistencia promedio</p>
+            </div>
+
+            <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+                Puntualidad de Sesiones
+              </span>
+              <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
+                100%
+              </div>
+              <p className="text-[10.5px] text-muted-foreground">Cumplimiento de horario</p>
+            </div>
+          </div>
+
+          <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-4 shadow-xs">
+            <h3 className="font-bold text-sm text-foreground uppercase tracking-wider text-muted-foreground/80 border-b border-border/40 pb-2">
+              Performance de Instructores
+            </h3>
+            <div className="space-y-3 pt-1">
+              {staffList.length > 0 ? (
+                staffList.map((coach) => (
+                  <div key={coach.id} className="p-3.5 bg-secondary/30 border border-border/60 rounded-2xl flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={coach.photo || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"}
+                        alt={coach.name}
+                        className="w-10 h-10 rounded-full object-cover border border-border"
+                      />
+                      <div>
+                        <span className="font-bold text-sm block">{coach.name}</span>
+                        <span className="text-xs text-muted-foreground">{coach.specialty}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-6 text-xs">
+                      <div>
+                        <span className="text-muted-foreground block text-[10px] uppercase font-bold">Clases</span>
+                        <span className="font-extrabold text-foreground">18 dic.</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground block text-[10px] uppercase font-bold">Asistencia Prom.</span>
+                        <span className="font-extrabold text-primary">17.2 al.</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground block text-[10px] uppercase font-bold">Estado</span>
+                        <span className="font-extrabold text-emerald-500">
+                          Activo
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="p-3.5 bg-secondary/30 border border-border/60 rounded-2xl flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <img
+                      src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
+                      alt="Mateo Rossi"
+                      className="w-10 h-10 rounded-full object-cover border border-border"
+                    />
+                    <div>
+                      <span className="font-bold text-sm block">Mateo Rossi</span>
+                      <span className="text-xs text-muted-foreground">CrossFit & High Intensity</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-6 text-xs">
+                    <div>
+                      <span className="text-muted-foreground block text-[10px] uppercase font-bold">Clases</span>
+                      <span className="font-extrabold text-foreground">24 dic.</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground block text-[10px] uppercase font-bold">Estado</span>
+                      <span className="font-extrabold text-emerald-500">
+                        Activo
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function InventarioTab({
+  inventoryItems,
+  setInventoryItems,
+}: {
+  inventoryItems: any[];
+  setInventoryItems: React.Dispatch<React.SetStateAction<any[]>>;
+}) {
+  const [showAdjustModal, setShowAdjustModal] = useState<any | null>(null);
+  const [adjustAmount, setAdjustAmount] = useState("");
+
+  const totalValue = inventoryItems.reduce((sum, item) => sum + item.stock * item.price, 0);
+  const lowStockCount = inventoryItems.filter((item) => item.stock <= item.minStock).length;
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      {/* Inventory Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+            Total Productos Registrados
+          </span>
+          <div className="text-2xl font-black text-foreground">{inventoryItems.length} artículos</div>
+          <p className="text-[10.5px] text-muted-foreground">Bebidas, suplementos y merchandising</p>
+        </div>
+
+        <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+            Alertas de Bajo Stock
+          </span>
+          <div className={`text-2xl font-black ${lowStockCount > 0 ? "text-amber-600 dark:text-amber-400" : "text-emerald-600"}`}>
+            {lowStockCount} {lowStockCount === 1 ? "artículo" : "artículos"}
+          </div>
+          <p className="text-[10.5px] text-muted-foreground">Por debajo del stock mínimo</p>
+        </div>
+
+        <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+            Valor de Inventario (Precio Venta)
+          </span>
+          <div className="text-2xl font-black text-primary">${totalValue.toLocaleString()}</div>
+          <p className="text-[10.5px] text-muted-foreground">Mercadería en depósito/mostrador</p>
+        </div>
+      </div>
+
+      {/* Inventory Table */}
+      <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-4 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-border/40">
+          <div>
+            <h3 className="font-bold text-sm text-foreground">Inventario & Stock de Tienda</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Control de existencias para venta en mostrador e insumos del gimnasio.
+            </p>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto border border-border/60 rounded-2xl bg-background">
+          <table className="w-full text-left text-xs min-w-[650px] border-collapse">
+            <thead>
+              <tr className="border-b border-border/60 bg-secondary/40 text-muted-foreground font-bold text-[10px] uppercase">
+                <th className="p-3">Producto</th>
+                <th className="p-3">Categoría</th>
+                <th className="p-3 text-right">Precio Costo</th>
+                <th className="p-3 text-right">Precio Venta</th>
+                <th className="p-3 text-center">Stock Actual</th>
+                <th className="p-3 text-center">Estado Stock</th>
+                <th className="p-3 text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/30">
+              {inventoryItems.map((item) => {
+                const isLow = item.stock <= item.minStock;
+                return (
+                  <tr key={item.id} className="hover:bg-secondary/20 transition-colors">
+                    <td className="p-3 font-bold text-foreground">{item.name}</td>
+                    <td className="p-3">
+                      <span className="text-[9.5px] font-bold px-2 py-0.5 rounded-full border bg-secondary text-foreground">
+                        {item.category}
+                      </span>
+                    </td>
+                    <td className="p-3 text-right text-muted-foreground font-medium">${item.cost.toLocaleString()}</td>
+                    <td className="p-3 text-right font-bold text-foreground">${item.price.toLocaleString()}</td>
+                    <td className="p-3 text-center font-black text-sm">
+                      {item.stock} {item.unit}
+                    </td>
+                    <td className="p-3 text-center">
+                      <span
+                        className={`text-[9.5px] font-bold px-2.5 py-1 rounded-full border ${
+                          isLow
+                            ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20"
+                            : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                        }`}
+                      >
+                        {isLow ? "⚠️ Bajo Stock" : "🟢 OK"}
+                      </span>
+                    </td>
+                    <td className="p-3 text-right">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowAdjustModal(item)}
+                        className="h-7 text-[11px] font-bold rounded-lg border-border hover:bg-secondary"
+                      >
+                        Ajustar Stock
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Adjust Stock Modal */}
+      {showAdjustModal && (
+        <Dialog open={!!showAdjustModal} onOpenChange={(open) => !open && setShowAdjustModal(null)}>
+          <DialogContent className="max-w-md border border-border bg-card">
+            <DialogHeader>
+              <DialogTitle>Reabastecer / Ajustar Stock</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 pt-2">
+              <div className="p-3 bg-secondary/30 border border-border/60 rounded-xl">
+                <span className="font-bold text-sm block">{showAdjustModal.name}</span>
+                <span className="text-xs text-muted-foreground">
+                  Stock Actual: <strong>{showAdjustModal.stock} {showAdjustModal.unit}</strong>
+                </span>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-muted-foreground uppercase">
+                  Cantidad a Agregar (o restar con signo -):
+                </label>
+                <input
+                  type="number"
+                  placeholder="Ej: 20 o -5"
+                  value={adjustAmount}
+                  onChange={(e) => setAdjustAmount(e.target.value)}
+                  className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm font-bold text-foreground focus-visible:outline-none"
+                />
+              </div>
+
+              <DialogFooter className="gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowAdjustModal(null)}
+                  className="rounded-xl"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    const parsed = parseInt(adjustAmount);
+                    if (isNaN(parsed)) {
+                      alert("Ingresa un número válido.");
+                      return;
+                    }
+                    setInventoryItems((prev) =>
+                      prev.map((i) =>
+                        i.id === showAdjustModal.id ? { ...i, stock: Math.max(0, i.stock + parsed) } : i,
+                      ),
+                    );
+                    setAdjustAmount("");
+                    setShowAdjustModal(null);
+                    alert("✓ Stock actualizado correctamente.");
+                  }}
+                  className="rounded-xl font-bold bg-primary text-primary-foreground"
+                >
+                  Guardar Ajuste
+                </Button>
+              </DialogFooter>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+    </div>
+  );
+}
 
 
 function ReseñasTab({
@@ -2068,68 +3745,143 @@ function AsistenciasTab({
   blackoutDays: { id: string; date: string; reason: string }[];
 }) {
   const [historySearch, setHistorySearch] = useState("");
+  const [methodFilter, setMethodFilter] = useState("Todos");
+  const [dateFilter, setDateFilter] = useState("Todos");
+  const [statusFilter, setStatusFilter] = useState("Todos");
+
+  // Interactive History & Delete Confirmation states
+  const [isClearModalOpen, setIsClearModalOpen] = useState(false);
+  const [clearConfirmInput, setClearConfirmInput] = useState("");
+
+  const [historyList, setHistoryList] = useState([
+    {
+      id: "h1",
+      name: "Agustín Gómez",
+      date: "Hoy",
+      time: "11:24 AM",
+      method: "Scan QR",
+      status: "Presente",
+      distance: "En recepción",
+      class: "CrossFit WOD",
+    },
+    {
+      id: "h2",
+      name: "Camila Díaz",
+      date: "Hoy",
+      time: "11:15 AM",
+      method: "Geolocalización GPS",
+      status: "Presente",
+      distance: "18m de sede",
+      class: "Musculación Libre",
+    },
+    {
+      id: "h3",
+      name: "Marcos López",
+      date: "Hoy",
+      time: "10:54 AM",
+      method: "Scan QR",
+      status: "Presente",
+      distance: "En recepción",
+      class: "CrossFit WOD",
+    },
+    {
+      id: "h4",
+      name: "Sofía Martínez",
+      date: "Hoy",
+      time: "09:30 AM",
+      method: "Geolocalización GPS",
+      status: "Presente",
+      distance: "24m de sede",
+      class: "Yoga Ashtanga",
+    },
+    {
+      id: "h5",
+      name: "Lucas Torres",
+      date: "Ayer",
+      time: "19:10 PM",
+      method: "Recepción",
+      status: "Presente",
+      distance: "Manual Recepción",
+      class: "Spinning Pro",
+    },
+    {
+      id: "h6",
+      name: "Mateo Rossi",
+      date: "Ayer",
+      time: "18:00 PM",
+      method: "Scan QR",
+      status: "Ausente / No-Show",
+      distance: "-",
+      class: "Functional Training",
+    },
+  ]);
 
   const recentCheckins = [
     {
       name: "Agustín Gómez",
       time: "11:24 AM",
+      method: "Scan QR",
       alert: "Lesión Rodilla",
-      alertColor: "bg-secondary/ text-secondary-foreground border-border/",
+      alertColor: "bg-secondary text-secondary-foreground border-border",
       photo:
         "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80",
     },
     {
       name: "Camila Díaz",
       time: "11:15 AM",
+      method: "Geolocalización GPS",
       alert: "Pago Pendiente",
-      alertColor: "bg-destructive/ text-destructive border-destructive/",
+      alertColor: "bg-destructive/10 text-destructive border-destructive/30",
       photo:
         "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80",
     },
     {
       name: "Marcos López",
       time: "10:54 AM",
+      method: "Scan QR",
       alert: null,
       photo:
         "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80",
     },
+    {
+      name: "Lucía Fernández",
+      time: "10:30 AM",
+      method: "Geolocalización GPS",
+      alert: null,
+      photo:
+        "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80",
+    },
   ];
 
-  const history = [
-    {
-      name: "Agustín Gómez",
-      date: "Hoy",
-      time: "11:24 AM",
-      method: "QR Scan",
-      class: "CrossFit WOD",
-    },
-    {
-      name: "Camila Díaz",
-      date: "Hoy",
-      time: "11:15 AM",
-      method: "Recepción",
-      class: "Musculación Libre",
-    },
-    {
-      name: "Marcos López",
-      date: "Hoy",
-      time: "10:54 AM",
-      method: "QR Scan",
-      class: "CrossFit WOD",
-    },
-    {
-      name: "Sofía Martínez",
-      date: "Ayer",
-      time: "19:10 PM",
-      method: "QR Scan",
-      class: "Yoga Ashtanga",
-    },
-  ];
+  // Filtering history by search, method, date and status
+  const filteredHistory = useMemo(() => {
+    return historyList.filter((item) => {
+      const matchesSearch =
+        item.name.toLowerCase().includes(historySearch.toLowerCase()) ||
+        item.class.toLowerCase().includes(historySearch.toLowerCase());
+      if (!matchesSearch) return false;
+
+      // Method Filter
+      if (methodFilter !== "Todos" && item.method !== methodFilter) return false;
+
+      // Date Filter
+      if (dateFilter === "Hoy" && item.date !== "Hoy") return false;
+      if (dateFilter === "Ayer" && item.date !== "Ayer") return false;
+      if (dateFilter === "Esta Semana" && item.date !== "Hoy" && item.date !== "Ayer") return false;
+
+      // Status Filter
+      if (statusFilter !== "Todos") {
+        if (statusFilter === "Presente" && item.status !== "Presente") return false;
+        if (statusFilter === "Ausente" && !item.status.includes("Ausente")) return false;
+      }
+      return true;
+    });
+  }, [historyList, historySearch, methodFilter, dateFilter, statusFilter]);
 
   const handleExport = () => {
-    const csvHeader = "Nombre,Fecha,Hora,Metodo,Clase\n";
-    const csvRows = history
-      .map((h) => `"${h.name}","${h.date}","${h.time}","${h.method}","${h.class}"`)
+    const csvHeader = "Nombre,Fecha,Hora,Metodo,Estado,Detalle,Clase\n";
+    const csvRows = filteredHistory
+      .map((h) => `"${h.name}","${h.date}","${h.time}","${h.method}","${h.status}","${h.distance}","${h.class}"`)
       .join("\n");
     const blob = new Blob([csvHeader + csvRows], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -2149,66 +3901,127 @@ function AsistenciasTab({
   return (
     <div className="space-y-8">
       {activeBlackout && (
-        <div className="p-4 bg-destructive/ border border-destructive/ text-destructive rounded-3xl text-xs font-semibold flex items-center gap-3">
+        <div className="p-4 bg-destructive/10 border border-destructive/30 text-destructive rounded-3xl text-xs font-semibold flex items-center gap-3">
           <AlertCircle className="h-5 w-5 shrink-0" />
           <div>
-            <div className="font-bold">⚠️ Sede Cerrada por Día de Cierre / Feriado</div>
+            <div className="font-bold">Sede Cerrada por Día de Cierre / Feriado</div>
             <div className="text-[11px] text-destructive/80 mt-0.5">
               Motivo: {activeBlackout.reason}. Los check-ins de hoy están inhabilitados.
             </div>
           </div>
         </div>
       )}
-      {/* Live Feed Header */}
-      <div className="grid gap-6 md:grid-cols-3">
-        <div className="rounded-3xl border border-border bg-card p-6 flex items-center justify-between col-span-1">
-          <div>
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Aforo Actual
+
+      {/* Dynamic Metrics Header (Occupancy & Access Methods Breakdown) */}
+      <div className="grid gap-5 md:grid-cols-4">
+        {/* Aforo Actual */}
+        <div className="rounded-3xl border border-border bg-card shadow-xs p-5 flex flex-col justify-between hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg transition-all duration-300">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+              Aforo Actual Sede
             </span>
-            <div className="text-4xl font-extrabold tracking-tight mt-2">
-              {selectedBranchId === "all" && (
-                <>
-                  84 <span className="text-lg font-medium text-muted-foreground">/ 170</span>
-                </>
-              )}
-              {selectedBranchId === "matriz" && (
-                <>
-                  42 <span className="text-lg font-medium text-muted-foreground">/ 80</span>
-                </>
-              )}
-              {selectedBranchId === "1" && (
-                <>
-                  24 <span className="text-lg font-medium text-muted-foreground">/ 50</span>
-                </>
-              )}
-              {selectedBranchId === "2" && (
-                <>
-                  18 <span className="text-lg font-medium text-muted-foreground">/ 40</span>
-                </>
-              )}
+            <div className="h-9 w-9 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+              <CheckCircle2 className="h-5 w-5" />
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Capacidad segura al{" "}
-              {selectedBranchId === "all"
-                ? "49%"
-                : selectedBranchId === "matriz"
-                  ? "52%"
-                  : selectedBranchId === "1"
-                    ? "48%"
-                    : "45%"}
-            </p>
           </div>
-          <div className="h-12 w-12 rounded-2xl bg-primary/ flex items-center justify-center text-primary">
-            <CheckCircle2 className="h-6 w-6" />
+          <div className="mt-4">
+            <div className="text-3xl font-extrabold tracking-tight">
+              42 <span className="text-sm font-medium text-muted-foreground">/ 80</span>
+            </div>
+            <div className="w-full bg-muted rounded-full h-1.5 mt-2 overflow-hidden">
+              <div className="bg-emerald-500 h-full rounded-full w-[52%]" />
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-2">
+              Ocupación segura al 52%
+            </p>
           </div>
         </div>
 
-        {/* Live Feed Checklist */}
-        <div className="rounded-3xl border border-border bg-card p-6 col-span-2">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
-            Monitor de Entradas Recientes
-          </h3>
+        {/* Check-ins por QR */}
+        <div className="rounded-3xl border border-border bg-card shadow-xs p-5 flex flex-col justify-between hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg transition-all duration-300">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+              Check-ins QR
+            </span>
+            <div className="h-9 w-9 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20">
+              <Scan className="h-5 w-5" />
+            </div>
+          </div>
+          <div className="mt-4">
+            <div className="text-3xl font-extrabold tracking-tight">65%</div>
+            <p className="text-[11px] text-muted-foreground mt-1">
+              28 ingresos escaneados hoy
+            </p>
+          </div>
+        </div>
+
+        {/* Check-ins por GPS */}
+        <div className="rounded-3xl border border-border bg-card shadow-xs p-5 flex flex-col justify-between hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg transition-all duration-300">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+              Check-ins GPS (50m)
+            </span>
+            <div className="h-9 w-9 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 border border-blue-500/20">
+              <Navigation className="h-5 w-5" />
+            </div>
+          </div>
+          <div className="mt-4">
+            <div className="text-3xl font-extrabold tracking-tight">25%</div>
+            <p className="text-[11px] text-muted-foreground mt-1">
+              11 accesos por cercanía
+            </p>
+          </div>
+        </div>
+
+        {/* Recepción Manual */}
+        <div className="rounded-3xl border border-border bg-card shadow-xs p-5 flex flex-col justify-between hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg transition-all duration-300">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+              Recepción Manual
+            </span>
+            <div className="h-9 w-9 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500 border border-amber-500/20">
+              <DoorOpen className="h-5 w-5" />
+            </div>
+          </div>
+          <div className="mt-4">
+            <div className="text-3xl font-extrabold tracking-tight">10%</div>
+            <p className="text-[11px] text-muted-foreground mt-1">
+              4 validados en mostrador
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Explanatory Banner: Check-in en Recepción */}
+      <div className="p-4 rounded-3xl bg-card border border-border shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-9 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0 border border-amber-500/20">
+            <DoorOpen className="w-5 h-5" />
+          </div>
+          <div>
+            <span className="font-bold text-foreground block">
+              ¿Cómo funciona el Check-in en Recepción?
+            </span>
+            <span className="text-muted-foreground text-[11px] block mt-0.5">
+              Es la validación presencial otorgada manualmente por el personal del gimnasio (búsqueda por DNI, huella o molinete) cuando el socio no dispone de su smartphone para escanear QR o ingresar por GPS.
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Live Feed & Recent Checkins Monitor */}
+      <div className="grid gap-6 md:grid-cols-3">
+        {/* Recent Entries Checklist */}
+        <div className="rounded-3xl border border-border bg-card shadow-xs p-6 col-span-2 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg transition-all duration-300">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+              Monitor de Entradas Recientes
+            </h3>
+            <span className="text-[11px] text-emerald-500 font-semibold flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Actualizado en vivo
+            </span>
+          </div>
+
           <div className="space-y-4">
             {recentCheckins.map((c, i) => (
               <div
@@ -2216,10 +4029,18 @@ function AsistenciasTab({
                 className="flex items-center justify-between pb-3 border-b border-border/50 last:border-0 last:pb-0"
               >
                 <div className="flex items-center gap-3">
-                  <img src={c.photo} alt={c.name} className="h-9 w-9 rounded-full object-cover" />
+                  <img src={c.photo} alt={c.name} className="h-9 w-9 rounded-full object-cover border border-border" />
                   <div>
-                    <div className="text-sm font-semibold">{c.name}</div>
-                    <div className="text-xs text-muted-foreground">{c.time}</div>
+                    <div className="text-sm font-semibold text-foreground">{c.name}</div>
+                    <div className="text-xs text-muted-foreground flex items-center gap-2">
+                      <span>{c.time}</span>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-secondary border border-border font-medium text-foreground">
+                        {c.method === "Scan QR" && <Scan className="w-3 h-3 text-emerald-500" />}
+                        {c.method === "Geolocalización GPS" && <Navigation className="w-3 h-3 text-blue-500" />}
+                        {c.method === "Recepción" && <DoorOpen className="w-3 h-3 text-amber-500" />}
+                        {c.method}
+                      </span>
+                    </div>
                   </div>
                 </div>
                 {c.alert && (
@@ -2233,70 +4054,290 @@ function AsistenciasTab({
             ))}
           </div>
         </div>
+
+        {/* Churn Risk / Alumnos en Riesgo Section */}
+        <div className="rounded-3xl border border-amber-500/30 bg-amber-500/5 shadow-xs p-6 col-span-1 flex flex-col justify-between hover:-translate-y-1 hover:border-amber-500/50 hover:shadow-lg transition-all duration-300">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-[11px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                <AlertCircle className="w-4 h-4 text-amber-500" />
+                Alumnos sin Asistencia
+              </h3>
+              <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                Riesgo Churn
+              </span>
+            </div>
+
+            <p className="text-xs text-muted-foreground leading-relaxed mb-4">
+              Socios con más de 12 días sin registrars check-in en la sede:
+            </p>
+
+            <div className="space-y-3 text-xs">
+              <div className="p-3 rounded-2xl bg-card border border-border flex items-center justify-between">
+                <div>
+                  <span className="font-bold text-foreground block">Martín Silva</span>
+                  <span className="text-[10px] text-muted-foreground">Pase 8 Clases · Hace 14 días</span>
+                </div>
+                <Button size="sm" variant="outline" className="rounded-full text-[10px] h-7 px-2.5 gap-1 border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10" onClick={() => alert("Abriendo WhatsApp con plantilla de re-engagement para Martín Silva...")}>
+                  <MessageCircle className="w-3 h-3" /> Contactar
+                </Button>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-card border border-border flex items-center justify-between">
+                <div>
+                  <span className="font-bold text-foreground block">Valeria Ríos</span>
+                  <span className="text-[10px] text-muted-foreground">CrossFit 12 · Hace 16 días</span>
+                </div>
+                <Button size="sm" variant="outline" className="rounded-full text-[10px] h-7 px-2.5 gap-1 border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10" onClick={() => alert("Abriendo WhatsApp con plantilla de re-engagement para Valeria Ríos...")}>
+                  <MessageCircle className="w-3 h-3" /> Contactar
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* History table */}
-      <div className="rounded-3xl border border-border bg-card p-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-            Historial General
-          </h3>
-          <div className="flex gap-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Buscar miembro..."
-                value={historySearch}
-                onChange={(e) => setHistorySearch(e.target.value)}
-                className="pl-9 pr-4 h-9 w-48 rounded-xl border border-border bg-background text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-              />
+      {/* General History Table with Date, Method & Action Filters */}
+      <div className="rounded-3xl border border-border bg-card shadow-xs p-6 space-y-5">
+        {/* Header Block: Title + Subtitle + Count Badge + Action Buttons */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-border/40">
+          <div>
+            <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+              <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 whitespace-nowrap">
+                Historial General de Asistencias
+              </h3>
+              <span className="whitespace-nowrap inline-flex items-center px-2.5 py-0.5 rounded-full bg-secondary border border-border text-[10px] font-bold text-foreground shrink-0">
+                {filteredHistory.length} de {historyList.length} registros
+              </span>
             </div>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Registros detallados de accesos por escaneo QR, geolocalización GPS y recepción manual.
+            </p>
+          </div>
+
+          {/* Top Actions: Export & Delete */}
+          <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+            {/* Export CSV */}
             <Button
               size="sm"
               variant="outline"
-              className="rounded-xl gap-1.5"
+              className="rounded-xl gap-1.5 text-xs h-8 px-3"
               onClick={handleExport}
             >
-              <Download className="h-3.5 w-3.5" /> Exportar
+              <Download className="h-3.5 w-3.5" /> Exportar CSV
+            </Button>
+
+            {/* Clear / Delete History Button */}
+            <Button
+              size="sm"
+              variant="outline"
+              className="rounded-xl gap-1.5 text-xs h-8 px-3 border-destructive/40 text-destructive hover:bg-destructive/10"
+              onClick={() => {
+                setClearConfirmInput("");
+                setIsClearModalOpen(true);
+              }}
+            >
+              <Trash2 className="h-3.5 w-3.5" /> Eliminar Historial
             </Button>
           </div>
         </div>
 
-        <div className="overflow-hidden border border-border rounded-xl">
+        {/* Toolbar: Search & Filter Pills Bar */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-muted/30 p-3 rounded-2xl border border-border/60">
+          {/* Search Input */}
+          <div className="relative shrink-0">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Buscar socio o clase..."
+              value={historySearch}
+              onChange={(e) => setHistorySearch(e.target.value)}
+              className="pl-9 pr-4 h-9 w-full sm:w-56 rounded-xl border border-border bg-background text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring shadow-xs"
+            />
+          </div>
+
+          {/* Filter Pills Group */}
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Date Filter */}
+            <div className="flex bg-muted p-1 rounded-xl gap-1 text-xs border border-border/50">
+              {["Todos", "Hoy", "Ayer", "Esta Semana"].map((d) => (
+                <button
+                  key={d}
+                  onClick={() => setDateFilter(d)}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition whitespace-nowrap ${
+                    dateFilter === d
+                      ? "bg-background text-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {d}
+                </button>
+              ))}
+            </div>
+
+            {/* Method Filter */}
+            <div className="flex bg-muted p-1 rounded-xl gap-1 text-xs border border-border/50">
+              {["Todos", "Scan QR", "Geolocalización GPS", "Recepción"].map((m) => (
+                <button
+                  key={m}
+                  onClick={() => setMethodFilter(m)}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition whitespace-nowrap ${
+                    methodFilter === m
+                      ? "bg-background text-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {m}
+                </button>
+              ))}
+            </div>
+
+            {/* Limpiar Filtros Button (Only visible when active filters exist) */}
+            {(historySearch !== "" || dateFilter !== "Todos" || methodFilter !== "Todos") && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="rounded-xl gap-1 text-xs h-8 px-2.5 text-muted-foreground hover:text-foreground border border-border/60 bg-background"
+                onClick={() => {
+                  setHistorySearch("");
+                  setDateFilter("Todos");
+                  setMethodFilter("Todos");
+                }}
+              >
+                <X className="h-3.5 w-3.5" /> Limpiar Filtros
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="overflow-hidden border border-border rounded-2xl">
           <table className="w-full text-left text-xs">
-            <thead className="bg-muted font-bold text-muted-foreground border-b border-border">
+            <thead className="bg-muted font-bold text-muted-foreground border-b border-border text-[11px] uppercase tracking-wider">
               <tr>
-                <th className="p-3">Miembro</th>
-                <th className="p-3">Fecha</th>
-                <th className="p-3">Hora de Entrada</th>
-                <th className="p-3">Acceso</th>
-                <th className="p-3">Clase</th>
+                <th className="p-3.5">Socio</th>
+                <th className="p-3.5">Fecha</th>
+                <th className="p-3.5">Hora de Entrada</th>
+                <th className="p-3.5">Método de Acceso</th>
+                <th className="p-3.5">Validación / Distancia</th>
+                <th className="p-3.5">Clase / Actividad</th>
+                <th className="p-3.5 text-right">Estado</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {history.map((h, i) => (
-                <tr key={i} className="hover:bg-secondary/20 transition">
-                  <td className="p-3 font-semibold">{h.name}</td>
-                  <td className="p-3 text-muted-foreground">{h.date}</td>
-                  <td className="p-3 text-foreground font-medium">{h.time}</td>
-                  <td className="p-3">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-secondary border border-border font-medium text-foreground">
-                      {h.method}
-                    </span>
+              {filteredHistory.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="p-8 text-center text-muted-foreground text-xs">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <Filter className="w-8 h-8 text-muted-foreground/40" />
+                      <p className="font-semibold text-foreground">No se encontraron asistencias</p>
+                      <p className="text-[11px] text-muted-foreground">
+                        No hay coincidencias con los criterios de búsqueda o filtros seleccionados.
+                      </p>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="mt-2 rounded-full text-xs gap-1 border-border"
+                        onClick={() => {
+                          setHistorySearch("");
+                          setDateFilter("Todos");
+                          setMethodFilter("Todos");
+                        }}
+                      >
+                        <X className="w-3 h-3" /> Restablecer filtros
+                      </Button>
+                    </div>
                   </td>
-                  <td className="p-3 text-muted-foreground">{h.class}</td>
                 </tr>
-              ))}
+              ) : (
+                filteredHistory.map((h) => (
+                  <tr key={h.id} className="hover:bg-secondary/20 transition">
+                    <td className="p-3.5 font-semibold text-foreground">{h.name}</td>
+                    <td className="p-3.5 text-muted-foreground">{h.date}</td>
+                    <td className="p-3.5 text-foreground font-medium">{h.time}</td>
+                    <td className="p-3.5">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] bg-secondary border border-border font-semibold text-foreground">
+                        {h.method === "Scan QR" && <Scan className="w-3.5 h-3.5 text-emerald-500" />}
+                        {h.method === "Geolocalización GPS" && <Navigation className="w-3.5 h-3.5 text-blue-500" />}
+                        {h.method === "Recepción" && <DoorOpen className="w-3.5 h-3.5 text-amber-500" />}
+                        {h.method}
+                      </span>
+                    </td>
+                    <td className="p-3.5 text-muted-foreground text-[11px]">{h.distance}</td>
+                    <td className="p-3.5 text-foreground font-medium">{h.class}</td>
+                    <td className="p-3.5 text-right">
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border ${
+                          h.status === "Presente"
+                            ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/30"
+                            : "bg-destructive/10 text-destructive border-destructive/30"
+                        }`}
+                      >
+                        {h.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
       </div>
+
+      {/* Delete History Strict Confirmation Dialog */}
+      <Dialog open={isClearModalOpen} onOpenChange={setIsClearModalOpen}>
+        <DialogContent className="sm:max-w-md rounded-3xl border border-border bg-card p-6 gap-4">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-destructive flex items-center gap-2">
+              <Trash2 className="w-5 h-5" /> Eliminar Historial de Asistencias
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground mt-1 leading-relaxed">
+              Esta acción eliminará de forma permanente todos los registros de asistencias del gimnasio. Esta acción no se puede deshacer.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="p-4 rounded-2xl bg-destructive/10 border border-destructive/20 space-y-3 text-xs text-destructive">
+            <span className="font-bold block">Confirmación de seguridad requerida:</span>
+            <p className="text-[11px] opacity-90 leading-normal">
+              Escribe la palabra <strong className="underline uppercase font-black">Eliminar</strong> en el campo a continuación para habilitar la confirmación:
+            </p>
+            <input
+              type="text"
+              placeholder="Escribe 'Eliminar'"
+              value={clearConfirmInput}
+              onChange={(e) => setClearConfirmInput(e.target.value)}
+              className="w-full h-9 px-3 rounded-xl border border-destructive/40 bg-background text-foreground text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-destructive"
+            />
+          </div>
+
+          <div className="flex gap-2 justify-end pt-2 border-t border-border">
+            <Button
+              variant="outline"
+              onClick={() => setIsClearModalOpen(false)}
+              className="rounded-full text-xs font-semibold"
+            >
+              Cancelar
+            </Button>
+            <Button
+              disabled={clearConfirmInput.trim().toLowerCase() !== "eliminar"}
+              onClick={() => {
+                setHistoryList([]);
+                setIsClearModalOpen(false);
+                setClearConfirmInput("");
+                alert("El historial de asistencias ha sido eliminado correctamente.");
+              }}
+              variant="destructive"
+              className="rounded-full text-xs font-bold gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Trash2 className="w-3.5 h-3.5" /> Confirmar Eliminación
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
 
-// Subcomponent: Miembros Tab
 type ClassItem = {
   id: string;
   name: string;
@@ -3935,7 +5976,6 @@ function MembresiasTab({
   const [searchActivity, setSearchActivity] = useState("");
   const [includedActivities, setIncludedActivities] = useState<string[]>([]);
   const [registrationFee, setRegistrationFee] = useState("0");
-  const [isMultisede, setIsMultisede] = useState(false);
   const [freezeDays, setFreezeDays] = useState("0");
   const [dailyClassLimit, setDailyClassLimit] = useState("Ilimitado");
 
@@ -3959,7 +5999,6 @@ function MembresiasTab({
   const [editIncludedActivities, setEditIncludedActivities] = useState<string[]>([]);
   const [editSelectedServices, setEditSelectedServices] = useState<string[]>([]);
   const [editRegistrationFee, setEditRegistrationFee] = useState("0");
-  const [editIsMultisede, setEditIsMultisede] = useState(false);
   const [editFreezeDays, setEditFreezeDays] = useState("0");
   const [editDailyClassLimit, setEditDailyClassLimit] = useState("Ilimitado");
 
@@ -3997,7 +6036,6 @@ function MembresiasTab({
       offPeakEnd: accessHoursType === "Off-Peak" ? offPeakEnd : null,
       includedActivities,
       registrationFee: registrationFee ? parseFloat(registrationFee) : 0,
-      isMultisede: isMultisede,
       freezeDays: freezeDays ? parseInt(freezeDays) : 0,
       dailyClassLimit: dailyClassLimit,
     };
@@ -4015,7 +6053,6 @@ function MembresiasTab({
     setSearchActivity("");
     setIncludedActivities([]);
     setRegistrationFee("0");
-    setIsMultisede(false);
     setFreezeDays("0");
     setDailyClassLimit("Ilimitado");
     setShowAddForm(false);
@@ -4036,7 +6073,6 @@ function MembresiasTab({
     setEditIncludedActivities(m.includedActivities || []);
     setEditSelectedServices(m.includedServices || []);
     setEditRegistrationFee(m.registrationFee ? m.registrationFee.toString() : "0");
-    setEditIsMultisede(!!m.isMultisede);
     setEditFreezeDays(m.freezeDays ? m.freezeDays.toString() : "0");
     setEditDailyClassLimit(m.dailyClassLimit || "Ilimitado");
   };
@@ -4063,7 +6099,6 @@ function MembresiasTab({
             includedActivities: editIncludedActivities,
             includedServices: editSelectedServices,
             registrationFee: editRegistrationFee ? parseFloat(editRegistrationFee) : 0,
-            isMultisede: editIsMultisede,
             freezeDays: editFreezeDays ? parseInt(editFreezeDays) : 0,
             dailyClassLimit: editDailyClassLimit,
           };
@@ -4925,49 +6960,33 @@ function MembresiasTab({
 }
 
 // Subcomponent: Clases Tab
+export interface GymClassItem {
+  id: string;
+  name: string;
+  staffId: string;
+  time: string;
+  capacity: number;
+  booked: number;
+  enrolledSpots: { [spotIndex: number]: string };
+  branchId?: string;
+  salaId?: string;
+  day: number;
+  creditsCost?: number;
+  layout?: boolean[];
+  attendance?: { [spotIndex: number]: "presente" | "ausente" | "pendiente" };
+  waitlist?: string[];
+  releasedSpots?: { [spotIndex: number]: { originalStudent: string; creditsCost: number } };
+  status?: "activa" | "cancelada";
+  seekingBackup?: boolean;
+  requiresSpotSelection?: boolean;
+  lockedSpots?: { [spotIndex: number]: { studentName: string; expiresAt: number } };
+  ratings?: any[];
+  weekOffset?: number;
+}
+
 interface ClasesTabProps {
-  classesList: {
-    id: string;
-    name: string;
-    staffId: string;
-    time: string;
-    capacity: number;
-    booked: number;
-    enrolledSpots: { [spotIndex: number]: string };
-    branchId?: string;
-    salaId?: string;
-    day: number;
-    creditsCost?: number;
-    layout?: boolean[];
-    attendance?: { [spotIndex: number]: "presente" | "ausente" | "pendiente" };
-    waitlist?: string[];
-    releasedSpots?: { [spotIndex: number]: { originalStudent: string; creditsCost: number } };
-    status?: "activa" | "cancelada";
-    seekingBackup?: boolean;
-  }[];
-  setClassesList: React.Dispatch<
-    React.SetStateAction<
-      {
-        id: string;
-        name: string;
-        staffId: string;
-        time: string;
-        capacity: number;
-        booked: number;
-        enrolledSpots: { [spotIndex: number]: string };
-        branchId?: string;
-        salaId?: string;
-        day: number;
-        creditsCost?: number;
-        layout?: boolean[];
-        attendance?: { [spotIndex: number]: "presente" | "ausente" | "pendiente" };
-        waitlist?: string[];
-        releasedSpots?: { [spotIndex: number]: { originalStudent: string; creditsCost: number } };
-        status?: "activa" | "cancelada";
-        seekingBackup?: boolean;
-      }[]
-    >
-  >;
+  classesList: GymClassItem[];
+  setClassesList: React.Dispatch<React.SetStateAction<GymClassItem[]>>;
   staffList: {
     id: string;
     name: string;
@@ -5057,6 +7076,7 @@ function ClasesTab({
   const [viewMode, setViewMode] = useState<"list" | "calendar">("calendar");
   const [selectedCalendarSalaId, setSelectedCalendarSalaId] = useState("");
   const [customCapacity, setCustomCapacity] = useState(20);
+  const [requiresSpotSelection, setRequiresSpotSelection] = useState(true);
 
   // Presets de distribución física de sala (10x10 = 100 lugares)
   const defaultPresets = useMemo(
@@ -5174,14 +7194,14 @@ function ClasesTab({
       const classStart = toMinutes(classFrom);
       const classEnd = toMinutes(classTo);
 
-      const fits = DayAvail.intervals.some((interval) => {
+      const fits = DayAvail.intervals.some((interval: { from: string; to: string }) => {
         const intervalStart = toMinutes(interval.from);
         const intervalEnd = toMinutes(interval.to);
         return classStart >= intervalStart && classEnd <= intervalEnd;
       });
 
       if (!fits) {
-        const intervalsStr = DayAvail.intervals.map((i) => `${i.from} a ${i.to}`).join(" o ");
+        const intervalsStr = DayAvail.intervals.map((i: { from: string; to: string }) => `${i.from} a ${i.to}`).join(" o ");
         return `⚠️ Alerta: El horario (${time}) está fuera de la disponibilidad del instructor (${intervalsStr}).`;
       }
     } catch (e) {
@@ -5251,6 +7271,7 @@ function ClasesTab({
               day: day,
               creditsCost: parseInt(creditsCost) || 1,
               layout: computedLayout,
+              requiresSpotSelection,
             };
           }
           return c;
@@ -5259,7 +7280,7 @@ function ClasesTab({
       setEditingClassId(null);
     } else {
       if (isRecurrent) {
-        const generatedClasses = [];
+        const generatedClasses: GymClassItem[] = [];
         for (let i = 0; i < recurrentWeeks; i++) {
           generatedClasses.push({
             id: `recurrent-${Math.random()}`,
@@ -5273,6 +7294,7 @@ function ClasesTab({
             day: day,
             creditsCost: parseInt(creditsCost) || 1,
             layout: computedLayout,
+            requiresSpotSelection,
             status: "activa" as const,
             weekOffset: i,
           });
@@ -5291,6 +7313,7 @@ function ClasesTab({
           day: day,
           creditsCost: parseInt(creditsCost) || 1,
           layout: computedLayout,
+          requiresSpotSelection,
           status: "activa" as const,
           weekOffset: 0,
         };
@@ -5306,6 +7329,7 @@ function ClasesTab({
     setDay(0);
     setCreditsCost("1");
     setCustomCapacity(20);
+    setRequiresSpotSelection(true);
     setShowAddForm(false);
   };
 
@@ -5404,18 +7428,14 @@ function ClasesTab({
   // Combined advanced filter memo
   const filteredClasses = useMemo(() => {
     return classesList.filter((c) => {
-      const matchesBranch =
-        selectedBranchId === "all" ||
-        (selectedBranchId === "matriz" ? !c.branchId : c.branchId === selectedBranchId);
       const matchesWeek = (c.weekOffset || 0) === currentWeekOffset;
       const matchesSala = selectedCalendarSalaId ? c.salaId === selectedCalendarSalaId : true;
       const matchesCoach = !selectedFilterCoachId || c.staffId === selectedFilterCoachId;
       const matchesActivity = !selectedFilterActivity || c.name === selectedFilterActivity;
-      return matchesBranch && matchesWeek && matchesSala && matchesCoach && matchesActivity;
+      return matchesWeek && matchesSala && matchesCoach && matchesActivity;
     });
   }, [
     classesList,
-    selectedBranchId,
     currentWeekOffset,
     selectedCalendarSalaId,
     selectedFilterCoachId,
@@ -5427,14 +7447,11 @@ function ClasesTab({
     return filteredClasses.filter((c) => c.day === 0);
   }, [filteredClasses]);
 
-  // Quick stats calculation for Palermo Matriz today
+  // Quick stats calculation for today
   const stats = useMemo(() => {
     const todayClasses = classesList.filter((c) => {
-      const matchesBranch =
-        selectedBranchId === "all" ||
-        (selectedBranchId === "matriz" ? !c.branchId : c.branchId === selectedBranchId);
       const matchesWeek = (c.weekOffset || 0) === currentWeekOffset;
-      return c.day === 0 && matchesBranch && matchesWeek;
+      return c.day === 0 && matchesWeek;
     });
     const totalBooked = todayClasses.reduce((acc, c) => acc + (c.booked || 0), 0);
     const totalCapacity = todayClasses.reduce((acc, c) => acc + (c.capacity || 0), 0);
@@ -5446,7 +7463,7 @@ function ClasesTab({
       totalBooked,
       fullClasses,
     };
-  }, [classesList, selectedBranchId, currentWeekOffset]);
+  }, [classesList, currentWeekOffset]);
 
   const renderClassDetailSidebar = () => {
     const c = classesList.find((classObj) => classObj.id === selectedClass);
@@ -5622,12 +7639,6 @@ function ClasesTab({
       })
       .map(([, name]) => name);
 
-    const ratingsMap = c.ratings || {};
-    const ratingValues = Object.values(ratingsMap);
-    const avgRating =
-      ratingValues.length > 0
-        ? ratingValues.reduce((sum, r) => sum + r.stars, 0) / ratingValues.length
-        : null;
     const isCoachView = currentUser.role === "coach";
 
     return (
@@ -5936,6 +7947,7 @@ function ClasesTab({
                                 setSalaId(c.salaId || "");
                                 setDay(c.day);
                                 setCustomCapacity(c.capacity || 20);
+                                setRequiresSpotSelection(c.requiresSpotSelection ?? true);
                                 setEditingClassId(c.id);
                                 setShowAddForm(true);
                                 setSelectedClass(null);
@@ -6231,161 +8243,206 @@ function ClasesTab({
               </div>
 
               {/* Row 3 Full Width: Mapa de Distribución de Sala (Grilla 10x10) */}
-              <div className="md:col-span-2 group rounded-3xl border border-border bg-card p-5 space-y-4 transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg shadow-xs">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-border/40 gap-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
-                    Distribución Física de la Sala (Mapa 10x10)
+              {c.requiresSpotSelection === false ? (
+                <div className="md:col-span-2 rounded-3xl border border-border/80 bg-secondary/30 p-5 text-center space-y-2">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+                    Modo Aforo General (Sin Selección de Lugares Numerados)
                   </span>
-                  <div className="flex items-center gap-3 text-[10px] font-semibold text-muted-foreground flex-wrap">
-                    <span className="flex items-center gap-1.5">
-                      <span className="h-2.5 w-2.5 rounded-full bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 inline-block" />
-                      Ocupado (Alumno)
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <span className="h-2.5 w-2.5 rounded-full bg-amber-500 animate-pulse inline-block" />
-                      🟡 Retenido (Spot Lock 3m)
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <span className="h-2.5 w-2.5 rounded-md border border-primary/40 bg-primary/10 inline-block" />
-                      Disponible
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <span className="h-2.5 w-2.5 rounded-md border border-dashed border-border/40 bg-muted/20 inline-block" />
-                      Inhabilitado
-                    </span>
-                  </div>
+                  <p className="text-xs text-muted-foreground max-w-lg mx-auto leading-relaxed">
+                    Esta sesión está configurada en modalidad de aforo simple (ej. musculación o entrenamiento libre). Los alumnos agendan su cupo directo sin requerir la asignación de un número de lugar.
+                  </p>
                 </div>
-
-                {/* Banner de Spot Locks Activos */}
-                {Object.keys(c.lockedSpots || {}).length > 0 && (
-                  <div className="p-3 bg-amber-500/15 border border-amber-500/40 text-amber-900 dark:text-amber-200 rounded-2xl flex items-center justify-between text-xs font-bold animate-fade-in gap-2 flex-wrap">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">⏳</span>
-                      <span>
-                        {Object.keys(c.lockedSpots || {}).length}{" "}
-                        {Object.keys(c.lockedSpots || {}).length === 1
-                          ? "lugar retenido"
-                          : "lugares retenidos"}{" "}
-                        temporalmente en Spot Lock (expira en 3 minutos).
+              ) : (
+                <div className="md:col-span-2 group rounded-3xl border border-border bg-card p-5 space-y-4 transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg shadow-xs">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-border/40 gap-2">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+                      Distribución Física de la Sala (Mapa 10x10)
+                    </span>
+                    <div className="flex items-center gap-3 text-[10px] font-semibold text-muted-foreground flex-wrap">
+                      <span className="flex items-center gap-1.5">
+                        <span className="h-2.5 w-2.5 rounded-full bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 inline-block" />
+                        Ocupado (Alumno)
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <span className="h-2.5 w-2.5 rounded-full bg-amber-500 animate-pulse inline-block" />
+                        🟡 Retenido (Spot Lock 3m)
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <span className="h-2.5 w-2.5 rounded-md border border-primary/40 bg-primary/10 inline-block" />
+                        Disponible
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <span className="h-2.5 w-2.5 rounded-md border border-dashed border-border/40 bg-muted/20 inline-block" />
+                        Inhabilitado
                       </span>
                     </div>
                   </div>
-                )}
 
-                {/* Escenario / Frente */}
-                <div className="bg-secondary/40 border border-border/40 py-1.5 px-4 rounded-xl text-center text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground flex items-center justify-center gap-2">
-                  <span>↑ FRENTE DE SALA / PROFESOR / ESCENARIO ↑</span>
-                </div>
+                  {/* Banner de Spot Locks Activos */}
+                  {Object.keys(c.lockedSpots || {}).length > 0 && (
+                    <div className="p-3 bg-amber-500/15 border border-amber-500/40 text-amber-900 dark:text-amber-200 rounded-2xl flex items-center justify-between text-xs font-bold animate-fade-in gap-2 flex-wrap">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base">⏳</span>
+                        <span>
+                          {Object.keys(c.lockedSpots || {}).length}{" "}
+                          {Object.keys(c.lockedSpots || {}).length === 1
+                            ? "lugar retenido"
+                            : "lugares retenidos"}{" "}
+                          temporalmente en Spot Lock (expira en 3 minutos).
+                        </span>
+                      </div>
+                    </div>
+                  )}
 
-                {/* Grilla 10x10 */}
-                <div className="grid grid-cols-5 sm:grid-cols-10 gap-2.5 p-3 bg-secondary/20 rounded-2xl border border-border/40 overflow-x-auto custom-scrollbar">
-                  {Array(100)
-                    .fill(0)
-                    .map((_, spotIdx) => {
-                      const isEnabled = c.layout ? c.layout[spotIdx] : spotIdx < c.capacity;
-                      const studentName = c.enrolledSpots?.[spotIdx];
-                      const lockInfo = c.lockedSpots?.[spotIdx];
+                  {/* Escenario / Frente */}
+                  <div className="bg-secondary/40 border border-border/40 py-1.5 px-4 rounded-xl text-center text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground flex items-center justify-center gap-2">
+                    <span>↑ FRENTE DE SALA / PROFESOR / ESCENARIO ↑</span>
+                  </div>
 
-                      if (!isEnabled) {
-                        return (
-                          <div
-                            key={spotIdx}
-                            title={`Posición #${spotIdx + 1} (Inhabilitada)`}
-                            className="h-12 sm:h-14 w-full rounded-xl border border-dashed border-border/30 bg-muted/20 opacity-30 flex items-center justify-center text-[9px] font-bold text-muted-foreground/40"
-                          >
-                            {spotIdx + 1}
-                          </div>
-                        );
-                      }
+                  {/* Grilla 10x10 */}
+                  <div className="grid grid-cols-5 sm:grid-cols-10 gap-2.5 p-3 bg-secondary/20 rounded-2xl border border-border/40 overflow-x-auto custom-scrollbar">
+                    {Array(100)
+                      .fill(0)
+                      .map((_, spotIdx) => {
+                        const isEnabled = c.layout ? c.layout[spotIdx] : spotIdx < c.capacity;
+                        const studentName = c.enrolledSpots?.[spotIdx];
+                        const lockInfo = c.lockedSpots?.[spotIdx];
 
-                      if (studentName) {
-                        const isStudentPriv = !canManageClasses && (isProfilePrivate || isStudentPrivate(studentName));
-                        const studentPhoto = getStudentPhoto(studentName);
-                        const displayName = getDisplayStudentName(studentName);
-                        return (
-                          <div
-                            key={spotIdx}
-                            title={`Lugar #${spotIdx + 1}: ${displayName} ${canManageClasses ? "(Clic para liberar)" : ""}`}
-                            onClick={() => {
-                              if (canManageClasses) {
-                                if (
-                                  confirm(
-                                    `¿Liberar el lugar #${spotIdx + 1} reservado por ${displayName}?`,
-                                  )
-                                ) {
-                                  handleCancelSpot(spotIdx, studentName);
-                                }
-                              }
-                            }}
-                            className="group/spot relative flex flex-col items-center justify-center cursor-pointer py-1.5"
-                          >
-                            {/* Enlarged Instagram Story Style Avatar Ring */}
+                        if (!isEnabled) {
+                          return (
                             <div
-                              className={`p-[2.5px] rounded-full shadow-md transition-all duration-200 group-hover/spot:scale-110 group-hover/spot:shadow-xl ${
-                                isStudentPriv
-                                  ? "bg-muted border border-border/80"
-                                  : "bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600"
-                              }`}
+                              key={spotIdx}
+                              title={`Lugar #${spotIdx + 1} Inhabilitado`}
+                              className="h-12 sm:h-14 w-full rounded-xl border border-dashed border-border/40 bg-muted/20 flex flex-col items-center justify-center opacity-40 cursor-not-allowed"
                             >
-                              {isStudentPriv ? (
-                                <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-secondary flex items-center justify-center text-xs font-bold text-muted-foreground border-2 border-background">
+                              <span className="text-[10px] text-muted-foreground font-semibold">
+                                #{spotIdx + 1}
+                              </span>
+                            </div>
+                          );
+                        }
+
+                        // Casillero Ocupado por Alumno
+                        if (studentName) {
+                          const displayName = getDisplayStudentName(studentName);
+                          const isPrivate =
+                            !canManageClasses && (isProfilePrivate || isStudentPrivate(studentName));
+                          const photo = getStudentPhoto(studentName);
+
+                          return (
+                            <div
+                              key={spotIdx}
+                              title={`Lugar #${spotIdx + 1}: ${displayName}`}
+                              className="relative h-12 sm:h-14 w-full rounded-xl border border-border bg-gradient-to-tr from-amber-500/10 via-rose-500/10 to-purple-500/10 hover:border-foreground/40 transition-all duration-200 flex flex-col items-center justify-center p-1 group/spot overflow-hidden shadow-2xs"
+                            >
+                              {isPrivate ? (
+                                <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-[10px] text-muted-foreground font-bold border border-border/40">
                                   🔒
                                 </div>
                               ) : (
                                 <img
-                                  src={studentPhoto}
+                                  src={photo}
                                   alt={displayName}
-                                  className="h-9 w-9 sm:h-10 sm:w-10 rounded-full object-cover border-2 border-background"
+                                  className="h-6 w-6 rounded-full object-cover border border-border/60 shadow-2xs"
                                 />
                               )}
+                              <span className="text-[9px] font-black text-foreground bg-background px-1.5 py-0.2 rounded-full border border-border/60 -mt-2 z-10 shadow-2xs truncate max-w-[52px] text-center">
+                                #{spotIdx + 1}
+                              </span>
                             </div>
-                            <span className="text-[9px] font-black text-foreground bg-background px-1.5 py-0.2 rounded-full border border-border/60 -mt-2 z-10 shadow-2xs truncate max-w-[52px] text-center">
-                              #{spotIdx + 1}
-                            </span>
-                          </div>
-                        );
-                      }
+                          );
+                        }
 
-                      // Casillero en Spot Lock (Retenido temporalmente con temporizador regresivo)
-                      if (lockInfo && lockInfo.expiresAt > now) {
-                        const remainingStr = formatCountdown(lockInfo.expiresAt, now);
+                        // Casillero en Spot Lock (Retenido temporalmente con temporizador regresivo)
+                        if (lockInfo && lockInfo.expiresAt > now) {
+                          const remainingStr = formatCountdown(lockInfo.expiresAt, now);
+                          return (
+                            <div
+                              key={spotIdx}
+                              title={`Lugar #${spotIdx + 1} RETENIDO por ${lockInfo.studentName} (Expira en ${remainingStr})`}
+                              onClick={() => {
+                                if (canManageClasses) {
+                                  if (
+                                    confirm(
+                                      `Lugar #${spotIdx + 1} retendido por ${lockInfo.studentName}.\n\n¿Deseas CONFIRMAR definitivamente la reserva?`,
+                                    )
+                                  ) {
+                                    setClassesList((prev) =>
+                                      prev.map((item) => {
+                                        if (item.id === c.id) {
+                                          const copySpots = { ...item.enrolledSpots } || {};
+                                          copySpots[spotIdx] = lockInfo.studentName;
+                                          const copyLocks = { ...item.lockedSpots };
+                                          delete copyLocks[spotIdx];
+                                          return {
+                                            ...item,
+                                            enrolledSpots: copySpots,
+                                            lockedSpots: copyLocks,
+                                            booked: Object.keys(copySpots).length,
+                                          };
+                                        }
+                                        return item;
+                                      }),
+                                    );
+                                  }
+                                }
+                              }}
+                              className="relative h-12 sm:h-14 w-full rounded-xl border border-amber-500/60 bg-amber-500/15 hover:bg-amber-500/25 transition-all duration-200 flex flex-col items-center justify-center p-1 cursor-pointer animate-pulse shadow-2xs"
+                            >
+                              <span className="text-[9px] font-black text-amber-700 dark:text-amber-300">
+                                #{spotIdx + 1} 🔒
+                              </span>
+                              <span className="text-[8px] font-bold text-amber-600 dark:text-amber-400 mt-0.5">
+                                {remainingStr}
+                              </span>
+                            </div>
+                          );
+                        }
+
+                        // Casillero Disponible (Libre para reservar o spot lock)
                         return (
-                          <div
+                          <button
                             key={spotIdx}
-                            title={`Lugar #${spotIdx + 1} RETENIDO por ${lockInfo.studentName} (Expira en ${remainingStr})`}
+                            type="button"
+                            title={`Lugar #${spotIdx + 1} Libre — Haz clic para reservar`}
                             onClick={() => {
                               if (canManageClasses) {
-                                if (
-                                  confirm(
-                                    `Lugar #${spotIdx + 1} retendido por ${lockInfo.studentName}.\n\n¿Deseas CONFIRMAR definitivamente la reserva?`,
-                                  )
-                                ) {
+                                const typedName = prompt(
+                                  `Inscribir alumno en Lugar #${spotIdx + 1}.\nIngresa el nombre del alumno:`,
+                                );
+                                if (typedName?.trim()) {
                                   setClassesList((prev) =>
                                     prev.map((item) => {
                                       if (item.id === c.id) {
                                         const copySpots = { ...item.enrolledSpots } || {};
-                                        const copyLocks = { ...item.lockedSpots } || {};
-                                        copySpots[spotIdx] = lockInfo.studentName;
-                                        delete copyLocks[spotIdx];
+                                        copySpots[spotIdx] = typedName.trim();
                                         return {
                                           ...item,
                                           enrolledSpots: copySpots,
-                                          lockedSpots: copyLocks,
                                           booked: Object.keys(copySpots).length,
                                         };
                                       }
                                       return item;
                                     }),
                                   );
-                                } else if (
-                                  confirm(`¿Liberar la retención del lugar #${spotIdx + 1}?`)
-                                ) {
+                                }
+                              } else {
+                                const typedName = prompt(
+                                  `Retener Lugar #${spotIdx + 1} durante 3 minutos (Spot Lock).\nIngresa tu nombre:`,
+                                );
+                                if (typedName?.trim()) {
                                   setClassesList((prev) =>
                                     prev.map((item) => {
                                       if (item.id === c.id) {
                                         const copyLocks = { ...item.lockedSpots } || {};
-                                        delete copyLocks[spotIdx];
-                                        return { ...item, lockedSpots: copyLocks };
+                                        copyLocks[spotIdx] = {
+                                          studentName: typedName.trim(),
+                                          expiresAt: Date.now() + 3 * 60 * 1000,
+                                        };
+                                        return {
+                                          ...item,
+                                          lockedSpots: copyLocks,
+                                        };
                                       }
                                       return item;
                                     }),
@@ -6393,58 +8450,16 @@ function ClasesTab({
                                 }
                               }
                             }}
-                            className="group/spot relative flex flex-col items-center justify-center cursor-pointer py-1 h-12 sm:h-14 rounded-xl border-2 border-amber-500 bg-amber-500/15 animate-pulse text-amber-700 dark:text-amber-300 font-bold transition-all hover:scale-105 shadow-xs"
+                            className="h-12 sm:h-14 w-full rounded-xl border border-primary/40 bg-primary/5 hover:bg-primary/20 hover:border-primary hover:scale-105 font-bold text-xs text-primary transition-all duration-200 flex flex-col items-center justify-center shadow-2xs"
                           >
-                            <span className="text-[10px] font-black flex items-center gap-0.5">
-                              🔒 #{spotIdx + 1}
-                            </span>
-                            <span className="text-[8px] font-extrabold bg-amber-500 text-amber-950 px-1.5 py-0.2 rounded-full -mt-0.5 shadow-2xs">
-                              ⏳ {remainingStr}
-                            </span>
-                          </div>
+                            <span className="text-[11px] font-extrabold">#{spotIdx + 1}</span>
+                            <span className="text-[8.5px] opacity-75 font-semibold">Libre</span>
+                          </button>
                         );
-                      }
-
-                      return (
-                        <button
-                          key={spotIdx}
-                          type="button"
-                          title={`Reservar Lugar #${spotIdx + 1}`}
-                          onClick={() => {
-                            if (canManageClasses) {
-                              const nameInput = prompt(
-                                `Retener lugar #${spotIdx + 1} durante 3 minutos (Spot Lock) para alumno:`,
-                              );
-                              if (nameInput?.trim()) {
-                                const typedName = nameInput.trim();
-                                setClassesList((prev) =>
-                                  prev.map((item) => {
-                                    if (item.id === c.id) {
-                                      const copyLocks = { ...item.lockedSpots } || {};
-                                      copyLocks[spotIdx] = {
-                                        studentName: typedName,
-                                        expiresAt: Date.now() + 3 * 60 * 1000,
-                                      };
-                                      return {
-                                        ...item,
-                                        lockedSpots: copyLocks,
-                                      };
-                                    }
-                                    return item;
-                                  }),
-                                );
-                              }
-                            }
-                          }}
-                          className="h-12 sm:h-14 w-full rounded-xl border border-primary/40 bg-primary/5 hover:bg-primary/20 hover:border-primary hover:scale-105 font-bold text-xs text-primary transition-all duration-200 flex flex-col items-center justify-center shadow-2xs"
-                        >
-                          <span className="text-[11px] font-extrabold">#{spotIdx + 1}</span>
-                          <span className="text-[8.5px] opacity-75 font-semibold">Libre</span>
-                        </button>
-                      );
-                    })}
+                      })}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </DialogContent>
@@ -6857,202 +8872,244 @@ function ClasesTab({
               </div>
             </div>
 
-            {/* Card Destacada: Plantilla y Mapa de Distribución de Sala (10x10) */}
-            <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl space-y-3">
-              {/* Header with Title */}
-              <div className="flex items-center justify-between flex-wrap gap-2 border-b border-primary/10 pb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
-                  🗺️ Distribución de Sala (Mapa 10x10)
-                </span>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10.5px] font-bold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full border border-primary/20">
-                    {layoutMatrix.filter(Boolean).length} lugares activos
-                  </span>
+            {/* Switch: Selección de Lugares / Mapa de Sala vs Aforo Simple */}
+            <div className="p-4 border border-border/80 bg-card rounded-2xl space-y-2 flex items-center justify-between gap-4 shadow-2xs">
+              <div className="space-y-0.5 pr-2">
+                <label htmlFor="spot-selection-switch" className="text-xs font-bold text-foreground cursor-pointer flex items-center gap-2">
+                  <QrCode className="h-4 w-4 text-emerald-500" />
+                  <span>Habilitar Selección de Lugares / Mapa de Sala</span>
+                </label>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Desactiva esta opción para actividades sin mapa numerado (ej. Musculación, Pase Libre) donde solo se contabilizan los cupos disponibles.
+                </p>
+              </div>
+              <Switch
+                id="spot-selection-switch"
+                checked={requiresSpotSelection}
+                onCheckedChange={setRequiresSpotSelection}
+              />
+            </div>
+
+            {!requiresSpotSelection ? (
+              <div className="p-4 bg-secondary/30 border border-border rounded-2xl space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+                      Modo Aforo General (Sin Mapa Numerado)
+                    </span>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Los miembros se inscribirán al cupo general sin elegir un número de asiento o mat.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5 pt-1">
+                  <label className="text-xs font-semibold text-foreground">Cupos Totales / Aforo Máximo</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="500"
+                    value={customCapacity}
+                    onChange={(e) => setCustomCapacity(Number(e.target.value) || 1)}
+                    className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold"
+                  />
                 </div>
               </div>
+            ) : (
+              <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl space-y-3">
+                {/* Card Destacada: Plantilla y Mapa de Distribución de Sala (10x10) */}
+                {/* Header with Title */}
+                <div className="flex items-center justify-between flex-wrap gap-2 border-b border-primary/10 pb-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
+                    🗺️ Distribución de Sala (Mapa 10x10)
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10.5px] font-bold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full border border-primary/20">
+                      {layoutMatrix.filter(Boolean).length} lugares activos
+                    </span>
+                  </div>
+                </div>
 
-              {/* Selector & Actions Row */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-                    Plantilla de Salón:
-                  </label>
-                  {!showSavePresetInput && (
-                    <button
-                      type="button"
-                      onClick={() => setShowSavePresetInput(true)}
-                      className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1"
-                    >
-                      💾 Guardar mapa como plantilla
-                    </button>
+                {/* Selector & Actions Row */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                      Plantilla de Salón:
+                    </label>
+                    {!showSavePresetInput && (
+                      <button
+                        type="button"
+                        onClick={() => setShowSavePresetInput(true)}
+                        className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1"
+                      >
+                        💾 Guardar mapa como plantilla
+                      </button>
+                    )}
+                  </div>
+
+                  <Select
+                    value={selectedPresetId}
+                    onValueChange={(val) => {
+                      setSelectedPresetId(val);
+                      const preset = ROOM_PRESETS.find((p) => p.id === val);
+                      if (preset) {
+                        const newLayout = preset.getLayout();
+                        setLayoutMatrix(newLayout);
+                        setCustomCapacity(newLayout.filter(Boolean).length);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold shadow-2xs">
+                      <SelectValue placeholder="Selecciona una plantilla de salón..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ROOM_PRESETS.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          <div className="flex items-center justify-between w-full">
+                            <span>{p.name}</span>
+                            {p.id.startsWith("preset-") && (
+                              <span className="ml-2 text-[9px] font-bold bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
+                                Tu plantilla
+                              </span>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  {/* Inline Save Preset Input when clicked */}
+                  {showSavePresetInput && (
+                    <div className="p-2.5 bg-background border border-primary/30 rounded-xl space-y-2 animate-fade-in shadow-2xs">
+                      <label className="text-[10.5px] font-bold text-foreground block">
+                        Nombre para la nueva plantilla:
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          placeholder="Ej: Sala Spinning 18 Bicis"
+                          value={newPresetName}
+                          onChange={(e) => setNewPresetName(e.target.value)}
+                          className="flex-1 h-8 rounded-lg border border-border bg-background px-2.5 text-xs text-foreground font-semibold focus-visible:outline-none"
+                        />
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => {
+                            if (newPresetName.trim()) {
+                              const newPreset = {
+                                id: `preset-${Date.now()}`,
+                                name: newPresetName.trim(),
+                                capacity: layoutMatrix.filter(Boolean).length,
+                                getLayout: () => [...layoutMatrix],
+                              };
+                              setCustomPresets((prev) => [...prev, newPreset]);
+                              setSelectedPresetId(newPreset.id);
+                              setNewPresetName("");
+                              setShowSavePresetInput(false);
+                            }
+                          }}
+                          className="h-8 rounded-lg text-xs font-bold"
+                        >
+                          Guardar
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setShowSavePresetInput(false)}
+                          className="h-8 rounded-lg text-xs"
+                        >
+                          Cancelar
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Custom Presets Pill Badges List */}
+                  {customPresets.length > 0 && (
+                    <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                        Tus plantillas:
+                      </span>
+                      {customPresets.map((cp) => (
+                        <span
+                          key={cp.id}
+                          className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-lg border transition-all ${
+                            selectedPresetId === cp.id
+                              ? "bg-primary/15 border-primary/40 text-primary"
+                              : "bg-background border-border/60 text-foreground"
+                          }`}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedPresetId(cp.id);
+                              const newLayout = cp.getLayout();
+                              setLayoutMatrix(newLayout);
+                              setCustomCapacity(newLayout.filter(Boolean).length);
+                            }}
+                            className="hover:underline"
+                          >
+                            {cp.name}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (confirm(`¿Eliminar la plantilla "${cp.name}"?`)) {
+                                setCustomPresets((prev) => prev.filter((p) => p.id !== cp.id));
+                                if (selectedPresetId === cp.id) {
+                                  const defaultP = defaultPresets[1] || defaultPresets[0];
+                                  setSelectedPresetId(defaultP.id);
+                                  const newLayout = defaultP.getLayout();
+                                  setLayoutMatrix(newLayout);
+                                  setCustomCapacity(newLayout.filter(Boolean).length);
+                                }
+                              }
+                            }}
+                            className="text-destructive/70 hover:text-destructive transition-colors ml-0.5"
+                            title="Eliminar esta plantilla"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
                   )}
                 </div>
 
-                <Select
-                  value={selectedPresetId}
-                  onValueChange={(val) => {
-                    setSelectedPresetId(val);
-                    const preset = ROOM_PRESETS.find((p) => p.id === val);
-                    if (preset) {
-                      const newLayout = preset.getLayout();
-                      setLayoutMatrix(newLayout);
-                      setCustomCapacity(newLayout.filter(Boolean).length);
-                    }
-                  }}
-                >
-                  <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold shadow-2xs">
-                    <SelectValue placeholder="Selecciona una plantilla de salón..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ROOM_PRESETS.map((p) => (
-                      <SelectItem key={p.id} value={p.id}>
-                        <div className="flex items-center justify-between w-full">
-                          <span>{p.name}</span>
-                          {p.id.startsWith("preset-") && (
-                            <span className="ml-2 text-[9px] font-bold bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
-                              Tu plantilla
-                            </span>
-                          )}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                {/* Inline Save Preset Input when clicked */}
-                {showSavePresetInput && (
-                  <div className="p-2.5 bg-background border border-primary/30 rounded-xl space-y-2 animate-fade-in shadow-2xs">
-                    <label className="text-[10.5px] font-bold text-foreground block">
-                      Nombre para la nueva plantilla:
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        placeholder="Ej: Sala Spinning 18 Bicis"
-                        value={newPresetName}
-                        onChange={(e) => setNewPresetName(e.target.value)}
-                        className="flex-1 h-8 rounded-lg border border-border bg-background px-2.5 text-xs text-foreground font-semibold focus-visible:outline-none"
-                      />
-                      <Button
-                        type="button"
-                        size="sm"
-                        className="h-8 px-3 text-xs font-bold bg-primary text-primary-foreground rounded-lg"
-                        onClick={() => {
-                          if (!newPresetName.trim()) {
-                            alert("Por favor ingresa un nombre para la plantilla.");
-                            return;
-                          }
-                          const currentLayoutCopy = [...layoutMatrix];
-                          const cap = currentLayoutCopy.filter(Boolean).length;
-                          const newPreset = {
-                            id: `preset-${Date.now()}`,
-                            name: `${newPresetName.trim()} (${cap} lugares)`,
-                            capacity: cap,
-                            getLayout: () => currentLayoutCopy,
-                          };
-                          setCustomPresets((prev) => [...prev, newPreset]);
-                          setSelectedPresetId(newPreset.id);
-                          setNewPresetName("");
-                          setShowSavePresetInput(false);
-                          alert(`✓ Plantilla "${newPreset.name}" guardada con éxito.`);
-                        }}
-                      >
-                        Guardar
-                      </Button>
-                      <button
-                        type="button"
-                        onClick={() => setShowSavePresetInput(false)}
-                        className="text-xs text-muted-foreground hover:text-foreground font-semibold px-1"
-                      >
-                        ✕
-                      </button>
-                    </div>
+                {/* Mini Map Preview Grid (10x10) */}
+                <div className="bg-background border border-border/60 p-3 rounded-xl space-y-2">
+                  <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                    <span>Haz clic en los casilleros para activarlos/desactivarlos</span>
+                    <span>Frente ↑</span>
                   </div>
-                )}
-
-                {/* Badges de plantillas creadas por ti con botón de eliminar */}
-                {customPresets.length > 0 && (
-                  <div className="flex items-center gap-1.5 flex-wrap pt-1">
-                    <span className="text-[10px] text-muted-foreground font-semibold">
-                      Tus plantillas guardadas:
-                    </span>
-                    {customPresets.map((cp) => (
-                      <span
-                        key={cp.id}
-                        className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-lg border transition-all ${
-                          selectedPresetId === cp.id
-                            ? "bg-primary/15 border-primary/40 text-primary"
-                            : "bg-background border-border/60 text-foreground"
+                  <div className="grid grid-cols-10 gap-1 p-1.5 bg-secondary/20 rounded-lg border border-border/40 max-h-[160px] overflow-y-auto custom-scrollbar">
+                    {layoutMatrix.map((isActive, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        title={`Lugar #${idx + 1}`}
+                        onClick={() => {
+                          const updated = [...layoutMatrix];
+                          updated[idx] = !updated[idx];
+                          setLayoutMatrix(updated);
+                          setSelectedPresetId("custom");
+                          setCustomCapacity(updated.filter(Boolean).length);
+                        }}
+                        className={`h-5 w-full rounded-md text-[9px] font-bold transition-all flex items-center justify-center ${
+                          isActive
+                            ? "bg-primary text-primary-foreground shadow-2xs"
+                            : "bg-muted/40 text-muted-foreground/30 border border-dashed border-border/40 hover:bg-muted"
                         }`}
                       >
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedPresetId(cp.id);
-                            const newLayout = cp.getLayout();
-                            setLayoutMatrix(newLayout);
-                            setCustomCapacity(newLayout.filter(Boolean).length);
-                          }}
-                          className="hover:underline"
-                        >
-                          {cp.name}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (confirm(`¿Eliminar la plantilla "${cp.name}"?`)) {
-                              setCustomPresets((prev) => prev.filter((p) => p.id !== cp.id));
-                              if (selectedPresetId === cp.id) {
-                                const defaultP = defaultPresets[1] || defaultPresets[0];
-                                setSelectedPresetId(defaultP.id);
-                                const newLayout = defaultP.getLayout();
-                                setLayoutMatrix(newLayout);
-                                setCustomCapacity(newLayout.filter(Boolean).length);
-                              }
-                            }
-                          }}
-                          className="text-destructive/70 hover:text-destructive transition-colors ml-0.5"
-                          title="Eliminar esta plantilla"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </button>
-                      </span>
+                        {idx + 1}
+                      </button>
                     ))}
                   </div>
-                )}
-              </div>
-
-              {/* Mini Map Preview Grid (10x10) */}
-              <div className="bg-background border border-border/60 p-3 rounded-xl space-y-2">
-                <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                  <span>Haz clic en los casilleros para activarlos/desactivarlos</span>
-                  <span>Frente ↑</span>
-                </div>
-                <div className="grid grid-cols-10 gap-1 p-1.5 bg-secondary/20 rounded-lg border border-border/40 max-h-[160px] overflow-y-auto custom-scrollbar">
-                  {layoutMatrix.map((isActive, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      title={`Lugar #${idx + 1}`}
-                      onClick={() => {
-                        const updated = [...layoutMatrix];
-                        updated[idx] = !updated[idx];
-                        setLayoutMatrix(updated);
-                        setSelectedPresetId("custom");
-                        setCustomCapacity(updated.filter(Boolean).length);
-                      }}
-                      className={`h-5 w-full rounded-md text-[9px] font-bold transition-all flex items-center justify-center ${
-                        isActive
-                          ? "bg-primary text-primary-foreground shadow-2xs"
-                          : "bg-muted/40 text-muted-foreground/30 border border-dashed border-border/40 hover:bg-muted"
-                      }`}
-                    >
-                      {idx + 1}
-                    </button>
-                  ))}
                 </div>
               </div>
-            </div>
+            )}
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
@@ -7422,161 +9479,6 @@ function ClasesTab({
 
       {renderClassDetailSidebar()}
 
-      {/* Reporte de Asistencia y Liquidación de Coaches */}
-      <div className="rounded-3xl border border-border bg-card p-6 space-y-4 text-foreground mt-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-border/50 pb-4">
-          <div>
-            <h3 className="text-base font-bold flex items-center gap-2">
-              📊 Reporte de Asistencia y Liquidación de Coaches
-            </h3>
-            <p className="text-xs text-muted-foreground">
-              Métricas y liquidación estimada basadas en asistencia registrada para la{" "}
-              <strong>Semana {currentWeekOffset + 1}</strong>.
-            </p>
-          </div>
-          <span className="text-[11px] bg-primary/10 text-primary font-bold px-3 py-1 rounded-full uppercase self-start sm:self-auto">
-            Tarifa: $3,000 Fijo / clase + $500 por alumno presente
-          </span>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs min-w-[600px] border-collapse">
-            <thead>
-              <tr className="border-b border-border/30 text-muted-foreground font-bold">
-                <th className="py-2.5 px-3">Profesor / Instructor</th>
-                <th className="py-2.5 px-3 text-center">Clases Dadas</th>
-                <th className="py-2.5 px-3 text-center">Asistencias Reales</th>
-                <th className="py-2.5 px-3 text-center">Ausencias</th>
-                <th className="py-2.5 px-3 text-center">Asistencia %</th>
-                <th className="py-2.5 px-3 text-center">Calificación ★</th>
-                <th className="py-2.5 px-3 text-right">Liquidación Estimada</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/20">
-              {staffList.map((coach) => {
-                // Get active classes for coach in this week
-                const coachClasses = classesList.filter(
-                  (c) =>
-                    c.staffId === coach.id &&
-                    (c.weekOffset || 0) === currentWeekOffset &&
-                    c.status !== "cancelada",
-                );
-
-                const clasesDadas = coachClasses.length;
-                let totalAsistencias = 0;
-                let totalAusencias = 0;
-                let totalEnrolled = 0;
-
-                coachClasses.forEach((c) => {
-                  Object.keys(c.enrolledSpots || {}).forEach((spotIdxStr) => {
-                    const idx = parseInt(spotIdxStr);
-                    const att = c.attendance?.[idx] || "pendiente";
-                    totalEnrolled++;
-                    if (att === "presente") totalAsistencias++;
-                    if (att === "ausente") totalAusencias++;
-                  });
-                });
-
-                const attendancePercentage =
-                  totalEnrolled > 0 ? Math.round((totalAsistencias / totalEnrolled) * 100) : 100;
-
-                // Calculate earnings
-                const basePay = clasesDadas * 3000;
-                const bonusPay = totalAsistencias * 500;
-                const totalEarnings = basePay + bonusPay;
-
-                // Aggregate ratings across all coach's classes this week
-                const allCoachRatings = coachClasses.flatMap((cl) =>
-                  Object.values(cl.ratings || {}),
-                );
-                const avgCoachRating =
-                  allCoachRatings.length > 0
-                    ? allCoachRatings.reduce((s, r) => s + r.stars, 0) / allCoachRatings.length
-                    : null;
-
-                return (
-                  <tr
-                    key={coach.id}
-                    className="hover:bg-secondary/10 transition-colors font-semibold"
-                  >
-                    <td className="py-3 px-3 flex items-center gap-2">
-                      <img
-                        src={coach.photo}
-                        alt={coach.name}
-                        className="h-7 w-7 rounded-full object-cover border border-border/40"
-                      />
-                      <div>
-                        <div className="font-bold text-foreground">{coach.name}</div>
-                        <div className="text-[10px] text-muted-foreground">{coach.specialty}</div>
-                      </div>
-                    </td>
-                    <td className="py-3 px-3 text-center text-foreground/80">
-                      {clasesDadas} clases
-                    </td>
-                    <td className="py-3 px-3 text-center text-primary font-bold">
-                      {totalAsistencias} alumnos
-                    </td>
-                    <td className="py-3 px-3 text-center text-destructive">
-                      {totalAusencias} inasistencias
-                    </td>
-                    <td className="py-3 px-3 text-center">
-                      <span
-                        className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                          attendancePercentage >= 80
-                            ? "bg-primary/ text-primary"
-                            : attendancePercentage >= 50
-                              ? "bg-secondary/ text-secondary-foreground"
-                              : "bg-destructive/ text-destructive"
-                        }`}
-                      >
-                        {attendancePercentage}%
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 text-center">
-                      {avgCoachRating !== null ? (
-                        <span
-                          className={`inline-flex items-center gap-1 font-bold text-[11px] ${
-                            avgCoachRating >= 4
-                              ? "text-secondary-foreground"
-                              : avgCoachRating >= 3
-                                ? "text-secondary-foreground"
-                                : "text-destructive"
-                          }`}
-                        >
-                          {avgCoachRating < 3.5 && (
-                            <span title="Calificación baja" className="text-destructive">
-                              ⚠️
-                            </span>
-                          )}
-                          {Array(5)
-                            .fill(0)
-                            .map((_, i) => (
-                              <span
-                                key={i}
-                                className={i < Math.round(avgCoachRating) ? "" : "opacity-20"}
-                              >
-                                ★
-                              </span>
-                            ))}
-                          {avgCoachRating.toFixed(1)}
-                          <span className="text-[9px] text-muted-foreground font-normal">
-                            ({allCoachRatings.length})
-                          </span>
-                        </span>
-                      ) : (
-                        <span className="text-[10px] text-muted-foreground">Sin datos</span>
-                      )}
-                    </td>
-                    <td className="py-3 px-3 text-right text-primary font-black text-[13px]">
-                      ${totalEarnings.toLocaleString("es-AR")} ARS
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
     </div>
   );
 }
@@ -7839,6 +9741,9 @@ function ConfigTab({
   const [staffDiplomas, setStaffDiplomas] = useState<string[]>([]);
   const [newStaffRole, setNewStaffRole] = useState("coach");
   const [newStaffBranchId, setNewStaffBranchId] = useState("matriz");
+  const [staffBaseSalary, setStaffBaseSalary] = useState("60000");
+  const [staffPayPerClass, setStaffPayPerClass] = useState("5000");
+  const [staffPayPerStudent, setStaffPayPerStudent] = useState("300");
 
   // Staff Edit & Delete States
   const [editingStaff, setEditingStaff] = useState<any | null>(null);
@@ -7849,6 +9754,9 @@ function ConfigTab({
   const [editStaffBranchId, setEditStaffBranchId] = useState("matriz");
   const [editStaffAvatarUrl, setEditStaffAvatarUrl] = useState<string | null>(null);
   const [editStaffDiplomas, setEditStaffDiplomas] = useState<string[]>([]);
+  const [editStaffBaseSalary, setEditStaffBaseSalary] = useState("60000");
+  const [editStaffPayPerClass, setEditStaffPayPerClass] = useState("5000");
+  const [editStaffPayPerStudent, setEditStaffPayPerStudent] = useState("300");
 
   // Universal Delete Confirmation & Edit States (Sedes, Salas, Cierres, Staff)
   const [deletingItem, setDeletingItem] = useState<{
@@ -8057,6 +9965,9 @@ function ConfigTab({
       linkingCode: generatedOtp,
       status: "pending" as const,
       availability: newStaffAvails,
+      baseSalary: parseFloat(staffBaseSalary) || 60000,
+      payPerClass: parseFloat(staffPayPerClass) || 5000,
+      payPerStudent: parseFloat(staffPayPerStudent) || 300,
     };
 
     setStaffList((prev) => [...prev, newStaff]);
@@ -8067,6 +9978,9 @@ function ConfigTab({
     setStaffDiplomas([]);
     setNewStaffRole("coach");
     setNewStaffBranchId("matriz");
+    setStaffBaseSalary("60000");
+    setStaffPayPerClass("5000");
+    setStaffPayPerStudent("300");
     setNewStaffAvails(WEEKDAYS.map((day) => ({ day, intervals: [] })));
     setIsCreateStaffOpen(false);
   };
@@ -8080,6 +9994,10 @@ function ConfigTab({
     setEditStaffBranchId(staff.branchId || "matriz");
     setEditStaffAvatarUrl(staff.photo);
     setEditStaffDiplomas(staff.certificationImages || []);
+    setEditStaffBaseSalary((staff.baseSalary ?? 60000).toString());
+    setEditStaffPayPerClass((staff.payPerClass ?? 5000).toString());
+    setEditStaffPayPerStudent((staff.payPerStudent ?? 300).toString());
+
     if (staff.availability && staff.availability.length > 0) {
       const loaded = WEEKDAYS.map((day) => {
         const found = staff.availability.find((a: any) => a.day === day);
@@ -8113,6 +10031,9 @@ function ConfigTab({
               role: editStaffRole,
               branchId: editStaffBranchId === "matriz" ? undefined : editStaffBranchId,
               availability: editStaffAvails,
+              baseSalary: parseFloat(editStaffBaseSalary) || 60000,
+              payPerClass: parseFloat(editStaffPayPerClass) || 5000,
+              payPerStudent: parseFloat(editStaffPayPerStudent) || 300,
             }
           : s,
       ),
@@ -8735,37 +10656,58 @@ function ConfigTab({
                       />
                     </div>
 
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-muted-foreground block">
-                          Rol de Acceso al Sistema
-                        </label>
-                        <select
-                          value={newStaffRole}
-                          onChange={(e) => setNewStaffRole(e.target.value)}
-                          className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground"
-                        >
-                          <option value="coach">💪 Coach / Profesor</option>
-                          <option value="receptionist">🔑 Recepcionista</option>
-                          <option value="manager">👤 Gerente de Sede</option>
-                        </select>
+
+
+                    {/* Rate Scheme Inputs */}
+                    <div className="border-t border-border/40 pt-4 space-y-3">
+                      <div>
+                        <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                          Esquema de Tarifas & Honorarios
+                        </h4>
+                        <p className="text-[10.5px] text-muted-foreground mt-0.5">
+                          Configura las tarifas acordadas para el cálculo automático de sueldos en Finanzas.
+                        </p>
                       </div>
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-muted-foreground block">
-                          Sede / Sucursal de Trabajo
-                        </label>
-                        <select
-                          value={newStaffBranchId}
-                          onChange={(e) => setNewStaffBranchId(e.target.value)}
-                          className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground"
-                        >
-                          <option value="matriz">Sede Principal (Palermo)</option>
-                          {branchesList.map((b) => (
-                            <option key={b.id} value={b.id}>
-                              {b.name}
-                            </option>
-                          ))}
-                        </select>
+
+                      <div className="grid gap-3 sm:grid-cols-3">
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-semibold text-muted-foreground">
+                            Base Fija Mensual ($)
+                          </label>
+                          <input
+                            type="number"
+                            placeholder="Ej: 60000"
+                            value={staffBaseSalary}
+                            onChange={(e) => setStaffBaseSalary(e.target.value)}
+                            className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-semibold text-muted-foreground">
+                            Pago por Clase ($)
+                          </label>
+                          <input
+                            type="number"
+                            placeholder="Ej: 5000"
+                            value={staffPayPerClass}
+                            onChange={(e) => setStaffPayPerClass(e.target.value)}
+                            className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-semibold text-muted-foreground">
+                            Comisión / Alumno ($)
+                          </label>
+                          <input
+                            type="number"
+                            placeholder="Ej: 300"
+                            value={staffPayPerStudent}
+                            onChange={(e) => setStaffPayPerStudent(e.target.value)}
+                            className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                          />
+                        </div>
                       </div>
                     </div>
 
@@ -9209,37 +11151,58 @@ function ConfigTab({
                     />
                   </div>
 
-                  <div className="grid gap-4 grid-cols-2">
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-muted-foreground block">
-                        Rol del Sistema
-                      </label>
-                      <select
-                        value={editStaffRole}
-                        onChange={(e) => setEditStaffRole(e.target.value)}
-                        className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground"
-                      >
-                        <option value="coach">💪 Coach / Profesor</option>
-                        <option value="receptionist">🔑 Recepcionista</option>
-                        <option value="manager">👤 Gerente de Sede</option>
-                      </select>
+
+
+                  {/* Rate Scheme Inputs in Edit Staff Dialog */}
+                  <div className="border-t border-border/40 pt-4 space-y-3">
+                    <div>
+                      <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                        Esquema de Tarifas & Honorarios
+                      </h4>
+                      <p className="text-[10.5px] text-muted-foreground mt-0.5">
+                        Configura las tarifas acordadas para el cálculo automático de sueldos en Finanzas.
+                      </p>
                     </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-muted-foreground block">
-                        Sede Asignada
-                      </label>
-                      <select
-                        value={editStaffBranchId}
-                        onChange={(e) => setEditStaffBranchId(e.target.value)}
-                        className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground"
-                      >
-                        <option value="matriz">Sede Principal (Palermo)</option>
-                        {branchesList.map((b) => (
-                          <option key={b.id} value={b.id}>
-                            {b.name}
-                          </option>
-                        ))}
-                      </select>
+
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-semibold text-muted-foreground">
+                          Base Fija Mensual ($)
+                        </label>
+                        <input
+                          type="number"
+                          placeholder="Ej: 60000"
+                          value={editStaffBaseSalary}
+                          onChange={(e) => setEditStaffBaseSalary(e.target.value)}
+                          className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-semibold text-muted-foreground">
+                          Pago por Clase ($)
+                        </label>
+                        <input
+                          type="number"
+                          placeholder="Ej: 5000"
+                          value={editStaffPayPerClass}
+                          onChange={(e) => setEditStaffPayPerClass(e.target.value)}
+                          className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-semibold text-muted-foreground">
+                          Comisión / Alumno ($)
+                        </label>
+                        <input
+                          type="number"
+                          placeholder="Ej: 300"
+                          value={editStaffPayPerStudent}
+                          onChange={(e) => setEditStaffPayPerStudent(e.target.value)}
+                          className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                        />
+                      </div>
                     </div>
                   </div>
 
@@ -10561,95 +12524,11 @@ function StudentAppView({
                 </div>
 
                 {c.attendance === "presente" && (
-                  <div className="pt-3 border-t border-border/40">
-                    {c.rating ? (
-                      <div className="flex flex-col gap-1.5 p-3 bg-secondary/ border border-border/ rounded-xl">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-bold text-muted-foreground uppercase">
-                            Tu Calificación
-                          </span>
-                          <span className="text-secondary-foreground font-bold text-sm tracking-widest">
-                            {Array(5)
-                              .fill(0)
-                              .map((_, i) => (
-                                <span key={i} className={i < c.rating!.stars ? "" : "opacity-20"}>
-                                  ★
-                                </span>
-                              ))}
-                          </span>
-                        </div>
-                        {c.rating.comment && (
-                          <p className="text-[11px] text-foreground italic">"{c.rating.comment}"</p>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="flex flex-col gap-2">
-                        <span className="text-[11px] font-bold text-foreground">
-                          ¿Qué te pareció la clase?
-                        </span>
-                        <div className="flex justify-between">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <button
-                              key={star}
-                              type="button"
-                              onClick={() => {
-                                const comment = prompt(
-                                  "¿Querés dejar un comentario opcional para ayudar a mejorar la clase?",
-                                );
-                                setClassesList((prev) =>
-                                  prev.map((item) => {
-                                    if (item.id === c.id) {
-                                      return {
-                                        ...item,
-                                        ratings: {
-                                          ...(item.ratings || {}),
-                                          [currentUser.name]: {
-                                            stars: star,
-                                            comment: comment || undefined,
-                                          },
-                                        },
-                                      };
-                                    }
-                                    return item;
-                                  }),
-                                );
-
-                                setReviewsList((prev) => {
-                                  const dateStr = new Date().toISOString().split("T")[0];
-                                  const coachName =
-                                    c.staffId === "staff-mateo"
-                                      ? "Mateo Rossi"
-                                      : c.staffId === "staff-elena"
-                                        ? "Elena Gómez"
-                                        : "Camila Díaz";
-                                  const newReview = {
-                                    id: `rev-${Date.now()}`,
-                                    date: dateStr,
-                                    studentName: currentUser.name,
-                                    studentPhoto:
-                                      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80",
-                                    rating: star,
-                                    className: c.name,
-                                    coachName: coachName,
-                                    comment: comment || "Excelente clase",
-                                    featured: false,
-                                    reply: "",
-                                  };
-                                  return [newReview, ...prev];
-                                });
-                                alert("¡Muchas gracias por calificar la clase!");
-                              }}
-                              className="h-10 w-10 flex items-center justify-center rounded-full bg-secondary text-muted-foreground/30 hover:bg-secondary/ hover:text-secondary-foreground transition-colors text-xl"
-                            >
-                              ★
-                            </button>
-                          ))}
-                        </div>
-                        <p className="text-[9px] text-muted-foreground text-center">
-                          Toca una estrella para calificar de forma anónima.
-                        </p>
-                      </div>
-                    )}
+                  <div className="pt-3 border-t border-border/40 flex items-center justify-between">
+                    <span className="text-xs text-emerald-500 font-bold flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Asistencia Confirmada
+                    </span>
+                    <span className="text-[11px] text-muted-foreground font-medium">Check-in realizado</span>
                   </div>
                 )}
               </div>
