@@ -152,6 +152,7 @@ function GymDashboard() {
       id: string;
       name: string;
       specialty: string;
+      specialties?: string[];
       certifications: string[];
       photo: string;
       certificationImages?: string[];
@@ -170,7 +171,8 @@ function GymDashboard() {
     {
       id: "1",
       name: "Mateo Rossi",
-      specialty: "Coach de Levantamiento Olímpico",
+      specialty: "CrossFit, Levantamiento Olímpico, Fuerza de Potencia",
+      specialties: ["CrossFit", "Levantamiento Olímpico", "Powerlifting", "Fuerza de Potencia"],
       certifications: ["CF-L2", "Coaching de Fuerza"],
       photo:
         "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&h=80&q=80",
@@ -194,7 +196,8 @@ function GymDashboard() {
     {
       id: "2",
       name: "Valeria Soto",
-      specialty: "Profesora de Vinyasa Yoga",
+      specialty: "Yoga Vinyasa, Yoga Hatha, Estiramiento & Flexibilidad",
+      specialties: ["Yoga Vinyasa", "Yoga Hatha", "Estiramiento / Flex"],
       certifications: ["RYT-200", "Yoga Terapéutico"],
       photo:
         "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=80&h=80&q=80",
@@ -215,7 +218,8 @@ function GymDashboard() {
     {
       id: "3",
       name: "Daniel Castro",
-      specialty: "Preparador Físico Funcional",
+      specialty: "Entrenamiento Funcional, HIIT / Tabata, Spinning",
+      specialties: ["Entrenamiento Funcional", "HIIT / Tabata", "Spinning"],
       certifications: ["Prof. Educación Física", "FMS Level 1"],
       photo:
         "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&h=80&q=80",
@@ -6007,8 +6011,31 @@ const FITNESS_ACTIVITIES = [
   "Estiramiento & Flexibilidad",
   "Gimnasia Artística",
   "Taekwondo WT/ITF",
-  "Karate-Do",
   "Fisioterapia y Kinesiología",
+];
+
+const STAFF_SPECIALTY_PRESETS = [
+  "CrossFit",
+  "Entrenamiento Funcional",
+  "Levantamiento Olímpico",
+  "Powerlifting",
+  "Calistenia",
+  "Fuerza de Potencia",
+  "Spinning",
+  "HIIT / Tabata",
+  "Boxeo Recreativo",
+  "Kickboxing",
+  "Zumba",
+  "Ritmos / Dance",
+  "Yoga Vinyasa",
+  "Yoga Hatha",
+  "Pilates Reformer",
+  "Pilates Mat",
+  "Barré",
+  "Estiramiento / Flex",
+  "GAP",
+  "AquaGym",
+  "Running Club",
 ];
 
 function MembresiasTab({
@@ -7227,6 +7254,11 @@ function ClasesTab({
   const [enrollSearchTerm, setEnrollSearchTerm] = useState("");
   const [enrollPlanFilter, setEnrollPlanFilter] = useState("todos");
 
+  // Estados para Modal Shadcn de Lista de Espera de Alumno
+  const [waitlistModalClass, setWaitlistModalClass] = useState<any | null>(null);
+  const [waitlistSearchTerm, setWaitlistSearchTerm] = useState("");
+  const [waitlistPlanFilter, setWaitlistPlanFilter] = useState("todos");
+
   // Estados para Modales Shadcn UI / Radix UI (Confirmación, Prompt, Selección de Modalidad al Cancelar)
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
@@ -7266,15 +7298,37 @@ function ClasesTab({
   const [substituteSearchTerm, setSubstituteSearchTerm] = useState("");
 
   const availableCoachesToSubstitute = useMemo(() => {
-    return (staffList || []).filter((s: any) => {
+    const filtered = (staffList || []).filter((s: any) => {
       if (!substituteSearchTerm) return true;
       const term = substituteSearchTerm.toLowerCase();
+      const specs = (s.specialties || []).map((sp: string) => sp.toLowerCase());
       return (
         s.name?.toLowerCase().includes(term) ||
-        s.specialty?.toLowerCase().includes(term)
+        s.specialty?.toLowerCase().includes(term) ||
+        specs.some((sp: string) => sp.includes(term))
       );
     });
-  }, [staffList, substituteSearchTerm]);
+
+    if (!substituteCoachModalClass) return filtered;
+
+    const classActName = (substituteCoachModalClass.name || "").toLowerCase();
+
+    return [...filtered].sort((a: any, b: any) => {
+      const aSpecs: string[] = (a.specialties || []).map((sp: string) => sp.toLowerCase());
+      const bSpecs: string[] = (b.specialties || []).map((sp: string) => sp.toLowerCase());
+
+      const aMatch =
+        aSpecs.some((sp) => sp.includes(classActName) || classActName.includes(sp)) ||
+        a.specialty?.toLowerCase().includes(classActName);
+      const bMatch =
+        bSpecs.some((sp) => sp.includes(classActName) || classActName.includes(sp)) ||
+        b.specialty?.toLowerCase().includes(classActName);
+
+      if (aMatch && !bMatch) return -1;
+      if (!aMatch && bMatch) return 1;
+      return 0;
+    });
+  }, [staffList, substituteSearchTerm, substituteCoachModalClass]);
 
   const availableMembersToEnroll = useMemo(() => {
     const list = membersList || [
@@ -7303,6 +7357,34 @@ function ClasesTab({
       return matchesSearch && matchesPlan;
     });
   }, [membersList, enrollSearchTerm, enrollPlanFilter]);
+
+  const availableMembersToWaitlist = useMemo(() => {
+    const list = membersList || [
+      { name: "Agustín Gómez", plan: "Pase Libre", status: "activo", phone: "+54 9 11 3242-1241" },
+      { name: "Camila Díaz", plan: "Performance", status: "activo", phone: "+54 9 11 4124-5124" },
+      { name: "Marcos López", plan: "Pase Libre", status: "activo", phone: "+54 9 11 2341-2412" },
+      { name: "Tomás Ruiz", plan: "Performance", status: "activo", phone: "+54 9 11 5122-1234" },
+      { name: "Lucas Torres", plan: "Performance", status: "activo", phone: "+54 9 11 4124-1111" },
+      { name: "Paula Cáceres", plan: "Pase Libre", status: "activo", phone: "+54 9 11 2344-9999" },
+      { name: "Sofía Martínez", plan: "Pase Libre", status: "activo", phone: "+54 9 11 3333-8888" },
+      { name: "Pedro Giménez", plan: "Pase Libre", status: "activo", phone: "+54 9 11 4444-7777" },
+      { name: "María del Mar", plan: "Performance", status: "activo", phone: "+54 9 11 5555-6666" },
+    ];
+
+    return list.filter((m: any) => {
+      const matchesSearch =
+        !waitlistSearchTerm ||
+        m.name?.toLowerCase().includes(waitlistSearchTerm.toLowerCase()) ||
+        m.phone?.includes(waitlistSearchTerm) ||
+        m.email?.toLowerCase().includes(waitlistSearchTerm.toLowerCase());
+
+      const matchesPlan =
+        waitlistPlanFilter === "todos" ||
+        m.plan?.toLowerCase() === waitlistPlanFilter.toLowerCase();
+
+      return matchesSearch && matchesPlan;
+    });
+  }, [membersList, waitlistSearchTerm, waitlistPlanFilter]);
 
   const handleEnrollMemberInClass = (memberName: string) => {
     if (!enrollModalClass) return;
@@ -7495,12 +7577,79 @@ function ClasesTab({
     return null;
   }, [staffId, time, day, classesList, editingClassId]);
 
+  const filteredStaffForClass = useMemo(() => {
+    if (!name) return staffList;
+
+    const selectedActLower = name.toLowerCase().trim();
+
+    const matches = staffList.filter((s: any) => {
+      const specs: string[] = s.specialties || [];
+      const legacySpec: string = s.specialty || "";
+
+      const matchesArray = specs.some((sp: string) => {
+        const spLower = sp.toLowerCase();
+        return (
+          spLower.includes(selectedActLower) ||
+          selectedActLower.includes(spLower) ||
+          (selectedActLower.includes("crossfit") && spLower.includes("crossfit")) ||
+          (selectedActLower.includes("yoga") && spLower.includes("yoga")) ||
+          (selectedActLower.includes("spinning") && spLower.includes("spinning")) ||
+          (selectedActLower.includes("pilates") && spLower.includes("pilates")) ||
+          (selectedActLower.includes("funcional") && spLower.includes("funcional")) ||
+          (selectedActLower.includes("fuerza") && spLower.includes("fuerza"))
+        );
+      });
+
+      const matchesLegacy =
+        legacySpec.toLowerCase().includes(selectedActLower) ||
+        selectedActLower.includes(legacySpec.toLowerCase());
+
+      return matchesArray || matchesLegacy;
+    });
+
+    return matches;
+  }, [staffList, name]);
+
+  const filteredStaffForSubstitute = useMemo(() => {
+    const list = (staffList || []).filter((s: any) => {
+      const matchesSearch =
+        !substituteSearchTerm ||
+        s.name.toLowerCase().includes(substituteSearchTerm.toLowerCase()) ||
+        s.specialty.toLowerCase().includes(substituteSearchTerm.toLowerCase());
+      return matchesSearch;
+    });
+
+    if (!substituteCoachModalClass) return list;
+
+    const actNameLower = substituteCoachModalClass.name.toLowerCase();
+
+    return [...list].sort((a: any, b: any) => {
+      const aMatch =
+        (a.specialties || []).some((sp: string) => sp.toLowerCase().includes(actNameLower)) ||
+        a.specialty.toLowerCase().includes(actNameLower);
+      const bMatch =
+        (b.specialties || []).some((sp: string) => sp.toLowerCase().includes(actNameLower)) ||
+        b.specialty.toLowerCase().includes(actNameLower);
+      if (aMatch && !bMatch) return -1;
+      if (!aMatch && bMatch) return 1;
+      return 0;
+    });
+  }, [staffList, substituteSearchTerm, substituteCoachModalClass]);
+
   const handleAddClass = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !staffId || !time) return;
 
     if (conflictWarning) {
-      alert(conflictWarning);
+      setConfirmDialog({
+        isOpen: true,
+        title: "Conflicto de Horario del Entrenador",
+        description: conflictWarning,
+        confirmText: "Entendido",
+        variant: "destructive",
+        onConfirm: () => {},
+      });
+      toast.error(conflictWarning, { duration: 5000 });
       return;
     }
 
@@ -7846,6 +7995,7 @@ function ClasesTab({
     const isSecondaryModalOpen =
       !!enrollModalClass ||
       !!substituteCoachModalClass ||
+      !!waitlistModalClass ||
       !!confirmDialog?.isOpen ||
       !!promptDialog?.isOpen ||
       !!cancelSpotDialog?.isOpen;
@@ -7860,7 +8010,7 @@ function ClasesTab({
         }}
       >
         <DialogContent
-          className="max-w-4xl h-[90vh] overflow-y-auto custom-scrollbar p-0 rounded-3xl border-border shadow-2xl bg-background"
+          className="max-w-4xl h-[90vh] overflow-y-auto custom-scrollbar p-0 rounded-3xl border-border shadow-2xl bg-slate-50 dark:bg-background"
           onPointerDownOutside={(e) => e.preventDefault()}
           onInteractOutside={(e) => e.preventDefault()}
           onEscapeKeyDown={(e) => {
@@ -8423,28 +8573,9 @@ function ClasesTab({
                     size="sm"
                     className="w-full text-xs font-bold border-border/60 hover:bg-secondary rounded-xl py-2 mt-2"
                     onClick={() => {
-                      setPromptDialog({
-                        isOpen: true,
-                        title: "Añadir a Lista de Espera",
-                        description: `Ingresa el nombre del alumno para anotarse en la lista de espera de "${c.name}":`,
-                        placeholder: "Nombre completo del alumno",
-                        confirmText: "Añadir a Lista",
-                        onConfirm: (studentName) => {
-                          if (studentName?.trim()) {
-                            const name = studentName.trim();
-                            setClassesList((prev) =>
-                              prev.map((item) => {
-                                if (item.id === c.id) {
-                                  const currentWaitlist = item.waitlist || [];
-                                  return { ...item, waitlist: [...currentWaitlist, name] };
-                                }
-                                return item;
-                              }),
-                            );
-                            toast.success(`✓ ${name} registrado en la lista de espera.`);
-                          }
-                        },
-                      });
+                      setWaitlistSearchTerm("");
+                      setWaitlistPlanFilter("todos");
+                      setWaitlistModalClass(c);
                     }}
                   >
                     + Sumar Alumno a Lista de Espera
@@ -8797,7 +8928,7 @@ function ClasesTab({
     <Fragment>
       {/* Modal Shadcn UI de Inscripción de Alumno */}
       <Dialog open={!!enrollModalClass} onOpenChange={(open) => !open && setEnrollModalClass(null)}>
-        <DialogContent className="max-w-md rounded-3xl p-6 border-border shadow-2xl bg-background">
+        <DialogContent className="max-w-md rounded-3xl p-6 border-border shadow-2xl bg-slate-50 dark:bg-background">
           <DialogHeader className="pb-3 border-b border-border/40">
             <DialogTitle className="text-lg font-black text-foreground flex items-center gap-2">
               <Plus className="h-5 w-5 text-primary" /> Inscribir Alumno
@@ -8893,6 +9024,134 @@ function ClasesTab({
               })}
 
               {availableMembersToEnroll.length === 0 && (
+                <p className="text-xs text-muted-foreground italic text-center py-8">
+                  No se encontraron alumnos activos coincidentes.
+                </p>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Shadcn UI de Buscador y Registro en Lista de Espera */}
+      <Dialog
+        open={!!waitlistModalClass}
+        onOpenChange={(open) => {
+          if (!open) {
+            setWaitlistModalClass(null);
+            setWaitlistSearchTerm("");
+          }
+        }}
+      >
+        <DialogContent className="max-w-md rounded-3xl p-6 border-border shadow-2xl bg-slate-50 dark:bg-background">
+          <DialogHeader className="pb-3 border-b border-border/40">
+            <DialogTitle className="text-lg font-black text-foreground flex items-center gap-2">
+              <Clock className="h-5 w-5 text-amber-500" /> Añadir a Lista de Espera
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground leading-relaxed pt-1">
+              Busca y selecciona un alumno activo para anotarlo en la lista de espera de{" "}
+              <strong className="text-foreground font-bold">{waitlistModalClass?.name}</strong>.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 pt-3">
+            {/* Buscador & Filtro por Plan (Shadcn UI) */}
+            <div className="space-y-2.5">
+              <div className="relative">
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por nombre, email o teléfono..."
+                  value={waitlistSearchTerm}
+                  onChange={(e) => setWaitlistSearchTerm(e.target.value)}
+                  className="pl-9 rounded-xl text-xs bg-secondary/30 border-border/60"
+                />
+              </div>
+
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                  Filtrar por Plan:
+                </span>
+                <Select value={waitlistPlanFilter} onValueChange={setWaitlistPlanFilter}>
+                  <SelectTrigger className="h-8 text-xs rounded-xl bg-secondary/30 border-border/60 w-44">
+                    <SelectValue placeholder="Todos los planes" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="todos">Todos los planes</SelectItem>
+                    <SelectItem value="Pase Libre">Pase Libre</SelectItem>
+                    <SelectItem value="Performance">Performance</SelectItem>
+                    <SelectItem value="Musculación">Musculación</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Lista de Alumnos Activos */}
+            <div className="max-h-[280px] overflow-y-auto custom-scrollbar space-y-2 pr-1 pt-1">
+              {availableMembersToWaitlist.map((m: any) => {
+                const isEnrolled = Object.values(waitlistModalClass?.enrolledSpots || {}).includes(m.name);
+                const isInWaitlist = (waitlistModalClass?.waitlist || []).includes(m.name);
+
+                return (
+                  <div
+                    key={m.name}
+                    className="flex items-center justify-between p-2.5 rounded-2xl border border-border/50 bg-card hover:bg-secondary/30 transition-colors gap-2"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <img
+                        src={m.photo || getStudentPhoto(m.name)}
+                        alt={m.name}
+                        className="h-9 w-9 rounded-full object-cover shrink-0 border border-border/60 shadow-2xs"
+                      />
+                      <div className="leading-tight min-w-0">
+                        <span className="font-bold text-xs text-foreground block truncate">
+                          {m.name}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground font-semibold flex items-center gap-1.5 flex-wrap">
+                          <span className="bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1.5 py-0.2 rounded font-bold">
+                            {m.plan || "Pase Libre"}
+                          </span>
+                          <span>· {m.status || "Activo"}</span>
+                        </span>
+                      </div>
+                    </div>
+
+                    {isEnrolled ? (
+                      <span className="text-[10px] font-bold text-muted-foreground bg-secondary px-2.5 py-1 rounded-xl border border-border/60 shrink-0">
+                        Ya Inscripto
+                      </span>
+                    ) : isInWaitlist ? (
+                      <span className="text-[10px] font-bold text-amber-600 bg-amber-500/10 px-2.5 py-1 rounded-xl border border-amber-500/20 shrink-0">
+                        En Espera
+                      </span>
+                    ) : (
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="h-8 text-xs font-bold rounded-xl bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90 shadow-2xs shrink-0 px-3"
+                        onClick={() => {
+                          const studentName = m.name;
+                          setClassesList((prev) =>
+                            prev.map((item) => {
+                              if (item.id === waitlistModalClass.id) {
+                                const currentWaitlist = item.waitlist || [];
+                                return { ...item, waitlist: [...currentWaitlist, studentName] };
+                              }
+                              return item;
+                            })
+                          );
+                          toast.success(`✓ ${studentName} registrado en la lista de espera.`);
+                          setWaitlistModalClass(null);
+                          setWaitlistSearchTerm("");
+                        }}
+                      >
+                        Añadir a Lista
+                      </Button>
+                    )}
+                  </div>
+                );
+              })}
+
+              {availableMembersToWaitlist.length === 0 && (
                 <p className="text-xs text-muted-foreground italic text-center py-8">
                   No se encontraron alumnos activos coincidentes.
                 </p>
@@ -9175,7 +9434,7 @@ function ClasesTab({
           }
         }}
       >
-        <DialogContent className="max-w-md rounded-3xl p-6 border-border shadow-2xl bg-background">
+        <DialogContent className="max-w-md rounded-3xl p-6 border-border shadow-2xl bg-slate-50 dark:bg-background">
           <DialogHeader className="pb-3 border-b border-border/40">
             <DialogTitle className="text-lg font-black text-foreground flex items-center gap-2">
               <Users className="h-5 w-5 text-blue-500" /> Sustituir Profesor
@@ -9449,7 +9708,7 @@ function ClasesTab({
 
       {/* Modal Dialog: Crear / Editar Clase */}
       <Dialog open={showAddForm} onOpenChange={setShowAddForm}>
-        <DialogContent className="max-w-xl max-h-[88vh] border border-border bg-card rounded-3xl p-6 overflow-hidden flex flex-col">
+        <DialogContent className="max-w-xl max-h-[88vh] border border-border bg-slate-50 dark:bg-background rounded-3xl p-6 overflow-hidden flex flex-col">
           <DialogHeader className="shrink-0 pb-2">
             <DialogTitle className="text-lg font-bold text-foreground">
               {editingClassId ? "Editar Clase" : "Crear Nueva Clase"}
@@ -9506,21 +9765,35 @@ function ClasesTab({
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">
-                  Instructor de Staff
-                </label>
+                <div className="flex items-center justify-between gap-1 flex-wrap">
+                  <label className="text-xs font-semibold text-muted-foreground">
+                    Instructor de Staff
+                  </label>
+                  {name && (
+                    <span className="text-[10px] font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full border border-primary/20">
+                      {filteredStaffForClass.length > 0
+                        ? `Filtrado para: ${name} (${filteredStaffForClass.length})`
+                        : "Mostrando todo el staff"}
+                    </span>
+                  )}
+                </div>
                 <Select value={staffId} onValueChange={setStaffId}>
                   <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold">
                     <SelectValue placeholder="Selecciona un entrenador..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {staffList.map((s) => (
+                    {(filteredStaffForClass.length > 0 ? filteredStaffForClass : staffList).map((s) => (
                       <SelectItem key={s.id} value={s.id}>
-                        {s.name} ({s.specialty})
+                        {s.name} — <span className="opacity-75 font-normal text-xs">{s.specialty}</span>
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                {name && filteredStaffForClass.length === 0 && (
+                  <p className="text-[10.5px] text-amber-600 dark:text-amber-400 font-medium pt-0.5">
+                    No hay entrenadores con especialidad en "{name}" cargada. Se muestran todos los profesores del staff.
+                  </p>
+                )}
               </div>
 
               <div className="space-y-1.5">
@@ -9854,16 +10127,24 @@ function ClasesTab({
                           <button
                             type="button"
                             onClick={() => {
-                              if (confirm(`¿Eliminar la plantilla "${cp.name}"?`)) {
-                                setCustomPresets((prev) => prev.filter((p) => p.id !== cp.id));
-                                if (selectedPresetId === cp.id) {
-                                  const defaultP = defaultPresets[1] || defaultPresets[0];
-                                  setSelectedPresetId(defaultP.id);
-                                  const newLayout = defaultP.getLayout();
-                                  setLayoutMatrix(newLayout);
-                                  setCustomCapacity(newLayout.filter(Boolean).length);
-                                }
-                              }
+                              setConfirmDialog({
+                                isOpen: true,
+                                title: "Eliminar Plantilla de Salón",
+                                description: `¿Estás seguro de eliminar la plantilla "${cp.name}"?`,
+                                confirmText: "Eliminar Plantilla",
+                                variant: "destructive",
+                                onConfirm: () => {
+                                  setCustomPresets((prev) => prev.filter((p) => p.id !== cp.id));
+                                  if (selectedPresetId === cp.id) {
+                                    const defaultP = defaultPresets[1] || defaultPresets[0];
+                                    setSelectedPresetId(defaultP.id);
+                                    const newLayout = defaultP.getLayout();
+                                    setLayoutMatrix(newLayout);
+                                    setCustomCapacity(newLayout.filter(Boolean).length);
+                                  }
+                                  toast.success(`Plantilla "${cp.name}" eliminada.`);
+                                },
+                              });
                             }}
                             className="text-destructive/70 hover:text-destructive transition-colors ml-0.5"
                             title="Eliminar esta plantilla"
@@ -10740,6 +11021,7 @@ function ConfigTab({
   );
   const [staffName, setStaffName] = useState("");
   const [staffSpecialty, setStaffSpecialty] = useState("");
+  const [staffSpecialties, setStaffSpecialties] = useState<string[]>([]);
   const [staffCerts, setStaffCerts] = useState("");
   const [staffAvatarUrl, setStaffAvatarUrl] = useState<string | null>(null);
   const [staffDiplomas, setStaffDiplomas] = useState<string[]>([]);
@@ -10753,6 +11035,7 @@ function ConfigTab({
   const [editingStaff, setEditingStaff] = useState<any | null>(null);
   const [editStaffName, setEditStaffName] = useState("");
   const [editStaffSpecialty, setEditStaffSpecialty] = useState("");
+  const [editStaffSpecialties, setEditStaffSpecialties] = useState<string[]>([]);
   const [editStaffCerts, setEditStaffCerts] = useState("");
   const [editStaffRole, setEditStaffRole] = useState("coach");
   const [editStaffBranchId, setEditStaffBranchId] = useState("matriz");
@@ -10948,14 +11231,17 @@ function ConfigTab({
 
   const handleAddStaff = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!staffName || !staffSpecialty) return;
+    if (!staffName) return;
 
+    const finalSpecialties = staffSpecialties.length > 0 ? staffSpecialties : [staffSpecialty || "General"];
+    const finalSpecialtyStr = staffSpecialty || finalSpecialties.join(", ");
     const generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
 
     const newStaff = {
       id: Math.random().toString(),
       name: staffName,
-      specialty: staffSpecialty,
+      specialty: finalSpecialtyStr,
+      specialties: finalSpecialties,
       certifications: staffCerts
         .split(",")
         .map((c) => c.trim())
@@ -10977,6 +11263,7 @@ function ConfigTab({
     setStaffList((prev) => [...prev, newStaff]);
     setStaffName("");
     setStaffSpecialty("");
+    setStaffSpecialties([]);
     setStaffCerts("");
     setStaffAvatarUrl(null);
     setStaffDiplomas([]);
@@ -10993,6 +11280,13 @@ function ConfigTab({
     setEditingStaff(staff);
     setEditStaffName(staff.name);
     setEditStaffSpecialty(staff.specialty);
+    const existingSpecs =
+      staff.specialties && staff.specialties.length > 0
+        ? staff.specialties
+        : staff.specialty
+          ? staff.specialty.split(",").map((s: string) => s.trim())
+          : [];
+    setEditStaffSpecialties(existingSpecs);
     setEditStaffCerts(staff.certifications.join(", "));
     setEditStaffRole(staff.role || "coach");
     setEditStaffBranchId(staff.branchId || "matriz");
@@ -11015,7 +11309,13 @@ function ConfigTab({
 
   const handleSaveEditStaff = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editStaffName || !editStaffSpecialty || !editingStaff) return;
+    if (!editStaffName || !editingStaff) return;
+
+    const finalSpecialties =
+      editStaffSpecialties.length > 0
+        ? editStaffSpecialties
+        : [editStaffSpecialty || "General"];
+    const finalSpecialtyStr = editStaffSpecialty || finalSpecialties.join(", ");
 
     setStaffList((prev) =>
       prev.map((s) =>
@@ -11023,7 +11323,8 @@ function ConfigTab({
           ? {
               ...s,
               name: editStaffName,
-              specialty: editStaffSpecialty,
+              specialty: finalSpecialtyStr,
+              specialties: finalSpecialties,
               certifications: editStaffCerts
                 .split(",")
                 .map((c) => c.trim())
@@ -11632,18 +11933,62 @@ function ConfigTab({
                           placeholder="Juan Gómez"
                         />
                       </div>
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-muted-foreground">
-                          Especialidad / Cargo
+                      <div className="space-y-2 sm:col-span-2">
+                        <label className="text-xs font-semibold text-muted-foreground block">
+                          Actividades / Especialidades que dicta (Selecciona 1 o varias)
                         </label>
-                        <input
-                          type="text"
-                          required
-                          value={staffSpecialty}
-                          onChange={(e) => setStaffSpecialty(e.target.value)}
-                          className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
-                          placeholder="Entrenador de CrossFit"
-                        />
+                        
+                        {/* Selector de Chips elegidos */}
+                        <div className="flex flex-wrap gap-1.5 min-h-[38px] p-2 rounded-xl border border-border bg-background items-center">
+                          {staffSpecialties.map((spec) => (
+                            <span
+                              key={spec}
+                              className="inline-flex items-center gap-1 bg-primary/10 text-primary border border-primary/20 text-[11px] font-bold px-2.5 py-0.5 rounded-full"
+                            >
+                              {spec}
+                              <button
+                                type="button"
+                                onClick={() => setStaffSpecialties((prev) => prev.filter((s) => s !== spec))}
+                                className="hover:text-destructive text-primary/70 transition-colors ml-0.5"
+                              >
+                                ×
+                              </button>
+                            </span>
+                          ))}
+                          {staffSpecialties.length === 0 && (
+                            <span className="text-xs text-muted-foreground italic">
+                              Haz clic en las actividades de abajo para vincularlas a este profesor...
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Botones de Selección Rápida */}
+                        <div className="flex flex-wrap gap-1 pt-1 max-h-[130px] overflow-y-auto custom-scrollbar p-2 bg-secondary/20 border border-border/40 rounded-xl">
+                          {STAFF_SPECIALTY_PRESETS.map((preset) => {
+                            const isSelected = staffSpecialties.includes(preset);
+                            return (
+                              <button
+                                key={preset}
+                                type="button"
+                                onClick={() => {
+                                  if (isSelected) {
+                                    setStaffSpecialties((prev) => prev.filter((s) => s !== preset));
+                                  } else {
+                                    setStaffSpecialties((prev) => [...prev, preset]);
+                                  }
+                                }}
+                                className={cn(
+                                  "text-[10.5px] font-bold px-2.5 py-1 rounded-lg border transition-all select-none",
+                                  isSelected
+                                    ? "bg-primary text-primary-foreground border-primary shadow-2xs"
+                                    : "bg-background border-border/60 text-muted-foreground hover:bg-secondary hover:text-foreground",
+                                )}
+                              >
+                                {isSelected ? "✓ " : "+ "}{preset}
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
 
@@ -12130,17 +12475,62 @@ function ConfigTab({
                     />
                   </div>
 
-                  <div className="space-y-1">
+                  <div className="space-y-2">
                     <label className="text-xs font-semibold text-muted-foreground block">
-                      Especialidad / Cargo
+                      Actividades / Especialidades que dicta (Selecciona 1 o varias)
                     </label>
-                    <input
-                      type="text"
-                      required
-                      value={editStaffSpecialty}
-                      onChange={(e) => setEditStaffSpecialty(e.target.value)}
-                      className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
-                    />
+                    
+                    {/* Selector de Chips elegidos */}
+                    <div className="flex flex-wrap gap-1.5 min-h-[38px] p-2 rounded-xl border border-border bg-background items-center">
+                      {editStaffSpecialties.map((spec) => (
+                        <span
+                          key={spec}
+                          className="inline-flex items-center gap-1 bg-primary/10 text-primary border border-primary/20 text-[11px] font-bold px-2.5 py-0.5 rounded-full"
+                        >
+                          {spec}
+                          <button
+                            type="button"
+                            onClick={() => setEditStaffSpecialties((prev) => prev.filter((s) => s !== spec))}
+                            className="hover:text-destructive text-primary/70 transition-colors ml-0.5"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                      {editStaffSpecialties.length === 0 && (
+                        <span className="text-xs text-muted-foreground italic">
+                          Haz clic en las actividades de abajo para vincularlas a este profesor...
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Botones de Selección Rápida */}
+                    <div className="flex flex-wrap gap-1 pt-1 max-h-[130px] overflow-y-auto custom-scrollbar p-2 bg-secondary/20 border border-border/40 rounded-xl">
+                      {STAFF_SPECIALTY_PRESETS.map((preset) => {
+                        const isSelected = editStaffSpecialties.includes(preset);
+                        return (
+                          <button
+                            key={preset}
+                            type="button"
+                            onClick={() => {
+                              if (isSelected) {
+                                setEditStaffSpecialties((prev) => prev.filter((s) => s !== preset));
+                              } else {
+                                setEditStaffSpecialties((prev) => [...prev, preset]);
+                              }
+                            }}
+                            className={cn(
+                              "text-[10.5px] font-bold px-2.5 py-1 rounded-lg border transition-all select-none",
+                              isSelected
+                                ? "bg-primary text-primary-foreground border-primary shadow-2xs"
+                                : "bg-background border-border/60 text-muted-foreground hover:bg-secondary hover:text-foreground",
+                            )}
+                          >
+                            {isSelected ? "✓ " : "+ "}{preset}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
 
                   <div className="space-y-1">
