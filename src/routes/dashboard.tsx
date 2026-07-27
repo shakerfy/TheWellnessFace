@@ -51,6 +51,11 @@ import {
   QrCode,
   Printer,
   Filter,
+  MoreVertical,
+  Slash,
+  UserCheck,
+  UserX,
+  Layers,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -66,6 +71,19 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
+import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -89,6 +107,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 
@@ -112,6 +132,7 @@ const TABS = [
 interface CurrentUser {
   name: string;
   email: string;
+  role?: string;
 }
 
 function GymDashboard() {
@@ -120,6 +141,7 @@ function GymDashboard() {
   const [currentUser] = useState<CurrentUser>({
     name: "Alan Kraft",
     email: "admin@studiopulse.com",
+    role: "superadmin",
   });
 
   // STATE LIFTED UP (Models the Firebase data structure in local memory)
@@ -137,7 +159,7 @@ function GymDashboard() {
       branchId?: string;
       linkingCode: string | null;
       status: "pending" | "linked";
-      availability?: { day: string; hours: string }[];
+      availability?: any[];
       // Payroll config
       payModel?: "fixed_class" | "per_student" | "hybrid" | "percent";
       fixedRatePerClass?: number;
@@ -691,6 +713,7 @@ function GymDashboard() {
       status?: "activa" | "cancelada";
       weekOffset?: number;
       ratings?: { [studentName: string]: { stars: number; comment?: string } };
+      blocks?: any[];
     }[]
   >([
     // Belgrano (branchId: "1")
@@ -709,6 +732,40 @@ function GymDashboard() {
       layout: Array(100)
         .fill(false)
         .map((_, i) => i < 15),
+      blocks: [
+        {
+          id: "b1",
+          type: "warmup",
+          title: "Calentamiento Articular & Cardio",
+          subtitle: "3 Rondas - 8 min Cap",
+          description: "- 200m Running / Remadora\n- 10 Pass-throughs con PVC\n- 15 Air Squats\n- 30s Plank Isométrico",
+          timeCap: "8 min",
+        },
+        {
+          id: "b2",
+          type: "strength",
+          title: "Trabajo de Fuerza: Back Squat",
+          subtitle: "5 Series x 5 Repeticiones",
+          description: "Trabajar a 75-80% de 1RM\nDescanso: 2 min entre cada serie\nEnfocarse en la profundidad y estabilidad del torso",
+          timeCap: "18 min",
+        },
+        {
+          id: "b3",
+          type: "main",
+          title: "WOD Principal: 'Helen Modified'",
+          subtitle: "3 Rondas por Tiempo (For Time)",
+          description: "- 400m Run\n- 21 Kettlebell Swings (24kg / 16kg)\n- 12 Pull-ups / Dominadas",
+          timeCap: "14 min",
+        },
+        {
+          id: "b4",
+          type: "cooldown",
+          title: "Vuelta a la Calma & Estiramientos",
+          subtitle: "Recuperación Pasiva",
+          description: "- 3 min Couch Stretch (Isquios y Psoas)\n- Movilidad pasiva de hombros con banda",
+          timeCap: "5 min",
+        },
+      ],
     },
     {
       id: "1b",
@@ -1420,7 +1477,7 @@ function GymDashboard() {
   ]);
 
   const pendingSubstitutionsCount = useMemo(() => {
-    return classesList.filter((c) => c.seekingBackup).length;
+    return classesList.filter((c: any) => c.seekingBackup).length;
   }, [classesList]);
 
   const visibleClasses = classesList;
@@ -1562,17 +1619,18 @@ function GymDashboard() {
             classesList={visibleClasses}
             setClassesList={setClassesList}
             staffList={staffList}
-            canManageClasses={currentUser.role === "superadmin" || currentUser.role === "manager"}
+            canManageClasses={currentUser.role === "superadmin" || currentUser.role === "manager" || currentUser.role === "admin"}
             blackoutDays={blackoutDays}
             salasList={salasList}
             branchesList={branchesList}
             selectedBranchId={selectedBranchId}
             cancellationPolicyHours={cancellationPolicyHours}
             currentUser={currentUser}
+            membersList={membersList}
           />
         )}
         {activeTab === "reseñas" && (
-          <ReseñasTab reviewsList={reviewsList} setReviewsList={setReviewsList} />
+          <ReseñasTab reviewsList={reviewsList as any} setReviewsList={setReviewsList as any} />
         )}
         {activeTab === "caja" && (
           <CajaTab
@@ -1614,14 +1672,14 @@ function GymDashboard() {
         {activeTab === "config" && (
           <ConfigTab
             selectedBranchId={selectedBranchId}
-            staffList={staffList}
-            setStaffList={setStaffList}
+            staffList={staffList as any}
+            setStaffList={setStaffList as any}
             amenities={amenities}
             setAmenities={setAmenities}
             requirements={requirements}
             setRequirements={setRequirements}
-            equipment={equipment}
-            setEquipment={setEquipment}
+            equipment={equipment as any}
+            setEquipment={setEquipment as any}
             gymPhotos={gymPhotos}
             setGymPhotos={setGymPhotos}
             weeklyHours={weeklyHours}
@@ -6959,6 +7017,16 @@ function MembresiasTab({
   );
 }
 
+// Class routine blocks (WODify / SugarWOD style)
+export interface ClassBlock {
+  id: string;
+  type: "warmup" | "strength" | "main" | "cooldown" | "custom";
+  title: string;
+  subtitle?: string;
+  description: string;
+  timeCap?: string;
+}
+
 // Subcomponent: Clases Tab
 export interface GymClassItem {
   id: string;
@@ -6980,8 +7048,9 @@ export interface GymClassItem {
   seekingBackup?: boolean;
   requiresSpotSelection?: boolean;
   lockedSpots?: { [spotIndex: number]: { studentName: string; expiresAt: number } };
-  ratings?: any[];
+  ratings?: any;
   weekOffset?: number;
+  blocks?: ClassBlock[];
 }
 
 interface ClasesTabProps {
@@ -7008,6 +7077,7 @@ interface ClasesTabProps {
   selectedBranchId: string;
   cancellationPolicyHours: number;
   currentUser?: any;
+  membersList?: any[];
 }
 
 function ClasesTab({
@@ -7021,6 +7091,7 @@ function ClasesTab({
   selectedBranchId,
   cancellationPolicyHours,
   currentUser,
+  membersList,
 }: ClasesTabProps) {
   const activeBlackout = blackoutDays.find((b) => b.date === "2026-06-29");
   const [now, setNow] = useState(Date.now());
@@ -7077,6 +7148,190 @@ function ClasesTab({
   const [selectedCalendarSalaId, setSelectedCalendarSalaId] = useState("");
   const [customCapacity, setCustomCapacity] = useState(20);
   const [requiresSpotSelection, setRequiresSpotSelection] = useState(true);
+
+  // Estado y Funciones para Bloques de Rutina (Estilo WODify / SugarWOD)
+  const [routineBlocks, setRoutineBlocks] = useState<ClassBlock[]>([]);
+
+  const addRoutineBlockPreset = (presetType: ClassBlock["type"]) => {
+    const presets: Record<string, { title: string; subtitle: string; description: string; timeCap?: string }> = {
+      warmup: {
+        title: "Calentamiento & Movilidad",
+        subtitle: "General",
+        description: "3 Rondas de:\n- 10 Pass-throughs con PVC\n- 15 Air Squats\n- 30s Plank",
+        timeCap: "10 min",
+      },
+      strength: {
+        title: "Trabajo de Fuerza / Técnica",
+        subtitle: "5 Series x 5 Reps",
+        description: "Back Squat @ 75-80% 1RM\nDescanso: 2 min entre series",
+        timeCap: "15 min",
+      },
+      main: {
+        title: "Metcon Principal / WOD",
+        subtitle: "AMRAP 12 min",
+        description: "12 Burpees\n15 Kettlebell Swings (24/16kg)\n30 Double Unders",
+        timeCap: "12 min",
+      },
+      cooldown: {
+        title: "Vuelta a la Calma",
+        subtitle: "Estiramientos",
+        description: "5 min Movilidad pasiva de cadera y hombros\nHidratación y respiración guiada",
+        timeCap: "5 min",
+      },
+      custom: {
+        title: "Bloque Personalizado",
+        subtitle: "Detalle de trabajo",
+        description: "Escribe aquí la rutina o instrucciones...",
+      },
+    };
+
+    const template = presets[presetType] || presets.custom;
+    setRoutineBlocks((prev) => [
+      ...prev,
+      {
+        id: `block-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+        type: presetType,
+        title: template.title,
+        subtitle: template.subtitle,
+        description: template.description,
+        timeCap: template.timeCap || "",
+      },
+    ]);
+  };
+
+  const moveRoutineBlock = (index: number, direction: "up" | "down") => {
+    setRoutineBlocks((prev) => {
+      const copy = [...prev];
+      const targetIndex = direction === "up" ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= copy.length) return prev;
+      const temp = copy[index];
+      copy[index] = copy[targetIndex];
+      copy[targetIndex] = temp;
+      return copy;
+    });
+  };
+
+  const updateRoutineBlock = (index: number, field: keyof ClassBlock, value: string) => {
+    setRoutineBlocks((prev) =>
+      prev.map((b, i) => (i === index ? { ...b, [field]: value } : b)),
+    );
+  };
+
+  const removeRoutineBlock = (index: number) => {
+    setRoutineBlocks((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Estados para Modal Shadcn de Inscripción de Alumno
+  const [enrollModalClass, setEnrollModalClass] = useState<any | null>(null);
+  const [enrollTargetSpotIndex, setEnrollTargetSpotIndex] = useState<number | null>(null);
+  const [enrollSearchTerm, setEnrollSearchTerm] = useState("");
+  const [enrollPlanFilter, setEnrollPlanFilter] = useState("todos");
+
+  // Estados para Modales Shadcn UI / Radix UI (Confirmación, Prompt, Selección de Modalidad al Cancelar)
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+    confirmText?: string;
+    cancelText?: string;
+    variant?: "default" | "destructive";
+    onConfirm: () => void;
+  } | null>(null);
+
+  const [promptDialog, setPromptDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+    placeholder?: string;
+    defaultValue?: string;
+    confirmText?: string;
+    variant?: "default" | "destructive";
+    onConfirm: (val: string) => void;
+  } | null>(null);
+  const [promptInputValue, setPromptInputValue] = useState("");
+
+  const [cancelSpotDialog, setCancelSpotDialog] = useState<{
+    isOpen: boolean;
+    c: any;
+    index: number;
+    studentName: string;
+    displayNameForConfirm: string;
+    hasWaitlist: boolean;
+    nextStudent?: string;
+  } | null>(null);
+  const [cancelOption, setCancelOption] = useState<"refund" | "rereserva">("refund");
+
+  // Estados para Modal Shadcn UI de Sustitución de Coach
+  const [substituteCoachModalClass, setSubstituteCoachModalClass] = useState<any | null>(null);
+  const [substituteSearchTerm, setSubstituteSearchTerm] = useState("");
+
+  const availableCoachesToSubstitute = useMemo(() => {
+    return (staffList || []).filter((s: any) => {
+      if (!substituteSearchTerm) return true;
+      const term = substituteSearchTerm.toLowerCase();
+      return (
+        s.name?.toLowerCase().includes(term) ||
+        s.specialty?.toLowerCase().includes(term)
+      );
+    });
+  }, [staffList, substituteSearchTerm]);
+
+  const availableMembersToEnroll = useMemo(() => {
+    const list = membersList || [
+      { name: "Agustín Gómez", plan: "Pase Libre", status: "activo", phone: "+54 9 11 3242-1241" },
+      { name: "Camila Díaz", plan: "Performance", status: "activo", phone: "+54 9 11 4124-5124" },
+      { name: "Marcos López", plan: "Pase Libre", status: "activo", phone: "+54 9 11 2341-2412" },
+      { name: "Tomás Ruiz", plan: "Performance", status: "activo", phone: "+54 9 11 5122-1234" },
+      { name: "Lucas Torres", plan: "Performance", status: "activo", phone: "+54 9 11 4124-1111" },
+      { name: "Paula Cáceres", plan: "Pase Libre", status: "activo", phone: "+54 9 11 2344-9999" },
+      { name: "Sofía Martínez", plan: "Pase Libre", status: "activo", phone: "+54 9 11 3333-8888" },
+      { name: "Pedro Giménez", plan: "Pase Libre", status: "activo", phone: "+54 9 11 4444-7777" },
+      { name: "María del Mar", plan: "Performance", status: "activo", phone: "+54 9 11 5555-6666" },
+    ];
+
+    return list.filter((m: any) => {
+      const matchesSearch =
+        !enrollSearchTerm ||
+        m.name?.toLowerCase().includes(enrollSearchTerm.toLowerCase()) ||
+        m.phone?.includes(enrollSearchTerm) ||
+        m.email?.toLowerCase().includes(enrollSearchTerm.toLowerCase());
+
+      const matchesPlan =
+        enrollPlanFilter === "todos" ||
+        m.plan?.toLowerCase() === enrollPlanFilter.toLowerCase();
+
+      return matchesSearch && matchesPlan;
+    });
+  }, [membersList, enrollSearchTerm, enrollPlanFilter]);
+
+  const handleEnrollMemberInClass = (memberName: string) => {
+    if (!enrollModalClass) return;
+    setClassesList((prev) =>
+      prev.map((item) => {
+        if (item.id === enrollModalClass.id) {
+          const copySpots = { ...(item.enrolledSpots || {}) };
+          let targetIdx = enrollTargetSpotIndex;
+          if (targetIdx === null || copySpots[targetIdx]) {
+            targetIdx = 0;
+            while (copySpots[targetIdx]) {
+              targetIdx++;
+            }
+          }
+          copySpots[targetIdx] = memberName;
+          return {
+            ...item,
+            enrolledSpots: copySpots,
+            booked: Object.keys(copySpots).length,
+          };
+        }
+        return item;
+      }),
+    );
+    const spotLabel = enrollTargetSpotIndex !== null ? ` en el Lugar #${enrollTargetSpotIndex + 1}` : "";
+    toast.success(`✅ Alumno "${memberName}" inscrito exitosamente${spotLabel} en "${enrollModalClass.name}". Notification enviada.`);
+    setEnrollModalClass(null);
+    setEnrollTargetSpotIndex(null);
+  };
 
   // Presets de distribución física de sala (10x10 = 100 lugares)
   const defaultPresets = useMemo(
@@ -7272,6 +7527,7 @@ function ClasesTab({
               creditsCost: parseInt(creditsCost) || 1,
               layout: computedLayout,
               requiresSpotSelection,
+              blocks: routineBlocks,
             };
           }
           return c;
@@ -7297,6 +7553,7 @@ function ClasesTab({
             requiresSpotSelection,
             status: "activa" as const,
             weekOffset: i,
+            blocks: routineBlocks,
           });
         }
         setClassesList((prev) => [...prev, ...generatedClasses]);
@@ -7316,6 +7573,7 @@ function ClasesTab({
           requiresSpotSelection,
           status: "activa" as const,
           weekOffset: 0,
+          blocks: routineBlocks,
         };
         setClassesList((prev) => [...prev, newClass]);
       }
@@ -7329,6 +7587,7 @@ function ClasesTab({
     setDay(0);
     setCreditsCost("1");
     setCustomCapacity(20);
+    setRoutineBlocks([]);
     setRequiresSpotSelection(true);
     setShowAddForm(false);
   };
@@ -7491,9 +7750,7 @@ function ClasesTab({
     };
 
     const getDisplayStudentName = (name: string) => {
-      if (canManageClasses) return name;
-      if (isProfilePrivate) return "Usuario Privado";
-      if (isStudentPrivate(name)) return "Usuario Privado";
+      // En el Dashboard de Administración los administradores ven la identidad real del alumno
       return name;
     };
 
@@ -7541,144 +7798,276 @@ function ClasesTab({
 
       if (hasWaitlist) {
         const nextStudent = c.waitlist![0];
-        if (
-          confirm(
-            `¿Confirmas cancelar la reserva de ${displayNameForConfirm}?\n\nAl haber alumnos en la Lista de Espera, el lugar se asignará automáticamente a ${nextStudent} y se reembolsarán los créditos a ${studentName}.`,
-          )
-        ) {
-          setClassesList((prev) =>
-            prev.map((item) => {
-              if (item.id === c.id) {
-                const copySpots = { ...item.enrolledSpots };
-                copySpots[index] = nextStudent;
-                const nextWaitlist = (item.waitlist || []).slice(1);
-                const copyAtt = { ...item.attendance };
-                copyAtt[index] = "pendiente";
-                return {
-                  ...item,
-                  enrolledSpots: copySpots,
-                  waitlist: nextWaitlist,
-                  attendance: copyAtt,
-                };
-              }
-              return item;
-            }),
-          );
-          alert(
-            `Reserva cancelada. Lugar asignado a ${nextStudent} desde la lista de espera. Créditos reembolsados a ${studentName}.`,
-          );
-        }
+        setConfirmDialog({
+          isOpen: true,
+          title: `Cancelar Reserva de ${displayNameForConfirm}`,
+          description: `Se enviará una notificación automática (Push / WhatsApp) informando el cambio y reembolsando su crédito. Al haber alumnos en Lista de Espera, el lugar #${index + 1} se asignará automáticamente a ${nextStudent}.`,
+          confirmText: "Confirmar Baja y Reasignar",
+          variant: "destructive",
+          onConfirm: () => {
+            setClassesList((prev) =>
+              prev.map((item) => {
+                if (item.id === c.id) {
+                  const copySpots = { ...item.enrolledSpots };
+                  copySpots[index] = nextStudent;
+                  const nextWaitlist = (item.waitlist || []).slice(1);
+                  const copyAtt = { ...item.attendance };
+                  copyAtt[index] = "pendiente";
+                  return {
+                    ...item,
+                    enrolledSpots: copySpots,
+                    waitlist: nextWaitlist,
+                    attendance: copyAtt,
+                  };
+                }
+                return item;
+              }),
+            );
+            toast.success(
+              `📢 Reserva de ${displayNameForConfirm} cancelada. Lugar #${index + 1} asignado a ${nextStudent} desde la lista de espera.`
+            );
+          },
+        });
         return;
       }
 
-      if (isLate) {
-        if (
-          confirm(
-            `⚠️ Cancelación Tardía (menos de ${cancellationPolicyHours} horas de anticipación).\n\n¿Deseas liberar el lugar de ${displayNameForConfirm}? Se ofrecerá como "Disponible para Re-reserva". Si otro alumno lo reserva, se te reembolsarán los créditos. Si no, se perderán.`,
-          )
-        ) {
-          setClassesList((prev) =>
-            prev.map((item) => {
-              if (item.id === c.id) {
-                const copySpots = { ...item.enrolledSpots };
-                delete copySpots[index];
-                const copyReleased = { ...item.releasedSpots } || {};
-                copyReleased[index] = {
-                  originalStudent: studentName,
-                  creditsCost: c.creditsCost || 1,
-                };
-                const copyAtt = { ...item.attendance };
-                delete copyAtt[index];
-                return {
-                  ...item,
-                  enrolledSpots: copySpots,
-                  releasedSpots: copyReleased,
-                  attendance: copyAtt,
-                  booked: Object.keys(copySpots).length,
-                };
-              }
-              return item;
-            }),
-          );
-          alert(`El lugar se ha liberado. Queda en estado "Disponible para Re-reserva".`);
-        }
-      } else {
-        if (
-          confirm(
-            `¿Deseas cancelar la reserva de ${displayNameForConfirm} en el lugar ${index + 1}?`,
-          )
-        ) {
-          setClassesList((prev) =>
-            prev.map((item) => {
-              if (item.id === c.id) {
-                const copySpots = { ...item.enrolledSpots };
-                delete copySpots[index];
-                const copyAtt = { ...item.attendance };
-                delete copyAtt[index];
-                return {
-                  ...item,
-                  enrolledSpots: copySpots,
-                  attendance: copyAtt,
-                  booked: Object.keys(copySpots).length,
-                };
-              }
-              return item;
-            }),
-          );
-          alert(
-            `Reserva de ${displayNameForConfirm} cancelada. Se ha reembolsado ${c.creditsCost || 1} crédito(s).`,
-          );
-        }
-      }
+      // Abrir modal Shadcn UI para consulta explícita de modalidad (Opción 1 vs Opción 2)
+      setCancelOption("refund");
+      setCancelSpotDialog({
+        isOpen: true,
+        c,
+        index,
+        studentName,
+        displayNameForConfirm,
+        hasWaitlist: false,
+      });
     };
 
-    const presentStudents = Object.entries(c.enrolledSpots || {})
-      .filter(([spotIdx]) => {
-        const att = c.attendance?.[parseInt(spotIdx)];
-        return att === "presente";
-      })
-      .map(([, name]) => name);
-
-    const isCoachView = currentUser.role === "coach";
+    const isSecondaryModalOpen =
+      !!enrollModalClass ||
+      !!substituteCoachModalClass ||
+      !!confirmDialog?.isOpen ||
+      !!promptDialog?.isOpen ||
+      !!cancelSpotDialog?.isOpen;
 
     return (
-      <Dialog open={!!selectedClass} onOpenChange={(open) => !open && setSelectedClass(null)}>
-        <DialogContent className="max-w-4xl max-h-[88vh] border border-border/60 bg-background dark:bg-background p-0 gap-0 rounded-3xl shadow-2xl overflow-hidden flex flex-col">
-          <div className="overflow-y-auto custom-scrollbar flex-1 bg-muted/35 dark:bg-background/95">
-            {/* Header Card */}
-            <div className="p-6 bg-card border-b border-border/60 sticky top-0 z-20 relative">
-              <button
-                type="button"
-                onClick={() => setSelectedClass(null)}
-                className="absolute right-4 top-4 h-8 w-8 rounded-full bg-secondary/80 hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors border border-border/60 z-30"
-                title="Cerrar ventana"
-              >
-                <X className="h-4 w-4" />
-              </button>
+      <Dialog
+        open={!!selectedClass}
+        onOpenChange={(open) => {
+          if (!open && !isSecondaryModalOpen) {
+            setSelectedClass(null);
+          }
+        }}
+      >
+        <DialogContent
+          className="max-w-4xl h-[90vh] overflow-y-auto custom-scrollbar p-0 rounded-3xl border-border shadow-2xl bg-background"
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onInteractOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => {
+            if (isSecondaryModalOpen) {
+              e.preventDefault();
+            } else {
+              setSelectedClass(null);
+            }
+          }}
+        >
+          {/* Header Card */}
+          <div className="p-6 bg-card border-b border-border/60 sticky top-0 z-20 space-y-4">
+              {/* Row 1: Badges & Header Actions */}
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs bg-primary/10 text-primary font-bold px-2.5 py-0.5 rounded-full border border-primary/20">
+                    {salaName}
+                  </span>
+                  {c.status === "cancelada" ? (
+                    <span className="text-xs bg-destructive/10 text-destructive font-bold px-2.5 py-0.5 rounded-full border border-destructive/20">
+                      Clase Cancelada
+                    </span>
+                  ) : c.seekingBackup ? (
+                    <span className="text-xs bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold px-2.5 py-0.5 rounded-full border border-amber-500/20">
+                      Buscando Suplente
+                    </span>
+                  ) : (
+                    <span className="text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                      Sesión Activa
+                    </span>
+                  )}
+                  <span className="text-xs bg-secondary border border-border/60 text-foreground font-bold px-2.5 py-0.5 rounded-full">
+                    {c.creditsCost || 1} {c.creditsCost === 1 ? "crédito" : "créditos"}
+                  </span>
+                </div>
 
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pr-8 sm:pr-10">
+                {/* Header Actions Menu & Close Button */}
+                <div className="flex items-center gap-2 shrink-0">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-8 px-3 rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 text-xs font-bold gap-1.5 shadow-xs"
+                        title="Acciones de Gestión de Clase"
+                      >
+                        <Wrench className="h-3.5 w-3.5" />
+                        <span>Acciones</span>
+                        <MoreVertical className="h-3.5 w-3.5 opacity-70" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56 rounded-2xl p-1.5 shadow-xl border-border">
+                      <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-2 py-1.5">
+                        Gestión de Clase
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+
+                      {/* Inscribir Alumno */}
+                      {c.status !== "cancelada" && c.booked < c.capacity && (
+                        <DropdownMenuItem
+                          className="rounded-xl cursor-pointer text-xs font-semibold gap-2 py-2"
+                          onClick={() => {
+                            setEnrollModalClass(c);
+                          }}
+                        >
+                          <Plus className="h-4 w-4 text-primary" /> Inscribir Alumno
+                        </DropdownMenuItem>
+                      )}
+
+                      {/* Sustituir Coach */}
+                      <DropdownMenuItem
+                        className="rounded-xl cursor-pointer text-xs font-semibold gap-2 py-2"
+                        onClick={() => {
+                          setSubstituteSearchTerm("");
+                          setSubstituteCoachModalClass(c);
+                        }}
+                      >
+                        <Users className="h-4 w-4 text-blue-500" /> Sustituir Coach
+                      </DropdownMenuItem>
+
+                      {/* Editar Clase */}
+                      <DropdownMenuItem
+                        className="rounded-xl cursor-pointer text-xs font-semibold gap-2 py-2"
+                        onClick={() => {
+                          setName(c.name);
+                          setStaffId(c.staffId);
+                          const parts = c.time.split("-");
+                          setStartTime(parts[0]?.trim() || "08:00");
+                          setEndTime(parts[1]?.trim() || "09:00");
+                          setCreditsCost((c.creditsCost || 1).toString());
+                          setSalaId(c.salaId || "");
+                          setDay(c.day);
+                          setCustomCapacity(c.capacity || 20);
+                          setRequiresSpotSelection(c.requiresSpotSelection ?? true);
+                          setRoutineBlocks(c.blocks || []);
+                          setEditingClassId(c.id);
+                          setShowAddForm(true);
+                          setSelectedClass(null);
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        }}
+                      >
+                        <Edit2 className="h-4 w-4 text-amber-500" /> Editar Clase
+                      </DropdownMenuItem>
+
+                      {/* Cancelar Clase / Reactivar */}
+                      {c.status === "cancelada" ? (
+                        <DropdownMenuItem
+                          className="rounded-xl cursor-pointer text-xs font-semibold gap-2 py-2 text-primary"
+                          onClick={() => {
+                            setConfirmDialog({
+                              isOpen: true,
+                              title: "Reactivar Clase",
+                              description: `¿Deseas reactivar la clase "${c.name}"?`,
+                              confirmText: "Reactivar Clase",
+                              onConfirm: () => {
+                                setClassesList((prev) =>
+                                  prev.map((item) =>
+                                    item.id === c.id ? { ...item, status: "activa" } : item,
+                                  ),
+                                );
+                                toast.success(`📢 La clase "${c.name}" ha sido reactivada.`);
+                              },
+                            });
+                          }}
+                        >
+                          <Check className="h-4 w-4" /> Reactivar Clase
+                        </DropdownMenuItem>
+                      ) : (
+                        <DropdownMenuItem
+                          className="rounded-xl cursor-pointer text-xs font-semibold gap-2 py-2 text-amber-600 dark:text-amber-400"
+                          onClick={() => {
+                            setConfirmDialog({
+                              isOpen: true,
+                              title: "Cancelar Sesión de Clase",
+                              description: `¿Confirmas cancelar la clase "${c.name}"?\n\n• Se reembolsarán los créditos a todos los alumnos agendados (${c.booked} inscriptos).\n• Se enviará una notificación automática (Push / WhatsApp).`,
+                              confirmText: "Sí, Cancelar Clase",
+                              variant: "destructive",
+                              onConfirm: () => {
+                                setClassesList((prev) =>
+                                  prev.map((item) =>
+                                    item.id === c.id
+                                      ? {
+                                          ...item,
+                                          status: "cancelada",
+                                          enrolledSpots: {},
+                                          releasedSpots: {},
+                                          booked: 0,
+                                          attendance: {},
+                                          waitlist: [],
+                                        }
+                                      : item,
+                                  ),
+                                );
+                                toast.info(`📢 Clase "${c.name}" cancelada. Notificación enviada a todos los inscriptos.`);
+                              },
+                            });
+                          }}
+                        >
+                          <Slash className="h-4 w-4" /> Cancelar Clase
+                        </DropdownMenuItem>
+                      )}
+
+                      <DropdownMenuSeparator />
+
+                      {/* Eliminar Permanentemente */}
+                      <DropdownMenuItem
+                        className="rounded-xl cursor-pointer text-xs font-semibold gap-2 py-2 text-destructive focus:text-destructive focus:bg-destructive/10"
+                        onClick={() => {
+                          setPromptDialog({
+                            isOpen: true,
+                            title: "Eliminar Clase Definitivamente",
+                            description: `⚠️ ¿Eliminar permanentemente "${c.name}"?\n\nPara confirmar, escribe "eliminar". Se notificará a los ${c.booked} alumnos inscriptos.`,
+                            placeholder: 'Escribe "eliminar"',
+                            confirmText: "Eliminar Definitivamente",
+                            variant: "destructive",
+                            onConfirm: (confirmWord) => {
+                              if (confirmWord?.trim().toLowerCase() === "eliminar") {
+                                setClassesList((prev) => prev.filter((item) => item.id !== c.id));
+                                setSelectedClass(null);
+                                toast.success(`⚠️ La clase "${c.name}" ha sido eliminada permanentemente.`);
+                              } else {
+                                toast.error('No escribiste "eliminar". La eliminación ha sido cancelada.');
+                              }
+                            },
+                          });
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" /> Eliminar Clase
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  <button
+                    type="button"
+                    onClick={() => setSelectedClass(null)}
+                    className="h-8 w-8 rounded-full bg-secondary/80 hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors border border-border/60"
+                    title="Cerrar ventana"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Row 2: Title & Stats on Left, Coach Card on Right */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
                 <div>
-                  <div className="flex items-center gap-2 flex-wrap mb-1.5">
-                    <span className="text-xs bg-primary/10 text-primary font-bold px-2.5 py-0.5 rounded-full border border-primary/20">
-                      {salaName}
-                    </span>
-                    {c.status === "cancelada" ? (
-                      <span className="text-xs bg-destructive/10 text-destructive font-bold px-2.5 py-0.5 rounded-full border border-destructive/20">
-                        Clase Cancelada
-                      </span>
-                    ) : c.seekingBackup ? (
-                      <span className="text-xs bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold px-2.5 py-0.5 rounded-full border border-amber-500/20">
-                        Buscando Suplente
-                      </span>
-                    ) : (
-                      <span className="text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold px-2.5 py-0.5 rounded-full border border-emerald-500/20">
-                        Sesión Activa
-                      </span>
-                    )}
-                    <span className="text-xs bg-secondary border border-border/60 text-foreground font-bold px-2.5 py-0.5 rounded-full">
-                      {c.creditsCost || 1} {c.creditsCost === 1 ? "crédito" : "créditos"}
-                    </span>
-                  </div>
                   <h2 className="text-2xl font-black text-foreground tracking-tight">{c.name}</h2>
                   <p className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
                     <span>
@@ -7711,31 +8100,6 @@ function ClasesTab({
                     <span className="font-bold text-foreground block">
                       {coach?.name || "Sin asignar"}
                     </span>
-                    {canManageClasses && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const newCoachId = prompt(
-                            `Sustituir Coach.\nActual: ${coach?.name || "N/A"}\n\nIngresa el ID del nuevo profesor:\n` +
-                              staffList.map((s) => `- ID ${s.id}: ${s.name}`).join("\n"),
-                          );
-                          if (newCoachId && staffList.find((s) => s.id === newCoachId)) {
-                            setClassesList((prev) =>
-                              prev.map((item) =>
-                                item.id === c.id
-                                  ? { ...item, staffId: newCoachId, seekingBackup: false }
-                                  : item,
-                              ),
-                            );
-                          } else if (newCoachId) {
-                            alert("ID de profesor no encontrado.");
-                          }
-                        }}
-                        className="text-[9.5px] text-primary hover:underline font-bold mt-0.5 block"
-                      >
-                        Sustituir Coach
-                      </button>
-                    )}
                   </div>
                 </div>
               </div>
@@ -7743,272 +8107,6 @@ function ClasesTab({
 
             {/* Body: 2 Columns 50/50 Aligned System */}
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5 items-stretch w-full">
-              {/* Switch de Privacidad de Perfil (Para usuarios miembros) */}
-              {!canManageClasses ? (
-                <div className="md:col-span-2 p-4 bg-primary/5 border border-primary/20 rounded-2xl flex items-center justify-between gap-3 flex-wrap shadow-2xs">
-                  <div className="flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-base shrink-0 border border-primary/20">
-                      {isProfilePrivate ? "🔒" : "🌐"}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-foreground">
-                          Privacidad de tu Perfil:
-                        </span>
-                        <span
-                          className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${
-                            isProfilePrivate
-                              ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30"
-                              : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
-                          }`}
-                        >
-                          {isProfilePrivate ? "🔒 PRIVADO (Por defecto)" : "🌐 PÚBLICO"}
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug max-w-xl">
-                        {isProfilePrivate
-                          ? "Tus reservas son anónimas para otros alumnos y tú no ves quiénes asisten. Los administradores y profesores siempre ven la lista completa."
-                          : "Tu asistencia es visible para otros alumnos públicos y puedes ver quiénes asisten. Los administradores siempre ven la lista completa."}
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsProfilePrivate(!isProfilePrivate)}
-                    className="h-8 text-xs font-bold gap-1.5 rounded-xl border-border hover:bg-secondary shrink-0"
-                  >
-                    {isProfilePrivate ? "🌐 Cambiar a Público" : "🔒 Cambiar a Privado"}
-                  </Button>
-                </div>
-              ) : (
-                <div className="md:col-span-2 p-3 bg-secondary/50 border border-border/60 rounded-2xl flex items-center justify-between text-xs text-muted-foreground font-semibold">
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">🔑</span>
-                    <span>
-                      <strong>Modo Administración / Staff:</strong> Tienes acceso total para ver nombres, fotos de Instagram y datos de contacto de todos los asistentes (privados y públicos).
-                    </span>
-                  </div>
-                </div>
-              )}
-              {/* Row 1 Left: Estado de la Clase */}
-              <div className="group rounded-3xl border border-border bg-card p-5 space-y-4 transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg shadow-xs h-full flex flex-col justify-between">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between pb-2 border-b border-border/40">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
-                      Estado de la Clase
-                    </span>
-                    <span className="text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
-                      Activa
-                    </span>
-                  </div>
-
-                  {c.status === "cancelada" && (
-                    <div className="p-3 bg-destructive/10 border border-destructive/20 text-destructive rounded-xl text-xs font-semibold flex items-start gap-2">
-                      <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-                      <div>
-                        <div className="font-bold">Clase Cancelada por Administración</div>
-                        <p className="text-[11px] opacity-80 mt-0.5 leading-relaxed">
-                          Se han reembolsado automáticamente los créditos a todos los alumnos agendados.
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {c.waitlist &&
-                    c.waitlist.length >= 3 &&
-                    canManageClasses &&
-                    c.status !== "cancelada" && (
-                      <div className="p-3 bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 rounded-xl text-xs font-semibold flex items-start gap-2">
-                        <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-                        <div>
-                          <div className="font-bold">Alta Demanda Detectada</div>
-                          <p className="text-[10px] opacity-80 mt-0.5 leading-relaxed">
-                            Hay {c.waitlist.length} alumnos en espera. Considerá abrir un nuevo horario o ampliar capacidad.
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                  {c.status !== "cancelada" && (
-                    <div className="grid grid-cols-2 gap-2.5 text-xs pt-1">
-                      <div className="bg-secondary/40 border border-border/40 p-3 rounded-xl">
-                        <span className="text-[10px] text-muted-foreground font-semibold block uppercase tracking-wider">Inscriptos</span>
-                        <span className="font-black text-base text-foreground mt-0.5 block">{c.booked} / {c.capacity}</span>
-                      </div>
-                      <div className="bg-secondary/40 border border-border/40 p-3 rounded-xl">
-                        <span className="text-[10px] text-muted-foreground font-semibold block uppercase tracking-wider">Créditos</span>
-                        <span className="font-black text-base text-foreground mt-0.5 block">{c.creditsCost || 1} cred.</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {c.status !== "cancelada" && canManageClasses && c.booked < c.capacity && (
-                  <Button
-                    type="button"
-                    size="sm"
-                    className="w-full text-xs font-bold gap-1.5 rounded-xl bg-primary text-primary-foreground py-2 mt-2"
-                    onClick={() => {
-                      const nameInput = prompt(
-                        "Ingresa el nombre del alumno para inscribirlo en esta clase:",
-                      );
-                      if (nameInput?.trim()) {
-                        const typedName = nameInput.trim();
-                        setClassesList((prev) =>
-                          prev.map((item) => {
-                            if (item.id === c.id) {
-                              const copySpots = { ...item.enrolledSpots } || {};
-                              let nextIdx = 0;
-                              while (copySpots[nextIdx]) {
-                                nextIdx++;
-                              }
-                              copySpots[nextIdx] = typedName;
-                              return {
-                                ...item,
-                                enrolledSpots: copySpots,
-                                booked: Object.keys(copySpots).length,
-                              };
-                            }
-                            return item;
-                          }),
-                        );
-                      }
-                    }}
-                  >
-                    <Plus className="h-4 w-4" /> Inscribir Alumno
-                  </Button>
-                )}
-              </div>
-
-              {/* Row 1 Right: Acciones de Gestión */}
-              <div className="group rounded-3xl border border-border bg-card p-5 space-y-4 transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg shadow-xs h-full flex flex-col justify-between">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between pb-2 border-b border-border/40">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
-                      Acciones de Gestión
-                    </span>
-                    <span className="text-[10px] text-muted-foreground/70 font-semibold uppercase tracking-wider">
-                      Configuración
-                    </span>
-                  </div>
-
-                  {canManageClasses && (
-                    <div className="space-y-2 pt-1">
-                      {c.status === "cancelada" ? (
-                        <div className="grid grid-cols-2 gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="rounded-xl text-xs font-bold text-primary border-primary hover:bg-primary/10"
-                            onClick={() => {
-                              setClassesList((prev) =>
-                                prev.map((item) =>
-                                  item.id === c.id ? { ...item, status: "activa" } : item,
-                                ),
-                              );
-                              alert(`La clase "${c.name}" ha sido reactivada.`);
-                            }}
-                          >
-                            Reactivar
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            className="rounded-xl text-xs font-bold"
-                            onClick={() => {
-                              const confirmWord = prompt(
-                                `⚠️ Escribe "Eliminar" para confirmar la eliminación permanente de "${c.name}":`,
-                              );
-                              if (confirmWord?.trim().toLowerCase() === "eliminar") {
-                                setClassesList((prev) => prev.filter((item) => item.id !== c.id));
-                                setSelectedClass(null);
-                              }
-                            }}
-                          >
-                            Eliminar
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="space-y-2">
-                          <div className="grid grid-cols-2 gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="rounded-xl text-xs font-bold border-border hover:bg-secondary"
-                              onClick={() => {
-                                setName(c.name);
-                                setStaffId(c.staffId);
-                                const parts = c.time.split("-");
-                                setStartTime(parts[0]?.trim() || "08:00");
-                                setEndTime(parts[1]?.trim() || "09:00");
-                                setCreditsCost((c.creditsCost || 1).toString());
-                                setSalaId(c.salaId || "");
-                                setDay(c.day);
-                                setCustomCapacity(c.capacity || 20);
-                                setRequiresSpotSelection(c.requiresSpotSelection ?? true);
-                                setEditingClassId(c.id);
-                                setShowAddForm(true);
-                                setSelectedClass(null);
-                                window.scrollTo({ top: 0, behavior: "smooth" });
-                              }}
-                            >
-                              Editar Horario
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="rounded-xl text-xs font-bold text-destructive border-destructive/30 hover:bg-destructive/10"
-                              onClick={() => {
-                                if (
-                                  confirm(
-                                    `¿Confirmas cancelar la clase "${c.name}"? Se reembolsarán los créditos a todos los alumnos.`,
-                                  )
-                                ) {
-                                  setClassesList((prev) =>
-                                    prev.map((item) =>
-                                      item.id === c.id
-                                        ? {
-                                            ...item,
-                                            status: "cancelada",
-                                            enrolledSpots: {},
-                                            releasedSpots: {},
-                                            booked: 0,
-                                            attendance: {},
-                                            waitlist: [],
-                                          }
-                                        : item,
-                                    ),
-                                  );
-                                }
-                              }}
-                            >
-                              Cancelar Clase
-                            </Button>
-                          </div>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            className="w-full rounded-xl text-xs font-bold"
-                            onClick={() => {
-                              const confirmWord = prompt(
-                                `⚠️ Escribe "Eliminar" para eliminar permanentemente "${c.name}":`,
-                              );
-                              if (confirmWord?.trim().toLowerCase() === "eliminar") {
-                                setClassesList((prev) => prev.filter((item) => item.id !== c.id));
-                                setSelectedClass(null);
-                              }
-                            }}
-                          >
-                            Eliminar Permanentemente
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
 
               {/* Row 2 Left: Lista de Reservas y Asistencia */}
               <div className="group rounded-3xl border border-border bg-card p-5 space-y-4 transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg shadow-xs h-full flex flex-col justify-between">
@@ -8036,8 +8134,7 @@ function ClasesTab({
                         {Object.entries(c.enrolledSpots || {}).map(([spotIdxStr, name]) => {
                           const idx = parseInt(spotIdxStr);
                           const displayName = getDisplayStudentName(name);
-                          const isPrivate =
-                            !canManageClasses && (isProfilePrivate || isStudentPrivate(name));
+                          const isPrivate = false;
                           const enriched = getEnrichedStudentInfo(name);
 
                           const currentAttendance = c.attendance?.[idx] || "pendiente";
@@ -8059,7 +8156,7 @@ function ClasesTab({
                             setClassesList((prev) =>
                               prev.map((item) => {
                                 if (item.id === c.id) {
-                                  const copyAtt = { ...item.attendance } || {};
+                                  const copyAtt = { ...(item.attendance || {}) };
                                   copyAtt[idx] = nextStatus;
                                   return { ...item, attendance: copyAtt };
                                 }
@@ -8117,15 +8214,84 @@ function ClasesTab({
                                 </span>
                               </td>
                               <td className="p-2.5 text-right">
-                                {canManageClasses && (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleCancelSpot(idx, name)}
-                                    className="text-destructive hover:text-destructive font-bold hover:underline text-[11px]"
-                                  >
-                                    Quitar
-                                  </button>
-                                )}
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-7 w-7 rounded-lg hover:bg-secondary border border-transparent hover:border-border/60"
+                                      title="Acciones del Alumno"
+                                    >
+                                      <MoreHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end" className="w-48 rounded-2xl p-1 shadow-xl border-border">
+                                    <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-2.5 py-1.5 truncate">
+                                      {displayName}
+                                    </DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+
+                                    {/* Marcar Presente */}
+                                    <DropdownMenuItem
+                                      className="rounded-xl cursor-pointer text-xs font-semibold gap-2 py-1.5"
+                                      onClick={() => {
+                                        setClassesList((prev) =>
+                                          prev.map((item) => {
+                                            if (item.id === c.id) {
+                                              const copyAtt = { ...(item.attendance || {}) };
+                                              copyAtt[idx] = "presente";
+                                              return { ...item, attendance: copyAtt };
+                                            }
+                                            return item;
+                                          }),
+                                        );
+                                      }}
+                                    >
+                                      <UserCheck className="h-3.5 w-3.5 text-emerald-500" /> Marcar Presente
+                                    </DropdownMenuItem>
+
+                                    {/* Marcar Ausente */}
+                                    <DropdownMenuItem
+                                      className="rounded-xl cursor-pointer text-xs font-semibold gap-2 py-1.5"
+                                      onClick={() => {
+                                        setClassesList((prev) =>
+                                          prev.map((item) => {
+                                            if (item.id === c.id) {
+                                              const copyAtt = { ...(item.attendance || {}) };
+                                              copyAtt[idx] = "ausente";
+                                              return { ...item, attendance: copyAtt };
+                                            }
+                                            return item;
+                                          }),
+                                        );
+                                      }}
+                                    >
+                                      <UserX className="h-3.5 w-3.5 text-destructive" /> Marcar Ausente
+                                    </DropdownMenuItem>
+
+                                    {/* Contactar por WhatsApp */}
+                                    <DropdownMenuItem
+                                      className="rounded-xl cursor-pointer text-xs font-semibold gap-2 py-1.5 text-emerald-600 dark:text-emerald-400"
+                                      onClick={() => {
+                                        const rawPhone = enriched.phone.replace(/[^0-9]/g, "");
+                                        window.open(`https://wa.me/${rawPhone}`, "_blank");
+                                      }}
+                                    >
+                                      <MessageCircle className="h-3.5 w-3.5" /> Contactar por WhatsApp
+                                    </DropdownMenuItem>
+
+                                    <DropdownMenuSeparator />
+
+                                    {/* Quitar Reserva */}
+                                    <DropdownMenuItem
+                                      className="rounded-xl cursor-pointer text-xs font-semibold gap-2 py-1.5 text-destructive focus:text-destructive focus:bg-destructive/10"
+                                      onClick={() => handleCancelSpot(idx, name)}
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" /> Quitar Reserva
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
                               </td>
                             </tr>
                           );
@@ -8171,38 +8337,75 @@ function ClasesTab({
                             </span>
                             <span className="font-bold text-foreground text-xs">{wName}</span>
                           </div>
-                          {canManageClasses && (
+                          <div className="flex items-center gap-1.5">
                             <button
                               type="button"
                               onClick={() => {
-                                if (confirm(`¿Promover a ${wName} para ocupar un lugar vacante?`)) {
-                                  setClassesList((prev) =>
-                                    prev.map((item) => {
-                                      if (item.id === c.id) {
-                                        const nextWaitlist = (item.waitlist || []).filter(
-                                          (_, idx) => idx !== wIdx,
-                                        );
-                                        const copySpots = { ...item.enrolledSpots } || {};
-                                        let nextSpot = 0;
-                                        while (copySpots[nextSpot]) nextSpot++;
-                                        copySpots[nextSpot] = wName;
-                                        return {
-                                          ...item,
-                                          waitlist: nextWaitlist,
-                                          enrolledSpots: copySpots,
-                                          booked: Object.keys(copySpots).length,
-                                        };
-                                      }
-                                      return item;
-                                    }),
-                                  );
-                                }
+                                setConfirmDialog({
+                                  isOpen: true,
+                                  title: "Promover Alumno",
+                                  description: `¿Confirmas promover a ${wName} para ocupar un lugar vacante en la clase?`,
+                                  confirmText: "Promover Alumno",
+                                  onConfirm: () => {
+                                    setClassesList((prev) =>
+                                      prev.map((item) => {
+                                        if (item.id === c.id) {
+                                          const nextWaitlist = (item.waitlist || []).filter(
+                                            (_, idx) => idx !== wIdx,
+                                          );
+                                          const copySpots = { ...(item.enrolledSpots || {}) };
+                                          let nextSpot = 0;
+                                          while (copySpots[nextSpot]) nextSpot++;
+                                          copySpots[nextSpot] = wName;
+                                          return {
+                                            ...item,
+                                            waitlist: nextWaitlist,
+                                            enrolledSpots: copySpots,
+                                            booked: Object.keys(copySpots).length,
+                                          };
+                                        }
+                                        return item;
+                                      }),
+                                    );
+                                    toast.success(`✓ ${wName} inscripto en un lugar vacante.`);
+                                  },
+                                });
                               }}
-                              className="text-[10.5px] font-bold text-primary hover:underline"
+                              className="text-[10.5px] font-bold text-primary hover:underline px-1 py-0.5"
                             >
                               Asignar Lugar
                             </button>
-                          )}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setConfirmDialog({
+                                  isOpen: true,
+                                  title: "Quitar de Lista de Espera",
+                                  description: `¿Quitar a "${wName}" de la lista de espera?\n\n• Se le enviará una notificación automática al alumno.`,
+                                  confirmText: "Quitar de la Lista",
+                                  variant: "destructive",
+                                  onConfirm: () => {
+                                    setClassesList((prev) =>
+                                      prev.map((item) => {
+                                        if (item.id === c.id) {
+                                          const nextWaitlist = (item.waitlist || []).filter(
+                                            (_, idx) => idx !== wIdx,
+                                          );
+                                          return { ...item, waitlist: nextWaitlist };
+                                        }
+                                        return item;
+                                      }),
+                                    );
+                                    toast.info(`📢 Alumno "${wName}" removido de la lista de espera.`);
+                                  },
+                                });
+                              }}
+                              className="text-destructive hover:bg-destructive/10 p-1.5 rounded-lg transition-colors"
+                              title="Quitar de lista de espera"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -8220,21 +8423,28 @@ function ClasesTab({
                     size="sm"
                     className="w-full text-xs font-bold border-border/60 hover:bg-secondary rounded-xl py-2 mt-2"
                     onClick={() => {
-                      const studentName = prompt(
-                        "Ingresa el nombre del alumno para anotarse en la lista de espera:",
-                      );
-                      if (studentName?.trim()) {
-                        const name = studentName.trim();
-                        setClassesList((prev) =>
-                          prev.map((item) => {
-                            if (item.id === c.id) {
-                              const currentWaitlist = item.waitlist || [];
-                              return { ...item, waitlist: [...currentWaitlist, name] };
-                            }
-                            return item;
-                          }),
-                        );
-                      }
+                      setPromptDialog({
+                        isOpen: true,
+                        title: "Añadir a Lista de Espera",
+                        description: `Ingresa el nombre del alumno para anotarse en la lista de espera de "${c.name}":`,
+                        placeholder: "Nombre completo del alumno",
+                        confirmText: "Añadir a Lista",
+                        onConfirm: (studentName) => {
+                          if (studentName?.trim()) {
+                            const name = studentName.trim();
+                            setClassesList((prev) =>
+                              prev.map((item) => {
+                                if (item.id === c.id) {
+                                  const currentWaitlist = item.waitlist || [];
+                                  return { ...item, waitlist: [...currentWaitlist, name] };
+                                }
+                                return item;
+                              }),
+                            );
+                            toast.success(`✓ ${name} registrado en la lista de espera.`);
+                          }
+                        },
+                      });
                     }}
                   >
                     + Sumar Alumno a Lista de Espera
@@ -8322,38 +8532,39 @@ function ClasesTab({
                           );
                         }
 
-                        // Casillero Ocupado por Alumno
+                        // Casillero Ocupado por Alumno (Fotos Tipo Instagram MUY GRANDES)
                         if (studentName) {
                           const displayName = getDisplayStudentName(studentName);
-                          const isPrivate =
-                            !canManageClasses && (isProfilePrivate || isStudentPrivate(studentName));
                           const photo = getStudentPhoto(studentName);
 
                           return (
                             <div
                               key={spotIdx}
                               title={`Lugar #${spotIdx + 1}: ${displayName}`}
-                              className="relative h-12 sm:h-14 w-full rounded-xl border border-border bg-gradient-to-tr from-amber-500/10 via-rose-500/10 to-purple-500/10 hover:border-foreground/40 transition-all duration-200 flex flex-col items-center justify-center p-1 group/spot overflow-hidden shadow-2xs"
+                              className="relative h-24 sm:h-28 w-full rounded-2xl border border-border/70 bg-card hover:border-primary/50 hover:bg-secondary/40 transition-all duration-300 flex flex-col items-center justify-between p-2 group/spot overflow-visible shadow-2xs"
                             >
-                              {isPrivate ? (
-                                <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-[10px] text-muted-foreground font-bold border border-border/40">
-                                  🔒
+                              <div className="p-[3px] bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 rounded-full aspect-square shrink-0 shadow-md group-hover/spot:scale-110 transition-transform duration-300 flex items-center justify-center">
+                                <div className="p-[2px] bg-background rounded-full aspect-square shrink-0 flex items-center justify-center overflow-hidden">
+                                  <img
+                                    src={photo}
+                                    alt={displayName}
+                                    className="h-11 w-11 sm:h-13 sm:w-13 rounded-full aspect-square object-cover shrink-0"
+                                  />
                                 </div>
-                              ) : (
-                                <img
-                                  src={photo}
-                                  alt={displayName}
-                                  className="h-6 w-6 rounded-full object-cover border border-border/60 shadow-2xs"
-                                />
-                              )}
-                              <span className="text-[9px] font-black text-foreground bg-background px-1.5 py-0.2 rounded-full border border-border/60 -mt-2 z-10 shadow-2xs truncate max-w-[52px] text-center">
-                                #{spotIdx + 1}
-                              </span>
+                              </div>
+                              <div className="flex flex-col items-center leading-none max-w-full">
+                                <span className="text-[10px] font-bold text-foreground truncate max-w-[64px] text-center block mb-0.5">
+                                  {displayName}
+                                </span>
+                                <span className="text-[9px] font-black text-muted-foreground bg-secondary px-1.5 py-0.2 rounded-full border border-border/60 shadow-2xs">
+                                  #{spotIdx + 1}
+                                </span>
+                              </div>
                             </div>
                           );
                         }
 
-                        // Casillero en Spot Lock (Retenido temporalmente con temporizador regresivo)
+                        // Casillero en Spot Lock
                         if (lockInfo && lockInfo.expiresAt > now) {
                           const remainingStr = formatCountdown(lockInfo.expiresAt, now);
                           return (
@@ -8362,29 +8573,32 @@ function ClasesTab({
                               title={`Lugar #${spotIdx + 1} RETENIDO por ${lockInfo.studentName} (Expira en ${remainingStr})`}
                               onClick={() => {
                                 if (canManageClasses) {
-                                  if (
-                                    confirm(
-                                      `Lugar #${spotIdx + 1} retendido por ${lockInfo.studentName}.\n\n¿Deseas CONFIRMAR definitivamente la reserva?`,
-                                    )
-                                  ) {
-                                    setClassesList((prev) =>
-                                      prev.map((item) => {
-                                        if (item.id === c.id) {
-                                          const copySpots = { ...item.enrolledSpots } || {};
-                                          copySpots[spotIdx] = lockInfo.studentName;
-                                          const copyLocks = { ...item.lockedSpots };
-                                          delete copyLocks[spotIdx];
-                                          return {
-                                            ...item,
-                                            enrolledSpots: copySpots,
-                                            lockedSpots: copyLocks,
-                                            booked: Object.keys(copySpots).length,
-                                          };
-                                        }
-                                        return item;
-                                      }),
-                                    );
-                                  }
+                                  setConfirmDialog({
+                                    isOpen: true,
+                                    title: "Confirmar Reserva Retenida",
+                                    description: `El Lugar #${spotIdx + 1} está retenido por ${lockInfo.studentName}.\n\n¿Deseas CONFIRMAR definitivamente la reserva?`,
+                                    confirmText: "Confirmar Reserva",
+                                    onConfirm: () => {
+                                      setClassesList((prev) =>
+                                        prev.map((item) => {
+                                          if (item.id === c.id) {
+                                            const copySpots = { ...(item.enrolledSpots || {}) };
+                                            copySpots[spotIdx] = lockInfo.studentName;
+                                            const copyLocks = { ...item.lockedSpots };
+                                            delete copyLocks[spotIdx];
+                                            return {
+                                              ...item,
+                                              enrolledSpots: copySpots,
+                                              lockedSpots: copyLocks,
+                                              booked: Object.keys(copySpots).length,
+                                            };
+                                          }
+                                          return item;
+                                        }),
+                                      );
+                                      toast.success(`✓ Reserva de ${lockInfo.studentName} confirmada.`);
+                                    },
+                                  });
                                 }
                               }}
                               className="relative h-12 sm:h-14 w-full rounded-xl border border-amber-500/60 bg-amber-500/15 hover:bg-amber-500/25 transition-all duration-200 flex flex-col items-center justify-center p-1 cursor-pointer animate-pulse shadow-2xs"
@@ -8392,62 +8606,52 @@ function ClasesTab({
                               <span className="text-[9px] font-black text-amber-700 dark:text-amber-300">
                                 #{spotIdx + 1} 🔒
                               </span>
-                              <span className="text-[8px] font-bold text-amber-600 dark:text-amber-400 mt-0.5">
+                              <span className="text-[8.5px] font-bold text-amber-600 dark:text-amber-400 mt-0.5">
                                 {remainingStr}
                               </span>
                             </div>
                           );
                         }
 
-                        // Casillero Disponible (Libre para reservar o spot lock)
+                        // Casillero Disponible
                         return (
                           <button
                             key={spotIdx}
                             type="button"
-                            title={`Lugar #${spotIdx + 1} Libre — Haz clic para reservar`}
+                            title={`Lugar #${spotIdx + 1} Libre — Haz clic para inscribir alumno`}
                             onClick={() => {
                               if (canManageClasses) {
-                                const typedName = prompt(
-                                  `Inscribir alumno en Lugar #${spotIdx + 1}.\nIngresa el nombre del alumno:`,
-                                );
-                                if (typedName?.trim()) {
-                                  setClassesList((prev) =>
-                                    prev.map((item) => {
-                                      if (item.id === c.id) {
-                                        const copySpots = { ...item.enrolledSpots } || {};
-                                        copySpots[spotIdx] = typedName.trim();
-                                        return {
-                                          ...item,
-                                          enrolledSpots: copySpots,
-                                          booked: Object.keys(copySpots).length,
-                                        };
-                                      }
-                                      return item;
-                                    }),
-                                  );
-                                }
+                                setEnrollTargetSpotIndex(spotIdx);
+                                setEnrollModalClass(c);
                               } else {
-                                const typedName = prompt(
-                                  `Retener Lugar #${spotIdx + 1} durante 3 minutos (Spot Lock).\nIngresa tu nombre:`,
-                                );
-                                if (typedName?.trim()) {
-                                  setClassesList((prev) =>
-                                    prev.map((item) => {
-                                      if (item.id === c.id) {
-                                        const copyLocks = { ...item.lockedSpots } || {};
-                                        copyLocks[spotIdx] = {
-                                          studentName: typedName.trim(),
-                                          expiresAt: Date.now() + 3 * 60 * 1000,
-                                        };
-                                        return {
-                                          ...item,
-                                          lockedSpots: copyLocks,
-                                        };
-                                      }
-                                      return item;
-                                    }),
-                                  );
-                                }
+                                setPromptDialog({
+                                  isOpen: true,
+                                  title: `Retener Lugar #${spotIdx + 1}`,
+                                  description: `Retendrás el lugar durante 3 minutos (Spot Lock).\nIngresa tu nombre:`,
+                                  placeholder: "Tu nombre completo",
+                                  confirmText: "Retener Lugar",
+                                  onConfirm: (typedName) => {
+                                    if (typedName?.trim()) {
+                                      setClassesList((prev) =>
+                                        prev.map((item) => {
+                                          if (item.id === c.id) {
+                                            const copyLocks = { ...(item.lockedSpots || {}) };
+                                            copyLocks[spotIdx] = {
+                                              studentName: typedName.trim(),
+                                              expiresAt: Date.now() + 3 * 60 * 1000,
+                                            };
+                                            return {
+                                              ...item,
+                                              lockedSpots: copyLocks,
+                                            };
+                                          }
+                                          return item;
+                                        }),
+                                      );
+                                      toast.success(`Lugar #${spotIdx + 1} retenido durante 3 minutos.`);
+                                    }
+                                  },
+                                });
                               }
                             }}
                             className="h-12 sm:h-14 w-full rounded-xl border border-primary/40 bg-primary/5 hover:bg-primary/20 hover:border-primary hover:scale-105 font-bold text-xs text-primary transition-all duration-200 flex flex-col items-center justify-center shadow-2xs"
@@ -8460,6 +8664,128 @@ function ClasesTab({
                   </div>
                 </div>
               )}
+            {/* Row 3: Estructura & Rutina de la Clase (Estilo WODify / SugarWOD) */}
+            <div className="px-6 pb-6 w-full">
+              <div className="group rounded-3xl border border-border bg-card p-5 space-y-4 transition-all duration-300 hover:border-foreground/30 hover:shadow-lg shadow-xs">
+                <div className="flex items-center justify-between border-b border-border/40 pb-3 flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <Layers className="h-5 w-5 text-blue-500" />
+                    <div>
+                      <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+                        Estructura & Rutina de la Clase (WODify / SugarWOD)
+                      </h3>
+                      <p className="text-xs font-bold text-foreground">
+                        {c.name} — Plan de Sesión
+                      </p>
+                    </div>
+                  </div>
+                  {canManageClasses && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl text-xs font-bold gap-1.5 h-8"
+                      onClick={() => {
+                        setName(c.name);
+                        setStaffId(c.staffId);
+                        const parts = c.time.split("-");
+                        setStartTime(parts[0]?.trim() || "08:00");
+                        setEndTime(parts[1]?.trim() || "09:00");
+                        setCreditsCost((c.creditsCost || 1).toString());
+                        setSalaId(c.salaId || "");
+                        setDay(c.day);
+                        setCustomCapacity(c.capacity || 20);
+                        setRequiresSpotSelection(c.requiresSpotSelection ?? true);
+                        setRoutineBlocks(c.blocks || []);
+                        setEditingClassId(c.id);
+                        setShowAddForm(true);
+                      }}
+                    >
+                      <Edit2 className="h-3.5 w-3.5 text-blue-500" />
+                      {c.blocks && c.blocks.length > 0 ? "Editar Bloques" : "Añadir Bloques"}
+                    </Button>
+                  )}
+                </div>
+
+                {c.blocks && c.blocks.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                    {c.blocks.map((block, idx) => {
+                      const getBadgeColor = (type: ClassBlock["type"]) => {
+                        switch (type) {
+                          case "warmup":
+                            return {
+                              badge: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
+                              label: "Calentamiento",
+                            };
+                          case "strength":
+                            return {
+                              badge: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
+                              label: "Fuerza / Técnica",
+                            };
+                          case "main":
+                            return {
+                              badge: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20",
+                              label: "WOD / Principal",
+                            };
+                          case "cooldown":
+                            return {
+                              badge: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+                              label: "Vuelta a Calma",
+                            };
+                          default:
+                            return {
+                              badge: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20",
+                              label: "Personalizado",
+                            };
+                        }
+                      };
+
+                      const meta = getBadgeColor(block.type);
+
+                      return (
+                        <div
+                          key={block.id || idx}
+                          className="p-4 rounded-2xl border border-border/50 bg-secondary/20 hover:bg-secondary/40 transition-colors space-y-2 flex flex-col justify-between"
+                        >
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between gap-2 flex-wrap">
+                              <span className={cn("text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border", meta.badge)}>
+                                {meta.label}
+                              </span>
+                              {block.timeCap && (
+                                <span className="text-[10.5px] font-bold text-muted-foreground bg-background px-2 py-0.5 rounded-md border border-border/40 flex items-center gap-1">
+                                  <Clock className="h-3 w-3 text-muted-foreground" /> {block.timeCap}
+                                </span>
+                              )}
+                            </div>
+
+                            <div>
+                              <h4 className="font-extrabold text-sm text-foreground">
+                                {block.title}
+                              </h4>
+                              {block.subtitle && (
+                                <p className="text-xs font-semibold text-primary">
+                                  {block.subtitle}
+                                </p>
+                              )}
+                            </div>
+
+                            <p className="text-xs text-foreground/90 font-medium whitespace-pre-wrap leading-relaxed pt-1 bg-background/60 p-2.5 rounded-xl border border-border/40">
+                              {block.description}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="p-6 border border-dashed border-border/60 bg-secondary/10 rounded-2xl text-center space-y-2">
+                    <p className="text-xs text-muted-foreground italic">
+                      Esta clase no tiene bloques de rutina cargados todavía.
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </DialogContent>
@@ -8468,7 +8794,479 @@ function ClasesTab({
   };
 
   return (
-    <div className="space-y-6 animate-fade-in text-foreground">
+    <Fragment>
+      {/* Modal Shadcn UI de Inscripción de Alumno */}
+      <Dialog open={!!enrollModalClass} onOpenChange={(open) => !open && setEnrollModalClass(null)}>
+        <DialogContent className="max-w-md rounded-3xl p-6 border-border shadow-2xl bg-background">
+          <DialogHeader className="pb-3 border-b border-border/40">
+            <DialogTitle className="text-lg font-black text-foreground flex items-center gap-2">
+              <Plus className="h-5 w-5 text-primary" /> Inscribir Alumno
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Busca y selecciona un alumno activo para inscribirlo
+              {enrollTargetSpotIndex !== null ? (
+                <> en el <strong className="text-primary font-bold">Lugar #{enrollTargetSpotIndex + 1}</strong> de </>
+              ) : (
+                <> en </>
+              )}
+              <strong className="text-foreground font-bold">{enrollModalClass?.name}</strong>.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 pt-3">
+            {/* Buscador & Filtro por Plan (Shadcn/ui) */}
+            <div className="space-y-2.5">
+              <div className="relative">
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por nombre, email o teléfono..."
+                  value={enrollSearchTerm}
+                  onChange={(e) => setEnrollSearchTerm(e.target.value)}
+                  className="pl-9 rounded-xl text-xs bg-secondary/30 border-border/60"
+                />
+              </div>
+
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                  Filtrar por Plan:
+                </span>
+                <Select value={enrollPlanFilter} onValueChange={setEnrollPlanFilter}>
+                  <SelectTrigger className="h-8 text-xs rounded-xl bg-secondary/30 border-border/60 w-44">
+                    <SelectValue placeholder="Todos los planes" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="todos">Todos los planes</SelectItem>
+                    <SelectItem value="Pase Libre">Pase Libre</SelectItem>
+                    <SelectItem value="Performance">Performance</SelectItem>
+                    <SelectItem value="Musculación">Musculación</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Lista de Alumnos Activos */}
+            <div className="max-h-[280px] overflow-y-auto custom-scrollbar space-y-2 pr-1 pt-1">
+              {availableMembersToEnroll.map((m: any) => {
+                const isAlreadyEnrolled = Object.values(enrollModalClass?.enrolledSpots || {}).includes(m.name);
+                return (
+                  <div
+                    key={m.name}
+                    className="flex items-center justify-between p-2.5 rounded-2xl border border-border/50 bg-card hover:bg-secondary/30 transition-colors gap-2"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <img
+                        src={m.photo || getStudentPhoto(m.name)}
+                        alt={m.name}
+                        className="h-9 w-9 rounded-full object-cover shrink-0 border border-border/60 shadow-2xs"
+                      />
+                      <div className="leading-tight min-w-0">
+                        <span className="font-bold text-xs text-foreground block truncate">
+                          {m.name}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground font-semibold flex items-center gap-1.5 flex-wrap">
+                          <span className="bg-primary/10 text-primary px-1.5 py-0.2 rounded font-bold">
+                            {m.plan || "Pase Libre"}
+                          </span>
+                          <span>· {m.status || "Activo"}</span>
+                        </span>
+                      </div>
+                    </div>
+
+                    {isAlreadyEnrolled ? (
+                      <span className="text-[10px] font-bold text-muted-foreground bg-secondary px-2.5 py-1 rounded-xl border border-border/60 shrink-0">
+                        Ya Inscripto
+                      </span>
+                    ) : (
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="h-8 text-xs font-bold rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs shrink-0 px-3"
+                        onClick={() => {
+                          handleEnrollMemberInClass(m.name);
+                        }}
+                      >
+                        Inscribir
+                      </Button>
+                    )}
+                  </div>
+                );
+              })}
+
+              {availableMembersToEnroll.length === 0 && (
+                <p className="text-xs text-muted-foreground italic text-center py-8">
+                  No se encontraron alumnos activos coincidentes.
+                </p>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Toaster de Sonner */}
+      <Toaster position="top-right" richColors />
+
+      {/* Modal Shadcn UI de Confirmación Genérico */}
+      <AlertDialog open={!!confirmDialog?.isOpen} onOpenChange={(open) => !open && setConfirmDialog(null)}>
+        <AlertDialogContent className="max-w-md rounded-3xl p-6 border-border shadow-2xl bg-background">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-lg font-black text-foreground flex items-center gap-2">
+              {confirmDialog?.variant === "destructive" ? (
+                <ShieldAlert className="h-5 w-5 text-destructive" />
+              ) : (
+                <AlertCircle className="h-5 w-5 text-primary" />
+              )}
+              {confirmDialog?.title}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-xs text-muted-foreground leading-relaxed pt-1">
+              {confirmDialog?.description}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="pt-4 border-t border-border/40 gap-2 sm:gap-2">
+            <AlertDialogCancel
+              onClick={() => setConfirmDialog(null)}
+              className="rounded-xl text-xs font-semibold mt-0"
+            >
+              {confirmDialog?.cancelText || "Cancelar"}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (confirmDialog?.onConfirm) confirmDialog.onConfirm();
+                setConfirmDialog(null);
+              }}
+              className={cn(
+                "rounded-xl text-xs font-bold",
+                confirmDialog?.variant === "destructive"
+                  ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  : "bg-primary text-primary-foreground hover:bg-primary/90"
+              )}
+            >
+              {confirmDialog?.confirmText || "Confirmar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Modal Shadcn UI de Prompt Genérico */}
+      <Dialog
+        open={!!promptDialog?.isOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPromptDialog(null);
+            setPromptInputValue("");
+          }
+        }}
+      >
+        <DialogContent className="max-w-md rounded-3xl p-6 border-border shadow-2xl bg-background">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="text-lg font-black text-foreground flex items-center gap-2">
+              <Edit2 className="h-5 w-5 text-primary" />
+              {promptDialog?.title}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground pt-1">
+              {promptDialog?.description}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-2">
+            <Input
+              autoFocus
+              value={promptInputValue}
+              onChange={(e) => setPromptInputValue(e.target.value)}
+              placeholder={promptDialog?.placeholder || "Ingresa un valor..."}
+              className="rounded-xl text-xs bg-secondary/30 border-border/60"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  if (promptDialog?.onConfirm) promptDialog.onConfirm(promptInputValue);
+                  setPromptDialog(null);
+                  setPromptInputValue("");
+                }
+              }}
+            />
+          </div>
+          <DialogFooter className="pt-3 border-t border-border/40 gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="rounded-xl text-xs font-semibold"
+              onClick={() => {
+                setPromptDialog(null);
+                setPromptInputValue("");
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              className={cn(
+                "rounded-xl text-xs font-bold",
+                promptDialog?.variant === "destructive"
+                  ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  : "bg-primary text-primary-foreground hover:bg-primary/90"
+              )}
+              onClick={() => {
+                if (promptDialog?.onConfirm) promptDialog.onConfirm(promptInputValue);
+                setPromptDialog(null);
+                setPromptInputValue("");
+              }}
+            >
+              {promptDialog?.confirmText || "Aceptar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Shadcn UI de Selección de Modalidad al Cancelar Reserva (Admin) */}
+      <Dialog
+        open={!!cancelSpotDialog?.isOpen}
+        onOpenChange={(open) => !open && setCancelSpotDialog(null)}
+      >
+        <DialogContent className="max-w-md rounded-3xl p-6 border-border shadow-2xl bg-background">
+          <DialogHeader className="pb-3 border-b border-border/40">
+            <DialogTitle className="text-lg font-black text-foreground flex items-center gap-2">
+              <ShieldAlert className="h-5 w-5 text-amber-500" /> Cancelar Reserva
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Elige la modalidad para procesar la baja de <strong>{cancelSpotDialog?.displayNameForConfirm}</strong> (Lugar #{cancelSpotDialog ? cancelSpotDialog.index + 1 : 0}):
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 pt-3">
+            {/* Opción 1: Devolver crédito automáticamente */}
+            <div
+              onClick={() => setCancelOption("refund")}
+              className={cn(
+                "p-4 rounded-2xl border cursor-pointer transition-all duration-200 flex items-start gap-3",
+                cancelOption === "refund"
+                  ? "border-primary bg-primary/10 ring-2 ring-primary/20"
+                  : "border-border/60 bg-card hover:bg-secondary/40"
+              )}
+            >
+              <div
+                className={cn(
+                  "h-5 w-5 rounded-full border-2 shrink-0 mt-0.5 flex items-center justify-center transition-colors",
+                  cancelOption === "refund"
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-muted-foreground/40"
+                )}
+              >
+                {cancelOption === "refund" && <Check className="h-3 w-3 stroke-[3]" />}
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-foreground">1. Devolver créditos automáticamente</h4>
+                <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
+                  Reembolso inmediato e incondicional del crédito a la cuenta del alumno.
+                </p>
+              </div>
+            </div>
+
+            {/* Opción 2: Aplicar Re-reserva */}
+            <div
+              onClick={() => setCancelOption("rereserva")}
+              className={cn(
+                "p-4 rounded-2xl border cursor-pointer transition-all duration-200 flex items-start gap-3",
+                cancelOption === "rereserva"
+                  ? "border-primary bg-primary/10 ring-2 ring-primary/20"
+                  : "border-border/60 bg-card hover:bg-secondary/40"
+              )}
+            >
+              <div
+                className={cn(
+                  "h-5 w-5 rounded-full border-2 shrink-0 mt-0.5 flex items-center justify-center transition-colors",
+                  cancelOption === "rereserva"
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-muted-foreground/40"
+                )}
+              >
+                {cancelOption === "rereserva" && <Check className="h-3 w-3 stroke-[3]" />}
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-foreground">2. Aplicar modalidad "Re-reserva"</h4>
+                <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
+                  Libera el casillero en la sala. El reembolso se procesará únicamente si otro alumno vuelve a agendar la plaza.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="pt-4 border-t border-border/40 gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="rounded-xl text-xs font-semibold"
+              onClick={() => setCancelSpotDialog(null)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              className="rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90"
+              onClick={() => {
+                if (!cancelSpotDialog) return;
+                const { c, index, studentName, displayNameForConfirm } = cancelSpotDialog;
+
+                if (cancelOption === "rereserva") {
+                  setClassesList((prev) =>
+                    prev.map((item) => {
+                      if (item.id === c.id) {
+                        const copySpots = { ...item.enrolledSpots };
+                        delete copySpots[index];
+                        const copyReleased = { ...(item.releasedSpots || {}) };
+                        copyReleased[index] = {
+                          originalStudent: studentName,
+                          creditsCost: c.creditsCost || 1,
+                        };
+                        const copyAtt = { ...item.attendance };
+                        delete copyAtt[index];
+                        return {
+                          ...item,
+                          enrolledSpots: copySpots,
+                          releasedSpots: copyReleased,
+                          attendance: copyAtt,
+                          booked: Object.keys(copySpots).length,
+                        };
+                      }
+                      return item;
+                    }),
+                  );
+                  toast.info(
+                    `📢 Lugar #${index + 1} liberado bajo modalidad "Disponible para Re-reserva".`
+                  );
+                } else {
+                  setClassesList((prev) =>
+                    prev.map((item) => {
+                      if (item.id === c.id) {
+                        const copySpots = { ...item.enrolledSpots };
+                        delete copySpots[index];
+                        const copyAtt = { ...item.attendance };
+                        delete copyAtt[index];
+                        return {
+                          ...item,
+                          enrolledSpots: copySpots,
+                          attendance: copyAtt,
+                          booked: Object.keys(copySpots).length,
+                        };
+                      }
+                      return item;
+                    }),
+                  );
+                  toast.success(
+                    `📢 Reserva de ${displayNameForConfirm} cancelada. Crédito reembolsado automáticamente.`
+                  );
+                }
+                setCancelSpotDialog(null);
+              }}
+            >
+              Confirmar Baja
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Shadcn UI de Buscador y Asignación de Profesor Sustituto */}
+      <Dialog
+        open={!!substituteCoachModalClass}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSubstituteCoachModalClass(null);
+            setSubstituteSearchTerm("");
+          }
+        }}
+      >
+        <DialogContent className="max-w-md rounded-3xl p-6 border-border shadow-2xl bg-background">
+          <DialogHeader className="pb-3 border-b border-border/40">
+            <DialogTitle className="text-lg font-black text-foreground flex items-center gap-2">
+              <Users className="h-5 w-5 text-blue-500" /> Sustituir Profesor
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground leading-relaxed pt-1">
+              Busca y selecciona un profesor del Staff para sustituir la clase{" "}
+              <strong className="text-foreground font-bold">{substituteCoachModalClass?.name}</strong>.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 pt-3">
+            {/* Buscador de Profesores (Shadcn UI Input) */}
+            <div className="relative">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar profesor por nombre o especialidad..."
+                value={substituteSearchTerm}
+                onChange={(e) => setSubstituteSearchTerm(e.target.value)}
+                className="pl-9 rounded-xl text-xs bg-secondary/30 border-border/60"
+              />
+            </div>
+
+            {/* Lista de Profesores del Staff */}
+            <div className="max-h-[280px] overflow-y-auto custom-scrollbar space-y-2 pr-1 pt-1">
+              {availableCoachesToSubstitute.map((s: any) => {
+                const isCurrentCoach =
+                  substituteCoachModalClass?.staffId === s.id ||
+                  substituteCoachModalClass?.coach?.toLowerCase() === s.name?.toLowerCase();
+
+                return (
+                  <div
+                    key={s.id || s.name}
+                    className="flex items-center justify-between p-2.5 rounded-2xl border border-border/50 bg-card hover:bg-secondary/30 transition-colors gap-2"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <img
+                        src={s.photo || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&h=80&fit=crop&q=80"}
+                        alt={s.name}
+                        className="h-9 w-9 rounded-full object-cover shrink-0 border border-border/60 shadow-2xs"
+                      />
+                      <div className="leading-tight min-w-0">
+                        <span className="font-bold text-xs text-foreground block truncate">
+                          {s.name}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground font-semibold flex items-center gap-1.5 flex-wrap">
+                          <span className="bg-blue-500/10 text-blue-600 dark:text-blue-400 px-1.5 py-0.2 rounded font-bold">
+                            {s.specialty || "Entrenador"}
+                          </span>
+                        </span>
+                      </div>
+                    </div>
+
+                    {isCurrentCoach ? (
+                      <span className="text-[10px] font-bold text-muted-foreground bg-secondary px-2.5 py-1 rounded-xl border border-border/60 shrink-0">
+                        Coach Actual
+                      </span>
+                    ) : (
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="h-8 text-xs font-bold rounded-xl bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90 shadow-2xs shrink-0 px-3"
+                        onClick={() => {
+                          const coachName = s.name;
+                          setClassesList((prev) =>
+                            prev.map((item) =>
+                              item.id === substituteCoachModalClass.id
+                                ? { ...item, staffId: s.id, coach: coachName, seekingBackup: false }
+                                : item
+                            )
+                          );
+                          toast.success(`Profesor ${coachName} asignado como sustituto.`);
+                          setSubstituteCoachModalClass(null);
+                          setSubstituteSearchTerm("");
+                        }}
+                      >
+                        Asignar Sustituto
+                      </Button>
+                    )}
+                  </div>
+                );
+              })}
+
+              {availableCoachesToSubstitute.length === 0 && (
+                <p className="text-xs text-muted-foreground italic text-center py-8">
+                  No se encontraron profesores del Staff coincidentes.
+                </p>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
           <h2 className="text-xl font-bold tracking-tight">Calendario de Clases</h2>
@@ -9211,6 +10009,213 @@ function ClasesTab({
               </div>
             )}
 
+            {/* Sección: Rutina & Bloques de la Clase (Estilo WODify / SugarWOD) */}
+            <div className="p-4 border border-border/80 bg-card rounded-2xl space-y-3.5 shadow-2xs">
+              <div className="flex items-center justify-between border-b border-border/40 pb-2.5 flex-wrap gap-2">
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+                    <Layers className="h-4 w-4 text-blue-500" />
+                    <span>Rutina & Bloques de la Clase (Estilo WODify / SugarWOD)</span>
+                  </h3>
+                  <p className="text-[11px] text-muted-foreground leading-snug pt-0.5">
+                    Divide la sesión en bloques lógicos (Calentamiento, Fuerza, WOD, Vuelta a la Calma).
+                  </p>
+                </div>
+                <span className="text-[10px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/20">
+                  {routineBlocks.length} {routineBlocks.length === 1 ? "bloque" : "bloques"}
+                </span>
+              </div>
+
+              {/* Botones de Presets Rápidos */}
+              <div className="space-y-1.5">
+                <span className="text-[10.5px] font-bold text-muted-foreground uppercase tracking-wider block">
+                  Añadir Bloques Rápidos (Presets):
+                </span>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => addRoutineBlockPreset("warmup")}
+                    className="px-2.5 py-1 text-[11px] font-bold rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 transition"
+                  >
+                    + Calentamiento
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => addRoutineBlockPreset("strength")}
+                    className="px-2.5 py-1 text-[11px] font-bold rounded-xl bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/30 hover:bg-blue-500/20 transition"
+                  >
+                    + Fuerza / Técnica
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => addRoutineBlockPreset("main")}
+                    className="px-2.5 py-1 text-[11px] font-bold rounded-xl bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/30 hover:bg-rose-500/20 transition"
+                  >
+                    + WOD / Principal
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => addRoutineBlockPreset("cooldown")}
+                    className="px-2.5 py-1 text-[11px] font-bold rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 transition"
+                  >
+                    + Vuelta a Calma
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => addRoutineBlockPreset("custom")}
+                    className="px-2.5 py-1 text-[11px] font-bold rounded-xl bg-secondary text-foreground border border-border/80 hover:bg-secondary/80 transition"
+                  >
+                    + Personalizado
+                  </button>
+                </div>
+              </div>
+
+              {/* Lista de Bloques Creados */}
+              <div className="space-y-3 pt-1">
+                {routineBlocks.map((block, idx) => {
+                  const getBadgeColor = (type: ClassBlock["type"]) => {
+                    switch (type) {
+                      case "warmup":
+                        return "bg-amber-500/10 text-amber-600 border-amber-500/30";
+                      case "strength":
+                        return "bg-blue-500/10 text-blue-600 border-blue-500/30";
+                      case "main":
+                        return "bg-rose-500/10 text-rose-600 border-rose-500/30";
+                      case "cooldown":
+                        return "bg-emerald-500/10 text-emerald-600 border-emerald-500/30";
+                      default:
+                        return "bg-purple-500/10 text-purple-600 border-purple-500/30";
+                    }
+                  };
+
+                  return (
+                    <div
+                      key={block.id}
+                      className="p-3 bg-background border border-border/70 rounded-2xl space-y-2.5 shadow-2xs relative group"
+                    >
+                      {/* Header del Bloque: Categoría y Controles */}
+                      <div className="flex items-center justify-between gap-2 border-b border-border/40 pb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-extrabold text-muted-foreground">
+                            #{idx + 1}
+                          </span>
+                          <Select
+                            value={block.type}
+                            onValueChange={(val) =>
+                              updateRoutineBlock(idx, "type", val as ClassBlock["type"])
+                            }
+                          >
+                            <SelectTrigger
+                              className={cn(
+                                "h-7 text-[11px] font-bold rounded-lg px-2 border w-44",
+                                getBadgeColor(block.type)
+                              )}
+                            >
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl">
+                              <SelectItem value="warmup">Calentamiento</SelectItem>
+                              <SelectItem value="strength">Fuerza / Técnica</SelectItem>
+                              <SelectItem value="main">WOD / Principal</SelectItem>
+                              <SelectItem value="cooldown">Vuelta a Calma</SelectItem>
+                              <SelectItem value="custom">Personalizado</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Botones de Reordenar y Eliminar */}
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            disabled={idx === 0}
+                            onClick={() => moveRoutineBlock(idx, "up")}
+                            className="h-6 w-6 rounded-md bg-secondary text-foreground text-xs font-bold disabled:opacity-30 hover:bg-secondary/80 flex items-center justify-center"
+                            title="Mover arriba"
+                          >
+                            ▲
+                          </button>
+                          <button
+                            type="button"
+                            disabled={idx === routineBlocks.length - 1}
+                            onClick={() => moveRoutineBlock(idx, "down")}
+                            className="h-6 w-6 rounded-md bg-secondary text-foreground text-xs font-bold disabled:opacity-30 hover:bg-secondary/80 flex items-center justify-center"
+                            title="Mover abajo"
+                          >
+                            ▼
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeRoutineBlock(idx)}
+                            className="h-6 w-6 rounded-md bg-destructive/10 text-destructive text-xs font-bold hover:bg-destructive/20 flex items-center justify-center ml-1"
+                            title="Eliminar bloque"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Inputs: Título, Subtítulo y Time Cap */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-semibold text-muted-foreground">
+                            Título del Bloque
+                          </label>
+                          <Input
+                            value={block.title}
+                            onChange={(e) => updateRoutineBlock(idx, "title", e.target.value)}
+                            placeholder="Ej: Calentamiento Articular"
+                            className="h-8 text-xs rounded-xl bg-secondary/30 border-border/60"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-semibold text-muted-foreground">
+                            Subtítulo / Modalidad
+                          </label>
+                          <Input
+                            value={block.subtitle || ""}
+                            onChange={(e) => updateRoutineBlock(idx, "subtitle", e.target.value)}
+                            placeholder="Ej: AMRAP 12 min"
+                            className="h-8 text-xs rounded-xl bg-secondary/30 border-border/60"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-semibold text-muted-foreground">
+                            Time Cap (Tiempo)
+                          </label>
+                          <Input
+                            value={block.timeCap || ""}
+                            onChange={(e) => updateRoutineBlock(idx, "timeCap", e.target.value)}
+                            placeholder="Ej: 12 min"
+                            className="h-8 text-xs rounded-xl bg-secondary/30 border-border/60"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Textarea: Descripción y Ejercicios */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-semibold text-muted-foreground">
+                          Ejercicios & Instrucciones Detalladas
+                        </label>
+                        <textarea
+                          rows={3}
+                          value={block.description}
+                          onChange={(e) => updateRoutineBlock(idx, "description", e.target.value)}
+                          placeholder="Ej: 3 Rondas de:\n- 10 Air Squats\n- 15 Push-ups"
+                          className="w-full rounded-xl bg-secondary/30 border border-border/60 p-2.5 text-xs text-foreground font-medium focus-visible:outline-none custom-scrollbar"
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {routineBlocks.length === 0 && (
+                  <p className="text-xs text-muted-foreground italic text-center py-6 border border-dashed border-border/60 rounded-2xl bg-secondary/10">
+                    No has añadido bloques a esta clase todavía. Usa los botones de arriba para estructurar la rutina.
+                  </p>
+                )}
+              </div>
+            </div>
+
             <DialogFooter className="pt-3 gap-2 sm:gap-0">
               <Button
                 type="button"
@@ -9478,8 +10483,7 @@ function ClasesTab({
       )}
 
       {renderClassDetailSidebar()}
-
-    </div>
+    </Fragment>
   );
 }
 
