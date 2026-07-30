@@ -656,15 +656,15 @@ function Hero({
         className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-90"
       >
         <div
-          className="absolute -right-[200px] -top-[200px] h-[400px] w-[400px] rounded-full bg-[#ff7b7c]/75 blur-[70px]"
+          className="absolute -right-[50px] -top-[50px] h-[140px] w-[140px] rounded-full bg-[#ff7b7c]/75 blur-[30px] md:-right-[200px] md:-top-[200px] md:h-[400px] md:w-[400px] md:blur-[70px]"
           style={{ animation: "orb1 25s infinite ease-in-out" }}
         />
         <div
-          className="absolute -left-[250px] top-[10%] h-[500px] w-[500px] rounded-full bg-[#aafc75]/75 blur-[70px]"
+          className="absolute -left-[60px] top-[10%] h-[160px] w-[160px] rounded-full bg-[#aafc75]/75 blur-[30px] md:-left-[250px] md:h-[500px] md:w-[500px] md:blur-[70px]"
           style={{ animation: "orb2 28s infinite ease-in-out 1s" }}
         />
         <div
-          className="absolute -bottom-[200px] -right-[150px] h-[400px] w-[400px] rounded-full bg-[#60f2fc]/75 blur-[80px]"
+          className="absolute -bottom-[50px] -right-[40px] h-[140px] w-[140px] rounded-full bg-[#60f2fc]/75 blur-[30px] md:-bottom-[200px] md:-right-[150px] md:h-[400px] md:w-[400px] md:blur-[80px]"
           style={{ animation: "orb3 30s infinite ease-in-out 3s" }}
         />
         {/* Smooth fade to background color at the bottom edge */}
@@ -674,8 +674,8 @@ function Hero({
         <h1 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-[42px] lg:text-[46px]">
           Encuentra donde entrenar como te lo imaginas
         </h1>
-        <p className="mt-4 max-w-2xl text-balance text-[14px] text-muted-foreground/85 sm:text-[15px] md:text-[16px] lg:whitespace-nowrap">
-          Busca, compara y reserva en los mejores gimnasios, fitness centers y studios con IA.
+        <p className="mt-4 w-full max-w-5xl mx-auto text-center text-[14px] text-muted-foreground/85 dark:text-slate-200 sm:text-[15px] md:text-[16px] lg:whitespace-nowrap">
+          Busca, compara, reserva y gestiona tu entrenamiento en los mejores gimnasios, fitness centers y studios con IA.
         </p>
 
         <PromptBox onSearch={handleSearch} isSearching={isSearching} />

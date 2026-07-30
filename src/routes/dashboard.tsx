@@ -47,7 +47,9 @@ import {
   Scan,
   ShoppingCart,
   Package,
+  PackagePlus,
   PlusCircle,
+  Upload,
   QrCode,
   Printer,
   Filter,
@@ -57,6 +59,7 @@ import {
   UserX,
   Layers,
 } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -1467,17 +1470,83 @@ function GymDashboard() {
       studentsAttended: 210,
       totalAmount: 159000,
       status: "paid",
+      paidAt: "15/06/2026",
     },
   ]);
 
-  // Inventory / Stock State
   const [inventoryItems, setInventoryItems] = useState([
-    { id: "inv-1", name: "Bebida Isotónica Gatorade 500ml", category: "Bebidas", price: 2500, cost: 1200, stock: 48, minStock: 15, unit: "unidades" },
-    { id: "inv-2", name: "Proteína Whey Protein Isolate 1kg", category: "Suplementos", price: 38000, cost: 24000, stock: 8, minStock: 10, unit: "potes" },
-    { id: "inv-3", name: "Barra Proteica ENA Choco Crunch", category: "Snacks", price: 3200, cost: 1600, stock: 65, minStock: 20, unit: "unidades" },
-    { id: "inv-4", name: "Toalla Secado Rápido Shakerfy", category: "Merchandising", price: 14500, cost: 7000, stock: 14, minStock: 5, unit: "unidades" },
-    { id: "inv-5", name: "Botella Shakerfy Pro 750ml", category: "Merchandising", price: 9800, cost: 4500, stock: 22, minStock: 8, unit: "unidades" },
-    { id: "inv-6", name: "Cintas de Suspensión Pro-Gym", category: "Equipamiento", price: 45000, cost: 28000, stock: 4, minStock: 3, unit: "unidades" },
+    {
+      id: "inv-1",
+      name: "Bebida Isotónica Gatorade 500ml",
+      category: "Bebidas",
+      price: 2500,
+      cost: 1200,
+      stock: 48,
+      minStock: 15,
+      unit: "unidades",
+      barcode: "7791234567890",
+      image: "https://images.unsplash.com/photo-1622543925917-763c34d1a86e?w=150&auto=format&fit=crop&q=80",
+    },
+    {
+      id: "inv-2",
+      name: "Proteína Whey Protein Isolate 1kg",
+      category: "Suplementos",
+      price: 38000,
+      cost: 24000,
+      stock: 8,
+      minStock: 10,
+      unit: "potes",
+      barcode: "7798765432109",
+      image: "https://images.unsplash.com/photo-1579722821273-0f6c7d44362f?w=150&auto=format&fit=crop&q=80",
+    },
+    {
+      id: "inv-3",
+      name: "Barra Proteica ENA Choco Crunch",
+      category: "Snacks",
+      price: 3200,
+      cost: 1600,
+      stock: 65,
+      minStock: 20,
+      unit: "unidades",
+      barcode: "7795555444333",
+      image: "https://images.unsplash.com/photo-1622484210800-88554284814e?w=150&auto=format&fit=crop&q=80",
+    },
+    {
+      id: "inv-4",
+      name: "Toalla Secado Rápido Shakerfy",
+      category: "Merchandising",
+      price: 14500,
+      cost: 7000,
+      stock: 14,
+      minStock: 5,
+      unit: "unidades",
+      barcode: "7790001000200",
+      image: "https://images.unsplash.com/photo-1616627547584-bf28cee262db?w=150&auto=format&fit=crop&q=80",
+    },
+    {
+      id: "inv-5",
+      name: "Botella Shakerfy Pro 750ml",
+      category: "Merchandising",
+      price: 9800,
+      cost: 4500,
+      stock: 22,
+      minStock: 8,
+      unit: "unidades",
+      barcode: "7799999888777",
+      image: "https://images.unsplash.com/photo-1544816155-12df9643f363?w=150&auto=format&fit=crop&q=80",
+    },
+    {
+      id: "inv-6",
+      name: "Cintas de Suspensión Pro-Gym",
+      category: "Equipamiento",
+      price: 45000,
+      cost: 28000,
+      stock: 4,
+      minStock: 3,
+      unit: "unidades",
+      barcode: "7793333222111",
+      image: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=150&auto=format&fit=crop&q=80",
+    },
   ]);
 
   const pendingSubstitutionsCount = useMemo(() => {
@@ -1539,20 +1608,23 @@ function GymDashboard() {
         </nav>
 
         {/* User Profile Info in Sidebar */}
-        <div className="pt-4 border-t border-border/60 mt-auto mb-2 flex items-center gap-3 px-1">
-          <img
-            src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-            alt="Admin"
-            className="h-9 w-9 rounded-full border border-border/60 object-cover shrink-0"
-          />
-          <div className="flex flex-col min-w-0 flex-1">
-            <span className="text-xs font-bold text-foreground truncate">
-              {currentUser.name || "Alan Kraft"}
-            </span>
-            <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider truncate">
-              Administrador
-            </span>
+        <div className="pt-4 border-t border-border/60 mt-auto mb-2 flex items-center justify-between gap-2 px-1">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <img
+              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+              alt="Admin"
+              className="h-9 w-9 rounded-full border border-border/60 object-cover shrink-0"
+            />
+            <div className="flex flex-col min-w-0 flex-1">
+              <span className="text-xs font-bold text-foreground truncate">
+                {currentUser.name || "Alan Kraft"}
+              </span>
+              <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider truncate">
+                Administrador
+              </span>
+            </div>
           </div>
+          <ThemeToggle variant="outline" size="icon" />
         </div>
 
         <button
@@ -1597,7 +1669,13 @@ function GymDashboard() {
 
 
         {activeTab === "asistencia" && (
-          <AsistenciasTab selectedBranchId={selectedBranchId} blackoutDays={blackoutDays} />
+          <AsistenciasTab
+            selectedBranchId={selectedBranchId}
+            blackoutDays={blackoutDays}
+            membersList={membersList}
+            classesList={classesList}
+            setClassesList={setClassesList}
+          />
         )}
         {activeTab === "miembros" && (
           <MiembrosTab
@@ -1663,6 +1741,7 @@ function GymDashboard() {
             membershipsList={membershipsList}
             staffList={staffList}
             salasList={salasList}
+            cashTransactions={cashTransactions}
           />
         )}
         {activeTab === "inventario" && (
@@ -1766,9 +1845,13 @@ function CajaTab({
   const [posMode, setPosMode] = useState<"custom" | "store">("custom");
   const [selectedProdId, setSelectedProdId] = useState("");
   const [selectedMemberId, setSelectedMemberId] = useState("");
+  const [prodQuantity, setProdQuantity] = useState<number>(1);
 
   const [txType, setTxType] = useState<"income" | "expense">("income");
-  const [txChannel, setTxChannel] = useState<"cash" | "transfer" | "app">("cash");
+  const [txChannel, setTxChannel] = useState<"cash" | "transfer" | "app" | "split">("cash");
+  const [splitCashAmount, setSplitCashAmount] = useState("");
+  const [splitDigitalAmount, setSplitDigitalAmount] = useState("");
+  const [splitDigitalChannel, setSplitDigitalChannel] = useState<"app" | "transfer">("app");
   const [txDesc, setTxDesc] = useState("");
   const [txAmount, setTxAmount] = useState("");
 
@@ -1829,13 +1912,45 @@ function CajaTab({
     return true;
   });
 
-  const handleProductSelect = (prodId: string) => {
+  const handleProductSelect = (prodId: string, qty: number = prodQuantity) => {
     setSelectedProdId(prodId);
     const prod = inventoryItems.find((i) => i.id === prodId);
     if (prod) {
-      setTxDesc(`Venta Tienda: ${prod.name}`);
-      setTxAmount(prod.price.toString());
+      const validQty = Math.max(1, Math.min(qty, prod.stock > 0 ? prod.stock : 1));
+      setProdQuantity(validQty);
+      setTxDesc(`Venta Tienda: ${prod.name}${validQty > 1 ? ` x${validQty}` : ""}`);
+      setTxAmount((prod.price * validQty).toString());
+    } else {
+      setTxDesc("");
+      setTxAmount("");
     }
+  };
+
+  const exportTransactionsCSV = () => {
+    if (filteredTx.length === 0) {
+      toast.warning("No hay transacciones para exportar.");
+      return;
+    }
+    const headers = ["ID", "Fecha", "Tipo", "Canal", "Concepto", "Monto", "Registrado Por"];
+    const rows = filteredTx.map((t) => [
+      t.id,
+      t.date,
+      t.type === "income" ? "Ingreso" : "Egreso",
+      t.channel,
+      `"${t.description.replace(/"/g, '""')}"`,
+      t.amount,
+      `"${t.registeredBy.replace(/"/g, '""')}"`,
+    ]);
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `movimientos_caja_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -1875,30 +1990,39 @@ function CajaTab({
 
       {/* Control Bar & POS Action Form */}
       <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-4 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-border/40">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border/40">
           <div>
             <h3 className="font-bold text-sm text-foreground">Registro de Movimientos de Caja & POS</h3>
             <p className="text-xs text-muted-foreground mt-0.5">
               Registra cobros de pases diarios en mostrador, ventas de suplementos o gastos operativos.
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 shrink-0">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={exportTransactionsCSV}
+              className="rounded-xl font-bold text-xs gap-1.5 border-border text-foreground hover:bg-secondary"
+            >
+              <Download className="h-4 w-4" /> Exportar CSV
+            </Button>
             <Button
               type="button"
               size="sm"
               variant="outline"
               onClick={() => setShowArqueo(true)}
-              className="rounded-xl font-bold text-xs gap-1.5 shrink-0 border-primary/30 text-primary hover:bg-primary/10"
+              className="rounded-xl font-bold text-xs gap-1.5 border-primary/30 text-primary hover:bg-primary/10"
             >
-              <Receipt className="h-4 w-4" /> Arqueo / Cierre de Caja
+              <Receipt className="h-4 w-4" /> Arqueo & Cierre
             </Button>
             <Button
               type="button"
               size="sm"
               onClick={() => setShowAddTx(!showAddTx)}
-              className="rounded-xl font-bold text-xs gap-1.5 shrink-0"
+              className="rounded-xl font-bold text-xs gap-1.5 shadow-xs"
             >
-              <PlusCircle className="h-4 w-4" /> {showAddTx ? "Cerrar POS" : "Nuevo Movimiento POS"}
+              <PlusCircle className="h-4 w-4" /> {showAddTx ? "Cerrar POS" : "Nuevo Movimiento"}
             </Button>
           </div>
         </div>
@@ -1907,44 +2031,73 @@ function CajaTab({
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              if (!txDesc.trim() || !txAmount || parseFloat(txAmount) <= 0) {
-                alert("Ingresa un monto válido y una descripción.");
-                return;
+              const member = membersList.find((m) => m.id === selectedMemberId);
+              const baseDesc = txDesc.trim() || (posMode === "store" ? "Venta Tienda" : "Movimiento POS");
+              const finalDesc = member ? `${baseDesc} (Alumno: ${member.name})` : baseDesc;
+
+              if (txChannel === "split") {
+                const cashVal = parseFloat(splitCashAmount);
+                const digVal = parseFloat(splitDigitalAmount);
+                if (isNaN(cashVal) || cashVal <= 0 || isNaN(digVal) || digVal <= 0) {
+                  toast.error("Ingresa montos válidos para ambas partes del pago mixto (Efectivo y Digital).");
+                  return;
+                }
+                const tx1 = {
+                  id: `tx-${Date.now()}-1`,
+                  date: new Date().toISOString().split("T")[0],
+                  type: txType,
+                  channel: "cash" as const,
+                  description: `${finalDesc} [Pago Mixto - Efectivo]`,
+                  amount: cashVal,
+                  registeredBy: currentUser.name || "Recepción",
+                };
+                const tx2 = {
+                  id: `tx-${Date.now()}-2`,
+                  date: new Date().toISOString().split("T")[0],
+                  type: txType,
+                  channel: splitDigitalChannel,
+                  description: `${finalDesc} [Pago Mixto - ${splitDigitalChannel === "app" ? "MercadoPago" : "Transferencia"}]`,
+                  amount: digVal,
+                  registeredBy: currentUser.name || "Recepción",
+                };
+                setCashTransactions((prev) => [tx1, tx2, ...prev]);
+              } else {
+                if (!txAmount || parseFloat(txAmount) <= 0) {
+                  toast.error("Ingresa un monto válido y una descripción.");
+                  return;
+                }
+                const newTx = {
+                  id: `tx-${Date.now()}`,
+                  date: new Date().toISOString().split("T")[0],
+                  type: txType,
+                  channel: txChannel,
+                  description: finalDesc,
+                  amount: parseFloat(txAmount),
+                  registeredBy: currentUser.name || "Recepción",
+                };
+                setCashTransactions((prev) => [newTx, ...prev]);
               }
 
-              const member = membersList.find((m) => m.id === selectedMemberId);
-              const finalDesc = member
-                ? `${txDesc.trim()} (Alumno: ${member.name})`
-                : txDesc.trim();
-
-              const newTx = {
-                id: `tx-${Date.now()}`,
-                date: new Date().toISOString().split("T")[0],
-                type: txType,
-                channel: txChannel,
-                description: finalDesc,
-                amount: parseFloat(txAmount),
-                registeredBy: currentUser.name || "Recepción",
-              };
-
-              // If selling inventory product, decrement stock by 1
+              // If selling inventory product, decrement stock by prodQuantity
               if (posMode === "store" && selectedProdId) {
                 setInventoryItems((prev) =>
                   prev.map((item) =>
                     item.id === selectedProdId
-                      ? { ...item, stock: Math.max(0, item.stock - 1) }
+                      ? { ...item, stock: Math.max(0, item.stock - prodQuantity) }
                       : item,
                   ),
                 );
               }
 
-              setCashTransactions((prev) => [newTx, ...prev]);
               setTxDesc("");
               setTxAmount("");
               setSelectedProdId("");
               setSelectedMemberId("");
+              setProdQuantity(1);
+              setSplitCashAmount("");
+              setSplitDigitalAmount("");
               setShowAddTx(false);
-              alert("✓ Movimiento POS registrado y stock actualizado con éxito.");
+              toast.success("✓ Movimiento POS registrado y stock actualizado con éxito.");
             }}
             className="p-4 bg-secondary/20 border border-border/60 rounded-2xl space-y-4 animate-fade-in"
           >
@@ -1960,6 +2113,7 @@ function CajaTab({
                   setSelectedProdId("");
                   setTxDesc("");
                   setTxAmount("");
+                  setProdQuantity(1);
                 }}
                 className={`text-xs font-bold px-3 py-1 rounded-xl transition ${
                   posMode === "custom"
@@ -1987,23 +2141,44 @@ function CajaTab({
 
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
               {posMode === "store" ? (
-                <div>
-                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
-                    Seleccionar Producto del Inventario:
-                  </label>
-                  <select
-                    value={selectedProdId}
-                    onChange={(e) => handleProductSelect(e.target.value)}
-                    className="w-full h-9 rounded-xl border border-border bg-background px-2.5 text-xs font-bold text-foreground focus-visible:outline-none"
-                  >
-                    <option value="">-- Seleccionar Artículo --</option>
-                    {inventoryItems.map((prod) => (
-                      <option key={prod.id} value={prod.id} disabled={prod.stock <= 0}>
-                        {prod.name} (${prod.price.toLocaleString()}) - Stock: {prod.stock} {prod.unit}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <>
+                  <div className="sm:col-span-2">
+                    <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                      Seleccionar Producto del Inventario:
+                    </label>
+                    <select
+                      value={selectedProdId}
+                      onChange={(e) => handleProductSelect(e.target.value, prodQuantity)}
+                      className="w-full h-9 rounded-xl border border-border bg-background px-2.5 text-xs font-bold text-foreground focus-visible:outline-none"
+                    >
+                      <option value="">-- Seleccionar Artículo --</option>
+                      {inventoryItems.map((prod) => (
+                        <option key={prod.id} value={prod.id} disabled={prod.stock <= 0}>
+                          {prod.name} (${prod.price.toLocaleString()}) - Stock: {prod.stock} {prod.unit}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                      Cantidad:
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      value={prodQuantity}
+                      onChange={(e) => {
+                        const qty = parseInt(e.target.value) || 1;
+                        if (selectedProdId) {
+                          handleProductSelect(selectedProdId, qty);
+                        } else {
+                          setProdQuantity(qty);
+                        }
+                      }}
+                      className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                    />
+                  </div>
+                </>
               ) : (
                 <div>
                   <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
@@ -2032,21 +2207,24 @@ function CajaTab({
                   <option value="cash">💵 Efectivo (Caja Chica)</option>
                   <option value="app">📱 MercadoPago / QR</option>
                   <option value="transfer">🏦 Transferencia Bancaria</option>
+                  <option value="split">⚡ Pago Mixto (Efectivo + Digital)</option>
                 </select>
               </div>
 
-              <div>
-                <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
-                  Monto ($):
-                </label>
-                <input
-                  type="number"
-                  placeholder="Ej: 3500"
-                  value={txAmount}
-                  onChange={(e) => setTxAmount(e.target.value)}
-                  className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
-                />
-              </div>
+              {txChannel !== "split" && (
+                <div>
+                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                    Monto Total ($):
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="Ej: 3500"
+                    value={txAmount}
+                    onChange={(e) => setTxAmount(e.target.value)}
+                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                  />
+                </div>
+              )}
 
               <div>
                 <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
@@ -2066,6 +2244,49 @@ function CajaTab({
                 </select>
               </div>
             </div>
+
+            {/* Split Payment Fields */}
+            {txChannel === "split" && (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 bg-secondary/40 border border-border/70 rounded-xl">
+                <div>
+                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                    Monto en Efectivo ($):
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="Ej: 2000"
+                    value={splitCashAmount}
+                    onChange={(e) => setSplitCashAmount(e.target.value)}
+                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                    Monto Digital ($):
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="Ej: 3000"
+                    value={splitDigitalAmount}
+                    onChange={(e) => setSplitDigitalAmount(e.target.value)}
+                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                    Canal Pago Digital:
+                  </label>
+                  <select
+                    value={splitDigitalChannel}
+                    onChange={(e) => setSplitDigitalChannel(e.target.value as any)}
+                    className="w-full h-9 rounded-xl border border-border bg-background px-2.5 text-xs font-bold text-foreground focus-visible:outline-none"
+                  >
+                    <option value="app">📱 MercadoPago / QR</option>
+                    <option value="transfer">🏦 Transferencia Bancaria</option>
+                  </select>
+                </div>
+              </div>
+            )}
 
             <div className="space-y-1">
               <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
@@ -2088,122 +2309,132 @@ function CajaTab({
           </form>
         )}
 
-        {/* Transactions Table with Advanced Filters */}
-        <div className="space-y-3">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
-              Historial de Transacciones ({filteredTx.length})
-            </span>
+        {/* Transactions Table with Structured Filters */}
+        <div className="space-y-4 pt-2">
+          {/* Row 1: Section Header & Search/Channel Controls */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+                Historial de Transacciones
+              </span>
+              <span className="px-2 py-0.5 rounded-full bg-secondary text-[10px] font-extrabold text-foreground border border-border/60">
+                {filteredTx.length}
+              </span>
+            </div>
 
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2.5 w-full sm:w-auto">
               {/* Search Bar */}
-              <div className="relative">
+              <div className="relative flex-1 sm:w-60">
                 <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="Buscar alumno o concepto..."
+                  placeholder="Buscar por concepto o usuario..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-8.5 w-44 sm:w-56 pl-8 pr-3 rounded-xl border border-border bg-background text-xs font-bold text-foreground focus-visible:outline-none placeholder:font-normal placeholder:text-muted-foreground"
+                  className="h-9 w-full pl-8 pr-3 rounded-xl border border-border bg-background text-xs font-bold text-foreground focus-visible:outline-none placeholder:font-normal placeholder:text-muted-foreground"
                 />
               </div>
 
-              {/* Channel Selector */}
-              <select
-                value={channelFilter}
-                onChange={(e) => setChannelFilter(e.target.value as any)}
-                className="h-8.5 rounded-xl border border-border bg-background px-2 text-xs font-bold text-foreground focus-visible:outline-none"
+              {/* Channel Selector (Shadcn/ui Select) */}
+              <Select value={channelFilter} onValueChange={(val) => setChannelFilter(val as any)}>
+                <SelectTrigger className="w-[190px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
+                  <SelectValue placeholder="Canal de Pago" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
+                  <SelectItem value="all">💳 Todos los Canales</SelectItem>
+                  <SelectItem value="cash">💵 Efectivo</SelectItem>
+                  <SelectItem value="app">📱 MercadoPago / QR</SelectItem>
+                  <SelectItem value="transfer">🏦 Transferencia</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Row 2: Secondary Filter Bar (Types & Date Ranges) */}
+          <div className="flex flex-wrap items-center justify-between gap-3 p-2 bg-secondary/20 border border-border/50 rounded-2xl">
+            {/* Type Filter Tabs */}
+            <div className="flex items-center gap-1 bg-background p-1 rounded-xl border border-border/60 shadow-xs">
+              <button
+                type="button"
+                onClick={() => setFilterType("all")}
+                className={`text-[11px] font-bold px-3 py-1 rounded-lg transition ${
+                  filterType === "all"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
               >
-                <option value="all">💳 Todos los Canales</option>
-                <option value="cash">💵 Efectivo</option>
-                <option value="app">📱 MercadoPago / QR</option>
-                <option value="transfer">🏦 Transferencia</option>
-              </select>
+                Todos
+              </button>
+              <button
+                type="button"
+                onClick={() => setFilterType("income")}
+                className={`text-[11px] font-bold px-3 py-1 rounded-lg transition ${
+                  filterType === "income"
+                    ? "bg-emerald-600 text-white shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Ingresos
+              </button>
+              <button
+                type="button"
+                onClick={() => setFilterType("expense")}
+                className={`text-[11px] font-bold px-3 py-1 rounded-lg transition ${
+                  filterType === "expense"
+                    ? "bg-rose-600 text-white shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Egresos
+              </button>
+            </div>
 
-              {/* Date Filter Pills */}
-              <div className="flex items-center gap-1 bg-secondary/30 p-1 rounded-xl border border-border/60">
-                <button
-                  type="button"
-                  onClick={() => setDateFilter("all")}
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded-lg transition ${
-                    dateFilter === "all"
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Todo
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDateFilter("today")}
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded-lg transition ${
-                    dateFilter === "today"
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Hoy
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDateFilter("week")}
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded-lg transition ${
-                    dateFilter === "week"
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  7 Días
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDateFilter("month")}
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded-lg transition ${
-                    dateFilter === "month"
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Este Mes
-                </button>
-              </div>
-
-              {/* Type Filter Buttons */}
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => setFilterType("all")}
-                  className={`text-[10px] font-bold px-2 py-1 rounded-lg border transition ${
-                    filterType === "all"
-                      ? "bg-foreground text-background border-foreground"
-                      : "bg-background border-border text-muted-foreground"
-                  }`}
-                >
-                  Todos
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFilterType("income")}
-                  className={`text-[10px] font-bold px-2 py-1 rounded-lg border transition ${
-                    filterType === "income"
-                      ? "bg-emerald-500 text-white border-emerald-500"
-                      : "bg-background border-border text-muted-foreground"
-                  }`}
-                >
-                  Ingresos
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFilterType("expense")}
-                  className={`text-[10px] font-bold px-2 py-1 rounded-lg border transition ${
-                    filterType === "expense"
-                      ? "bg-rose-500 text-white border-rose-500"
-                      : "bg-background border-border text-muted-foreground"
-                  }`}
-                >
-                  Egresos
-                </button>
-              </div>
+            {/* Date Filter Pills */}
+            <div className="flex items-center gap-1 bg-background p-1 rounded-xl border border-border/60 shadow-xs">
+              <button
+                type="button"
+                onClick={() => setDateFilter("all")}
+                className={`text-[11px] font-bold px-2.5 py-1 rounded-lg transition ${
+                  dateFilter === "all"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Todo
+              </button>
+              <button
+                type="button"
+                onClick={() => setDateFilter("today")}
+                className={`text-[11px] font-bold px-2.5 py-1 rounded-lg transition ${
+                  dateFilter === "today"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Hoy
+              </button>
+              <button
+                type="button"
+                onClick={() => setDateFilter("week")}
+                className={`text-[11px] font-bold px-2.5 py-1 rounded-lg transition ${
+                  dateFilter === "week"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                7 Días
+              </button>
+              <button
+                type="button"
+                onClick={() => setDateFilter("month")}
+                className={`text-[11px] font-bold px-2.5 py-1 rounded-lg transition ${
+                  dateFilter === "month"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Este Mes
+              </button>
             </div>
           </div>
 
@@ -2249,23 +2480,24 @@ function CajaTab({
       {/* Arqueo / Cierre de Caja Modal */}
       {showArqueo && (
         <Dialog open={showArqueo} onOpenChange={setShowArqueo}>
-          <DialogContent className="max-w-md border border-border bg-card">
+          <DialogContent className="sm:max-w-lg rounded-3xl border border-border bg-card p-6 shadow-2xl space-y-4">
             <DialogHeader>
               <DialogTitle className="text-base font-bold flex items-center gap-2">
                 <Receipt className="h-5 w-5 text-primary" /> Arqueo & Cierre de Caja del Turno
               </DialogTitle>
             </DialogHeader>
-            <div className="space-y-4 pt-2 text-xs">
-              <div className="p-3 bg-secondary/30 border border-border/60 rounded-xl space-y-1.5">
-                <div className="flex justify-between">
+
+            <div className="space-y-4 text-xs">
+              <div className="p-4 bg-secondary/30 border border-border/60 rounded-2xl space-y-2">
+                <div className="flex justify-between items-center">
                   <span className="text-muted-foreground font-semibold">Efectivo Ingresado:</span>
-                  <span className="font-bold text-emerald-600">+${totalCashIncome.toLocaleString()}</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">+${totalCashIncome.toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-muted-foreground font-semibold">Efectivo Retirado / Gastos:</span>
-                  <span className="font-bold text-rose-600">-${totalCashExpense.toLocaleString()}</span>
+                  <span className="font-bold text-rose-600 dark:text-rose-400">-${totalCashExpense.toLocaleString()}</span>
                 </div>
-                <div className="border-t border-border/60 pt-1.5 flex justify-between font-bold text-sm">
+                <div className="border-t border-border/60 pt-2 flex justify-between items-center font-bold text-sm">
                   <span className="text-foreground">Efectivo Calculado por Sistema:</span>
                   <span className="text-primary">${expectedCashInDrawer.toLocaleString()}</span>
                 </div>
@@ -2285,23 +2517,23 @@ function CajaTab({
               </div>
 
               {countedCash !== "" && (
-                <div className="p-3 rounded-xl border text-xs font-bold flex justify-between items-center bg-secondary/20">
+                <div className="p-3.5 rounded-2xl border text-xs font-bold flex justify-between items-center bg-secondary/20 border-border/60">
                   <span>Diferencia de Caja:</span>
                   {parseFloat(countedCash) === expectedCashInDrawer ? (
-                    <span className="text-emerald-600 font-bold">🟢 $0 (Caja Cuadrada OK)</span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">🟢 $0 (Caja Cuadrada OK)</span>
                   ) : parseFloat(countedCash) < expectedCashInDrawer ? (
-                    <span className="text-rose-600 font-bold">
+                    <span className="text-rose-600 dark:text-rose-400 font-bold">
                       ⚠️ Faltante: -${(expectedCashInDrawer - parseFloat(countedCash)).toLocaleString()}
                     </span>
                   ) : (
-                    <span className="text-emerald-600 font-bold">
+                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">
                       🟢 Sobrante: +${(parseFloat(countedCash) - expectedCashInDrawer).toLocaleString()}
                     </span>
                   )}
                 </div>
               )}
 
-              <DialogFooter className="gap-2 pt-2">
+              <DialogFooter className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2 pt-3 border-t border-border/40">
                 <Button
                   type="button"
                   variant="outline"
@@ -2312,10 +2544,48 @@ function CajaTab({
                 </Button>
                 <Button
                   type="button"
+                  variant="outline"
+                  onClick={() => {
+                    const countedNum = parseFloat(countedCash) || expectedCashInDrawer;
+                    const diff = countedNum - expectedCashInDrawer;
+                    const diffText =
+                      diff === 0
+                        ? "Cuadrada OK"
+                        : diff < 0
+                          ? `Faltante -$${Math.abs(diff)}`
+                          : `Sobrante +$${diff}`;
+                    const csvLines = [
+                      "Reporte de Arqueo y Cierre de Caja del Turno",
+                      `Fecha,${new Date().toLocaleDateString()}`,
+                      `Responsable,"${currentUser.name}"`,
+                      `Efectivo Ingresado,$${totalCashIncome}`,
+                      `Efectivo Retirado/Gastos,$${totalCashExpense}`,
+                      `Efectivo Esperado,$${expectedCashInDrawer}`,
+                      `Efectivo Contado,$${countedNum}`,
+                      `Diferencia,${diffText}`,
+                    ];
+                    const csvContent = "data:text/csv;charset=utf-8," + csvLines.join("\n");
+                    const encodedUri = encodeURI(csvContent);
+                    const link = document.createElement("a");
+                    link.setAttribute("href", encodedUri);
+                    link.setAttribute(
+                      "download",
+                      `arqueo_caja_${new Date().toISOString().split("T")[0]}.csv`,
+                    );
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }}
+                  className="rounded-xl text-xs font-bold gap-1.5 border-border text-foreground hover:bg-secondary"
+                >
+                  <Download className="h-3.5 w-3.5" /> Exportar Reporte
+                </Button>
+                <Button
+                  type="button"
                   onClick={() => {
                     const countedNum = parseFloat(countedCash);
                     if (isNaN(countedNum)) {
-                      alert("Ingresa un monto en efectivo contado válido.");
+                      toast.error("Ingresa un monto en efectivo contado válido.");
                       return;
                     }
                     const diff = countedNum - expectedCashInDrawer;
@@ -2339,7 +2609,7 @@ function CajaTab({
                     setCashTransactions((prev) => [newTx, ...prev]);
                     setShowArqueo(false);
                     setCountedCash("");
-                    alert(`✓ Cierre de caja del turno registrado exitosamente (${diffText}).`);
+                    toast.success(`✓ Cierre de caja del turno registrado exitosamente (${diffText}).`);
                   }}
                   className="rounded-xl text-xs font-bold bg-primary text-primary-foreground"
                 >
@@ -2374,6 +2644,21 @@ function FinanzasTab({
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "paid" | "pending">("all");
 
+  const [fixedExpenseItems, setFixedExpenseItems] = useState([
+    { id: "fix-1", category: "Alquiler de Sede", amount: 250000 },
+    { id: "fix-2", category: "Luz & Energía Eléctrica", amount: 60000 },
+    { id: "fix-3", category: "Agua & Servicios Sanitarios", amount: 15000 },
+    { id: "fix-4", category: "Internet, Software & Servidores", amount: 25000 },
+    { id: "fix-5", category: "Mantenimiento & Seguridad", amount: 30000 },
+  ]);
+  const [tempItems, setTempItems] = useState([...fixedExpenseItems]);
+  const [newCatName, setNewCatName] = useState("");
+  const [newCatAmount, setNewCatAmount] = useState("");
+  const [showFixedModal, setShowFixedModal] = useState(false);
+
+  const baseFixedExpenses = fixedExpenseItems.reduce((sum, item) => sum + (item.amount || 0), 0);
+  const tempBaseFixedExpenses = tempItems.reduce((sum, item) => sum + (item.amount || 0), 0);
+
   const filteredPayroll = payrollRecords.filter((p) => {
     // 1. Period
     if (selectedPeriod !== "all" && p.period !== selectedPeriod) return false;
@@ -2401,14 +2686,19 @@ function FinanzasTab({
     .filter((p) => p.status === "pending")
     .reduce((sum, p) => sum + p.totalAmount, 0);
 
-  // Dynamic Financial Income from Caja & POS
+  // Dynamic Financial Income & Expenses from Caja & POS
   const posIncome = cashTransactions
     .filter((t) => t.type === "income")
     .reduce((sum, t) => sum + t.amount, 0);
 
+  const posExpenses = cashTransactions
+    .filter((t) => t.type === "expense")
+    .reduce((sum, t) => sum + t.amount, 0);
+
   // Estimated base memberships + dynamic POS sales
   const grossMonthlyIncome = 1350000 + posIncome;
-  const netMonthlyMargin = grossMonthlyIncome - totalPayrollPaid;
+  const totalFixedAndOperatingExpenses = baseFixedExpenses + posExpenses;
+  const netMonthlyMargin = grossMonthlyIncome - totalPayrollPaid - totalFixedAndOperatingExpenses;
 
   const handleRecalculatePayroll = () => {
     const newRecords = staffList.map((coach) => {
@@ -2441,7 +2731,38 @@ function FinanzasTab({
     });
 
     setPayrollRecords(newRecords);
-    alert(`✓ Liquidaciones para el período ${selectedPeriod} recalculadas exitosamente según el historial de asistencias.`);
+    toast.success(`✓ Liquidaciones para el período ${selectedPeriod} recalculadas exitosamente según asistencias.`);
+  };
+
+  const exportPayrollCSV = () => {
+    if (filteredPayroll.length === 0) {
+      toast.warning("No hay registros de liquidación para exportar.");
+      return;
+    }
+    const headers = ["Profesor/Coach", "Especialidad", "Período", "Clases Dictadas", "Alumnos Asistentes", "Monto Total (ARS)", "Estado", "Fecha de Pago"];
+    const rows = filteredPayroll.map((p) => {
+      const coach = staffList.find((s) => s.id === p.staffId);
+      return [
+        `"${(coach?.name || "Staff").replace(/"/g, '""')}"`,
+        `"${(coach?.specialty || "-").replace(/"/g, '""')}"`,
+        p.period,
+        p.classesGiven,
+        p.studentsAttended,
+        p.totalAmount,
+        p.status === "paid" ? "Pagado" : "Pendiente",
+        p.paidAt || "-",
+      ];
+    });
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `liquidaciones_staff_${selectedPeriod.replace(/\s+/g, "_")}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -2460,7 +2781,7 @@ function FinanzasTab({
 
         <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
           <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-            Honorarios Liquidados
+            Honorarios Staff Liquidados
           </span>
           <div className="text-2xl font-black text-foreground flex items-center gap-1">
             <Receipt className="h-5 w-5" /> ${totalPayrollPaid.toLocaleString()}
@@ -2469,95 +2790,132 @@ function FinanzasTab({
         </div>
 
         <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-            Honorarios Pendientes
-          </span>
-          <div className="text-2xl font-black text-amber-600 dark:text-amber-400 flex items-center gap-1">
-            <Clock className="h-5 w-5" /> ${totalPayrollPending.toLocaleString()}
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+              Gastos Fijos & Operativos
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setTempItems([...fixedExpenseItems]);
+                setNewCatName("");
+                setNewCatAmount("");
+                setShowFixedModal(true);
+              }}
+              className="text-[10px] font-bold text-primary hover:underline"
+            >
+              Ajustar Rubros
+            </button>
           </div>
-          <p className="text-[10.5px] text-muted-foreground">Por acreditar al cierre del período</p>
+          <div className="text-2xl font-black text-rose-600 dark:text-rose-400 flex items-center gap-1">
+            <ArrowDownRight className="h-5 w-5" /> ${totalFixedAndOperatingExpenses.toLocaleString()}
+          </div>
+          <p className="text-[10.5px] text-muted-foreground">Alquiler, servicios + Egresos POS</p>
         </div>
 
         <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
           <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-            Margen Operativo Estimado
+            Margen Operativo Neto
           </span>
           <div className="text-2xl font-black text-primary flex items-center gap-1">
             <DollarSign className="h-5 w-5" /> ${netMonthlyMargin.toLocaleString()}
           </div>
-          <p className="text-[10.5px] text-muted-foreground">Ingresos brutos menos honorarios</p>
+          <p className="text-[10.5px] text-muted-foreground">Ingresos menos sueldos y costos fijos</p>
         </div>
       </div>
 
-      {/* Payroll Liquidation Table */}
+      {/* Payroll Liquidation Table with Structured 2-Row Controls */}
       <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-4 shadow-xs">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-border/40">
+        {/* Row 1: Header Title & Main Action Buttons */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/40">
           <div>
-            <h3 className="font-bold text-sm text-foreground">
-              Reporte de Liquidaciones de Staff & Coaches ({filteredPayroll.length})
-            </h3>
+            <div className="flex items-center gap-2">
+              <h3 className="font-bold text-sm text-foreground">
+                Reporte de Liquidaciones de Staff & Coaches
+              </h3>
+              <span className="px-2 py-0.5 rounded-full bg-secondary text-[10px] font-extrabold text-foreground border border-border/60">
+                {filteredPayroll.length}
+              </span>
+            </div>
             <p className="text-xs text-muted-foreground mt-0.5">
               Cálculo mensual de honorarios por clases dictadas y alumnos asistentes.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Search Bar */}
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Buscar coach o especialidad..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-8.5 w-44 sm:w-52 pl-8 pr-3 rounded-xl border border-border bg-background text-xs font-bold text-foreground focus-visible:outline-none placeholder:font-normal placeholder:text-muted-foreground"
-              />
-            </div>
-
-            {/* Status Filter */}
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="h-8.5 rounded-xl border border-border bg-background px-2.5 text-xs font-bold text-foreground focus-visible:outline-none"
+          <div className="flex items-center gap-2.5 shrink-0">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={exportPayrollCSV}
+              className="h-9 rounded-xl font-bold text-xs gap-1.5 border-border text-foreground hover:bg-secondary"
             >
-              <option value="all">Todos los Estados</option>
-              <option value="pending">Pendientes de Pago</option>
-              <option value="paid">Acreditados / Pagados</option>
-            </select>
-
-            {/* Period Selector */}
-            <select
-              value={selectedPeriod}
-              onChange={(e) => setSelectedPeriod(e.target.value)}
-              className="h-8.5 rounded-xl border border-border bg-background px-2.5 text-xs font-bold text-foreground focus-visible:outline-none"
-            >
-              <option value="Junio 2026">Junio 2026</option>
-              <option value="Mayo 2026">Mayo 2026</option>
-              <option value="all">Todos los Períodos</option>
-            </select>
+              <Download className="h-4 w-4" /> Exportar CSV
+            </Button>
 
             <Button
               type="button"
               size="sm"
               onClick={handleRecalculatePayroll}
-              className="h-8.5 rounded-xl text-xs font-bold gap-1 bg-primary text-primary-foreground shrink-0"
+              className="h-9 rounded-xl font-bold text-xs gap-1.5 bg-primary text-primary-foreground shadow-xs"
             >
-              <Zap className="h-4 w-4" /> Recalcular desde Asistencias
+              <Zap className="h-4 w-4" /> Recalcular Asistencias
             </Button>
           </div>
         </div>
 
+        {/* Row 2: Secondary Filter Bar (Search + Dropdowns) */}
+        <div className="flex flex-wrap items-center justify-between gap-3 p-2.5 bg-secondary/20 border border-border/50 rounded-2xl">
+          {/* Search Bar */}
+          <div className="relative flex-1 min-w-[200px] sm:max-w-xs">
+            <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Buscar coach por nombre o especialidad..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-9 w-full pl-8 pr-3 rounded-xl border border-border bg-background text-xs font-bold text-foreground focus-visible:outline-none placeholder:font-normal placeholder:text-muted-foreground"
+            />
+          </div>
+
+          <div className="flex items-center gap-2.5 w-full sm:w-auto">
+            {/* Status Filter (Shadcn/ui Select) */}
+            <Select value={statusFilter} onValueChange={(val) => setStatusFilter(val as any)}>
+              <SelectTrigger className="w-[165px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
+                <SelectValue placeholder="Estado" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
+                <SelectItem value="all">📋 Todos los Estados</SelectItem>
+                <SelectItem value="pending">⏳ Pendientes de Pago</SelectItem>
+                <SelectItem value="paid">✅ Acreditados / Pagados</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Period Selector (Shadcn/ui Select) */}
+            <Select value={selectedPeriod} onValueChange={(val) => setSelectedPeriod(val)}>
+              <SelectTrigger className="w-[155px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
+                <SelectValue placeholder="Período" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
+                <SelectItem value="Junio 2026">📅 Junio 2026</SelectItem>
+                <SelectItem value="Mayo 2026">📅 Mayo 2026</SelectItem>
+                <SelectItem value="all">📅 Todos los Períodos</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
         <div className="overflow-x-auto border border-border/60 rounded-2xl bg-background">
-          <table className="w-full text-left text-xs min-w-[650px] border-collapse">
+          <table className="w-full text-left text-xs min-w-[700px] border-collapse">
             <thead>
-              <tr className="border-b border-border/60 bg-secondary/40 text-muted-foreground font-bold text-[10px] uppercase">
-                <th className="p-3">Profesor / Coach</th>
-                <th className="p-3">Período</th>
-                <th className="p-3 text-center">Clases Dictadas</th>
-                <th className="p-3 text-center">Alumnos Asistentes</th>
-                <th className="p-3 text-right">Monto Total</th>
-                <th className="p-3 text-center">Estado</th>
-                <th className="p-3 text-right">Acciones</th>
+              <tr className="border-b border-border/60 bg-secondary/40 text-muted-foreground font-bold text-[10px] uppercase tracking-wider">
+                <th className="p-3.5">Profesor / Coach</th>
+                <th className="p-3.5 text-center">Período</th>
+                <th className="p-3.5 text-center">Clases Dictadas</th>
+                <th className="p-3.5 text-center">Alumnos Asistentes</th>
+                <th className="p-3.5 text-right">Monto Total</th>
+                <th className="p-3.5 text-center">Estado</th>
+                <th className="p-3.5 text-right">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/30">
@@ -2565,80 +2923,97 @@ function FinanzasTab({
                 const coach = staffList.find((s) => s.id === pay.staffId);
                 return (
                   <tr key={pay.id} className="hover:bg-secondary/20 transition-colors">
-                    <td className="p-3 font-bold text-foreground flex items-center gap-2">
-                      <div className="h-7 w-7 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs border border-primary/20 shrink-0 uppercase">
-                        {coach?.name ? coach.name.split(" ").map((n: string) => n[0]).join("") : "CO"}
-                      </div>
-                      <div>
-                        <span className="block font-bold">{coach?.name || "Coach Inactivo"}</span>
-                        <span className="text-[10px] text-muted-foreground">{coach?.specialty || "Staff"}</span>
+                    <td className="p-3.5 font-bold text-foreground">
+                      <div className="flex items-center gap-2.5">
+                        <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs border border-primary/20 shrink-0 uppercase">
+                          {coach?.name ? coach.name.split(" ").map((n: string) => n[0]).join("") : "CO"}
+                        </div>
+                        <div className="min-w-0">
+                          <span className="block font-bold text-foreground truncate">{coach?.name || "Coach Inactivo"}</span>
+                          <span className="text-[10px] text-muted-foreground truncate block">{coach?.specialty || "Staff"}</span>
+                        </div>
                       </div>
                     </td>
-                    <td className="p-3 text-muted-foreground font-medium">{pay.period}</td>
-                    <td className="p-3 text-center font-bold">{pay.classesGiven} clases</td>
-                    <td className="p-3 text-center font-bold">{pay.studentsAttended} alumnos</td>
-                    <td className="p-3 text-right font-black text-sm text-foreground">
-                      ${pay.totalAmount.toLocaleString()}
+                    <td className="p-3.5 text-center text-muted-foreground font-semibold">
+                      <span className="px-2 py-0.5 rounded-lg bg-secondary/50 border border-border/40 text-[11px]">
+                        {pay.period}
+                      </span>
                     </td>
-                    <td className="p-3 text-center">
+                    <td className="p-3.5 text-center">
+                      <span className="font-bold text-foreground block">{pay.classesGiven} clases</span>
+                    </td>
+                    <td className="p-3.5 text-center">
+                      <span className="font-bold text-foreground block">{pay.studentsAttended} alumnos</span>
+                    </td>
+                    <td className="p-3.5 text-right">
+                      <div className="font-black text-sm text-foreground">
+                        ${pay.totalAmount.toLocaleString()}
+                      </div>
+                      <span className="text-[9.5px] font-bold text-muted-foreground/80 block uppercase">
+                        Base + Asistencias
+                      </span>
+                    </td>
+                    <td className="p-3.5 text-center">
                       <span
-                        className={`text-[9.5px] font-bold px-2.5 py-1 rounded-full border ${
+                        className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full border ${
                           pay.status === "paid"
                             ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
                             : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
                         }`}
                       >
-                        {pay.status === "paid" ? "Pagado" : "Pendiente"}
+                        {pay.status === "paid" ? "✅ Acreditado" : "⏳ Pendiente"}
                       </span>
                     </td>
-                    <td className="p-3 text-right space-x-1.5">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setActiveReceipt(pay)}
-                        className="h-7 text-[10.5px] font-bold rounded-lg border-border gap-1"
-                      >
-                        <FileText className="h-3.5 w-3.5" /> Recibo
-                      </Button>
-
-                      {pay.status === "pending" ? (
+                    <td className="p-3.5 text-right">
+                      <div className="flex items-center justify-end gap-2">
                         <Button
                           type="button"
+                          variant="outline"
                           size="sm"
-                          onClick={() => {
-                            const today = new Date().toISOString().split("T")[0];
-                            setPayrollRecords((prev) =>
-                              prev.map((p) =>
-                                p.id === pay.id ? { ...p, status: "paid", paidAt: today } : p,
-                              ),
-                            );
-
-                            // Post auto-expense to Cash Register
-                            const newExpenseTx = {
-                              id: `tx-pay-${Date.now()}`,
-                              date: today,
-                              type: "expense" as const,
-                              channel: "transfer" as const,
-                              description: `Liquidación Honorarios Coach: ${coach?.name || "Staff"} (${pay.period})`,
-                              amount: pay.totalAmount,
-                              registeredBy: "Administración / Finanzas",
-                            };
-                            setCashTransactions((prev) => [newExpenseTx, ...prev]);
-
-                            alert(
-                              `✓ Liquidación de $${pay.totalAmount.toLocaleString()} acreditada a ${coach?.name}. Se registró el egreso en Caja/POS.`,
-                            );
-                          }}
-                          className="h-7 text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-3"
+                          onClick={() => setActiveReceipt(pay)}
+                          className="h-8 text-[11px] font-bold rounded-xl border-border gap-1.5 hover:bg-secondary"
                         >
-                          Acreditar Pago
+                          <FileText className="h-3.5 w-3.5 text-primary" /> Recibo
                         </Button>
-                      ) : (
-                        <span className="text-[10px] text-muted-foreground italic font-medium">
-                          Acreditado ({pay.paidAt})
-                        </span>
-                      )}
+
+                        {pay.status === "pending" ? (
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={() => {
+                              const today = new Date().toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" });
+                              setPayrollRecords((prev) =>
+                                prev.map((p) =>
+                                  p.id === pay.id ? { ...p, status: "paid", paidAt: today } : p,
+                                ),
+                              );
+
+                              // Post auto-expense to Cash Register
+                              const newExpenseTx = {
+                                id: `tx-pay-${Date.now()}`,
+                                date: new Date().toISOString().split("T")[0],
+                                type: "expense" as const,
+                                channel: "transfer" as const,
+                                description: `Liquidación Honorarios Coach: ${coach?.name || "Staff"} (${pay.period})`,
+                                amount: pay.totalAmount,
+                                registeredBy: "Administración / Finanzas",
+                              };
+                              setCashTransactions((prev) => [newExpenseTx, ...prev]);
+
+                              toast.success(
+                                `✓ Liquidación de $${pay.totalAmount.toLocaleString()} acreditada a ${coach?.name}. Se registró el egreso en Caja/POS.`,
+                              );
+                            }}
+                            className="h-8 text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-3 shadow-xs gap-1"
+                          >
+                            <CheckCircle2 className="h-3.5 w-3.5" /> Acreditar Pago
+                          </Button>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[10.5px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-xl shrink-0">
+                            <CheckCircle2 className="h-3.5 w-3.5" /> {pay.paidAt ? `Pago: ${pay.paidAt}` : "Acreditado"}
+                          </span>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
@@ -2716,12 +3091,163 @@ function FinanzasTab({
                 <Button
                   type="button"
                   onClick={() => {
-                    alert("Imprimiendo recibo oficial de liquidación...");
+                    toast.info("Imprimiendo recibo oficial de liquidación...");
                     window.print();
                   }}
                   className="rounded-xl text-xs font-bold bg-primary text-primary-foreground gap-1"
                 >
                   Imprimir / Descargar Recibo
+                </Button>
+              </DialogFooter>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Ajustar Gastos Fijos Base Modal */}
+      {showFixedModal && (
+        <Dialog open={showFixedModal} onOpenChange={setShowFixedModal}>
+          <DialogContent className="sm:max-w-xl rounded-3xl border border-border bg-card p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <DialogHeader>
+              <DialogTitle className="text-base font-bold flex items-center gap-2">
+                <DollarSign className="h-5 w-5 text-primary" /> Desglose de Gastos Fijos de Sede
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-4 text-xs">
+              <p className="text-muted-foreground">
+                Configura el presupuesto itemizado de costos fijos mensuales (alquiler, luz, internet, servicios). El sistema calculará la suma automáticamente.
+              </p>
+
+              {/* Form to add new item */}
+              <div className="p-3.5 bg-secondary/30 border border-border/60 rounded-2xl space-y-2">
+                <span className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
+                  Agregar Nuevo Rubro / Gasto Fijo:
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-7 gap-2">
+                  <input
+                    type="text"
+                    placeholder="Ej: Impuestos Municipales"
+                    value={newCatName}
+                    onChange={(e) => setNewCatName(e.target.value)}
+                    className="sm:col-span-4 h-8.5 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Monto ($)"
+                    value={newCatAmount}
+                    onChange={(e) => setNewCatAmount(e.target.value)}
+                    className="sm:col-span-2 h-8.5 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => {
+                      if (!newCatName.trim() || !newCatAmount || parseFloat(newCatAmount) <= 0) {
+                        toast.error("Ingresa un nombre de rubro y un monto válido.");
+                        return;
+                      }
+                      const newItem = {
+                        id: `fix-${Date.now()}`,
+                        category: newCatName.trim(),
+                        amount: parseFloat(newCatAmount),
+                      };
+                      setTempItems((prev) => [...prev, newItem]);
+                      setNewCatName("");
+                      setNewCatAmount("");
+                    }}
+                    className="sm:col-span-1 h-8.5 rounded-xl text-xs font-bold px-2"
+                  >
+                    + Añadir
+                  </Button>
+                </div>
+              </div>
+
+              {/* List of itemized categories */}
+              <div className="space-y-2">
+                <span className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
+                  Rubros Fijos Configurados ({tempItems.length}):
+                </span>
+                <div className="space-y-2 max-h-56 overflow-y-auto custom-scrollbar pr-1">
+                  {tempItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between p-2.5 bg-background border border-border/70 rounded-xl gap-2"
+                    >
+                      <input
+                        type="text"
+                        value={item.category}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setTempItems((prev) =>
+                            prev.map((i) => (i.id === item.id ? { ...i, category: val } : i)),
+                          );
+                        }}
+                        className="flex-1 h-8 rounded-lg border border-transparent hover:border-border bg-transparent px-2 text-xs font-bold text-foreground focus-visible:bg-secondary/30 focus-visible:outline-none"
+                      />
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-muted-foreground font-bold">$</span>
+                        <input
+                          type="number"
+                          value={item.amount}
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value) || 0;
+                            setTempItems((prev) =>
+                              prev.map((i) => (i.id === item.id ? { ...i, amount: val } : i)),
+                            );
+                          }}
+                          className="w-24 h-8 rounded-lg border border-border/80 bg-background px-2 text-xs font-bold text-foreground text-right focus-visible:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setTempItems((prev) => prev.filter((i) => i.id !== item.id));
+                          }}
+                          className="p-1 text-muted-foreground hover:text-rose-600 transition"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Summary calculations */}
+              <div className="p-3.5 bg-secondary/30 rounded-2xl border border-border/60 text-xs space-y-1.5">
+                <div className="flex justify-between font-medium">
+                  <span className="text-muted-foreground">Sumatoria de Rubros Fijos:</span>
+                  <span className="font-bold text-foreground">${tempBaseFixedExpenses.toLocaleString()} ARS</span>
+                </div>
+                <div className="flex justify-between font-medium">
+                  <span className="text-muted-foreground">+ Egresos Variables POS (Mostrador):</span>
+                  <span className="font-bold text-rose-600 dark:text-rose-400">+${posExpenses.toLocaleString()} ARS</span>
+                </div>
+                <div className="border-t border-border/60 pt-1.5 flex justify-between font-extrabold text-sm">
+                  <span className="text-foreground">Total Gastos Operativos:</span>
+                  <span className="text-rose-600 dark:text-rose-400">${(tempBaseFixedExpenses + posExpenses).toLocaleString()} ARS</span>
+                </div>
+              </div>
+
+              <DialogFooter className="gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowFixedModal(false)}
+                  className="rounded-xl text-xs font-bold"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setFixedExpenseItems(tempItems);
+                    setShowFixedModal(false);
+                    toast.success("✓ Presupuesto de gastos fijos itemizado actualizado con éxito.");
+                  }}
+                  className="rounded-xl text-xs font-bold bg-primary text-primary-foreground"
+                >
+                  Guardar Presupuesto Fijo
                 </Button>
               </DialogFooter>
             </div>
@@ -2738,12 +3264,14 @@ function ReportesTab({
   membershipsList = [],
   staffList = [],
   salasList = [],
+  cashTransactions = [],
 }: {
   membersList?: any[];
   classesList?: any[];
   membershipsList?: any[];
   staffList?: any[];
   salasList?: any[];
+  cashTransactions?: any[];
 }) {
   const [timeRange, setTimeRange] = useState<"today" | "week" | "month" | "prev_month" | "quarter">("month");
   const [selectedDiscipline, setSelectedDiscipline] = useState<string>("all");
@@ -2783,6 +3311,50 @@ function ReportesTab({
     return totalCapacity > 0 ? ((totalBookedSpots / totalCapacity) * 100).toFixed(1) : "78.4";
   }, [totalBookedSpots, totalCapacity]);
 
+  // Payment methods breakdown calculated dynamically from cashTransactions
+  const paymentStats = useMemo(() => {
+    const incomeTx = cashTransactions.filter((t) => t.type === "income");
+    const totalIncome = incomeTx.reduce((sum, t) => sum + (t.amount || 0), 0);
+
+    if (totalIncome === 0) {
+      return {
+        mpAmount: Math.round(calculatedRevenue * 0.62),
+        mpPercent: 62,
+        transfAmount: Math.round(calculatedRevenue * 0.24),
+        transfPercent: 24,
+        cashAmount: Math.round(calculatedRevenue * 0.14),
+        cashPercent: 14,
+        total: calculatedRevenue,
+      };
+    }
+
+    const mpTotal = incomeTx.filter((t) => t.channel === "app").reduce((sum, t) => sum + t.amount, 0);
+    const transfTotal = incomeTx.filter((t) => t.channel === "transfer").reduce((sum, t) => sum + t.amount, 0);
+    const cashTotal = incomeTx.filter((t) => t.channel === "cash").reduce((sum, t) => sum + t.amount, 0);
+
+    const mpP = Math.round((mpTotal / totalIncome) * 100) || 0;
+    const transfP = Math.round((transfTotal / totalIncome) * 100) || 0;
+    const cashP = Math.round((cashTotal / totalIncome) * 100) || 0;
+
+    return {
+      mpAmount: mpTotal,
+      mpPercent: mpP,
+      transfAmount: transfTotal,
+      transfPercent: transfP,
+      cashAmount: cashTotal,
+      cashPercent: cashP,
+      total: totalIncome,
+    };
+  }, [cashTransactions, calculatedRevenue]);
+
+  // WhatsApp Re-engagement Action
+  const handleSendWhatsAppReminder = (memberName: string, phone?: string) => {
+    const cleanPhone = phone || "5491155550000";
+    const msg = `¡Hola ${memberName}! 👋 Te extrañamos en el studio. Tenés clases disponibles en tu plan. ¿Te anotamos para la sesión de mañana? 💪`;
+    window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, "_blank");
+    toast.success(`📱 Abriendo WhatsApp con plantilla de re-engagement para ${memberName}...`);
+  };
+
   // CSV Export Handler
   const handleExportCSV = () => {
     let headers: string[] = [];
@@ -2790,9 +3362,9 @@ function ReportesTab({
     let filename = `reporte_${reportSubTab}_${timeRange}.csv`;
 
     if (reportSubTab === "finanzas") {
-      headers = ["Periodo", "Facturacion Total ($)", "Socios Activos", "Ticket Promedio ($)", "Cobros Tarjeta/MP (%)", "Cobros Transf (%)", "Cobros Efectivo (%)"];
+      headers = ["Periodo", "Facturacion Total ($)", "Socios Activos", "Ticket Promedio ($)", "Cobros MercadoPago ($)", "Cobros Transf ($)", "Cobros Efectivo ($)"];
       rows = [
-        [timeRange, calculatedRevenue.toString(), totalActiveMembers.toString(), avgTicket.toString(), "62%", "24%", "14%"],
+        [timeRange, calculatedRevenue.toString(), totalActiveMembers.toString(), avgTicket.toString(), `$${paymentStats.mpAmount}`, `$${paymentStats.transfAmount}`, `$${paymentStats.cashAmount}`],
       ];
     } else if (reportSubTab === "asistencia") {
       headers = ["Clase", "Disciplina", "Profesor", "Capacidad", "Inscritos", "% Ocupacion"];
@@ -2820,16 +3392,18 @@ function ReportesTab({
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    toast.success(`✓ Reporte ${reportSubTab.toUpperCase()} exportado a CSV exitosamente.`);
   };
 
   const handlePrint = () => {
+    toast.info("Generando vista de impresión / PDF...");
     window.print();
   };
 
   return (
     <div className="space-y-6 animate-fade-in text-foreground">
       {/* Header & Controls Toolbar */}
-      <div className="bg-card border border-border p-6 rounded-3xl space-y-4 shadow-xs">
+      <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-4 shadow-xs">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
@@ -2848,7 +3422,7 @@ function ReportesTab({
               variant="outline"
               size="sm"
               onClick={handleExportCSV}
-              className="rounded-xl text-xs font-bold gap-2 border-border/80 hover:bg-secondary"
+              className="rounded-xl text-xs font-bold gap-2 border-border text-foreground hover:bg-secondary"
             >
               <Download className="h-4 w-4 text-primary" />
               Exportar CSV
@@ -2857,7 +3431,7 @@ function ReportesTab({
               variant="outline"
               size="sm"
               onClick={handlePrint}
-              className="rounded-xl text-xs font-bold gap-2 border-border/80 hover:bg-secondary"
+              className="rounded-xl text-xs font-bold gap-2 border-border text-foreground hover:bg-secondary"
             >
               <Printer className="h-4 w-4 text-muted-foreground" />
               Imprimir / PDF
@@ -2914,37 +3488,34 @@ function ReportesTab({
             </button>
           </div>
 
-          {/* Time & Discipline Selectors */}
+          {/* Time & Discipline Selectors (Shadcn/ui Select) */}
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 bg-secondary/30 p-1 rounded-xl border border-border/60">
-              <Filter className="w-3.5 h-3.5 text-muted-foreground ml-1.5" />
-              <select
-                value={timeRange}
-                onChange={(e: any) => setTimeRange(e.target.value)}
-                className="bg-transparent text-xs font-bold text-foreground focus:outline-none pr-1 cursor-pointer"
-              >
-                <option value="today">Hoy</option>
-                <option value="week">Últimos 7 días</option>
-                <option value="month">Este Mes</option>
-                <option value="prev_month">Mes Anterior</option>
-                <option value="quarter">Trimestre Actual</option>
-              </select>
-            </div>
+            <Select value={timeRange} onValueChange={(val) => setTimeRange(val as any)}>
+              <SelectTrigger className="w-[145px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
+                <SelectValue placeholder="Período" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
+                <SelectItem value="today">📅 Hoy</SelectItem>
+                <SelectItem value="week">📅 Últimos 7 días</SelectItem>
+                <SelectItem value="month">📅 Este Mes</SelectItem>
+                <SelectItem value="prev_month">📅 Mes Anterior</SelectItem>
+                <SelectItem value="quarter">📅 Trimestre Actual</SelectItem>
+              </SelectContent>
+            </Select>
 
-            <div className="bg-secondary/30 p-1 rounded-xl border border-border/60">
-              <select
-                value={selectedDiscipline}
-                onChange={(e) => setSelectedDiscipline(e.target.value)}
-                className="bg-transparent text-xs font-bold text-foreground focus:outline-none px-1.5 cursor-pointer"
-              >
-                <option value="all">Todas las Clases</option>
-                <option value="CrossFit">CrossFit</option>
-                <option value="Spinning">Spinning</option>
-                <option value="Yoga">Yoga</option>
-                <option value="Pilates">Pilates</option>
-                <option value="Funcional">Funcional</option>
-              </select>
-            </div>
+            <Select value={selectedDiscipline} onValueChange={(val) => setSelectedDiscipline(val)}>
+              <SelectTrigger className="w-[155px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
+                <SelectValue placeholder="Disciplina" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
+                <SelectItem value="all">🏋️ Todas las Clases</SelectItem>
+                <SelectItem value="CrossFit">🔥 CrossFit</SelectItem>
+                <SelectItem value="Spinning">🚴 Spinning</SelectItem>
+                <SelectItem value="Yoga">🧘 Yoga</SelectItem>
+                <SelectItem value="Pilates">🤸 Pilates</SelectItem>
+                <SelectItem value="Funcional">⚡ Funcional</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>
@@ -2997,30 +3568,30 @@ function ReportesTab({
                 <div>
                   <div className="flex justify-between text-xs font-bold mb-1">
                     <span>MercadoPago / Tarjetas de Crédito y Débito</span>
-                    <span className="text-primary font-black">62% ($2,678,400)</span>
+                    <span className="text-primary font-black">{paymentStats.mpPercent}% (${paymentStats.mpAmount.toLocaleString("es-AR")})</span>
                   </div>
                   <div className="h-3 w-full bg-secondary rounded-full overflow-hidden">
-                    <div className="h-full bg-primary rounded-full w-[62%]" />
+                    <div className="h-full bg-primary rounded-full" style={{ width: `${paymentStats.mpPercent}%` }} />
                   </div>
                 </div>
 
                 <div>
                   <div className="flex justify-between text-xs font-bold mb-1">
                     <span>Transferencias Bancarias (CBU / CVU)</span>
-                    <span className="text-emerald-600 dark:text-emerald-400 font-black">24% ($1,036,800)</span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-black">{paymentStats.transfPercent}% (${paymentStats.transfAmount.toLocaleString("es-AR")})</span>
                   </div>
                   <div className="h-3 w-full bg-secondary rounded-full overflow-hidden">
-                    <div className="h-full bg-emerald-500 rounded-full w-[24%]" />
+                    <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${paymentStats.transfPercent}%` }} />
                   </div>
                 </div>
 
                 <div>
                   <div className="flex justify-between text-xs font-bold mb-1">
                     <span>Efectivo en Recepción</span>
-                    <span className="text-muted-foreground font-black">14% ($604,800)</span>
+                    <span className="text-muted-foreground font-black">{paymentStats.cashPercent}% (${paymentStats.cashAmount.toLocaleString("es-AR")})</span>
                   </div>
                   <div className="h-3 w-full bg-secondary rounded-full overflow-hidden">
-                    <div className="h-full bg-muted-foreground/40 rounded-full w-[14%]" />
+                    <div className="h-full bg-muted-foreground/40 rounded-full" style={{ width: `${paymentStats.cashPercent}%` }} />
                   </div>
                 </div>
               </div>
@@ -3046,6 +3617,59 @@ function ReportesTab({
                 ) : (
                   <p className="text-xs text-muted-foreground">No hay planes registrados.</p>
                 )}
+              </div>
+            </div>
+          </div>
+
+          {/* Executive Revenue Trend Chart */}
+          <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-4 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border/40 pb-3 gap-2">
+              <div>
+                <h3 className="font-bold text-sm text-foreground uppercase tracking-wider text-muted-foreground/80">
+                  Evolución Mensual de Facturación Bruta (Últimos 6 Meses)
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Comparativa semestral de recaudación bruta e inscripciones totales.
+                </p>
+              </div>
+              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-xs font-bold w-fit">
+                +14.2% Crecimiento
+              </Badge>
+            </div>
+
+            <div className="pt-2">
+              <div className="grid grid-cols-6 gap-2 sm:gap-4 items-end h-44 pt-6 pb-2 border-b border-border/60">
+                {[
+                  { month: "Ene", amount: "$3.1M", height: "45%", count: "620 al." },
+                  { month: "Feb", amount: "$3.4M", height: "55%", count: "690 al." },
+                  { month: "Mar", amount: "$3.8M", height: "68%", count: "740 al." },
+                  { month: "Abr", amount: "$3.9M", height: "72%", count: "780 al." },
+                  { month: "May", amount: "$4.1M", height: "85%", count: "810 al." },
+                  { month: "Jun", amount: `$${(calculatedRevenue / 1000000).toFixed(2)}M`, height: "98%", count: `${totalBookedSpots} al.`, current: true },
+                ].map((item, idx) => (
+                  <div key={idx} className="flex flex-col items-center gap-1.5 h-full justify-end group">
+                    <span className="text-[10px] font-black text-muted-foreground group-hover:text-primary transition-colors opacity-0 group-hover:opacity-100 sm:opacity-100">
+                      {item.amount}
+                    </span>
+                    <div className="w-full max-w-[40px] bg-secondary/60 rounded-t-xl overflow-hidden h-full flex items-end p-0.5">
+                      <div
+                        className={`w-full rounded-t-lg transition-all duration-500 ${
+                          item.current
+                            ? "bg-primary shadow-xs"
+                            : "bg-primary/40 group-hover:bg-primary/70"
+                        }`}
+                        style={{ height: item.height }}
+                      />
+                    </div>
+                    <span className={`text-[11px] font-bold ${item.current ? "text-primary font-extrabold" : "text-muted-foreground"}`}>
+                      {item.month}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center text-[11px] text-muted-foreground pt-2.5 gap-1">
+                <span>* Datos actualizados al cierre de {timeRange === "month" ? "Junio 2026" : "período seleccionado"}.</span>
+                <span className="font-bold text-foreground">Promedio Semestral: $3.77M / mes</span>
               </div>
             </div>
           </div>
@@ -3219,34 +3843,44 @@ function ReportesTab({
               </Badge>
             </div>
 
-            <div className="space-y-2 pt-1">
-              <div className="p-3 bg-secondary/30 border border-border/60 rounded-2xl flex items-center justify-between">
+            <div className="space-y-2.5 pt-1">
+              <div className="p-3.5 bg-secondary/30 border border-border/60 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-destructive/10 text-destructive flex items-center justify-center font-bold text-xs">
+                  <div className="w-9 h-9 rounded-full bg-destructive/10 text-destructive flex items-center justify-center font-bold text-xs border border-destructive/20 shrink-0">
                     AG
                   </div>
                   <div>
-                    <span className="font-bold text-xs block">Agustín Gómez</span>
+                    <span className="font-bold text-xs block text-foreground">Agustín Gómez</span>
                     <span className="text-[11px] text-muted-foreground">Plan Pase 8 Clases · Última asistencia hace 16 días</span>
                   </div>
                 </div>
-                <Button size="sm" variant="outline" className="rounded-xl text-xs font-bold border-border">
-                  Enviar Recordatorio WhatsApp
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleSendWhatsAppReminder("Agustín Gómez", "5491155551234")}
+                  className="rounded-xl text-xs font-bold border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 gap-1.5 shrink-0"
+                >
+                  <MessageCircle className="h-3.5 w-3.5" /> Contactar por WhatsApp
                 </Button>
               </div>
 
-              <div className="p-3 bg-secondary/30 border border-border/60 rounded-2xl flex items-center justify-between">
+              <div className="p-3.5 bg-secondary/30 border border-border/60 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center font-bold text-xs">
+                  <div className="w-9 h-9 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center font-bold text-xs border border-amber-500/20 shrink-0">
                     CD
                   </div>
                   <div>
-                    <span className="font-bold text-xs block">Camila Díaz</span>
+                    <span className="font-bold text-xs block text-foreground">Camila Díaz</span>
                     <span className="text-[11px] text-muted-foreground">Plan CrossFit 12 · Última asistencia hace 14 días</span>
                   </div>
                 </div>
-                <Button size="sm" variant="outline" className="rounded-xl text-xs font-bold border-border">
-                  Enviar Recordatorio WhatsApp
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleSendWhatsAppReminder("Camila Díaz", "5491155555678")}
+                  className="rounded-xl text-xs font-bold border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 gap-1.5 shrink-0"
+                >
+                  <MessageCircle className="h-3.5 w-3.5" /> Contactar por WhatsApp
                 </Button>
               </div>
             </div>
@@ -3375,12 +4009,180 @@ function InventarioTab({
 }) {
   const [showAdjustModal, setShowAdjustModal] = useState<any | null>(null);
   const [adjustAmount, setAdjustAmount] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState<any | null>(null);
+
+  // Form for new product
+  const [newProdName, setNewProdName] = useState("");
+  const [newProdCat, setNewProdCat] = useState("Suplementos");
+  const [newProdCost, setNewProdCost] = useState("");
+  const [newProdPrice, setNewProdPrice] = useState("");
+  const [newProdStock, setNewProdStock] = useState("");
+  const [newProdMinStock, setNewProdMinStock] = useState("5");
+  const [newProdUnit, setNewProdUnit] = useState("unid");
+  const [newProdBarcode, setNewProdBarcode] = useState("");
+  const [newProdImage, setNewProdImage] = useState("");
+
+  // Form for editing product
+  const [editProdName, setEditProdName] = useState("");
+  const [editProdCat, setEditProdCat] = useState("Suplementos");
+  const [editProdCost, setEditProdCost] = useState("");
+  const [editProdPrice, setEditProdPrice] = useState("");
+  const [editProdMinStock, setEditProdMinStock] = useState("5");
+  const [editProdUnit, setEditProdUnit] = useState("unid");
+  const [editProdBarcode, setEditProdBarcode] = useState("");
+  const [editProdImage, setEditProdImage] = useState("");
 
   const totalValue = inventoryItems.reduce((sum, item) => sum + item.stock * item.price, 0);
   const lowStockCount = inventoryItems.filter((item) => item.stock <= item.minStock).length;
 
+  const filteredItems = useMemo(() => {
+    return inventoryItems.filter((item) => {
+      const query = searchQuery.toLowerCase();
+      const matchSearch =
+        item.name.toLowerCase().includes(query) ||
+        item.category.toLowerCase().includes(query) ||
+        (item.barcode && item.barcode.toLowerCase().includes(query));
+      const matchCat = categoryFilter === "all" || item.category.toLowerCase() === categoryFilter.toLowerCase();
+      return matchSearch && matchCat;
+    });
+  }, [inventoryItems, searchQuery, categoryFilter]);
+
+  const handleImageFileUpload = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    setImageFn: (val: string) => void,
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Por favor selecciona un archivo de imagen válido (PNG, JPG, WEBP).");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const result = event.target?.result as string;
+      if (result) {
+        setImageFn(result);
+        toast.success("📷 Foto cargada exitosamente.");
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const exportInventoryCSV = () => {
+    if (filteredItems.length === 0) {
+      toast.warning("No hay productos para exportar.");
+      return;
+    }
+    const headers = ["ID", "Código Barras", "Producto", "Categoría", "Precio Costo", "Precio Venta", "Stock Actual", "Stock Mínimo", "Valor Stock ($)", "Estado"];
+    const rows = filteredItems.map((item) => [
+      item.id,
+      `"${(item.barcode || "-").replace(/"/g, '""')}"`,
+      `"${item.name.replace(/"/g, '""')}"`,
+      `"${item.category.replace(/"/g, '""')}"`,
+      item.cost,
+      item.price,
+      item.stock,
+      item.minStock,
+      item.stock * item.price,
+      item.stock <= item.minStock ? "Bajo Stock" : "OK",
+    ]);
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `inventario_tienda_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("✓ Inventario exportado a CSV correctamente.");
+  };
+
+  const handleAddProduct = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newProdName.trim() || !newProdPrice || parseFloat(newProdPrice) <= 0) {
+      toast.error("Ingresa un nombre de producto y un precio de venta válido.");
+      return;
+    }
+
+    const newItem = {
+      id: `prod-${Date.now()}`,
+      name: newProdName.trim(),
+      category: newProdCat,
+      cost: parseFloat(newProdCost) || 0,
+      price: parseFloat(newProdPrice) || 0,
+      stock: parseInt(newProdStock) || 0,
+      minStock: parseInt(newProdMinStock) || 5,
+      unit: newProdUnit || "unid",
+      barcode: newProdBarcode.trim() || `779${Math.floor(1000000000 + Math.random() * 9000000000)}`,
+      image: newProdImage.trim() || "https://images.unsplash.com/photo-1544816155-12df9643f363?w=150&auto=format&fit=crop&q=80",
+    };
+
+    setInventoryItems((prev) => [newItem, ...prev]);
+    setShowAddModal(false);
+    setNewProdName("");
+    setNewProdCost("");
+    setNewProdPrice("");
+    setNewProdStock("");
+    setNewProdBarcode("");
+    setNewProdImage("");
+    toast.success(`✓ "${newItem.name}" agregado exitosamente al inventario.`);
+  };
+
+  const handleOpenEditModal = (item: any) => {
+    setShowEditModal(item);
+    setEditProdName(item.name || "");
+    setEditProdCat(item.category || "Suplementos");
+    setEditProdCost(item.cost ? item.cost.toString() : "0");
+    setEditProdPrice(item.price ? item.price.toString() : "0");
+    setEditProdMinStock(item.minStock ? item.minStock.toString() : "5");
+    setEditProdUnit(item.unit || "unid");
+    setEditProdBarcode(item.barcode || "");
+    setEditProdImage(item.image || "");
+  };
+
+  const handleSaveEditProduct = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!showEditModal) return;
+    if (!editProdName.trim() || !editProdPrice || parseFloat(editProdPrice) <= 0) {
+      toast.error("Ingresa un nombre y precio de venta válido.");
+      return;
+    }
+
+    setInventoryItems((prev) =>
+      prev.map((item) =>
+        item.id === showEditModal.id
+          ? {
+              ...item,
+              name: editProdName.trim(),
+              category: editProdCat,
+              cost: parseFloat(editProdCost) || 0,
+              price: parseFloat(editProdPrice) || 0,
+              minStock: parseInt(editProdMinStock) || 5,
+              unit: editProdUnit || "unid",
+              barcode: editProdBarcode.trim(),
+              image: editProdImage.trim() || item.image,
+            }
+          : item,
+      ),
+    );
+
+    setShowEditModal(null);
+    toast.success(`✓ Producto "${editProdName}" actualizado correctamente.`);
+  };
+
+  const handleDeleteProduct = (id: string, name: string) => {
+    setInventoryItems((prev) => prev.filter((i) => i.id !== id));
+    toast.info(`Producto "${name}" eliminado del inventario.`);
+  };
+
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in text-foreground">
       {/* Inventory Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
         <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
@@ -3410,49 +4212,128 @@ function InventarioTab({
         </div>
       </div>
 
-      {/* Inventory Table */}
+      {/* Inventory Table Card */}
       <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-4 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-border/40">
+        {/* Row 1: Title and Header Buttons */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/40">
           <div>
-            <h3 className="font-bold text-sm text-foreground">Inventario & Stock de Tienda</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="font-bold text-sm text-foreground">Inventario & Stock de Tienda</h3>
+              <span className="px-2 py-0.5 rounded-full bg-secondary text-[10px] font-extrabold text-foreground border border-border/60">
+                {filteredItems.length}
+              </span>
+            </div>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Control de existencias para venta en mostrador e insumos del gimnasio.
+              Control de existencias, código de barras y fotos de productos para el POS.
             </p>
+          </div>
+
+          <div className="flex items-center gap-2.5 shrink-0">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={exportInventoryCSV}
+              className="h-9 rounded-xl font-bold text-xs gap-1.5 border-border text-foreground hover:bg-secondary"
+            >
+              <Download className="h-4 w-4" /> Exportar CSV
+            </Button>
+
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => setShowAddModal(true)}
+              className="h-9 rounded-xl font-bold text-xs gap-1.5 bg-primary text-primary-foreground shadow-xs"
+            >
+              <PlusCircle className="h-4 w-4" /> Nuevo Producto
+            </Button>
           </div>
         </div>
 
+        {/* Row 2: Search & Category Filter */}
+        <div className="flex flex-wrap items-center justify-between gap-3 p-2.5 bg-secondary/20 border border-border/50 rounded-2xl">
+          <div className="relative flex-1 min-w-[200px] sm:max-w-xs">
+            <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Buscar por nombre, categoría o código de barras..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-9 w-full pl-8 pr-3 rounded-xl border border-border bg-background text-xs font-bold text-foreground focus-visible:outline-none placeholder:font-normal placeholder:text-muted-foreground"
+            />
+          </div>
+
+          <div className="flex items-center gap-2.5 w-full sm:w-auto">
+            <Select value={categoryFilter} onValueChange={(val) => setCategoryFilter(val)}>
+              <SelectTrigger className="w-[170px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
+                <SelectValue placeholder="Categoría" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
+                <SelectItem value="all">📦 Todas las Categorías</SelectItem>
+                <SelectItem value="Suplementos">💊 Suplementos</SelectItem>
+                <SelectItem value="Bebidas">🥤 Bebidas</SelectItem>
+                <SelectItem value="Accesorios">🎒 Accesorios</SelectItem>
+                <SelectItem value="Indumentaria">👕 Indumentaria</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Table list */}
         <div className="overflow-x-auto border border-border/60 rounded-2xl bg-background">
-          <table className="w-full text-left text-xs min-w-[650px] border-collapse">
+          <table className="w-full text-left text-xs min-w-[800px] border-collapse">
             <thead>
-              <tr className="border-b border-border/60 bg-secondary/40 text-muted-foreground font-bold text-[10px] uppercase">
-                <th className="p-3">Producto</th>
-                <th className="p-3">Categoría</th>
-                <th className="p-3 text-right">Precio Costo</th>
-                <th className="p-3 text-right">Precio Venta</th>
-                <th className="p-3 text-center">Stock Actual</th>
-                <th className="p-3 text-center">Estado Stock</th>
-                <th className="p-3 text-right">Acciones</th>
+              <tr className="border-b border-border/60 bg-secondary/40 text-muted-foreground font-bold text-[10px] uppercase tracking-wider">
+                <th className="p-3.5 w-14 text-center">Imagen</th>
+                <th className="p-3.5">Producto & Cód. Barras</th>
+                <th className="p-3.5">Categoría</th>
+                <th className="p-3.5 text-right">Precio Costo</th>
+                <th className="p-3.5 text-right">Precio Venta</th>
+                <th className="p-3.5 text-center">Stock Actual</th>
+                <th className="p-3.5 text-center">Estado Stock</th>
+                <th className="p-3.5 text-right">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/30">
-              {inventoryItems.map((item) => {
+              {filteredItems.map((item) => {
                 const isLow = item.stock <= item.minStock;
                 return (
                   <tr key={item.id} className="hover:bg-secondary/20 transition-colors">
-                    <td className="p-3 font-bold text-foreground">{item.name}</td>
-                    <td className="p-3">
-                      <span className="text-[9.5px] font-bold px-2 py-0.5 rounded-full border bg-secondary text-foreground">
+                    <td className="p-3.5 text-center">
+                      {item.image ? (
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-10 h-10 rounded-xl object-cover border border-border mx-auto shrink-0 shadow-2xs"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-xl bg-secondary border border-border flex items-center justify-center text-muted-foreground font-bold text-xs mx-auto">
+                          📦
+                        </div>
+                      )}
+                    </td>
+                    <td className="p-3.5 font-bold text-foreground">
+                      <span className="block font-bold text-foreground">{item.name}</span>
+                      <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
+                        <QrCode className="h-3 w-3 text-muted-foreground/80" />
+                        <span className="font-mono">{item.barcode || "Sin Cód. Barras"}</span>
+                        <span className="mx-1">•</span>
+                        <span>Min: {item.minStock} {item.unit}</span>
+                      </div>
+                    </td>
+                    <td className="p-3.5">
+                      <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-lg border bg-secondary/50 border-border/60 text-foreground">
                         {item.category}
                       </span>
                     </td>
-                    <td className="p-3 text-right text-muted-foreground font-medium">${item.cost.toLocaleString()}</td>
-                    <td className="p-3 text-right font-bold text-foreground">${item.price.toLocaleString()}</td>
-                    <td className="p-3 text-center font-black text-sm">
-                      {item.stock} {item.unit}
+                    <td className="p-3.5 text-right text-muted-foreground font-semibold">${item.cost.toLocaleString()}</td>
+                    <td className="p-3.5 text-right font-black text-sm text-foreground">${item.price.toLocaleString()}</td>
+                    <td className="p-3.5 text-center font-black text-sm">
+                      {item.stock} <span className="text-xs font-normal text-muted-foreground">{item.unit}</span>
                     </td>
-                    <td className="p-3 text-center">
+                    <td className="p-3.5 text-center">
                       <span
-                        className={`text-[9.5px] font-bold px-2.5 py-1 rounded-full border ${
+                        className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full border ${
                           isLow
                             ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20"
                             : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
@@ -3461,16 +4342,35 @@ function InventarioTab({
                         {isLow ? "⚠️ Bajo Stock" : "🟢 OK"}
                       </span>
                     </td>
-                    <td className="p-3 text-right">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setShowAdjustModal(item)}
-                        className="h-7 text-[11px] font-bold rounded-lg border-border hover:bg-secondary"
-                      >
-                        Ajustar Stock
-                      </Button>
+                    <td className="p-3.5 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowAdjustModal(item)}
+                          className="h-8 text-[11px] font-bold rounded-xl border-border gap-1 hover:bg-secondary"
+                        >
+                          <PackagePlus className="h-3.5 w-3.5 text-primary" /> Stock
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleOpenEditModal(item)}
+                          className="h-8 text-[11px] font-bold rounded-xl border-border gap-1 hover:bg-secondary"
+                        >
+                          <Edit2 className="h-3.5 w-3.5 text-foreground" /> Editar
+                        </Button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteProduct(item.id, item.name)}
+                          className="p-1.5 text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 rounded-lg transition ml-0.5"
+                          title="Eliminar producto"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -3480,31 +4380,408 @@ function InventarioTab({
         </div>
       </div>
 
+      {/* Modal: Crear Nuevo Producto */}
+      {showAddModal && (
+        <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
+          <DialogContent className="sm:max-w-md border border-border bg-card p-6 rounded-3xl shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <DialogHeader>
+              <DialogTitle className="text-base font-bold flex items-center gap-2">
+                <PlusCircle className="h-5 w-5 text-primary" /> Registrar Nuevo Producto en Tienda
+              </DialogTitle>
+            </DialogHeader>
+
+            <form onSubmit={handleAddProduct} className="space-y-4 text-xs">
+              <div className="space-y-1">
+                <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
+                  Nombre del Producto:
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ej: Proteína Whey 1kg Vainilla"
+                  value={newProdName}
+                  onChange={(e) => setNewProdName(e.target.value)}
+                  className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block flex items-center gap-1">
+                    <QrCode className="h-3 w-3 text-muted-foreground" /> Código de Barras:
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ej: 7791234567890"
+                    value={newProdBarcode}
+                    onChange={(e) => setNewProdBarcode(e.target.value)}
+                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-mono font-bold text-foreground focus-visible:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
+                    Categoría:
+                  </label>
+                  <Select value={newProdCat} onValueChange={(val) => setNewProdCat(val)}>
+                    <SelectTrigger className="w-full h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
+                      <SelectItem value="Suplementos">💊 Suplementos</SelectItem>
+                      <SelectItem value="Bebidas">🥤 Bebidas</SelectItem>
+                      <SelectItem value="Accesorios">🎒 Accesorios</SelectItem>
+                      <SelectItem value="Indumentaria">👕 Indumentaria</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
+                  Foto del Producto:
+                </label>
+
+                <div className="flex items-center gap-3 bg-secondary/30 border border-border/60 p-2.5 rounded-2xl">
+                  {newProdImage ? (
+                    <div className="relative shrink-0">
+                      <img
+                        src={newProdImage}
+                        alt="Vista previa"
+                        className="w-12 h-12 rounded-xl object-cover border border-border shadow-xs"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setNewProdImage("")}
+                        className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-rose-600 text-white flex items-center justify-center text-xs shadow-xs hover:bg-rose-700"
+                        title="Quitar foto"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-12 h-12 rounded-xl bg-secondary border border-border/80 flex items-center justify-center text-muted-foreground shrink-0">
+                      <ImageIcon className="w-5 h-5" />
+                    </div>
+                  )}
+
+                  <div className="flex-1 min-w-0">
+                    <input
+                      type="file"
+                      id="new-prod-file-input"
+                      accept="image/*"
+                      onChange={(e) => handleImageFileUpload(e, setNewProdImage)}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="new-prod-file-input"
+                      className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-background border border-border text-xs font-bold text-foreground hover:bg-secondary transition shadow-2xs"
+                    >
+                      <Upload className="h-3.5 w-3.5 text-primary" /> Subir desde PC / Celular
+                    </label>
+                    <p className="text-[10px] text-muted-foreground mt-1 truncate">
+                      JPG, PNG o WEBP de tu galería o computadora.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
+                    Precio Costo ($):
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="0"
+                    value={newProdCost}
+                    onChange={(e) => setNewProdCost(e.target.value)}
+                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
+                    Precio Venta ($):
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="0"
+                    value={newProdPrice}
+                    onChange={(e) => setNewProdPrice(e.target.value)}
+                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
+                    Stock Inicial:
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="10"
+                    value={newProdStock}
+                    onChange={(e) => setNewProdStock(e.target.value)}
+                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
+                    Stock Mínimo:
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="5"
+                    value={newProdMinStock}
+                    onChange={(e) => setNewProdMinStock(e.target.value)}
+                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
+                    Unidad:
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="unid, bot"
+                    value={newProdUnit}
+                    onChange={(e) => setNewProdUnit(e.target.value)}
+                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                  />
+                </div>
+              </div>
+
+              <DialogFooter className="gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowAddModal(false)}
+                  className="rounded-xl text-xs font-bold"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  className="rounded-xl text-xs font-bold bg-primary text-primary-foreground"
+                >
+                  Guardar Producto
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Modal: Editar Producto Existente */}
+      {showEditModal && (
+        <Dialog open={!!showEditModal} onOpenChange={(open) => !open && setShowEditModal(null)}>
+          <DialogContent className="sm:max-w-md border border-border bg-card p-6 rounded-3xl shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <DialogHeader>
+              <DialogTitle className="text-base font-bold flex items-center gap-2">
+                <Edit2 className="h-5 w-5 text-primary" /> Editar Detalles de Producto
+              </DialogTitle>
+            </DialogHeader>
+
+            <form onSubmit={handleSaveEditProduct} className="space-y-4 text-xs">
+              <div className="space-y-1">
+                <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
+                  Nombre del Producto:
+                </label>
+                <input
+                  type="text"
+                  value={editProdName}
+                  onChange={(e) => setEditProdName(e.target.value)}
+                  className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block flex items-center gap-1">
+                    <QrCode className="h-3 w-3 text-muted-foreground" /> Código de Barras:
+                  </label>
+                  <input
+                    type="text"
+                    value={editProdBarcode}
+                    onChange={(e) => setEditProdBarcode(e.target.value)}
+                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-mono font-bold text-foreground focus-visible:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
+                    Categoría:
+                  </label>
+                  <Select value={editProdCat} onValueChange={(val) => setEditProdCat(val)}>
+                    <SelectTrigger className="w-full h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
+                      <SelectItem value="Suplementos">💊 Suplementos</SelectItem>
+                      <SelectItem value="Bebidas">🥤 Bebidas</SelectItem>
+                      <SelectItem value="Accesorios">🎒 Accesorios</SelectItem>
+                      <SelectItem value="Indumentaria">👕 Indumentaria</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
+                  Foto del Producto:
+                </label>
+
+                <div className="flex items-center gap-3 bg-secondary/30 border border-border/60 p-2.5 rounded-2xl">
+                  {editProdImage ? (
+                    <div className="relative shrink-0">
+                      <img
+                        src={editProdImage}
+                        alt="Vista previa"
+                        className="w-12 h-12 rounded-xl object-cover border border-border shadow-xs"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setEditProdImage("")}
+                        className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-rose-600 text-white flex items-center justify-center text-xs shadow-xs hover:bg-rose-700"
+                        title="Quitar foto"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-12 h-12 rounded-xl bg-secondary border border-border/80 flex items-center justify-center text-muted-foreground shrink-0">
+                      <ImageIcon className="w-5 h-5" />
+                    </div>
+                  )}
+
+                  <div className="flex-1 min-w-0">
+                    <input
+                      type="file"
+                      id="edit-prod-file-input"
+                      accept="image/*"
+                      onChange={(e) => handleImageFileUpload(e, setEditProdImage)}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="edit-prod-file-input"
+                      className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-background border border-border text-xs font-bold text-foreground hover:bg-secondary transition shadow-2xs"
+                    >
+                      <Upload className="h-3.5 w-3.5 text-primary" /> Cambiar desde PC / Celular
+                    </label>
+                    <p className="text-[10px] text-muted-foreground mt-1 truncate">
+                      JPG, PNG o WEBP de tu galería o computadora.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
+                    Precio Costo ($):
+                  </label>
+                  <input
+                    type="number"
+                    value={editProdCost}
+                    onChange={(e) => setEditProdCost(e.target.value)}
+                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
+                    Precio Venta ($):
+                  </label>
+                  <input
+                    type="number"
+                    value={editProdPrice}
+                    onChange={(e) => setEditProdPrice(e.target.value)}
+                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
+                    Stock Mínimo (Alerta):
+                  </label>
+                  <input
+                    type="number"
+                    value={editProdMinStock}
+                    onChange={(e) => setEditProdMinStock(e.target.value)}
+                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
+                    Unidad:
+                  </label>
+                  <input
+                    type="text"
+                    value={editProdUnit}
+                    onChange={(e) => setEditProdUnit(e.target.value)}
+                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                  />
+                </div>
+              </div>
+
+              <DialogFooter className="gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowEditModal(null)}
+                  className="rounded-xl text-xs font-bold"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  className="rounded-xl text-xs font-bold bg-primary text-primary-foreground"
+                >
+                  Guardar Cambios
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
+
       {/* Adjust Stock Modal */}
       {showAdjustModal && (
         <Dialog open={!!showAdjustModal} onOpenChange={(open) => !open && setShowAdjustModal(null)}>
-          <DialogContent className="max-w-md border border-border bg-card">
+          <DialogContent className="max-w-md border border-border bg-card p-6 rounded-3xl shadow-2xl space-y-4">
             <DialogHeader>
-              <DialogTitle>Reabastecer / Ajustar Stock</DialogTitle>
+              <DialogTitle className="text-base font-bold flex items-center gap-2">
+                <PackagePlus className="h-5 w-5 text-primary" /> Reabastecer / Ajustar Stock
+              </DialogTitle>
             </DialogHeader>
-            <div className="space-y-4 pt-2">
-              <div className="p-3 bg-secondary/30 border border-border/60 rounded-xl">
-                <span className="font-bold text-sm block">{showAdjustModal.name}</span>
+            <div className="space-y-4 pt-2 text-xs">
+              <div className="p-3.5 bg-secondary/30 border border-border/60 rounded-2xl">
+                <span className="font-bold text-sm block text-foreground">{showAdjustModal.name}</span>
                 <span className="text-xs text-muted-foreground">
-                  Stock Actual: <strong>{showAdjustModal.stock} {showAdjustModal.unit}</strong>
+                  Stock Actual: <strong>{showAdjustModal.stock} {showAdjustModal.unit}</strong> (Min: {showAdjustModal.minStock})
                 </span>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-muted-foreground uppercase">
-                  Cantidad a Agregar (o restar con signo -):
+              <div className="space-y-1.5">
+                <label className="text-[10.5px] font-bold text-muted-foreground uppercase block">
+                  Cantidad a Ingresar (o restar con signo -):
                 </label>
                 <input
                   type="number"
-                  placeholder="Ej: 20 o -5"
+                  placeholder="Ej: 20 para agregar o -5 para reducir"
                   value={adjustAmount}
                   onChange={(e) => setAdjustAmount(e.target.value)}
-                  className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm font-bold text-foreground focus-visible:outline-none"
+                  className="w-full h-9.5 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
                 />
               </div>
 
@@ -3513,7 +4790,7 @@ function InventarioTab({
                   type="button"
                   variant="outline"
                   onClick={() => setShowAdjustModal(null)}
-                  className="rounded-xl"
+                  className="rounded-xl text-xs font-bold"
                 >
                   Cancelar
                 </Button>
@@ -3522,7 +4799,7 @@ function InventarioTab({
                   onClick={() => {
                     const parsed = parseInt(adjustAmount);
                     if (isNaN(parsed)) {
-                      alert("Ingresa un número válido.");
+                      toast.error("Ingresa un número válido para el ajuste.");
                       return;
                     }
                     setInventoryItems((prev) =>
@@ -3532,9 +4809,9 @@ function InventarioTab({
                     );
                     setAdjustAmount("");
                     setShowAdjustModal(null);
-                    alert("✓ Stock actualizado correctamente.");
+                    toast.success(`✓ Stock de ${showAdjustModal.name} actualizado correctamente.`);
                   }}
-                  className="rounded-xl font-bold bg-primary text-primary-foreground"
+                  className="rounded-xl text-xs font-bold bg-primary text-primary-foreground"
                 >
                   Guardar Ajuste
                 </Button>
@@ -3802,9 +5079,15 @@ function ReseñasTab({
 function AsistenciasTab({
   selectedBranchId,
   blackoutDays,
+  membersList = [],
+  classesList = [],
+  setClassesList,
 }: {
   selectedBranchId: string;
   blackoutDays: { id: string; date: string; reason: string }[];
+  membersList?: any[];
+  classesList?: any[];
+  setClassesList?: React.Dispatch<React.SetStateAction<any[]>>;
 }) {
   const [historySearch, setHistorySearch] = useState("");
   const [methodFilter, setMethodFilter] = useState("Todos");
@@ -3878,7 +5161,7 @@ function AsistenciasTab({
     },
   ]);
 
-  const recentCheckins = [
+  const [recentCheckinsList, setRecentCheckinsList] = useState([
     {
       name: "Agustín Gómez",
       time: "11:24 AM",
@@ -3913,7 +5196,60 @@ function AsistenciasTab({
       photo:
         "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80",
     },
-  ];
+  ]);
+
+  const [isCheckInModalOpen, setIsCheckInModalOpen] = useState(false);
+  const [receptionSearchTerm, setReceptionSearchTerm] = useState("");
+
+  // Map member bookings for today's classes
+  const memberBookings = useMemo(() => {
+    const map: Record<
+      string,
+      { classId: string; className: string; time: string; spotIndex: number; isPresent: boolean }[]
+    > = {};
+
+    (classesList || []).forEach((c: any) => {
+      Object.entries(c.enrolledSpots || {}).forEach(([spotIdxStr, studentName]) => {
+        const key = (studentName as string).toLowerCase().trim();
+        if (!map[key]) map[key] = [];
+        const spotIndex = Number(spotIdxStr);
+        const isPresent = c.attendance?.[spotIndex] === "present";
+        map[key].push({
+          classId: c.id,
+          className: c.name,
+          time: c.time,
+          spotIndex,
+          isPresent,
+        });
+      });
+    });
+
+    return map;
+  }, [classesList]);
+
+  const availableMembersForCheckIn = useMemo(() => {
+    const list = membersList || [];
+    if (!receptionSearchTerm.trim()) {
+      return [...list].sort((a: any, b: any) => {
+        const aKey = a.name.toLowerCase().trim();
+        const bKey = b.name.toLowerCase().trim();
+        const aHasRes = (memberBookings[aKey] || []).length > 0;
+        const bHasRes = (memberBookings[bKey] || []).length > 0;
+        if (aHasRes && !bHasRes) return -1;
+        if (!aHasRes && bHasRes) return 1;
+        return 0;
+      });
+    }
+
+    const term = receptionSearchTerm.toLowerCase().trim();
+    return list.filter((m: any) => {
+      return (
+        m.name.toLowerCase().includes(term) ||
+        (m.dni && m.dni.includes(term)) ||
+        (m.phone && m.phone.includes(term))
+      );
+    });
+  }, [membersList, receptionSearchTerm, memberBookings]);
 
   // Filtering history by search, method, date and status
   const filteredHistory = useMemo(() => {
@@ -4054,21 +5390,31 @@ function AsistenciasTab({
         </div>
       </div>
 
-      {/* Explanatory Banner: Check-in en Recepción */}
-      <div className="p-4 rounded-3xl bg-card border border-border shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-        <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0 border border-amber-500/20">
-            <DoorOpen className="w-5 h-5" />
+      {/* Control de Acceso (Check-in en Recepción) */}
+      <div className="rounded-3xl border border-border bg-card p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-2xl bg-amber-500/10 text-amber-500 border border-amber-500/20">
+              <DoorOpen className="w-5 h-5" />
+            </div>
+            <h3 className="font-bold text-sm text-foreground">
+              Control de Acceso (Check-in en Recepción)
+            </h3>
           </div>
-          <div>
-            <span className="font-bold text-foreground block">
-              ¿Cómo funciona el Check-in en Recepción?
-            </span>
-            <span className="text-muted-foreground text-[11px] block mt-0.5">
-              Es la validación presencial otorgada manualmente por el personal del gimnasio (búsqueda por DNI, huella o molinete) cuando el socio no dispone de su smartphone para escanear QR o ingresar por GPS.
-            </span>
-          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed pl-1">
+            Valida el ingreso presencial de los socios. Detecta automáticamente sus reservas de clases para el día de hoy.
+          </p>
         </div>
+
+        <Button
+          onClick={() => {
+            setReceptionSearchTerm("");
+            setIsCheckInModalOpen(true);
+          }}
+          className="rounded-2xl font-bold text-xs gap-2 shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs px-5 h-10"
+        >
+          <Search className="h-4 w-4" /> Buscar Socio para Check-in
+        </Button>
       </div>
 
       {/* Live Feed & Recent Checkins Monitor */}
@@ -4085,7 +5431,7 @@ function AsistenciasTab({
           </div>
 
           <div className="space-y-4">
-            {recentCheckins.map((c, i) => (
+            {recentCheckinsList.map((c, i) => (
               <div
                 key={i}
                 className="flex items-center justify-between pb-3 border-b border-border/50 last:border-0 last:pb-0"
@@ -4396,6 +5742,188 @@ function AsistenciasTab({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Modal Shadcn UI: Check-in en Recepción & Validación Presencial */}
+      <Dialog open={isCheckInModalOpen} onOpenChange={setIsCheckInModalOpen}>
+        <DialogContent className="max-w-xl max-h-[85vh] rounded-3xl p-6 border-border shadow-2xl bg-slate-50 dark:bg-background overflow-hidden flex flex-col">
+          <DialogHeader className="pb-3 border-b border-border/40 shrink-0">
+            <DialogTitle className="text-lg font-black text-foreground flex items-center gap-2">
+              <DoorOpen className="h-5 w-5 text-amber-500" /> Check-in en Recepción (Validación Presencial)
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground leading-relaxed pt-1">
+              Busca un alumno por nombre, DNI o teléfono. El sistema resalta automáticamente a los socios con reserva en las clases de hoy.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 pt-3 overflow-hidden flex flex-col flex-1">
+            {/* Buscador */}
+            <div className="relative shrink-0">
+              <Search className="absolute left-3.5 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por DNI, Nombre o Teléfono..."
+                value={receptionSearchTerm}
+                onChange={(e) => setReceptionSearchTerm(e.target.value)}
+                className="pl-10 rounded-xl text-xs bg-secondary/30 border-border/60 h-10"
+                autoFocus
+              />
+            </div>
+
+            {/* Lista de Alumnos */}
+            <div className="max-h-[380px] overflow-y-auto custom-scrollbar space-y-2.5 pr-1 flex-1">
+              {availableMembersForCheckIn.map((m: any) => {
+                const nameKey = (m.name || "").toLowerCase().trim();
+                const bookings = memberBookings[nameKey] || [];
+                const activeBooking = bookings.find((b) => !b.isPresent) || bookings[0];
+
+                const isAptoExpired =
+                  m.hasApto !== "Entregado" ||
+                  (m.hasApto === "Entregado" && m.aptoExp && new Date(m.aptoExp) < new Date());
+
+                return (
+                  <div
+                    key={m.name || m.id}
+                    className="p-3.5 rounded-2xl border border-border/60 bg-card hover:bg-secondary/30 transition-all space-y-2.5"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <img
+                          src={m.photo || getStudentPhoto(m.name)}
+                          alt={m.name}
+                          className="h-10 w-10 rounded-full object-cover shrink-0 border border-border/60 shadow-2xs"
+                        />
+                        <div className="leading-tight min-w-0">
+                          <span className="font-bold text-xs text-foreground block truncate">
+                            {m.name}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground font-semibold flex items-center gap-1.5 flex-wrap mt-0.5">
+                            <span className="bg-primary/10 text-primary px-1.5 py-0.2 rounded font-bold">
+                              {m.plan || "Pase Libre"}
+                            </span>
+                            <span>· DNI: {m.dni || "38.412.901"}</span>
+                            <span>· {m.status || "Activo"}</span>
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Apto físico badge */}
+                      <span
+                        className={cn(
+                          "text-[10px] font-bold px-2.5 py-0.5 rounded-full shrink-0 border",
+                          isAptoExpired
+                            ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                            : "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+                        )}
+                      >
+                        {isAptoExpired ? "Apto Pendiente" : "Apto Vigente"}
+                      </span>
+                    </div>
+
+                    {/* Ficha de Reserva Próxima de la Clase */}
+                    {activeBooking ? (
+                      <div className="p-2.5 rounded-xl bg-secondary/50 border border-border/40 flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="relative flex h-2 w-2 shrink-0">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                          </span>
+                          <div className="text-[11px] font-medium text-foreground truncate">
+                            <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                              Reserva Próxima Hoy:
+                            </span>{" "}
+                            {activeBooking.className} ({activeBooking.time} hs)
+                          </div>
+                        </div>
+
+                        {activeBooking.isPresent ? (
+                          <span className="text-[10px] font-bold text-emerald-600 bg-emerald-500/10 px-2.5 py-1 rounded-xl border border-emerald-500/20 shrink-0">
+                            ✓ Presente
+                          </span>
+                        ) : (
+                          <Button
+                            type="button"
+                            size="sm"
+                            className="h-7 text-[11px] font-bold rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 shadow-2xs shrink-0 px-3"
+                            onClick={() => {
+                              // Perform checkin for this class
+                              setClassesList?.((prev: any[]) =>
+                                prev.map((c) => {
+                                  if (c.id === activeBooking.classId) {
+                                    const copyAtt = { ...(c.attendance || {}) };
+                                    copyAtt[activeBooking.spotIndex] = "present";
+                                    return { ...c, attendance: copyAtt };
+                                  }
+                                  return c;
+                                })
+                              );
+
+                              // Add to recent checkins list
+                              const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                              setRecentCheckinsList((prev) => [
+                                {
+                                  name: m.name,
+                                  time: nowTime,
+                                  method: "Recepción",
+                                  alert: isAptoExpired ? "Apto Pendiente" : null,
+                                  alertColor: isAptoExpired ? "bg-amber-500/10 text-amber-600 border-amber-500/20" : "",
+                                  photo: m.photo || getStudentPhoto(m.name),
+                                },
+                                ...prev,
+                              ]);
+
+                              toast.success(
+                                `✓ Check-in exitoso: ${m.name} ingresó a ${activeBooking.className} (${activeBooking.time} hs)`
+                              );
+                              setIsCheckInModalOpen(false);
+                            }}
+                          >
+                            Confirmar Check-in
+                          </Button>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="p-2 rounded-xl bg-secondary/30 flex items-center justify-between gap-2">
+                        <span className="text-[10.5px] text-muted-foreground italic">
+                          Sin reservas próximas para hoy.
+                        </span>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-[10.5px] font-bold rounded-xl shrink-0"
+                          onClick={() => {
+                            const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            setRecentCheckinsList((prev) => [
+                              {
+                                name: m.name,
+                                time: nowTime,
+                                method: "Recepción",
+                                alert: isAptoExpired ? "Apto Pendiente" : null,
+                                alertColor: isAptoExpired ? "bg-amber-500/10 text-amber-600 border-amber-500/20" : "",
+                                photo: m.photo || getStudentPhoto(m.name),
+                              },
+                              ...prev,
+                            ]);
+                            toast.success(`✓ Ingreso general a sala registrado para ${m.name}`);
+                            setIsCheckInModalOpen(false);
+                          }}
+                        >
+                          Ingreso General
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+
+              {availableMembersForCheckIn.length === 0 && (
+                <p className="text-xs text-muted-foreground italic text-center py-8">
+                  No se encontraron alumnos que coincidan con la búsqueda.
+                </p>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -4680,7 +6208,7 @@ function MiembrosTab({
     }[] = [];
     const enrolled: { className: string; day: string; time: string }[] = [];
 
-    classesList.forEach((c: any) => {
+    (classesList || []).forEach((c: any) => {
       const enrolledEntry = Object.entries(c.enrolledSpots || {}).find(
         ([, name]) => name === memberName,
       );
@@ -5155,87 +6683,7 @@ function MiembrosTab({
         </Card>
       </div>
 
-      {/* Control de Acceso (Check-in Express) */}
-      <Card className=" border-border bg-card/60 backdrop-blur-sm">
-        <CardContent className="p-5 space-y-4">
-          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-            <div>
-              <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
-                <DoorOpen className="w-4 h-4 text-primary" /> Control de Acceso (Check-in Express)
-              </h3>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Ingresá el DNI o nombre del alumno para validar el ingreso.
-              </p>
-            </div>
-            <form onSubmit={handleCheckIn} className="flex gap-2 w-full sm:w-auto">
-              <Input
-                placeholder="DNI o Nombre..."
-                value={checkInQuery}
-                onChange={(e) => setCheckInQuery(e.target.value)}
-                className="h-9 w-full sm:w-64 bg-background"
-              />
-              <Button type="submit" size="sm" className="h-9">
-                Validar
-              </Button>
-            </form>
-          </div>
 
-          {checkInResult && (
-            <div
-              className={`p-4 rounded-xl border flex flex-col sm:flex-row gap-4 items-center justify-between animate-fade-in ${
-                checkInResult.status === "allowed"
-                  ? "bg-primary/ border-primary/ text-primary dark:text-primary"
-                  : checkInResult.status === "conditional"
-                    ? "bg-secondary/ border-border/ text-secondary-foreground dark:text-secondary-foreground"
-                    : "bg-destructive/ border-destructive/ text-destructive dark:text-destructive"
-              }`}
-            >
-              <div className="flex items-center gap-3 w-full sm:w-auto">
-                {checkInResult.success && checkInResult.member && (
-                  <img
-                    src={checkInResult.member.photo}
-                    alt={checkInResult.member.name}
-                    className="h-10 w-10 rounded-full object-cover border border-border/40 shrink-0"
-                  />
-                )}
-                <div>
-                  <div className="font-bold text-sm">
-                    {checkInResult.success && checkInResult.member
-                      ? checkInResult.member.name
-                      : "Resultado:"}
-                  </div>
-                  <div className="text-xs mt-0.5 leading-relaxed">{checkInResult.message}</div>
-                </div>
-              </div>
-              {checkInResult.success && (
-                <div className="flex gap-2 w-full sm:w-auto justify-end">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-xs"
-                    onClick={() => setCheckInResult(null)}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    size="sm"
-                    className={`text-xs ${
-                      checkInResult.status === "allowed"
-                        ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                        : checkInResult.status === "conditional"
-                          ? "bg-secondary hover:bg-secondary text-white"
-                          : "bg-destructive hover:bg-destructive text-white"
-                    }`}
-                    onClick={handleConfirmCheckIn}
-                  >
-                    Permitir e Ingresar
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
       <div className="rounded-xl border border-border bg-card overflow-hidden">
         {/* Toolbar integrada en la tabla */}
@@ -9526,6 +10974,8 @@ function ClasesTab({
           </div>
         </DialogContent>
       </Dialog>
+
+
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
           <h2 className="text-xl font-bold tracking-tight">Calendario de Clases</h2>
@@ -10518,18 +11968,6 @@ function ClasesTab({
       </DialogContent>
     </Dialog>
 
-      {activeBlackout && (
-        <div className="p-4 bg-destructive/ border border-destructive/ text-destructive rounded-3xl text-xs font-semibold flex items-center gap-3">
-          <AlertCircle className="h-5 w-5 shrink-0" />
-          <div>
-            <div className="font-bold">⚠️ Sede Cerrada por Día de Cierre / Feriado</div>
-            <div className="text-[11px] text-destructive/80 mt-0.5">
-              Motivo: {activeBlackout.reason}. Todas las actividades están suspendidas por hoy.
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Main content grid based on viewMode */}
       {viewMode === "list" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full items-stretch">
@@ -11416,6 +12854,20 @@ function ConfigTab({
           {/* Subtab 1: Basic Config & 7-Day Scheduler */}
           {subTab === "basico" && (
             <div className="space-y-6 max-w-3xl">
+              {/* Tema & Apariencia Visual (Rimu Style Dark Mode & System Auto-detect) */}
+              <div className="rounded-3xl border border-border bg-card p-6 shadow-xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
+                      Apariencia Visual y Modo Oscuro
+                    </h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed max-w-xl">
+                      Personaliza tu experiencia. Elige el <strong>Modo Oscuro</strong> (estética minimalista azabache basada en <em>Rimu App</em> <code className="text-[10px] bg-secondary px-1.5 py-0.5 rounded font-mono">#0a0a0a</code>), el <strong>Modo Claro</strong> actual, o activa la <strong>adaptación automática</strong> según el tema del sistema operativo.
+                    </p>
+                  </div>
+                  <ThemeToggle variant="outline" size="default" showLabel />
+                </div>
+              </div>
               {/* Photos */}
               <div className="rounded-3xl border border-border bg-card p-6">
                 <div className="flex justify-between items-center mb-4">

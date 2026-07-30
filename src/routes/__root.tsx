@@ -126,8 +126,11 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+import { useTheme } from "../lib/use-theme";
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  useTheme(); // Initializes system dark mode and theme persistence
 
   return (
     <QueryClientProvider client={queryClient}>
