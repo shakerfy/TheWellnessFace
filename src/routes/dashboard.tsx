@@ -49,6 +49,12 @@ import {
   Package,
   PackagePlus,
   PlusCircle,
+  FolderPlus,
+  History,
+  Truck,
+  Send,
+  ChevronDown,
+  ChevronUp,
   Upload,
   QrCode,
   Printer,
@@ -58,6 +64,12 @@ import {
   UserCheck,
   UserX,
   Layers,
+  Copy,
+  Ticket,
+  ShieldCheck,
+  FileCheck,
+  CalendarX,
+  Sparkles,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -118,6 +130,22 @@ import { Separator } from "@/components/ui/separator";
 export const Route = createFileRoute("/dashboard")({
   component: GymDashboard,
 });
+
+const getStudentPhoto = (name: string) => {
+  const avatars = [
+    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80",
+    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80",
+    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80",
+    "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80",
+    "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80",
+  ];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % avatars.length;
+  return avatars[index];
+};
 
 const TABS = [
   { id: "asistencia", label: "Asistencias", icon: Activity },
@@ -1041,6 +1069,7 @@ function GymDashboard() {
       price: 28500,
       duration: "Mensual",
       activeCount: 68,
+      isFeatured: true,
       includedServices: ["vestuarios", "duchas", "lockers", "wifi", "parking"],
     },
     {
@@ -1479,71 +1508,89 @@ function GymDashboard() {
       id: "inv-1",
       name: "Bebida Isotónica Gatorade 500ml",
       category: "Bebidas",
+      supplierId: "sup-2",
       price: 2500,
       cost: 1200,
       stock: 48,
       minStock: 15,
-      unit: "unidades",
+      unit: "bot",
       barcode: "7791234567890",
       image: "https://images.unsplash.com/photo-1622543925917-763c34d1a86e?w=150&auto=format&fit=crop&q=80",
+      variants: [
+        { id: "v1-1", name: "Sabor Manzana", stock: 24 },
+        { id: "v1-2", name: "Sabor Naranja", stock: 24 },
+      ],
     },
     {
       id: "inv-2",
       name: "Proteína Whey Protein Isolate 1kg",
       category: "Suplementos",
+      supplierId: "sup-1",
       price: 38000,
       cost: 24000,
       stock: 8,
       minStock: 10,
-      unit: "potes",
+      unit: "porc",
       barcode: "7798765432109",
       image: "https://images.unsplash.com/photo-1579722821273-0f6c7d44362f?w=150&auto=format&fit=crop&q=80",
+      variants: [
+        { id: "v2-1", name: "Vainilla Cream", stock: 5 },
+        { id: "v2-2", name: "Chocolate Double", stock: 3 },
+      ],
     },
     {
       id: "inv-3",
       name: "Barra Proteica ENA Choco Crunch",
       category: "Snacks",
+      supplierId: "sup-1",
       price: 3200,
       cost: 1600,
       stock: 65,
       minStock: 20,
-      unit: "unidades",
+      unit: "unid",
       barcode: "7795555444333",
       image: "https://images.unsplash.com/photo-1622484210800-88554284814e?w=150&auto=format&fit=crop&q=80",
     },
     {
       id: "inv-4",
       name: "Toalla Secado Rápido Shakerfy",
-      category: "Merchandising",
+      category: "Indumentaria",
+      supplierId: "sup-3",
       price: 14500,
       cost: 7000,
       stock: 14,
       minStock: 5,
-      unit: "unidades",
+      unit: "unid",
       barcode: "7790001000200",
       image: "https://images.unsplash.com/photo-1616627547584-bf28cee262db?w=150&auto=format&fit=crop&q=80",
+      variants: [
+        { id: "v4-1", name: "Negro Matte", stock: 8 },
+        { id: "v4-2", name: "Azul Cyan", stock: 6 },
+      ],
     },
     {
       id: "inv-5",
       name: "Botella Shakerfy Pro 750ml",
-      category: "Merchandising",
+      category: "Accesorios",
+      supplierId: "sup-3",
       price: 9800,
       cost: 4500,
       stock: 22,
       minStock: 8,
-      unit: "unidades",
+      unit: "unid",
       barcode: "7799999888777",
       image: "https://images.unsplash.com/photo-1544816155-12df9643f363?w=150&auto=format&fit=crop&q=80",
     },
     {
       id: "inv-6",
       name: "Cintas de Suspensión Pro-Gym",
-      category: "Equipamiento",
+      category: "Accesorios",
+      supplierId: "sup-3",
       price: 45000,
       cost: 28000,
-      stock: 4,
-      minStock: 3,
-      unit: "unidades",
+      stock: 2,
+      minStock: 4,
+      unit: "unid",
       barcode: "7793333222111",
       image: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=150&auto=format&fit=crop&q=80",
     },
@@ -1712,7 +1759,7 @@ function GymDashboard() {
           />
         )}
         {activeTab === "reseñas" && (
-          <ReseñasTab reviewsList={reviewsList as any} setReviewsList={setReviewsList as any} />
+          <ReseñasTab reviewsList={reviewsList as any} setReviewsList={setReviewsList as any} membersList={membersList} />
         )}
         {activeTab === "caja" && (
           <CajaTab
@@ -3604,9 +3651,23 @@ function ReportesTab({
               <div className="space-y-3 pt-1">
                 {membershipsList.length > 0 ? (
                   membershipsList.map((plan) => (
-                    <div key={plan.id} className="p-3 bg-secondary/30 border border-border/60 rounded-2xl flex items-center justify-between">
+                    <div
+                      key={plan.id}
+                      className={`p-3 rounded-2xl flex items-center justify-between transition-all ${
+                        plan.isFeatured
+                          ? "bg-primary/10 border-2 border-primary/40 shadow-xs"
+                          : "bg-secondary/30 border border-border/60"
+                      }`}
+                    >
                       <div>
-                        <span className="font-bold text-xs block">{plan.name}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-xs block">{plan.name}</span>
+                          {plan.isFeatured && (
+                            <span className="text-[9.5px] font-black bg-amber-500/20 text-amber-600 border border-amber-500/30 px-1.5 py-0.2 rounded-md">
+                              ★ Más Elegido
+                            </span>
+                          )}
+                        </div>
                         <span className="text-[11px] text-muted-foreground">{plan.duration} · ${plan.price.toLocaleString("es-AR")}</span>
                       </div>
                       <Badge variant="outline" className="text-xs font-bold border-primary/20 text-primary">
@@ -4003,14 +4064,112 @@ function ReportesTab({
 function InventarioTab({
   inventoryItems,
   setInventoryItems,
+  stockMovements: externalStockMovements,
+  setStockMovements: externalSetStockMovements,
 }: {
   inventoryItems: any[];
   setInventoryItems: React.Dispatch<React.SetStateAction<any[]>>;
+  stockMovements?: any[];
+  setStockMovements?: React.Dispatch<React.SetStateAction<any[]>>;
 }) {
+  const [activeSubTab, setActiveSubTab] = useState<"products" | "kardex">("products");
+
+  // Dynamic Categories State
+  const [categories, setCategories] = useState<string[]>([
+    "Suplementos",
+    "Bebidas",
+    "Accesorios",
+    "Indumentaria",
+    "Snacks",
+  ]);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+
+  // Local fallback state for stock movements (if not provided externally)
+  const [internalMovements, setInternalMovements] = useState<Array<{
+    id: string;
+    date: string;
+    productId: string;
+    productName: string;
+    type: "Entrada" | "Salida / Venta" | "Ajuste Manual" | "Merma / Pérdida";
+    quantity: number;
+    previousStock: number;
+    newStock: number;
+    user: string;
+    reason: string;
+  }>>([
+    {
+      id: "mov-1",
+      date: "30/07/2026 10:15",
+      productId: "inv-1",
+      productName: "Bebida Isotónica Gatorade 500ml",
+      type: "Entrada",
+      quantity: 50,
+      previousStock: 0,
+      newStock: 50,
+      user: "Recepción Admin",
+      reason: "Reabastecimiento de proveedor",
+    },
+    {
+      id: "mov-2",
+      date: "30/07/2026 11:02",
+      productId: "inv-1",
+      productName: "Bebida Isotónica Gatorade 500ml",
+      type: "Salida / Venta",
+      quantity: -2,
+      previousStock: 50,
+      newStock: 48,
+      user: "Caja POS",
+      reason: "Venta directa mostrador #1092",
+    },
+    {
+      id: "mov-3",
+      date: "29/07/2026 16:30",
+      productId: "inv-2",
+      productName: "Proteína Whey Protein Isolate 1kg",
+      type: "Ajuste Manual",
+      quantity: -1,
+      previousStock: 9,
+      newStock: 8,
+      user: "Carlos M. (Entrenador)",
+      reason: "Muestra gratis para degustación",
+    },
+    {
+      id: "mov-4",
+      date: "28/07/2026 09:00",
+      productId: "inv-3",
+      productName: "Barra Proteica ENA Choco Crunch",
+      type: "Entrada",
+      quantity: 65,
+      previousStock: 0,
+      newStock: 65,
+      user: "Recepción Admin",
+      reason: "Alta de inventario inicial",
+    },
+  ]);
+
+  const stockMovements = externalStockMovements || internalMovements;
+  const setStockMovements = externalSetStockMovements || setInternalMovements;
+
+  // Kardex Search & Filters
+  const [kardexSearch, setKardexSearch] = useState("");
+  const [kardexTypeFilter, setKardexTypeFilter] = useState("all");
+  const [kardexDateFrom, setKardexDateFrom] = useState("");
+  const [kardexDateTo, setKardexDateTo] = useState("");
+
   const [showAdjustModal, setShowAdjustModal] = useState<any | null>(null);
   const [adjustAmount, setAdjustAmount] = useState("");
+  const [adjustReason, setAdjustReason] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [supplierFilter, setSupplierFilter] = useState("all");
+  const [stockStatusFilter, setStockStatusFilter] = useState("all");
+  const [previewImageModal, setPreviewImageModal] = useState<{ url: string; title: string } | null>(null);
+  const [deleteConfirmState, setDeleteConfirmState] = useState<{
+    type: "category" | "supplier" | "product";
+    id: string;
+    name: string;
+  } | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState<any | null>(null);
 
@@ -4035,6 +4194,193 @@ function InventarioTab({
   const [editProdBarcode, setEditProdBarcode] = useState("");
   const [editProdImage, setEditProdImage] = useState("");
 
+  // Suppliers State
+  const [suppliersList, setSuppliersList] = useState<Array<{
+    id: string;
+    name: string;
+    contactName: string;
+    phone: string;
+    email: string;
+    category: string;
+  }>>([
+    {
+      id: "sup-1",
+      name: "Nutritech Argentina S.A.",
+      contactName: "Laura Fernández",
+      phone: "+5491155554321",
+      email: "pedidos@nutritech.com.ar",
+      category: "Suplementos & Nutrición",
+    },
+    {
+      id: "sup-2",
+      name: "Distribuidora Bebidas Express",
+      contactName: "Mariano Gómez",
+      phone: "+5491144448888",
+      email: "ventas@bebidasexpress.com",
+      category: "Bebidas & Hidratación",
+    },
+    {
+      id: "sup-3",
+      name: "Shakerfy Merch & Textile Direct",
+      contactName: "Federico Rossi",
+      phone: "+5491133332222",
+      email: "merch@shakerfy.com",
+      category: "Indumentaria & Accesorios",
+    },
+  ]);
+
+  const [showSupplierModal, setShowSupplierModal] = useState(false);
+  const [newSupName, setNewSupName] = useState("");
+  const [newSupContact, setNewSupContact] = useState("");
+  const [newSupPhone, setNewSupPhone] = useState("");
+  const [newSupEmail, setNewSupEmail] = useState("");
+  const [newSupCategory, setNewSupCategory] = useState("Suplementos & Nutrición");
+
+  // Replenishment Order Generator State
+  const [showReplenishModal, setShowReplenishModal] = useState(false);
+  const [replenishOrderItems, setReplenishOrderItems] = useState<Array<{
+    id: string;
+    name: string;
+    category: string;
+    stock: number;
+    minStock: number;
+    orderQty: number;
+    supplierId?: string;
+    cost: number;
+  }>>([]);
+
+  // Product Variants & Supplier Form State
+  const [expandedProductVariants, setExpandedProductVariants] = useState<Record<string, boolean>>({});
+  const [newProdVariantsInput, setNewProdVariantsInput] = useState("");
+  const [newProdSupplierId, setNewProdSupplierId] = useState("sup-1");
+  const [editProdSupplierId, setEditProdSupplierId] = useState("sup-1");
+
+  const openReplenishModal = () => {
+    const lowStockProds = inventoryItems.filter((i) => i.stock <= i.minStock);
+    if (lowStockProds.length === 0) {
+      toast.info("No hay productos actualmente por debajo del stock mínimo.");
+      return;
+    }
+    const orderItems = lowStockProds.map((p) => ({
+      id: p.id,
+      name: p.name,
+      category: p.category,
+      stock: p.stock,
+      minStock: p.minStock,
+      orderQty: Math.max(1, (p.minStock * 2) - p.stock),
+      supplierId: p.supplierId || "sup-1",
+      cost: p.cost || 0,
+    }));
+    setReplenishOrderItems(orderItems);
+    setShowReplenishModal(true);
+  };
+
+  const handleAddSupplier = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSupName.trim()) return;
+    const newSup = {
+      id: `sup-${Date.now()}`,
+      name: newSupName.trim(),
+      contactName: newSupContact.trim() || "Contacto",
+      phone: newSupPhone.trim(),
+      email: newSupEmail.trim(),
+      category: newSupCategory,
+    };
+    setSuppliersList((prev) => [...prev, newSup]);
+    setNewSupName("");
+    setNewSupContact("");
+    setNewSupPhone("");
+    setNewSupEmail("");
+    toast.success(`✓ Proveedor "${newSup.name}" agregado correctamente.`);
+  };
+
+  const handleDeleteSupplier = (supId: string) => {
+    if (suppliersList.length <= 1) {
+      toast.error("Debe existir al menos un proveedor registrado.");
+      return;
+    }
+    setSuppliersList((prev) => prev.filter((s) => s.id !== supId));
+    toast.info("Proveedor eliminado.");
+  };
+
+  const sendOrderViaWhatsApp = (supplierId?: string) => {
+    const targetSup = suppliersList.find((s) => s.id === supplierId) || suppliersList[0];
+    const itemsForSup = supplierId
+      ? replenishOrderItems.filter((i) => i.supplierId === supplierId)
+      : replenishOrderItems;
+
+    if (itemsForSup.length === 0) {
+      toast.warning("No hay productos asignados a este proveedor en el pedido.");
+      return;
+    }
+
+    const itemLines = itemsForSup
+      .map((i) => `• ${i.name}: ${i.orderQty} unid. (Stock actual: ${i.stock})`)
+      .join("\n");
+
+    const message = `Hola ${targetSup.contactName || targetSup.name}!\nTe envío la Orden de Reabastecimiento para Shakerfy Gym:\n\n${itemLines}\n\nPor favor confirmar recepción y plazo estimado de entrega. ¡Gracias!`;
+
+    const encodedMsg = encodeURIComponent(message);
+    const cleanPhone = (targetSup.phone || "").replace(/[^\d+]/g, "");
+    window.open(`https://wa.me/${cleanPhone}?text=${encodedMsg}`, "_blank");
+    toast.success(`✓ Pedido generado y listo para enviar vía WhatsApp.`);
+  };
+
+  const exportReplenishOrderCSV = () => {
+    if (replenishOrderItems.length === 0) {
+      toast.warning("No hay ítems en la orden.");
+      return;
+    }
+    const headers = ["Producto", "Categoría", "Stock Actual", "Stock Mínimo", "Cantidad a Pedir", "Proveedor", "Costo Unid ($)", "Subtotal Estimado ($)"];
+    const rows = replenishOrderItems.map((i) => {
+      const sup = suppliersList.find((s) => s.id === i.supplierId);
+      return [
+        `"${i.name.replace(/"/g, '""')}"`,
+        `"${i.category.replace(/"/g, '""')}"`,
+        i.stock,
+        i.minStock,
+        i.orderQty,
+        `"${(sup?.name || "Sin Proveedor").replace(/"/g, '""')}"`,
+        i.cost,
+        i.orderQty * i.cost,
+      ];
+    });
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `orden_reabastecimiento_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("✓ Orden de reabastecimiento exportada a CSV.");
+  };
+
+  const toggleVariantExpand = (productId: string) => {
+    setExpandedProductVariants((prev) => ({ ...prev, [productId]: !prev[productId] }));
+  };
+
+  const handleAdjustVariantStock = (productId: string, variantId: string, delta: number) => {
+    setInventoryItems((prev) =>
+      prev.map((item) => {
+        if (item.id !== productId) return item;
+        const updatedVariants = (item.variants || []).map((v: any) =>
+          v.id === variantId ? { ...v, stock: Math.max(0, v.stock + delta) } : v,
+        );
+        const newTotalStock = updatedVariants.reduce((sum: number, v: any) => sum + v.stock, 0);
+        return {
+          ...item,
+          variants: updatedVariants,
+          stock: newTotalStock,
+        };
+      }),
+    );
+    toast.success("✓ Stock de variante actualizado.");
+  };
+
   const totalValue = inventoryItems.reduce((sum, item) => sum + item.stock * item.price, 0);
   const lowStockCount = inventoryItems.filter((item) => item.stock <= item.minStock).length;
 
@@ -4046,9 +4392,95 @@ function InventarioTab({
         item.category.toLowerCase().includes(query) ||
         (item.barcode && item.barcode.toLowerCase().includes(query));
       const matchCat = categoryFilter === "all" || item.category.toLowerCase() === categoryFilter.toLowerCase();
-      return matchSearch && matchCat;
+      const matchSupplier = supplierFilter === "all" || item.supplierId === supplierFilter;
+      const matchStatus =
+        stockStatusFilter === "all"
+          ? true
+          : stockStatusFilter === "low"
+          ? item.stock <= item.minStock
+          : item.stock > item.minStock;
+      return matchSearch && matchCat && matchSupplier && matchStatus;
     });
-  }, [inventoryItems, searchQuery, categoryFilter]);
+  }, [inventoryItems, searchQuery, categoryFilter, supplierFilter, stockStatusFilter]);
+
+  const filteredMovements = useMemo(() => {
+    return stockMovements.filter((m: any) => {
+      const q = kardexSearch.toLowerCase();
+      const matchSearch =
+        m.productName.toLowerCase().includes(q) ||
+        m.reason.toLowerCase().includes(q) ||
+        m.user.toLowerCase().includes(q);
+      const matchType = kardexTypeFilter === "all" || m.type === kardexTypeFilter;
+
+      let matchDate = true;
+      if (kardexDateFrom || kardexDateTo) {
+        const parts = m.date.split(" ");
+        if (parts[0]) {
+          const [d, mo, y] = parts[0].split("/").map(Number);
+          const movTime = new Date(y, mo - 1, d).getTime();
+          if (kardexDateFrom) {
+            const fromTime = new Date(kardexDateFrom).getTime();
+            if (movTime < fromTime) matchDate = false;
+          }
+          if (kardexDateTo) {
+            const toTime = new Date(kardexDateTo).getTime();
+            if (movTime > toTime) matchDate = false;
+          }
+        }
+      }
+
+      return matchSearch && matchType && matchDate;
+    });
+  }, [stockMovements, kardexSearch, kardexTypeFilter, kardexDateFrom, kardexDateTo]);
+
+  const logStockMovement = (
+    productId: string,
+    productName: string,
+    type: "Entrada" | "Salida / Venta" | "Ajuste Manual" | "Merma / Pérdida",
+    quantity: number,
+    previousStock: number,
+    newStock: number,
+    reason: string
+  ) => {
+    const now = new Date();
+    const dateFormatted = `${now.toLocaleDateString("es-AR")} ${now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+    const newMov = {
+      id: `mov-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      date: dateFormatted,
+      productId,
+      productName,
+      type,
+      quantity,
+      previousStock,
+      newStock,
+      user: "Recepción Admin",
+      reason,
+    };
+    setStockMovements((prev: any[]) => [newMov, ...prev]);
+  };
+
+  const handleAddCategory = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = newCategoryName.trim();
+    if (!trimmed) return;
+    if (categories.some((c) => c.toLowerCase() === trimmed.toLowerCase())) {
+      toast.error("Esta categoría ya existe.");
+      return;
+    }
+    setCategories((prev) => [...prev, trimmed]);
+    setNewCategoryName("");
+    toast.success(`✓ Categoría "${trimmed}" agregada exitosamente.`);
+  };
+
+  const handleDeleteCategory = (catToDelete: string) => {
+    if (categories.length <= 1) {
+      toast.error("Debe existir al menos una categoría.");
+      return;
+    }
+    setCategories((prev) => prev.filter((c) => c !== catToDelete));
+    if (categoryFilter === catToDelete) setCategoryFilter("all");
+    toast.info(`Categoría "${catToDelete}" eliminada.`);
+  };
 
   const handleImageFileUpload = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -4065,7 +4497,7 @@ function InventarioTab({
       const result = event.target?.result as string;
       if (result) {
         setImageFn(result);
-        toast.success("📷 Foto cargada exitosamente.");
+        toast.success("Foto cargada exitosamente.");
       }
     };
     reader.readAsDataURL(file);
@@ -4103,6 +4535,37 @@ function InventarioTab({
     toast.success("✓ Inventario exportado a CSV correctamente.");
   };
 
+  const exportKardexCSV = () => {
+    if (filteredMovements.length === 0) {
+      toast.warning("No hay movimientos para exportar.");
+      return;
+    }
+    const headers = ["Fecha / Hora", "ID Producto", "Producto", "Tipo Movimiento", "Cantidad", "Stock Anterior", "Stock Nuevo", "Usuario Responsable", "Motivo / Detalle"];
+    const rows = filteredMovements.map((m: any) => [
+      `"${m.date}"`,
+      `"${m.productId}"`,
+      `"${m.productName.replace(/"/g, '""')}"`,
+      `"${m.type}"`,
+      m.quantity,
+      m.previousStock,
+      m.newStock,
+      `"${m.user.replace(/"/g, '""')}"`,
+      `"${m.reason.replace(/"/g, '""')}"`,
+    ]);
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `kardex_movimientos_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("✓ Kardex exportado a CSV correctamente.");
+  };
+
   const handleAddProduct = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newProdName.trim() || !newProdPrice || parseFloat(newProdPrice) <= 0) {
@@ -4110,20 +4573,37 @@ function InventarioTab({
       return;
     }
 
+    const initStock = parseInt(newProdStock) || 0;
+    const rawVariantNames = newProdVariantsInput.split(",").map((v) => v.trim()).filter(Boolean);
+    const parsedVariants = rawVariantNames.length > 0
+      ? rawVariantNames.map((name, idx) => ({
+          id: `v-${Date.now()}-${idx}`,
+          name,
+          stock: Math.floor(initStock / rawVariantNames.length),
+        }))
+      : undefined;
+
     const newItem = {
       id: `prod-${Date.now()}`,
       name: newProdName.trim(),
-      category: newProdCat,
+      category: newProdCat || categories[0],
+      supplierId: newProdSupplierId,
       cost: parseFloat(newProdCost) || 0,
       price: parseFloat(newProdPrice) || 0,
-      stock: parseInt(newProdStock) || 0,
+      stock: initStock,
       minStock: parseInt(newProdMinStock) || 5,
       unit: newProdUnit || "unid",
       barcode: newProdBarcode.trim() || `779${Math.floor(1000000000 + Math.random() * 9000000000)}`,
       image: newProdImage.trim() || "https://images.unsplash.com/photo-1544816155-12df9643f363?w=150&auto=format&fit=crop&q=80",
+      variants: parsedVariants,
     };
 
     setInventoryItems((prev) => [newItem, ...prev]);
+
+    if (initStock > 0) {
+      logStockMovement(newItem.id, newItem.name, "Entrada", initStock, 0, initStock, "Alta inicial de producto");
+    }
+
     setShowAddModal(false);
     setNewProdName("");
     setNewProdCost("");
@@ -4131,13 +4611,15 @@ function InventarioTab({
     setNewProdStock("");
     setNewProdBarcode("");
     setNewProdImage("");
+    setNewProdVariantsInput("");
     toast.success(`✓ "${newItem.name}" agregado exitosamente al inventario.`);
   };
 
   const handleOpenEditModal = (item: any) => {
     setShowEditModal(item);
     setEditProdName(item.name || "");
-    setEditProdCat(item.category || "Suplementos");
+    setEditProdCat(item.category || categories[0]);
+    setEditProdSupplierId(item.supplierId || suppliersList[0]?.id || "sup-1");
     setEditProdCost(item.cost ? item.cost.toString() : "0");
     setEditProdPrice(item.price ? item.price.toString() : "0");
     setEditProdMinStock(item.minStock ? item.minStock.toString() : "5");
@@ -4161,6 +4643,7 @@ function InventarioTab({
               ...item,
               name: editProdName.trim(),
               category: editProdCat,
+              supplierId: editProdSupplierId,
               cost: parseFloat(editProdCost) || 0,
               price: parseFloat(editProdPrice) || 0,
               minStock: parseInt(editProdMinStock) || 5,
@@ -4176,209 +4659,978 @@ function InventarioTab({
     toast.success(`✓ Producto "${editProdName}" actualizado correctamente.`);
   };
 
-  const handleDeleteProduct = (id: string, name: string) => {
-    setInventoryItems((prev) => prev.filter((i) => i.id !== id));
-    toast.info(`Producto "${name}" eliminado del inventario.`);
+  const handleConfirmDelete = () => {
+    if (!deleteConfirmState) return;
+    const { type, id, name } = deleteConfirmState;
+
+    if (type === "category") {
+      if (categories.length <= 1) {
+        toast.error("Debe existir al menos una categoría.");
+      } else {
+        setCategories((prev) => prev.filter((c) => c !== id));
+        if (categoryFilter === id) setCategoryFilter("all");
+        toast.info(`Categoría "${name}" eliminada.`);
+      }
+    } else if (type === "supplier") {
+      setSuppliersList((prev) => prev.filter((s) => s.id !== id));
+      toast.info(`Proveedor "${name}" eliminado.`);
+    } else if (type === "product") {
+      setInventoryItems((prev) => prev.filter((i) => i.id !== id));
+      toast.info(`Producto "${name}" eliminado del inventario.`);
+    }
+
+    setDeleteConfirmState(null);
   };
 
   return (
     <div className="space-y-6 animate-fade-in text-foreground">
-      {/* Inventory Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-            Total Productos Registrados
-          </span>
-          <div className="text-2xl font-black text-foreground">{inventoryItems.length} artículos</div>
-          <p className="text-[10.5px] text-muted-foreground">Bebidas, suplementos y merchandising</p>
+      {/* Subtab navigation & Category management bar */}
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 bg-card border border-border/80 p-3 rounded-3xl shadow-xs">
+        <div className="flex flex-wrap items-center gap-1.5 bg-secondary/50 p-1 rounded-2xl border border-border/50">
+          <button
+            type="button"
+            onClick={() => setActiveSubTab("products")}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              activeSubTab === "products"
+                ? "bg-background text-foreground shadow-xs"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Stock de Productos ({inventoryItems.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveSubTab("kardex")}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+              activeSubTab === "kardex"
+                ? "bg-background text-foreground shadow-xs"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <History className="h-3.5 w-3.5 text-primary" /> Historial Kardex ({stockMovements.length})
+          </button>
         </div>
 
-        <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-            Alertas de Bajo Stock
-          </span>
-          <div className={`text-2xl font-black ${lowStockCount > 0 ? "text-amber-600 dark:text-amber-400" : "text-emerald-600"}`}>
-            {lowStockCount} {lowStockCount === 1 ? "artículo" : "artículos"}
-          </div>
-          <p className="text-[10.5px] text-muted-foreground">Por debajo del stock mínimo</p>
-        </div>
+        <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+          {lowStockCount > 0 && (
+            <Button
+              type="button"
+              size="sm"
+              onClick={openReplenishModal}
+              className="h-9 text-xs font-bold rounded-xl gap-1.5 bg-amber-500 hover:bg-amber-600 text-white shadow-xs"
+            >
+              <Truck className="h-4 w-4" /> Reabastecer ({lowStockCount})
+            </Button>
+          )}
 
-        <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-            Valor de Inventario (Precio Venta)
-          </span>
-          <div className="text-2xl font-black text-primary">${totalValue.toLocaleString()}</div>
-          <p className="text-[10.5px] text-muted-foreground">Mercadería en depósito/mostrador</p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setShowSupplierModal(true)}
+            className="h-9 text-xs font-bold rounded-xl border-border gap-1.5 hover:bg-secondary"
+          >
+            <Building2 className="h-4 w-4 text-primary" /> Proveedores ({suppliersList.length})
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setShowCategoryModal(true)}
+            className="h-9 text-xs font-bold rounded-xl border-border gap-1.5 hover:bg-secondary"
+          >
+            <FolderPlus className="h-4 w-4 text-primary" /> Categorías ({categories.length})
+          </Button>
         </div>
       </div>
 
-      {/* Inventory Table Card */}
-      <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-4 shadow-xs">
-        {/* Row 1: Title and Header Buttons */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/40">
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-bold text-sm text-foreground">Inventario & Stock de Tienda</h3>
-              <span className="px-2 py-0.5 rounded-full bg-secondary text-[10px] font-extrabold text-foreground border border-border/60">
-                {filteredItems.length}
+      {/* Inventory Summary Cards */}
+      {activeSubTab === "products" ? (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+              Total Productos Registrados
+            </span>
+            <div className="text-2xl font-black text-foreground">{inventoryItems.length} artículos</div>
+            <p className="text-[10.5px] text-muted-foreground">Bebidas, suplementos y merchandising</p>
+          </div>
+
+          <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg flex flex-col justify-between">
+            <div className="space-y-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+                Alertas de Bajo Stock
               </span>
+              <div className={`text-2xl font-black ${lowStockCount > 0 ? "text-amber-600 dark:text-amber-400" : "text-emerald-600"}`}>
+                {lowStockCount} {lowStockCount === 1 ? "artículo" : "artículos"}
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Control de existencias, código de barras y fotos de productos para el POS.
-            </p>
+            {lowStockCount > 0 ? (
+              <button
+                type="button"
+                onClick={openReplenishModal}
+                className="mt-2 text-[10.5px] font-extrabold text-amber-600 dark:text-amber-400 hover:underline inline-flex items-center gap-1"
+              >
+                <Truck className="h-3 w-3" /> Generar Pedido de Reabastecimiento →
+              </button>
+            ) : (
+              <p className="text-[10.5px] text-muted-foreground">Por debajo del stock mínimo</p>
+            )}
           </div>
 
-          <div className="flex items-center gap-2.5 shrink-0">
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={exportInventoryCSV}
-              className="h-9 rounded-xl font-bold text-xs gap-1.5 border-border text-foreground hover:bg-secondary"
-            >
-              <Download className="h-4 w-4" /> Exportar CSV
-            </Button>
-
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => setShowAddModal(true)}
-              className="h-9 rounded-xl font-bold text-xs gap-1.5 bg-primary text-primary-foreground shadow-xs"
-            >
-              <PlusCircle className="h-4 w-4" /> Nuevo Producto
-            </Button>
+          <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+              Valor de Inventario (Precio Venta)
+            </span>
+            <div className="text-2xl font-black text-primary">${totalValue.toLocaleString()}</div>
+            <p className="text-[10.5px] text-muted-foreground">Mercadería en depósito/mostrador</p>
           </div>
         </div>
-
-        {/* Row 2: Search & Category Filter */}
-        <div className="flex flex-wrap items-center justify-between gap-3 p-2.5 bg-secondary/20 border border-border/50 rounded-2xl">
-          <div className="relative flex-1 min-w-[200px] sm:max-w-xs">
-            <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Buscar por nombre, categoría o código de barras..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-9 w-full pl-8 pr-3 rounded-xl border border-border bg-background text-xs font-bold text-foreground focus-visible:outline-none placeholder:font-normal placeholder:text-muted-foreground"
-            />
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+              Total Movimientos Registrados
+            </span>
+            <div className="text-2xl font-black text-foreground">{stockMovements.length} eventos</div>
+            <p className="text-[10.5px] text-muted-foreground">Auditoría completa de existencias</p>
           </div>
 
-          <div className="flex items-center gap-2.5 w-full sm:w-auto">
-            <Select value={categoryFilter} onValueChange={(val) => setCategoryFilter(val)}>
-              <SelectTrigger className="w-[170px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
-                <SelectValue placeholder="Categoría" />
-              </SelectTrigger>
-              <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
-                <SelectItem value="all">📦 Todas las Categorías</SelectItem>
-                <SelectItem value="Suplementos">💊 Suplementos</SelectItem>
-                <SelectItem value="Bebidas">🥤 Bebidas</SelectItem>
-                <SelectItem value="Accesorios">🎒 Accesorios</SelectItem>
-                <SelectItem value="Indumentaria">👕 Indumentaria</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+              Ingresos de Stock
+            </span>
+            <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
+              {stockMovements.filter((m: any) => m.type === "Entrada").length} ingresos
+            </div>
+            <p className="text-[10.5px] text-muted-foreground">Reabastecimiento y altas</p>
+          </div>
+
+          <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+              Salidas & Ventas POS
+            </span>
+            <div className="text-2xl font-black text-rose-600 dark:text-rose-400">
+              {stockMovements.filter((m: any) => m.type === "Salida / Venta" || m.type === "Merma / Pérdida").length} salidas
+            </div>
+            <p className="text-[10.5px] text-muted-foreground">Ventas mostrador y mermas</p>
           </div>
         </div>
+      )}
 
-        {/* Table list */}
-        <div className="overflow-x-auto border border-border/60 rounded-2xl bg-background">
-          <table className="w-full text-left text-xs min-w-[800px] border-collapse">
-            <thead>
-              <tr className="border-b border-border/60 bg-secondary/40 text-muted-foreground font-bold text-[10px] uppercase tracking-wider">
-                <th className="p-3.5 w-14 text-center">Imagen</th>
-                <th className="p-3.5">Producto & Cód. Barras</th>
-                <th className="p-3.5">Categoría</th>
-                <th className="p-3.5 text-right">Precio Costo</th>
-                <th className="p-3.5 text-right">Precio Venta</th>
-                <th className="p-3.5 text-center">Stock Actual</th>
-                <th className="p-3.5 text-center">Estado Stock</th>
-                <th className="p-3.5 text-right">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/30">
-              {filteredItems.map((item) => {
-                const isLow = item.stock <= item.minStock;
-                return (
-                  <tr key={item.id} className="hover:bg-secondary/20 transition-colors">
-                    <td className="p-3.5 text-center">
-                      {item.image ? (
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-10 h-10 rounded-xl object-cover border border-border mx-auto shrink-0 shadow-2xs"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 rounded-xl bg-secondary border border-border flex items-center justify-center text-muted-foreground font-bold text-xs mx-auto">
-                          📦
-                        </div>
+      {/* Main View: Products Table vs Kardex Audit Table */}
+      {activeSubTab === "products" ? (
+        <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-4 shadow-xs">
+          {/* Row 1: Title and Header Buttons */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/40">
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-sm text-foreground">Inventario & Stock de Tienda</h3>
+                <span className="px-2 py-0.5 rounded-full bg-secondary text-[10px] font-extrabold text-foreground border border-border/60">
+                  {filteredItems.length}
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Control de existencias, código de barras y fotos de productos para el POS.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2.5 shrink-0">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={exportInventoryCSV}
+                className="h-9 rounded-xl font-bold text-xs gap-1.5 border-border text-foreground hover:bg-secondary"
+              >
+                <Download className="h-4 w-4" /> Exportar CSV
+              </Button>
+
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => setShowAddModal(true)}
+                className="h-9 rounded-xl font-bold text-xs gap-1.5 bg-primary text-primary-foreground shadow-xs"
+              >
+                <PlusCircle className="h-4 w-4" /> Nuevo Producto
+              </Button>
+            </div>
+          </div>
+
+          {/* Row 2: Advanced Search & Multi-Filters */}
+          <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-secondary/20 border border-border/50 rounded-2xl">
+            <div className="relative flex-1 min-w-[200px] sm:max-w-xs">
+              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Buscar por nombre, categoría o código..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-9 w-full pl-8 pr-3 rounded-xl border border-border bg-background text-xs font-bold text-foreground focus-visible:outline-none placeholder:font-normal placeholder:text-muted-foreground"
+              />
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+              <Select value={categoryFilter} onValueChange={(val) => setCategoryFilter(val)}>
+                <SelectTrigger className="w-full sm:w-[170px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
+                  <SelectValue placeholder="Categoría" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
+                  <SelectItem value="all">Todas las Categorías</SelectItem>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                      {cat}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={supplierFilter} onValueChange={(val) => setSupplierFilter(val)}>
+                <SelectTrigger className="w-full sm:w-[215px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
+                  <SelectValue placeholder="Proveedor" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
+                  <SelectItem value="all">Todos los Proveedores</SelectItem>
+                  {suppliersList.map((sup) => (
+                    <SelectItem key={sup.id} value={sup.id}>
+                      {sup.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={stockStatusFilter} onValueChange={(val) => setStockStatusFilter(val)}>
+                <SelectTrigger className="w-full sm:w-[160px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
+                  <SelectValue placeholder="Estado Stock" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
+                  <SelectItem value="all">Todos los Estados</SelectItem>
+                  <SelectItem value="low">⚠️ Bajo Stock</SelectItem>
+                  <SelectItem value="ok">✅ Stock Normal</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {(searchQuery || categoryFilter !== "all" || supplierFilter !== "all" || stockStatusFilter !== "all") && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setCategoryFilter("all");
+                    setSupplierFilter("all");
+                    setStockStatusFilter("all");
+                  }}
+                  className="h-9 text-[11px] font-bold text-muted-foreground hover:text-rose-600 rounded-xl"
+                >
+                  Limpiar Filtros
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Table list */}
+          <div className="overflow-x-auto custom-scrollbar border border-border/60 rounded-2xl bg-background">
+            <table className="w-full text-left text-xs min-w-[1150px] border-collapse">
+              <thead>
+                <tr className="border-b border-border/60 bg-secondary/40 text-muted-foreground/80 font-bold text-[11px] uppercase tracking-wider">
+                  <th className="p-3.5 w-14 text-center">Imagen</th>
+                  <th className="p-3.5">Producto</th>
+                  <th className="p-3.5">Código de Barras</th>
+                  <th className="p-3.5">Categoría</th>
+                  <th className="p-3.5">Proveedor</th>
+                  <th className="p-3.5 text-right">Precio Costo</th>
+                  <th className="p-3.5 text-right">Precio Venta</th>
+                  <th className="p-3.5 text-center">Stock Actual</th>
+                  <th className="p-3.5 text-center">Stock Mínimo</th>
+                  <th className="p-3.5 text-center">Estado</th>
+                  <th className="p-3.5 text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/30">
+                {filteredItems.map((item) => {
+                  const isLow = item.stock <= item.minStock;
+                  const hasVariants = item.variants && item.variants.length > 0;
+                  const isExpanded = !!expandedProductVariants[item.id];
+                  const supplier = suppliersList.find((s) => s.id === item.supplierId);
+
+                  return (
+                    <Fragment key={item.id}>
+                      <tr className="hover:bg-secondary/20 transition-colors">
+                        <td className="p-3.5 text-center">
+                          {item.image ? (
+                            <button
+                              type="button"
+                              onClick={() => setPreviewImageModal({ url: item.image, title: item.name })}
+                              className="group relative inline-block cursor-pointer focus:outline-none"
+                              title="Clic para ampliar imagen"
+                            >
+                              <img
+                                src={item.image}
+                                alt={item.name}
+                                className="w-10 h-10 rounded-xl object-cover border border-border mx-auto shrink-0 shadow-2xs group-hover:scale-105 group-hover:ring-2 group-hover:ring-primary/50 transition-all"
+                              />
+                              <div className="absolute inset-0 bg-black/20 rounded-xl opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                <Eye className="w-3.5 h-3.5 text-white" />
+                              </div>
+                            </button>
+                          ) : (
+                            <div className="w-10 h-10 rounded-xl bg-secondary border border-border flex items-center justify-center text-muted-foreground font-bold text-xs mx-auto">
+                              📦
+                            </div>
+                          )}
+                        </td>
+                        <td className="p-3.5 font-bold text-foreground">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-bold text-foreground">{item.name}</span>
+                            {hasVariants && (
+                              <button
+                                type="button"
+                                onClick={() => toggleVariantExpand(item.id)}
+                                className="px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 text-[10px] font-extrabold flex items-center gap-0.5 hover:bg-primary/20 transition shrink-0"
+                              >
+                                {item.variants.length} variantes
+                                {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                        <td className="p-3.5 font-mono text-xs text-muted-foreground">
+                          {item.barcode ? (
+                            <div className="inline-flex items-center gap-1 bg-secondary/40 px-2 py-1 rounded-lg border border-border/50 text-[11px]">
+                              <QrCode className="h-3 w-3 text-muted-foreground/80 shrink-0" />
+                              <span>{item.barcode}</span>
+                            </div>
+                          ) : (
+                            <span className="text-[11px] text-muted-foreground/60 italic">Sin Cód. Barras</span>
+                          )}
+                        </td>
+                        <td className="p-3.5">
+                          <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-lg border bg-secondary/50 border-border/60 text-foreground">
+                            {item.category}
+                          </span>
+                        </td>
+                        <td className="p-3.5 font-medium text-xs text-foreground">
+                          {supplier ? (
+                            <span className="text-[11px] font-semibold text-foreground/90">{supplier.name}</span>
+                          ) : (
+                            <span className="text-[11px] text-muted-foreground/60 italic">No asignado</span>
+                          )}
+                        </td>
+                        <td className="p-3.5 text-right text-muted-foreground font-semibold">${item.cost.toLocaleString()}</td>
+                        <td className="p-3.5 text-right font-black text-sm text-foreground">${item.price.toLocaleString()}</td>
+                        <td className="p-3.5 text-center font-black text-sm">
+                          {item.stock} <span className="text-xs font-normal text-muted-foreground">{item.unit}</span>
+                        </td>
+                        <td className="p-3.5 text-center font-bold text-xs text-muted-foreground">
+                          {item.minStock} <span className="text-[10.5px] font-normal">{item.unit}</span>
+                        </td>
+                        <td className="p-3.5 text-center">
+                          <span
+                            className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full border ${
+                              isLow
+                                ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20"
+                                : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                            }`}
+                          >
+                            {isLow ? "Bajo Stock" : "OK"}
+                          </span>
+                        </td>
+                        <td className="p-3.5 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setShowAdjustModal(item)}
+                              className="h-8 text-[11px] font-bold rounded-xl border-border gap-1 hover:bg-secondary"
+                            >
+                              <PackagePlus className="h-3.5 w-3.5 text-primary" /> Stock
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleOpenEditModal(item)}
+                              className="h-8 text-[11px] font-bold rounded-xl border-border gap-1 hover:bg-secondary"
+                            >
+                              <Edit2 className="h-3.5 w-3.5 text-foreground" /> Editar
+                            </Button>
+                            <button
+                              type="button"
+                              onClick={() => setDeleteConfirmState({ type: "product", id: item.id, name: item.name })}
+                              className="p-1.5 text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 rounded-lg transition ml-0.5"
+                              title="Eliminar producto"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+
+                      {/* Expandable Variant Sub-row */}
+                      {hasVariants && isExpanded && (
+                        <tr className="bg-secondary/15 border-b border-border/40">
+                          <td colSpan={11} className="p-3 pl-14">
+                            <div className="bg-background border border-border/60 rounded-xl p-3 space-y-2 max-w-xl">
+                              <span className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
+                                Desglose de Stock por Variante ({item.name}):
+                              </span>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {item.variants.map((variant: any) => (
+                                  <div
+                                    key={variant.id}
+                                    className="flex items-center justify-between p-2 rounded-lg bg-secondary/30 border border-border/50 text-xs"
+                                  >
+                                    <span className="font-bold text-foreground">{variant.name}</span>
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="font-mono font-black text-foreground">{variant.stock} {item.unit}</span>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleAdjustVariantStock(item.id, variant.id, -1)}
+                                        className="w-5 h-5 rounded-md bg-secondary border border-border flex items-center justify-center font-bold text-xs hover:bg-rose-500/10 hover:text-rose-600"
+                                        title="Reducir 1"
+                                      >
+                                        -
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleAdjustVariantStock(item.id, variant.id, 1)}
+                                        className="w-5 h-5 rounded-md bg-secondary border border-border flex items-center justify-center font-bold text-xs hover:bg-emerald-500/10 hover:text-emerald-600"
+                                        title="Aumentar 1"
+                                      >
+                                        +
+                                      </button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
                       )}
-                    </td>
-                    <td className="p-3.5 font-bold text-foreground">
-                      <span className="block font-bold text-foreground">{item.name}</span>
-                      <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
-                        <QrCode className="h-3 w-3 text-muted-foreground/80" />
-                        <span className="font-mono">{item.barcode || "Sin Cód. Barras"}</span>
-                        <span className="mx-1">•</span>
-                        <span>Min: {item.minStock} {item.unit}</span>
-                      </div>
-                    </td>
-                    <td className="p-3.5">
-                      <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-lg border bg-secondary/50 border-border/60 text-foreground">
-                        {item.category}
-                      </span>
-                    </td>
-                    <td className="p-3.5 text-right text-muted-foreground font-semibold">${item.cost.toLocaleString()}</td>
-                    <td className="p-3.5 text-right font-black text-sm text-foreground">${item.price.toLocaleString()}</td>
-                    <td className="p-3.5 text-center font-black text-sm">
-                      {item.stock} <span className="text-xs font-normal text-muted-foreground">{item.unit}</span>
-                    </td>
-                    <td className="p-3.5 text-center">
-                      <span
-                        className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full border ${
-                          isLow
-                            ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20"
-                            : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
-                        }`}
-                      >
-                        {isLow ? "⚠️ Bajo Stock" : "🟢 OK"}
-                      </span>
-                    </td>
-                    <td className="p-3.5 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setShowAdjustModal(item)}
-                          className="h-8 text-[11px] font-bold rounded-xl border-border gap-1 hover:bg-secondary"
-                        >
-                          <PackagePlus className="h-3.5 w-3.5 text-primary" /> Stock
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleOpenEditModal(item)}
-                          className="h-8 text-[11px] font-bold rounded-xl border-border gap-1 hover:bg-secondary"
-                        >
-                          <Edit2 className="h-3.5 w-3.5 text-foreground" /> Editar
-                        </Button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteProduct(item.id, item.name)}
-                          className="p-1.5 text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 rounded-lg transition ml-0.5"
-                          title="Eliminar producto"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
+                    </Fragment>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : (
+        <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-4 shadow-xs">
+          {/* Kardex Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/40">
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-sm text-foreground">Historial Auditado de Movimientos (Kardex)</h3>
+                <span className="px-2 py-0.5 rounded-full bg-secondary text-[10px] font-extrabold text-foreground border border-border/60">
+                  {filteredMovements.length}
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Registro inalterable de entradas, salidas, ventas POS y ajustes de inventario.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2.5 shrink-0">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={exportKardexCSV}
+                className="h-9 rounded-xl font-bold text-xs gap-1.5 border-border text-foreground hover:bg-secondary"
+              >
+                <Download className="h-4 w-4" /> Exportar Kardex CSV
+              </Button>
+            </div>
+          </div>
+
+          {/* Search, Date Range & Type Filter for Kardex */}
+          <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-secondary/20 border border-border/50 rounded-2xl">
+            <div className="relative flex-1 min-w-[200px] sm:max-w-xs">
+              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Buscar por producto, usuario o motivo..."
+                value={kardexSearch}
+                onChange={(e) => setKardexSearch(e.target.value)}
+                className="h-9 w-full pl-8 pr-3 rounded-xl border border-border bg-background text-xs font-bold text-foreground focus-visible:outline-none placeholder:font-normal placeholder:text-muted-foreground"
+              />
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+              {/* Date From */}
+              <div className="flex items-center gap-1.5 bg-background border border-border rounded-xl px-2.5 h-9">
+                <span className="text-[10px] font-bold uppercase text-muted-foreground">Desde:</span>
+                <input
+                  type="date"
+                  value={kardexDateFrom}
+                  onChange={(e) => setKardexDateFrom(e.target.value)}
+                  className="bg-transparent text-xs font-bold text-foreground focus:outline-none"
+                />
+              </div>
+
+              {/* Date To */}
+              <div className="flex items-center gap-1.5 bg-background border border-border rounded-xl px-2.5 h-9">
+                <span className="text-[10px] font-bold uppercase text-muted-foreground">Hasta:</span>
+                <input
+                  type="date"
+                  value={kardexDateTo}
+                  onChange={(e) => setKardexDateTo(e.target.value)}
+                  className="bg-transparent text-xs font-bold text-foreground focus:outline-none"
+                />
+              </div>
+
+              {/* Movement Type Filter */}
+              <Select value={kardexTypeFilter} onValueChange={(val) => setKardexTypeFilter(val)}>
+                <SelectTrigger className="w-full sm:w-[180px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
+                  <SelectValue placeholder="Tipo de Movimiento" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
+                  <SelectItem value="all">Todos los Movimientos</SelectItem>
+                  <SelectItem value="Entrada">Entrada / Reabastecimiento</SelectItem>
+                  <SelectItem value="Salida / Venta">Salida / Venta POS</SelectItem>
+                  <SelectItem value="Ajuste Manual">Ajuste Manual</SelectItem>
+                  <SelectItem value="Merma / Pérdida">Merma / Pérdida</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {(kardexSearch || kardexTypeFilter !== "all" || kardexDateFrom || kardexDateTo) && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setKardexSearch("");
+                    setKardexTypeFilter("all");
+                    setKardexDateFrom("");
+                    setKardexDateTo("");
+                  }}
+                  className="h-9 text-[11px] font-bold text-muted-foreground hover:text-rose-600 rounded-xl"
+                >
+                  Limpiar Filtros
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Kardex Table */}
+          <div className="overflow-x-auto border border-border/60 rounded-2xl bg-background">
+            <table className="w-full text-left text-xs min-w-[850px] border-collapse">
+              <thead>
+                <tr className="border-b border-border/60 bg-secondary/40 text-muted-foreground font-bold text-[10px] uppercase tracking-wider">
+                  <th className="p-3.5">Fecha & Hora</th>
+                  <th className="p-3.5">Producto</th>
+                  <th className="p-3.5 text-center">Tipo</th>
+                  <th className="p-3.5 text-center">Cantidad</th>
+                  <th className="p-3.5 text-center">Stock Previo → Nuevo</th>
+                  <th className="p-3.5">Responsable</th>
+                  <th className="p-3.5">Motivo / Detalle</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/30">
+                {filteredMovements.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="p-8 text-center text-muted-foreground italic">
+                      No hay registros de movimientos con el filtro seleccionado.
                     </td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                ) : (
+                  filteredMovements.map((m: any) => {
+                    const isPositive = m.quantity > 0;
+                    return (
+                      <tr key={m.id} className="hover:bg-secondary/20 transition-colors">
+                        <td className="p-3.5 font-mono text-muted-foreground text-[11px] font-semibold whitespace-nowrap">
+                          {m.date}
+                        </td>
+                        <td className="p-3.5 font-bold text-foreground">{m.productName}</td>
+                        <td className="p-3.5 text-center">
+                          <span
+                            className={`inline-flex items-center text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
+                              m.type === "Entrada"
+                                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                                : m.type === "Salida / Venta"
+                                ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
+                                : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
+                            }`}
+                          >
+                            {m.type}
+                          </span>
+                        </td>
+                        <td className="p-3.5 text-center font-black text-sm">
+                          <span className={isPositive ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}>
+                            {isPositive ? `+${m.quantity}` : m.quantity}
+                          </span>
+                        </td>
+                        <td className="p-3.5 text-center font-mono text-xs">
+                          <span className="text-muted-foreground">{m.previousStock}</span>
+                          <span className="mx-1 text-muted-foreground/60">→</span>
+                          <span className="font-bold text-foreground">{m.newStock}</span>
+                        </td>
+                        <td className="p-3.5 font-bold text-foreground">{m.user}</td>
+                        <td className="p-3.5 text-muted-foreground text-xs">{m.reason}</td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Modal: Ampliación de Imagen de Producto */}
+      {previewImageModal && (
+        <Dialog open={!!previewImageModal} onOpenChange={(open) => !open && setPreviewImageModal(null)}>
+          <DialogContent className="sm:max-w-md border border-border bg-card p-6 rounded-3xl shadow-2xl space-y-4 text-center">
+            <DialogHeader>
+              <DialogTitle className="text-sm font-bold text-foreground text-center flex items-center justify-center gap-2">
+                <ImageIcon className="h-4 w-4 text-primary" /> {previewImageModal.title}
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="relative rounded-2xl overflow-hidden border border-border/80 bg-background/50 max-h-[65vh] flex items-center justify-center p-3">
+              <img
+                src={previewImageModal.url}
+                alt={previewImageModal.title}
+                className="max-h-[55vh] w-auto max-w-full object-contain rounded-xl shadow-lg transition-transform"
+              />
+            </div>
+
+            <DialogFooter className="justify-center sm:justify-center pt-1">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setPreviewImageModal(null)}
+                className="rounded-xl text-xs font-bold px-6 border-border"
+              >
+                Cerrar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Confirmation Modal for Deletions (Categorías, Proveedores, Productos) */}
+      {deleteConfirmState && (
+        <AlertDialog open={!!deleteConfirmState} onOpenChange={(open) => !open && setDeleteConfirmState(null)}>
+          <AlertDialogContent className="sm:max-w-md border border-border bg-card p-6 rounded-3xl shadow-2xl">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+                <Trash2 className="h-5 w-5 text-rose-600" /> Confirmar Eliminación
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-xs text-muted-foreground pt-1">
+                {deleteConfirmState.type === "category" && (
+                  <>¿Estás seguro de que deseas eliminar la categoría <strong>"{deleteConfirmState.name}"</strong>? Esta acción no se puede deshacer.</>
+                )}
+                {deleteConfirmState.type === "supplier" && (
+                  <>¿Estás seguro de que deseas eliminar al proveedor <strong>"{deleteConfirmState.name}"</strong>? El proveedor dejará de figurar en la lista habitual.</>
+                )}
+                {deleteConfirmState.type === "product" && (
+                  <>¿Estás seguro de que deseas eliminar el producto <strong>"{deleteConfirmState.name}"</strong> del inventario?</>
+                )}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter className="gap-2 pt-3">
+              <AlertDialogCancel
+                onClick={() => setDeleteConfirmState(null)}
+                className="rounded-xl text-xs font-bold border-border"
+              >
+                Cancelar
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleConfirmDelete}
+                className="rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-xs"
+              >
+                Sí, Eliminar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
+
+      {/* Modal: Gestionar Categorías */}
+      {showCategoryModal && (
+        <Dialog open={showCategoryModal} onOpenChange={setShowCategoryModal}>
+          <DialogContent className="sm:max-w-md border border-border bg-card p-6 rounded-3xl shadow-2xl space-y-4">
+            <DialogHeader>
+              <DialogTitle className="text-base font-bold flex items-center gap-2">
+                <FolderPlus className="h-5 w-5 text-primary" /> Gestionar Categorías de Tienda
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-4 text-xs">
+              <form onSubmit={handleAddCategory} className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Nueva categoría (ej: Bar Saludable, Toallas...)"
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  className="flex-1 h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                  required
+                />
+                <Button type="submit" size="sm" className="h-9 rounded-xl font-bold text-xs bg-primary text-primary-foreground">
+                  <PlusCircle className="h-4 w-4" /> Agregar
+                </Button>
+              </form>
+
+              <div className="space-y-1.5 pt-2">
+                <span className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
+                  Categorías Actuales ({categories.length}):
+                </span>
+                <div className="space-y-1.5 max-h-48 overflow-y-auto custom-scrollbar pr-1">
+                  {categories.map((cat) => (
+                    <div
+                      key={cat}
+                      className="flex items-center justify-between p-2.5 rounded-xl bg-secondary/30 border border-border/50 text-xs font-bold text-foreground"
+                    >
+                      <span>{cat}</span>
+                      <button
+                        type="button"
+                        onClick={() => setDeleteConfirmState({ type: "category", id: cat, name: cat })}
+                        className="text-muted-foreground hover:text-rose-600 p-1 rounded-lg transition"
+                        title="Eliminar categoría"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <DialogFooter className="pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowCategoryModal(false)}
+                  className="rounded-xl text-xs font-bold"
+                >
+                  Cerrar
+                </Button>
+              </DialogFooter>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Modal: Gestionar Proveedores */}
+      {showSupplierModal && (
+        <Dialog open={showSupplierModal} onOpenChange={setShowSupplierModal}>
+          <DialogContent className="sm:max-w-lg border border-border bg-card p-6 rounded-3xl shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto custom-scrollbar">
+            <DialogHeader>
+              <DialogTitle className="text-base font-bold flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-primary" /> Proveedores de Inventario ({suppliersList.length})
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-4 text-xs">
+              <form onSubmit={handleAddSupplier} className="p-3.5 bg-secondary/30 border border-border/60 rounded-2xl space-y-3">
+                <span className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
+                  Registrar Nuevo Proveedor Habitual
+                </span>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="text"
+                    placeholder="Empresa / Distribuidora *"
+                    value={newSupName}
+                    onChange={(e) => setNewSupName(e.target.value)}
+                    className="h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                    required
+                  />
+                  <input
+                    type="text"
+                    placeholder="Contacto Principal"
+                    value={newSupContact}
+                    onChange={(e) => setNewSupContact(e.target.value)}
+                    className="h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="text"
+                    placeholder="Teléfono / WhatsApp (ej: +549...)"
+                    value={newSupPhone}
+                    onChange={(e) => setNewSupPhone(e.target.value)}
+                    className="h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                  />
+                  <input
+                    type="email"
+                    placeholder="Email de Pedidos"
+                    value={newSupEmail}
+                    onChange={(e) => setNewSupEmail(e.target.value)}
+                    className="h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                  />
+                </div>
+                <Button type="submit" size="sm" className="w-full h-9 rounded-xl font-bold text-xs bg-primary text-primary-foreground">
+                  <PlusCircle className="h-4 w-4" /> Guardar Proveedor
+                </Button>
+              </form>
+
+              <div className="space-y-2 pt-2">
+                <span className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
+                  Proveedores Registrados:
+                </span>
+                <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1">
+                  {suppliersList.map((sup) => (
+                    <div
+                      key={sup.id}
+                      className="flex items-center justify-between p-3 rounded-2xl bg-secondary/20 border border-border/60 text-xs"
+                    >
+                      <div>
+                        <span className="font-bold text-foreground block">{sup.name}</span>
+                        <div className="text-[10.5px] text-muted-foreground flex items-center gap-2 mt-0.5">
+                          <span>👤 {sup.contactName}</span>
+                          <span>•</span>
+                          <span>📞 {sup.phone || "Sin Tel."}</span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setDeleteConfirmState({ type: "supplier", id: sup.id, name: sup.name })}
+                        className="text-muted-foreground hover:text-rose-600 p-1.5 rounded-lg transition"
+                        title="Eliminar proveedor"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <DialogFooter className="pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowSupplierModal(false)}
+                  className="rounded-xl text-xs font-bold"
+                >
+                  Cerrar
+                </Button>
+              </DialogFooter>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Modal: Orden de Reabastecimiento a Proveedor */}
+      {showReplenishModal && (
+        <Dialog open={showReplenishModal} onOpenChange={setShowReplenishModal}>
+          <DialogContent className="sm:max-w-2xl border border-border bg-card p-6 rounded-3xl shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <DialogHeader>
+              <DialogTitle className="text-base font-bold flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Truck className="h-5 w-5 text-amber-500" /> Generador de Pedidos a Proveedor
+                </div>
+                <span className="text-xs font-extrabold text-amber-600 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">
+                  {replenishOrderItems.length} ítems sugeridos
+                </span>
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-4 text-xs">
+              <p className="text-xs text-muted-foreground">
+                Cálculo automático de unidades faltantes para alcanzar el stock deseado. Ajusta las cantidades antes de enviar el pedido.
+              </p>
+
+              <div className="overflow-x-auto border border-border/60 rounded-2xl">
+                <table className="w-full text-left text-xs min-w-[550px]">
+                  <thead>
+                    <tr className="bg-secondary/40 border-b border-border/60 text-[10px] font-bold uppercase text-muted-foreground">
+                      <th className="p-2.5">Producto</th>
+                      <th className="p-2.5 text-center">Stock Actual / Min</th>
+                      <th className="p-2.5 text-center w-28">Pedir (Unid)</th>
+                      <th className="p-2.5">Proveedor Asignado</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/30">
+                    {replenishOrderItems.map((item, idx) => (
+                      <tr key={item.id} className="hover:bg-secondary/20">
+                        <td className="p-2.5 font-bold text-foreground">
+                          {item.name}
+                          <span className="block text-[10px] text-muted-foreground">{item.category}</span>
+                        </td>
+                        <td className="p-2.5 text-center">
+                          <span className="font-extrabold text-rose-600 dark:text-rose-400">{item.stock}</span>
+                          <span className="text-[10px] text-muted-foreground"> / {item.minStock}</span>
+                        </td>
+                        <td className="p-2.5 text-center">
+                          <input
+                            type="number"
+                            min="1"
+                            value={item.orderQty}
+                            onChange={(e) => {
+                              const val = Math.max(1, parseInt(e.target.value) || 1);
+                              setReplenishOrderItems((prev) =>
+                                prev.map((it, i) => (i === idx ? { ...it, orderQty: val } : it)),
+                              );
+                            }}
+                            className="w-16 h-8 text-center rounded-xl border border-border bg-background font-bold text-foreground focus-visible:outline-none"
+                          />
+                        </td>
+                        <td className="p-2.5">
+                          <Select
+                            value={item.supplierId || suppliersList[0]?.id}
+                            onValueChange={(val) => {
+                              setReplenishOrderItems((prev) =>
+                                prev.map((it, i) => (i === idx ? { ...it, supplierId: val } : it)),
+                              );
+                            }}
+                          >
+                            <SelectTrigger className="h-8 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
+                              <SelectValue placeholder="Proveedor" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
+                              {suppliersList.map((sup) => (
+                                <SelectItem key={sup.id} value={sup.id}>
+                                  {sup.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={exportReplenishOrderCSV}
+                  className="w-full sm:w-auto h-9 text-xs font-bold rounded-xl gap-1.5 border-border"
+                >
+                  <Download className="h-4 w-4" /> Exportar Orden (CSV)
+                </Button>
+
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowReplenishModal(false)}
+                    className="flex-1 sm:flex-initial h-9 text-xs font-bold rounded-xl"
+                  >
+                    Cancelar
+                  </Button>
+
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => sendOrderViaWhatsApp()}
+                    className="flex-1 sm:flex-initial h-9 text-xs font-bold rounded-xl gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+                  >
+                    <Send className="h-4 w-4" /> Enviar por WhatsApp
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Modal: Crear Nuevo Producto */}
       {showAddModal && (
@@ -4405,17 +5657,17 @@ function InventarioTab({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-2">
                 <div className="space-y-1">
                   <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block flex items-center gap-1">
-                    <QrCode className="h-3 w-3 text-muted-foreground" /> Código de Barras:
+                    <QrCode className="h-3 w-3 text-muted-foreground" /> Cód. Barras:
                   </label>
                   <input
                     type="text"
-                    placeholder="Ej: 7791234567890"
+                    placeholder="779123..."
                     value={newProdBarcode}
                     onChange={(e) => setNewProdBarcode(e.target.value)}
-                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-mono font-bold text-foreground focus-visible:outline-none"
+                    className="w-full h-9 rounded-xl border border-border bg-background px-2.5 text-xs font-mono font-bold text-foreground focus-visible:outline-none"
                   />
                 </div>
 
@@ -4424,17 +5676,49 @@ function InventarioTab({
                     Categoría:
                   </label>
                   <Select value={newProdCat} onValueChange={(val) => setNewProdCat(val)}>
-                    <SelectTrigger className="w-full h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
-                      <SelectValue />
+                    <SelectTrigger className="w-full h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground px-2.5">
+                      <SelectValue placeholder="Categoría" />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
-                      <SelectItem value="Suplementos">💊 Suplementos</SelectItem>
-                      <SelectItem value="Bebidas">🥤 Bebidas</SelectItem>
-                      <SelectItem value="Accesorios">🎒 Accesorios</SelectItem>
-                      <SelectItem value="Indumentaria">👕 Indumentaria</SelectItem>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          {cat}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
+                    Proveedor:
+                  </label>
+                  <Select value={newProdSupplierId} onValueChange={(val) => setNewProdSupplierId(val)}>
+                    <SelectTrigger className="w-full h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground px-2.5">
+                      <SelectValue placeholder="Proveedor" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
+                      {suppliersList.map((sup) => (
+                        <SelectItem key={sup.id} value={sup.id}>
+                          {sup.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
+                  Variantes (Opcional, separadas por coma):
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ej: Vainilla, Chocolate, Frutilla  ó  S, M, L, XL"
+                  value={newProdVariantsInput}
+                  onChange={(e) => setNewProdVariantsInput(e.target.value)}
+                  className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none placeholder:font-normal"
+                />
               </div>
 
               <div className="space-y-1.5">
@@ -4546,13 +5830,22 @@ function InventarioTab({
                   <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
                     Unidad:
                   </label>
-                  <input
-                    type="text"
-                    placeholder="unid, bot"
-                    value={newProdUnit}
-                    onChange={(e) => setNewProdUnit(e.target.value)}
-                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
-                  />
+                  <Select value={newProdUnit} onValueChange={(val) => setNewProdUnit(val)}>
+                    <SelectTrigger className="w-full h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
+                      <SelectValue placeholder="Unidad" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
+                      <SelectItem value="unid">Unidades (unid)</SelectItem>
+                      <SelectItem value="bot">Botellas / Latas (bot)</SelectItem>
+                      <SelectItem value="pack">Paquetes / Cajas (pack)</SelectItem>
+                      <SelectItem value="kg">Kilogramos (kg)</SelectItem>
+                      <SelectItem value="g">Gramos (g)</SelectItem>
+                      <SelectItem value="l">Litros (l)</SelectItem>
+                      <SelectItem value="ml">Mililitros (ml)</SelectItem>
+                      <SelectItem value="porc">Porciones / Dosis (porc)</SelectItem>
+                      <SelectItem value="serv">Servicios / Sesiones (serv)</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -4601,16 +5894,16 @@ function InventarioTab({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-2">
                 <div className="space-y-1">
                   <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block flex items-center gap-1">
-                    <QrCode className="h-3 w-3 text-muted-foreground" /> Código de Barras:
+                    <QrCode className="h-3 w-3 text-muted-foreground" /> Cód. Barras:
                   </label>
                   <input
                     type="text"
                     value={editProdBarcode}
                     onChange={(e) => setEditProdBarcode(e.target.value)}
-                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-mono font-bold text-foreground focus-visible:outline-none"
+                    className="w-full h-9 rounded-xl border border-border bg-background px-2.5 text-xs font-mono font-bold text-foreground focus-visible:outline-none"
                   />
                 </div>
 
@@ -4619,14 +5912,33 @@ function InventarioTab({
                     Categoría:
                   </label>
                   <Select value={editProdCat} onValueChange={(val) => setEditProdCat(val)}>
-                    <SelectTrigger className="w-full h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
-                      <SelectValue />
+                    <SelectTrigger className="w-full h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground px-2.5">
+                      <SelectValue placeholder="Categoría" />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
-                      <SelectItem value="Suplementos">💊 Suplementos</SelectItem>
-                      <SelectItem value="Bebidas">🥤 Bebidas</SelectItem>
-                      <SelectItem value="Accesorios">🎒 Accesorios</SelectItem>
-                      <SelectItem value="Indumentaria">👕 Indumentaria</SelectItem>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          {cat}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
+                    Proveedor:
+                  </label>
+                  <Select value={editProdSupplierId} onValueChange={(val) => setEditProdSupplierId(val)}>
+                    <SelectTrigger className="w-full h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground px-2.5">
+                      <SelectValue placeholder="Proveedor" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
+                      {suppliersList.map((sup) => (
+                        <SelectItem key={sup.id} value={sup.id}>
+                          {sup.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -4725,12 +6037,22 @@ function InventarioTab({
                   <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
                     Unidad:
                   </label>
-                  <input
-                    type="text"
-                    value={editProdUnit}
-                    onChange={(e) => setEditProdUnit(e.target.value)}
-                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
-                  />
+                  <Select value={editProdUnit} onValueChange={(val) => setEditProdUnit(val)}>
+                    <SelectTrigger className="w-full h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
+                      <SelectValue placeholder="Unidad" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
+                      <SelectItem value="unid">Unidades (unid)</SelectItem>
+                      <SelectItem value="bot">Botellas / Latas (bot)</SelectItem>
+                      <SelectItem value="pack">Paquetes / Cajas (pack)</SelectItem>
+                      <SelectItem value="kg">Kilogramos (kg)</SelectItem>
+                      <SelectItem value="g">Gramos (g)</SelectItem>
+                      <SelectItem value="l">Litros (l)</SelectItem>
+                      <SelectItem value="ml">Mililitros (ml)</SelectItem>
+                      <SelectItem value="porc">Porciones / Dosis (porc)</SelectItem>
+                      <SelectItem value="serv">Servicios / Sesiones (serv)</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -4785,6 +6107,19 @@ function InventarioTab({
                 />
               </div>
 
+              <div className="space-y-1.5">
+                <label className="text-[10.5px] font-bold text-muted-foreground uppercase block">
+                  Motivo / Observación del Movimiento:
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ej: Reabastecimiento de compra, Merma por vencimiento, Muestra..."
+                  value={adjustReason}
+                  onChange={(e) => setAdjustReason(e.target.value)}
+                  className="w-full h-9.5 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                />
+              </div>
+
               <DialogFooter className="gap-2 pt-2">
                 <Button
                   type="button"
@@ -4802,12 +6137,28 @@ function InventarioTab({
                       toast.error("Ingresa un número válido para el ajuste.");
                       return;
                     }
+                    const prevStk = showAdjustModal.stock;
+                    const newStk = Math.max(0, prevStk + parsed);
+                    
                     setInventoryItems((prev) =>
                       prev.map((i) =>
-                        i.id === showAdjustModal.id ? { ...i, stock: Math.max(0, i.stock + parsed) } : i,
+                        i.id === showAdjustModal.id ? { ...i, stock: newStk } : i,
                       ),
                     );
+
+                    const defaultReason = parsed >= 0 ? "Reabastecimiento de stock" : "Ajuste manual de existencias";
+                    logStockMovement(
+                      showAdjustModal.id,
+                      showAdjustModal.name,
+                      parsed >= 0 ? "Entrada" : "Ajuste Manual",
+                      parsed,
+                      prevStk,
+                      newStk,
+                      adjustReason.trim() || defaultReason
+                    );
+
                     setAdjustAmount("");
+                    setAdjustReason("");
                     setShowAdjustModal(null);
                     toast.success(`✓ Stock de ${showAdjustModal.name} actualizado correctamente.`);
                   }}
@@ -4828,11 +6179,16 @@ function InventarioTab({
 function ReseñasTab({
   reviewsList,
   setReviewsList,
+  membersList = [],
 }: {
   reviewsList: Review[];
   setReviewsList: React.Dispatch<React.SetStateAction<Review[]>>;
+  membersList?: any[];
 }) {
-  const [allReviews, setAllReviews] = useState<GymFacilityReview[]>([
+  const [subTab, setSubTab] = useState<"public" | "private">("public");
+
+  // Public Facility Reviews (Google Maps Style)
+  const [facilityReviews, setFacilityReviews] = useState<GymFacilityReview[]>([
     {
       id: "rev-1",
       date: "2026-07-20",
@@ -4876,201 +6232,1023 @@ function ReseñasTab({
       comment: "Muy buena relación precio-calidad. Variedad de pesas y áreas bien cuidadas.",
       reply: "",
     },
+    {
+      id: "rev-4",
+      date: "2026-07-05",
+      studentName: "Sofía Martínez",
+      studentPhoto:
+        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80",
+      ratingCleanliness: 4.9,
+      ratingEquipment: 4.7,
+      ratingStaff: 4.8,
+      ratingPrice: 4.5,
+      overallRating: 4.7,
+      comment: "Llevo 6 meses entrenando aquí y la experiencia es inmejorable. Súper recomendado para todas las edades.",
+      reply: "¡Gracias Sofía! Nos motiva muchísimo seguir dando lo mejor cada día.",
+    },
   ]);
 
+  // Private Feedback & Suggestions (Airbnb / Uber Style)
+  const [privateFeedback, setPrivateFeedback] = useState<Array<{
+    id: string;
+    date: string;
+    studentName: string;
+    studentPhoto: string;
+    category: "Instalaciones" | "Clases & Horarios" | "Climatización" | "Atención / Staff";
+    message: string;
+    status: "Pendiente" | "Atendido";
+    adminNotes?: string;
+  }>>([
+    {
+      id: "priv-1",
+      date: "2026-07-28",
+      studentName: "Martín Páez",
+      studentPhoto: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80",
+      category: "Climatización",
+      message: "En el sector de peso libre el aire acondicionado estuvo un poco fuerte ayer por la tarde, ¿se podría regular?",
+      status: "Pendiente",
+    },
+    {
+      id: "priv-2",
+      date: "2026-07-24",
+      studentName: "Valeria Benítez",
+      studentPhoto: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80",
+      category: "Instalaciones",
+      message: "Estaría genial si pudieran agregar un dispenser de agua extra cerca de la sala de Pilates.",
+      status: "Atendido",
+      adminNotes: "Nota interna: Instalaremos segundo dispenser la próxima semana.",
+    },
+    {
+      id: "priv-3",
+      date: "2026-07-15",
+      studentName: "Diego Rossi",
+      studentPhoto: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80",
+      category: "Clases & Horarios",
+      message: "Habría mucha demanda si agregan una clase de Yoga a las 20:00 hs los días martes. ¡Ojalá sea posible!",
+      status: "Pendiente",
+    },
+  ]);
+
+  // Featured Reviews State (for Landing Page display)
+  const [featuredReviewIds, setFeaturedReviewIds] = useState<string[]>(["rev-1", "rev-4"]);
+
+  // Reply Handling State
   const [replyTexts, setReplyTexts] = useState<Record<string, string>>({});
   const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
 
-  const totalEvaluationsCount = 312 + (allReviews.length - 3);
+  // Private Admin Notes State
+  const [adminNoteTexts, setAdminNoteTexts] = useState<Record<string, string>>({});
+  const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
+
+  // Filters State for Public Reviews
+  const [publicSearch, setPublicSearch] = useState("");
+  const [publicRatingFilter, setPublicRatingFilter] = useState("all");
+  const [publicStatusFilter, setPublicStatusFilter] = useState("all");
+
+  // Filters State for Private Feedback
+  const [privateSearch, setPrivateSearch] = useState("");
+  const [privateCategoryFilter, setPrivateCategoryFilter] = useState("all");
+  const [privateStatusFilter, setPrivateStatusFilter] = useState("all");
+
+  // WhatsApp Request Modal State
+  const [showRequestWhatsAppModal, setShowRequestWhatsAppModal] = useState(false);
+  const [requestPhone, setRequestPhone] = useState("");
+  const [requestStudentName, setRequestStudentName] = useState("");
+  const [memberSearchModal, setMemberSearchModal] = useState("");
+  const [selectedMemberModal, setSelectedMemberModal] = useState<any | null>(null);
+
+  // Confirmation Alert Dialog State
+  const [deleteConfirmState, setDeleteConfirmState] = useState<{
+    type: "reply_delete" | "private_delete";
+    id: string;
+    name: string;
+  } | null>(null);
+
+  // Calculations
+  const totalEvaluationsCount = 312 + (facilityReviews.length - 4);
 
   const avgCleanliness = useMemo(() => {
-    const sum = allReviews.reduce((acc, r) => acc + r.ratingCleanliness, 0);
-    return (sum / allReviews.length).toFixed(1);
-  }, [allReviews]);
+    const sum = facilityReviews.reduce((acc, r) => acc + r.ratingCleanliness, 0);
+    return (sum / facilityReviews.length).toFixed(1);
+  }, [facilityReviews]);
 
   const avgEquipment = useMemo(() => {
-    const sum = allReviews.reduce((acc, r) => acc + r.ratingEquipment, 0);
-    return (sum / allReviews.length).toFixed(1);
-  }, [allReviews]);
+    const sum = facilityReviews.reduce((acc, r) => acc + r.ratingEquipment, 0);
+    return (sum / facilityReviews.length).toFixed(1);
+  }, [facilityReviews]);
 
   const avgStaff = useMemo(() => {
-    const sum = allReviews.reduce((acc, r) => acc + r.ratingStaff, 0);
-    return (sum / allReviews.length).toFixed(1);
-  }, [allReviews]);
+    const sum = facilityReviews.reduce((acc, r) => acc + r.ratingStaff, 0);
+    return (sum / facilityReviews.length).toFixed(1);
+  }, [facilityReviews]);
 
   const avgPrice = useMemo(() => {
-    const sum = allReviews.reduce((acc, r) => acc + r.ratingPrice, 0);
-    return (sum / allReviews.length).toFixed(1);
-  }, [allReviews]);
+    const sum = facilityReviews.reduce((acc, r) => acc + r.ratingPrice, 0);
+    return (sum / facilityReviews.length).toFixed(1);
+  }, [facilityReviews]);
 
   const overallAvg = useMemo(() => {
-    const sum = allReviews.reduce((acc, r) => acc + r.overallRating, 0);
-    return (sum / allReviews.length).toFixed(1);
-  }, [allReviews]);
+    const sum = facilityReviews.reduce((acc, r) => acc + r.overallRating, 0);
+    return (sum / facilityReviews.length).toFixed(1);
+  }, [facilityReviews]);
 
+  const responseRatePercentage = useMemo(() => {
+    const repliedCount = facilityReviews.filter((r) => !!r.reply).length;
+    return Math.round((repliedCount / facilityReviews.length) * 100);
+  }, [facilityReviews]);
+
+  const pendingRepliesCount = useMemo(() => {
+    return facilityReviews.filter((r) => !r.reply).length;
+  }, [facilityReviews]);
+
+  const pendingPrivateCount = useMemo(() => {
+    return privateFeedback.filter((f) => f.status === "Pendiente").length;
+  }, [privateFeedback]);
+
+  // Star Distribution
+  const starCounts = useMemo(() => {
+    return {
+      5: Math.round(totalEvaluationsCount * 0.82),
+      4: Math.round(totalEvaluationsCount * 0.14),
+      3: Math.round(totalEvaluationsCount * 0.03),
+      2: Math.round(totalEvaluationsCount * 0.007),
+      1: Math.round(totalEvaluationsCount * 0.003),
+    };
+  }, [totalEvaluationsCount]);
+
+  // Handlers
   const handleSendReply = (id: string) => {
     const text = replyTexts[id];
     if (!text?.trim()) return;
-    setAllReviews((prev) => prev.map((r) => (r.id === id ? { ...r, reply: text.trim() } : r)));
+    setFacilityReviews((prev) => prev.map((r) => (r.id === id ? { ...r, reply: text.trim() } : r)));
     setReplyTexts((prev) => ({ ...prev, [id]: "" }));
     setActiveReplyId(null);
+    toast.success("✓ Respuesta oficial publicada correctamente.");
   };
 
+  const handleDeleteReply = (id: string) => {
+    setFacilityReviews((prev) => prev.map((r) => (r.id === id ? { ...r, reply: "" } : r)));
+    toast.info("Respuesta oficial eliminada.");
+  };
+
+  const handleToggleFeatured = (id: string) => {
+    if (featuredReviewIds.includes(id)) {
+      setFeaturedReviewIds((prev) => prev.filter((item) => item !== id));
+      toast.info("Reseña removida de las destacadas de la Landing Page.");
+    } else {
+      setFeaturedReviewIds((prev) => [...prev, id]);
+      toast.success("★ Reseña destacada para la Landing Page pública.");
+    }
+  };
+
+  const handleSaveAdminNote = (id: string) => {
+    const text = adminNoteTexts[id];
+    setPrivateFeedback((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, adminNotes: text?.trim() || "", status: "Atendido" } : item)),
+    );
+    setActiveNoteId(null);
+    toast.success("✓ Nota interna guardada y sugerencia marcada como Atendida.");
+  };
+
+  const handleTogglePrivateStatus = (id: string) => {
+    setPrivateFeedback((prev) =>
+      prev.map((item) =>
+        item.id === id
+          ? { ...item, status: item.status === "Pendiente" ? "Atendido" : "Pendiente" }
+          : item,
+      ),
+    );
+    toast.info("Estado de sugerencia actualizado.");
+  };
+
+  const handleConfirmDeleteAction = () => {
+    if (!deleteConfirmState) return;
+    const { type, id, name } = deleteConfirmState;
+    if (type === "reply_delete") {
+      setFacilityReviews((prev) => prev.map((r) => (r.id === id ? { ...r, reply: "" } : r)));
+      toast.info(`Respuesta oficial a "${name}" eliminada.`);
+    } else if (type === "private_delete") {
+      setPrivateFeedback((prev) => prev.filter((f) => f.id !== id));
+      toast.info(`Sugerencia privada de "${name}" eliminada.`);
+    }
+    setDeleteConfirmState(null);
+  };
+
+  const sendWhatsAppReviewRequest = (overridePhone?: string, overrideName?: string) => {
+    const targetPhone = overridePhone || requestPhone;
+    const targetName = overrideName || requestStudentName;
+
+    if (!targetPhone.trim()) {
+      toast.error("Por favor selecciona un alumno con número de WhatsApp válido.");
+      return;
+    }
+    const cleanPhone = targetPhone.replace(/[^\d+]/g, "");
+    const text = encodeURIComponent(
+      `Hola ${targetName || "estimado/a alumno/a"}, ¡gracias por entrenar en Shakerfy! Nos encantaría conocer tu opinión para seguir mejorando nuestras instalaciones y servicios. Podés enviarnos tus sugerencias o valorar tu experiencia en 1 minuto. ¡Muchas gracias!`,
+    );
+    window.open(`https://wa.me/${cleanPhone}?text=${text}`, "_blank");
+    setShowRequestWhatsAppModal(false);
+    toast.success("✓ Solicitud de opinión iniciada por WhatsApp.");
+  };
+
+  // Filtered Lists
+  const filteredPublicReviews = useMemo(() => {
+    return facilityReviews.filter((r) => {
+      const q = publicSearch.toLowerCase();
+      const matchSearch =
+        r.studentName.toLowerCase().includes(q) ||
+        r.comment.toLowerCase().includes(q) ||
+        (r.reply && r.reply.toLowerCase().includes(q));
+
+      const matchRating =
+        publicRatingFilter === "all"
+          ? true
+          : Math.floor(r.overallRating) === parseInt(publicRatingFilter);
+
+      const matchStatus =
+        publicStatusFilter === "all"
+          ? true
+          : publicStatusFilter === "unreplied"
+          ? !r.reply
+          : publicStatusFilter === "replied"
+          ? !!r.reply
+          : publicStatusFilter === "featured"
+          ? featuredReviewIds.includes(r.id)
+          : true;
+
+      return matchSearch && matchRating && matchStatus;
+    });
+  }, [facilityReviews, publicSearch, publicRatingFilter, publicStatusFilter, featuredReviewIds]);
+
+  const filteredPrivateFeedback = useMemo(() => {
+    return privateFeedback.filter((f) => {
+      const q = privateSearch.toLowerCase();
+      const matchSearch =
+        f.studentName.toLowerCase().includes(q) ||
+        f.message.toLowerCase().includes(q) ||
+        f.category.toLowerCase().includes(q);
+
+      const matchCat =
+        privateCategoryFilter === "all" || f.category === privateCategoryFilter;
+
+      const matchStatus =
+        privateStatusFilter === "all" || f.status === privateStatusFilter;
+
+      return matchSearch && matchCat && matchStatus;
+    });
+  }, [privateFeedback, privateSearch, privateCategoryFilter, privateStatusFilter]);
+
+  // Available Members for WhatsApp modal
+  const availableWhatsAppMembers = useMemo(() => {
+    const defaultList = [
+      { id: "m1", name: "Agustín Gómez", phone: "+5491155551234", plan: "Pase Libre", photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80" },
+      { id: "m2", name: "Camila Díaz", phone: "+5491141245124", plan: "Performance", photo: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80" },
+      { id: "m3", name: "Lucas Peralta", phone: "+5491141241111", plan: "Pase Libre", photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80" },
+      { id: "m4", name: "Sofía Martínez", phone: "+5491133338888", plan: "Elite Coached", photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80" },
+      { id: "m5", name: "Martín Páez", phone: "+5491166669999", plan: "Performance", photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80" },
+    ];
+
+    const combined = membersList.length > 0 ? membersList : defaultList;
+
+    return combined.filter((m) => {
+      const q = memberSearchModal.toLowerCase();
+      const matchName = m.name?.toLowerCase().includes(q);
+      const matchPhone = m.phone?.toLowerCase().includes(q);
+      return matchName || matchPhone;
+    });
+  }, [membersList, memberSearchModal]);
+
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300 text-foreground max-w-4xl">
-      {/* Top Header: Overall Score */}
-      <div className="flex items-center gap-2 text-2xl sm:text-3xl font-black tracking-tight pb-2 border-b border-border/40">
-        <span className="text-foreground">★ {overallAvg}</span>
-        <span className="text-muted-foreground font-semibold">· {totalEvaluationsCount} evaluaciones</span>
-      </div>
+    <div className="space-y-6 animate-fade-in text-foreground">
+      {/* Navigation Header & Quick Request Bar */}
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 bg-card border border-border/80 p-3 rounded-3xl shadow-xs">
+        <div className="flex flex-wrap items-center gap-1.5 bg-secondary/50 p-1 rounded-2xl border border-border/50">
+          <button
+            type="button"
+            onClick={() => setSubTab("public")}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+              subTab === "public"
+                ? "bg-background text-foreground shadow-xs"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
+            Reseñas Públicas del Centro ({facilityReviews.length})
+          </button>
 
-      {/* Average Ratings Section (Reference Image Inspired) */}
-      <div className="bg-card border border-border p-6 rounded-3xl space-y-6">
-        <h3 className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
-          Calificaciones Promedio
-        </h3>
+          <button
+            type="button"
+            onClick={() => setSubTab("private")}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 relative ${
+              subTab === "private"
+                ? "bg-background text-foreground shadow-xs"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <MessageCircle className="h-4 w-4 text-primary" />
+            Buzón Privado & Sugerencias ({privateFeedback.length})
+            {pendingPrivateCount > 0 && (
+              <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+            )}
+          </button>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-5">
-          {[
-            { label: "Limpieza", score: avgCleanliness },
-            { label: "Equipamiento", score: avgEquipment },
-            { label: "Atención del Staff", score: avgStaff },
-            { label: "Relación Calidad/Precio", score: avgPrice },
-          ].map((cat) => (
-            <div key={cat.label} className="space-y-1.5">
-              <div className="flex justify-between items-center text-sm font-semibold">
-                <span>{cat.label}</span>
-                <span className="font-extrabold text-foreground">{cat.score}</span>
-              </div>
-              <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-foreground rounded-full transition-all duration-700"
-                  style={{ width: `${(parseFloat(cat.score.toString()) / 5) * 100}%` }}
-                />
-              </div>
-            </div>
-          ))}
+        <div className="flex items-center gap-2 shrink-0">
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => setShowRequestWhatsAppModal(true)}
+            className="h-9 rounded-xl font-bold text-xs gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+          >
+            <Send className="h-4 w-4" /> Solicitar Reseña por WhatsApp
+          </Button>
         </div>
       </div>
 
-      {/* Reviews List */}
-      <div className="space-y-4">
-        <h3 className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
-          Opiniones de los Alumnos ({allReviews.length})
-        </h3>
+      {/* KPI Stats Bar */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-card border border-border/80 p-5 rounded-3xl shadow-xs space-y-1 hover:-translate-y-1 transition-all duration-300">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+            Puntuación General
+          </span>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-black text-amber-500 dark:text-amber-400 flex items-center gap-1.5">
+              ★ {overallAvg}
+            </span>
+            <span className="text-xs text-muted-foreground font-semibold">/ 5.0</span>
+          </div>
+          <p className="text-[11px] text-muted-foreground pt-1">
+            Basado en <strong>{totalEvaluationsCount}</strong> evaluaciones verificadas.
+          </p>
+        </div>
 
-        <div className="space-y-4">
-          {allReviews.map((rev) => (
-            <div
-              key={rev.id}
-              className="bg-card border border-border p-5 rounded-3xl space-y-3 transition-colors hover:border-border/80"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <img
-                    src={rev.studentPhoto}
-                    alt={rev.studentName}
-                    className="w-10 h-10 rounded-full object-cover border border-border shrink-0"
-                  />
-                  <div>
-                    <div className="font-bold text-sm text-foreground">{rev.studentName}</div>
-                    <div className="text-xs text-muted-foreground">{rev.date}</div>
+        <div className="bg-card border border-border/80 p-5 rounded-3xl shadow-xs space-y-1 hover:-translate-y-1 transition-all duration-300">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+            Tasa de Respuesta
+          </span>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-black text-foreground">{responseRatePercentage}%</span>
+            <span className="text-xs text-emerald-600 font-bold">Oficial</span>
+          </div>
+          <p className="text-[11px] text-muted-foreground pt-1">
+            {pendingRepliesCount > 0 ? (
+              <span className="text-amber-600 font-semibold">{pendingRepliesCount} pendientes de respuesta.</span>
+            ) : (
+              <span className="text-emerald-600 font-semibold">100% de opiniones respondidas.</span>
+            )}
+          </p>
+        </div>
+
+        <div className="bg-card border border-border/80 p-5 rounded-3xl shadow-xs space-y-1 hover:-translate-y-1 transition-all duration-300">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+            Destacadas en Landing Web
+          </span>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-black text-primary">{featuredReviewIds.length}</span>
+            <span className="text-xs text-muted-foreground">reseñas</span>
+          </div>
+          <p className="text-[11px] text-muted-foreground pt-1">
+            Visibles en la página pública del centro.
+          </p>
+        </div>
+
+        <div className="bg-card border border-border/80 p-5 rounded-3xl shadow-xs space-y-1 hover:-translate-y-1 transition-all duration-300">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+            Sugerencias Privadas
+          </span>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-black text-foreground">{pendingPrivateCount}</span>
+            <span className="text-xs text-amber-600 font-bold">Sin revisar</span>
+          </div>
+          <p className="text-[11px] text-muted-foreground pt-1">
+            Mensajes directos para la administración.
+          </p>
+        </div>
+      </div>
+
+      {subTab === "public" ? (
+        <div className="space-y-6">
+          {/* Rating Breakdowns: Stars distribution + Sub-ratings */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {/* Sub-ratings Breakdown */}
+            <div className="bg-card border border-border p-6 rounded-3xl space-y-5">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+                Calificaciones Promedio por Categoría
+              </span>
+
+              <div className="space-y-4">
+                {[
+                  { label: "Limpieza & Vestuarios", score: avgCleanliness },
+                  { label: "Equipamiento & Mantenimiento", score: avgEquipment },
+                  { label: "Atención del Staff & Recepción", score: avgStaff },
+                  { label: "Relación Calidad / Precio", score: avgPrice },
+                ].map((cat) => (
+                  <div key={cat.label} className="space-y-1">
+                    <div className="flex justify-between items-center text-xs font-bold text-foreground">
+                      <span>{cat.label}</span>
+                      <span className="font-mono text-sm text-amber-600 dark:text-amber-400 font-extrabold flex items-center gap-1">
+                        ★ {cat.score}
+                      </span>
+                    </div>
+                    <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-amber-400 dark:bg-amber-500 rounded-full transition-all duration-700"
+                        style={{ width: `${(parseFloat(cat.score) / 5) * 100}%` }}
+                      />
+                    </div>
                   </div>
-                </div>
-
-                <div className="flex items-center gap-1 font-extrabold text-sm bg-secondary/30 px-3 py-1 rounded-full border border-border/50">
-                  <span className="text-amber-500">★</span>
-                  <span>{rev.overallRating.toFixed(1)}</span>
-                </div>
+                ))}
               </div>
+            </div>
 
-              <p className="text-sm leading-relaxed text-foreground/90 font-medium">
-                "{rev.comment}"
+            {/* Stars Distribution Bar Graph */}
+            <div className="bg-card border border-border p-6 rounded-3xl space-y-5">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+                Distribución de Estrellas ({totalEvaluationsCount})
+              </span>
+
+              <div className="space-y-2">
+                {[5, 4, 3, 2, 1].map((stars) => {
+                  const count = (starCounts as any)[stars] || 0;
+                  const pct = Math.round((count / totalEvaluationsCount) * 100);
+                  return (
+                    <div key={stars} className="flex items-center gap-3 text-xs">
+                      <span className="w-12 font-bold text-amber-500 dark:text-amber-400 text-right shrink-0">
+                        {stars} ★
+                      </span>
+                      <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-amber-400 dark:bg-amber-500 rounded-full transition-all duration-700"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      <span className="w-16 font-mono text-[11px] text-muted-foreground text-right shrink-0">
+                        {pct}% ({count})
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Filter Bar for Public Reviews */}
+          <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-secondary/20 border border-border/50 rounded-2xl">
+            <div className="relative flex-1 min-w-[200px] sm:max-w-xs">
+              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Buscar por alumno o comentario..."
+                value={publicSearch}
+                onChange={(e) => setPublicSearch(e.target.value)}
+                className="h-9 w-full pl-8 pr-3 rounded-xl border border-border bg-background text-xs font-bold text-foreground focus-visible:outline-none placeholder:font-normal placeholder:text-muted-foreground"
+              />
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+              <Select value={publicRatingFilter} onValueChange={(val) => setPublicRatingFilter(val)}>
+                <SelectTrigger className="w-full sm:w-[160px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
+                  <SelectValue placeholder="Puntuación" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
+                  <SelectItem value="all">Todas las Estrellas</SelectItem>
+                  <SelectItem value="5">5 Estrellas (★ 5.0)</SelectItem>
+                  <SelectItem value="4">4 Estrellas (★ 4.0)</SelectItem>
+                  <SelectItem value="3">3 Estrellas (★ 3.0)</SelectItem>
+                  <SelectItem value="2">2 Estrellas (★ 2.0)</SelectItem>
+                  <SelectItem value="1">1 Estrella (★ 1.0)</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={publicStatusFilter} onValueChange={(val) => setPublicStatusFilter(val)}>
+                <SelectTrigger className="w-full sm:w-[190px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
+                  <SelectValue placeholder="Estado de Respuesta" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
+                  <SelectItem value="all">Todos los Estados</SelectItem>
+                  <SelectItem value="unreplied">⚠️ Sin Responder</SelectItem>
+                  <SelectItem value="replied">✅ Respondidas</SelectItem>
+                  <SelectItem value="featured">★ Destacadas en Web</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {(publicSearch || publicRatingFilter !== "all" || publicStatusFilter !== "all") && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setPublicSearch("");
+                    setPublicRatingFilter("all");
+                    setPublicStatusFilter("all");
+                  }}
+                  className="h-9 text-[11px] font-bold text-muted-foreground hover:text-rose-600 rounded-xl"
+                >
+                  Limpiar Filtros
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Public Reviews Cards Feed */}
+          <div className="space-y-4">
+            {filteredPublicReviews.length === 0 ? (
+              <div className="p-8 text-center bg-card border border-border/80 rounded-3xl text-muted-foreground italic text-xs">
+                No se encontraron reseñas públicas con los filtros seleccionados.
+              </div>
+            ) : (
+              filteredPublicReviews.map((rev) => {
+                const isFeatured = featuredReviewIds.includes(rev.id);
+                return (
+                  <div
+                    key={rev.id}
+                    className="bg-card border border-border p-5 rounded-3xl space-y-3.5 hover:border-border/80 transition-all shadow-xs"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={rev.studentPhoto}
+                          alt={rev.studentName}
+                          className="w-10 h-10 rounded-full object-cover border border-border shrink-0 shadow-2xs"
+                        />
+                        <div>
+                          <div className="font-bold text-sm text-foreground flex items-center gap-2">
+                            <span>{rev.studentName}</span>
+                            {isFeatured && (
+                              <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20 text-[10px] font-extrabold flex items-center gap-1">
+                                ★ Destacada en Web
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-xs text-muted-foreground">{rev.date}</div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1 font-extrabold text-xs bg-amber-500/10 text-amber-600 dark:text-amber-400 px-3 py-1.5 rounded-xl border border-amber-500/30">
+                          <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                          <span>{rev.overallRating.toFixed(1)}</span>
+                        </div>
+
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleToggleFeatured(rev.id)}
+                          className={`h-8 text-[11px] font-bold rounded-xl gap-1 border-border ${
+                            isFeatured
+                              ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30 hover:bg-amber-500/20"
+                              : "hover:bg-secondary"
+                          }`}
+                        >
+                          <Star className={`h-3.5 w-3.5 ${isFeatured ? "fill-amber-500 text-amber-500" : ""}`} />
+                          {isFeatured ? "Destacada" : "Destacar"}
+                        </Button>
+                      </div>
+                    </div>
+
+                    <p className="text-xs sm:text-sm leading-relaxed text-foreground/90 font-medium bg-secondary/15 p-3 rounded-2xl border border-border/40">
+                      "{rev.comment}"
+                    </p>
+
+                    {/* Sub-ratings badges */}
+                    <div className="flex flex-wrap gap-2 text-[10.5px] text-muted-foreground pt-0.5">
+                      <span className="px-2.5 py-0.5 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300 font-medium border border-amber-500/20">
+                        Limpieza: <strong className="font-mono text-foreground">{rev.ratingCleanliness} ★</strong>
+                      </span>
+                      <span className="px-2.5 py-0.5 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300 font-medium border border-amber-500/20">
+                        Equipamiento: <strong className="font-mono text-foreground">{rev.ratingEquipment} ★</strong>
+                      </span>
+                      <span className="px-2.5 py-0.5 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300 font-medium border border-amber-500/20">
+                        Staff: <strong className="font-mono text-foreground">{rev.ratingStaff} ★</strong>
+                      </span>
+                      <span className="px-2.5 py-0.5 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300 font-medium border border-amber-500/20">
+                        Precio: <strong className="font-mono text-foreground">{rev.ratingPrice} ★</strong>
+                      </span>
+                    </div>
+
+                    {/* Official Reply Section */}
+                    {rev.reply ? (
+                      <div className="mt-3 p-3.5 rounded-2xl bg-secondary/30 border border-border/60 text-xs space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="font-extrabold text-primary flex items-center gap-1.5">
+                            <MessageCircle className="w-3.5 h-3.5 text-primary" /> Respuesta Oficial del Centro
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setReplyTexts((prev) => ({ ...prev, [rev.id]: rev.reply }));
+                                setActiveReplyId(rev.id);
+                              }}
+                              className="text-[10.5px] text-muted-foreground hover:text-foreground font-semibold underline"
+                            >
+                              Editar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setDeleteConfirmState({ type: "reply_delete", id: rev.id, name: rev.studentName })}
+                              className="text-[10.5px] text-rose-500 hover:text-rose-600 font-semibold underline flex items-center gap-1"
+                            >
+                              <Trash2 className="h-3 w-3" /> Eliminar Respuesta
+                            </button>
+                          </div>
+                        </div>
+                        <p className="text-muted-foreground leading-relaxed">{rev.reply}</p>
+                      </div>
+                    ) : (
+                      activeReplyId !== rev.id && (
+                        <button
+                          type="button"
+                          onClick={() => setActiveReplyId(rev.id)}
+                          className="text-xs font-semibold text-primary hover:underline flex items-center gap-1.5 pt-1"
+                        >
+                          <MessageCircle className="w-3.5 h-3.5" /> Responder como Administrador
+                        </button>
+                      )
+                    )}
+
+                    {activeReplyId === rev.id && (
+                      <div className="space-y-2 pt-2 animate-fade-in">
+                        <textarea
+                          rows={2}
+                          value={replyTexts[rev.id] || ""}
+                          onChange={(e) =>
+                            setReplyTexts((prev) => ({ ...prev, [rev.id]: e.target.value }))
+                          }
+                          placeholder="Escribe la respuesta oficial para el alumno..."
+                          className="flex w-full rounded-2xl border border-border bg-background px-3 py-2 text-xs font-bold text-foreground focus-visible:outline-none placeholder:font-normal placeholder:text-muted-foreground"
+                        />
+                        <div className="flex gap-2 justify-end">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="rounded-xl text-xs font-bold"
+                            onClick={() => {
+                              setActiveReplyId(null);
+                              setReplyTexts((prev) => ({ ...prev, [rev.id]: "" }));
+                            }}
+                          >
+                            Cancelar
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            className="rounded-xl text-xs font-bold bg-primary text-primary-foreground"
+                            onClick={() => handleSendReply(rev.id)}
+                          >
+                            Publicar Respuesta Oficial
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      ) : (
+        /* Private Suggestions & Feedback View (Airbnb / Uber Style) */
+        <div className="space-y-6">
+          {/* Info Header */}
+          <div className="p-4 rounded-2xl bg-secondary/30 border border-border/60 flex items-start gap-3">
+            <MessageCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+            <div className="text-xs space-y-1">
+              <span className="font-bold text-foreground block">
+                Buzón Privado de Mensajes y Sugerencias
+              </span>
+              <p className="text-muted-foreground leading-relaxed">
+                Mensajes directos enviados por los alumnos a la dirección del centro. Este feedback es 100% privado y permite resolver inquietudes de forma personalizada.
+              </p>
+            </div>
+          </div>
+
+          {/* Filter Bar for Private Feedback */}
+          <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-secondary/20 border border-border/50 rounded-2xl">
+            <div className="relative flex-1 min-w-[200px] sm:max-w-xs">
+              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Buscar por alumno, mensaje o categoría..."
+                value={privateSearch}
+                onChange={(e) => setPrivateSearch(e.target.value)}
+                className="h-9 w-full pl-8 pr-3 rounded-xl border border-border bg-background text-xs font-bold text-foreground focus-visible:outline-none placeholder:font-normal placeholder:text-muted-foreground"
+              />
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+              <Select value={privateCategoryFilter} onValueChange={(val) => setPrivateCategoryFilter(val)}>
+                <SelectTrigger className="w-full sm:w-[180px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
+                  <SelectValue placeholder="Categoría" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
+                  <SelectItem value="all">Todas las Categorías</SelectItem>
+                  <SelectItem value="Instalaciones">Instalaciones</SelectItem>
+                  <SelectItem value="Clases & Horarios">Clases & Horarios</SelectItem>
+                  <SelectItem value="Climatización">Climatización</SelectItem>
+                  <SelectItem value="Atención / Staff">Atención / Staff</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={privateStatusFilter} onValueChange={(val) => setPrivateStatusFilter(val)}>
+                <SelectTrigger className="w-full sm:w-[160px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
+                  <SelectValue placeholder="Estado" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
+                  <SelectItem value="all">Todos los Estados</SelectItem>
+                  <SelectItem value="Pendiente">⚠️ Pendientes</SelectItem>
+                  <SelectItem value="Atendido">✅ Atendidos</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {(privateSearch || privateCategoryFilter !== "all" || privateStatusFilter !== "all") && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setPrivateSearch("");
+                    setPrivateCategoryFilter("all");
+                    setPrivateStatusFilter("all");
+                  }}
+                  className="h-9 text-[11px] font-bold text-muted-foreground hover:text-rose-600 rounded-xl"
+                >
+                  Limpiar Filtros
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Private Feedback Feed */}
+          <div className="space-y-4">
+            {filteredPrivateFeedback.length === 0 ? (
+              <div className="p-8 text-center bg-card border border-border/80 rounded-3xl text-muted-foreground italic text-xs">
+                No hay mensajes o sugerencias privadas con los filtros seleccionados.
+              </div>
+            ) : (
+              filteredPrivateFeedback.map((fb) => {
+                const isPending = fb.status === "Pendiente";
+                return (
+                  <div
+                    key={fb.id}
+                    className="bg-card border border-border p-5 rounded-3xl space-y-3.5 hover:border-border/80 transition-all shadow-xs"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={fb.studentPhoto}
+                          alt={fb.studentName}
+                          className="w-10 h-10 rounded-full object-cover border border-border shrink-0 shadow-2xs"
+                        />
+                        <div>
+                          <div className="font-bold text-sm text-foreground flex items-center gap-2">
+                            <span>{fb.studentName}</span>
+                            <span className="px-2.5 py-0.5 rounded-lg bg-secondary/60 text-foreground border border-border/60 text-[10px] font-extrabold">
+                              {fb.category}
+                            </span>
+                          </div>
+                          <div className="text-xs text-muted-foreground">{fb.date}</div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleTogglePrivateStatus(fb.id)}
+                          className={`px-3 py-1 rounded-full border text-[10.5px] font-extrabold transition ${
+                            isPending
+                              ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30 hover:bg-amber-500/20"
+                              : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20"
+                          }`}
+                        >
+                          {isPending ? "⚠️ Pendiente" : "✅ Atendido"}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setDeleteConfirmState({ type: "private_delete", id: fb.id, name: fb.studentName })}
+                          className="p-1.5 text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 rounded-lg transition"
+                          title="Eliminar sugerencia"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <p className="text-xs sm:text-sm leading-relaxed text-foreground/90 font-medium bg-secondary/15 p-3 rounded-2xl border border-border/40">
+                      "{fb.message}"
+                    </p>
+
+                    {/* Internal Admin Note */}
+                    {fb.adminNotes ? (
+                      <div className="p-3.5 rounded-2xl bg-secondary/30 border border-border/60 text-xs space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="font-extrabold text-foreground flex items-center gap-1.5">
+                            <FileText className="w-3.5 h-3.5 text-primary" /> Nota Interna de Administración
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAdminNoteTexts((prev) => ({ ...prev, [fb.id]: fb.adminNotes || "" }));
+                              setActiveNoteId(fb.id);
+                            }}
+                            className="text-[10.5px] text-muted-foreground hover:text-foreground font-semibold underline"
+                          >
+                            Editar Nota
+                          </button>
+                        </div>
+                        <p className="text-muted-foreground leading-relaxed">{fb.adminNotes}</p>
+                      </div>
+                    ) : (
+                      activeNoteId !== fb.id && (
+                        <button
+                          type="button"
+                          onClick={() => setActiveNoteId(fb.id)}
+                          className="text-xs font-semibold text-primary hover:underline flex items-center gap-1.5 pt-0.5"
+                        >
+                          <PlusCircle className="w-3.5 h-3.5" /> Agregar nota interna de resolución
+                        </button>
+                      )
+                    )}
+
+                    {activeNoteId === fb.id && (
+                      <div className="space-y-2 pt-2 animate-fade-in">
+                        <textarea
+                          rows={2}
+                          value={adminNoteTexts[fb.id] || ""}
+                          onChange={(e) =>
+                            setAdminNoteTexts((prev) => ({ ...prev, [fb.id]: e.target.value }))
+                          }
+                          placeholder="Escribe una nota interna (ej: 'Revisado con el staff de limpieza el 29/07')..."
+                          className="flex w-full rounded-2xl border border-border bg-background px-3 py-2 text-xs font-bold text-foreground focus-visible:outline-none placeholder:font-normal placeholder:text-muted-foreground"
+                        />
+                        <div className="flex gap-2 justify-end">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="rounded-xl text-xs font-bold"
+                            onClick={() => {
+                              setActiveNoteId(null);
+                              setAdminNoteTexts((prev) => ({ ...prev, [fb.id]: "" }));
+                            }}
+                          >
+                            Cancelar
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            className="rounded-xl text-xs font-bold bg-primary text-primary-foreground"
+                            onClick={() => handleSaveAdminNote(fb.id)}
+                          >
+                            Guardar Nota Interna
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Solicitar Reseñas por WhatsApp */}
+      {showRequestWhatsAppModal && (
+        <Dialog open={showRequestWhatsAppModal} onOpenChange={setShowRequestWhatsAppModal}>
+          <DialogContent className="sm:max-w-lg border border-border bg-card p-6 rounded-3xl shadow-2xl space-y-4">
+            <DialogHeader>
+              <DialogTitle className="text-base font-bold flex items-center gap-2">
+                <Send className="h-5 w-5 text-emerald-600" /> Solicitar Feedback por WhatsApp
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-4 text-xs">
+              <p className="text-muted-foreground leading-relaxed">
+                Selecciona un socio de la lista activa para enviarle una invitación directa a su WhatsApp personal.
               </p>
 
-              {/* Sub-ratings badges */}
-              <div className="flex flex-wrap gap-2 text-[11px] text-muted-foreground pt-1">
-                <span className="px-2.5 py-0.5 rounded-full bg-secondary/50 font-medium">
-                  Limpieza: <strong className="text-foreground">{rev.ratingCleanliness}</strong>
-                </span>
-                <span className="px-2.5 py-0.5 rounded-full bg-secondary/50 font-medium">
-                  Equipamiento: <strong className="text-foreground">{rev.ratingEquipment}</strong>
-                </span>
-                <span className="px-2.5 py-0.5 rounded-full bg-secondary/50 font-medium">
-                  Staff: <strong className="text-foreground">{rev.ratingStaff}</strong>
-                </span>
-                <span className="px-2.5 py-0.5 rounded-full bg-secondary/50 font-medium">
-                  Precio: <strong className="text-foreground">{rev.ratingPrice}</strong>
-                </span>
+              {/* Member Search input */}
+              <div className="relative">
+                <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Buscar socio por nombre o número de teléfono..."
+                  value={memberSearchModal}
+                  onChange={(e) => setMemberSearchModal(e.target.value)}
+                  className="w-full h-9 rounded-xl border border-border bg-background pl-8 pr-3 text-xs font-bold text-foreground focus-visible:outline-none placeholder:font-normal placeholder:text-muted-foreground"
+                />
               </div>
 
-              {/* Official Reply section */}
-              {rev.reply ? (
-                <div className="mt-3 p-3.5 rounded-2xl bg-secondary/25 border border-border/60 text-xs space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="font-extrabold text-primary flex items-center gap-1.5">
-                      <MessageCircle className="w-3.5 h-3.5" /> Respuesta oficial del centro
-                    </span>
-                    <button
+              {/* Members List Selector */}
+              <div className="max-h-56 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar">
+                {availableWhatsAppMembers.map((m) => {
+                  const isSelected = selectedMemberModal?.id === m.id || requestStudentName === m.name;
+                  return (
+                    <div
+                      key={m.id || m.name}
                       onClick={() => {
-                        setReplyTexts((prev) => ({ ...prev, [rev.id]: rev.reply }));
-                        setActiveReplyId(rev.id);
+                        setSelectedMemberModal(m);
+                        setRequestStudentName(m.name);
+                        setRequestPhone(m.phone || "");
                       }}
-                      className="text-[10px] text-muted-foreground hover:text-foreground font-semibold underline"
+                      className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
+                        isSelected
+                          ? "border-emerald-500/50 bg-emerald-500/10 font-bold"
+                          : "border-border/60 bg-secondary/20 hover:bg-secondary/50"
+                      }`}
                     >
-                      Editar
-                    </button>
-                  </div>
-                  <p className="text-muted-foreground leading-relaxed">{rev.reply}</p>
-                </div>
-              ) : (
-                activeReplyId !== rev.id && (
-                  <button
-                    onClick={() => setActiveReplyId(rev.id)}
-                    className="text-xs font-semibold text-primary hover:underline flex items-center gap-1.5 pt-1"
-                  >
-                    <MessageCircle className="w-3.5 h-3.5" /> Responder como Administrador
-                  </button>
-                )
-              )}
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={m.photo || m.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80"}
+                          alt={m.name}
+                          className="w-8 h-8 rounded-full object-cover border border-border shrink-0"
+                        />
+                        <div>
+                          <div className="font-bold text-xs text-foreground">{m.name}</div>
+                          <div className="text-[11px] text-muted-foreground flex items-center gap-2">
+                            <span>{m.phone || "Sin teléfono registrado"}</span>
+                            {m.plan && <span className="text-[10px] bg-secondary px-1.5 py-0.2 rounded font-semibold">{m.plan}</span>}
+                          </div>
+                        </div>
+                      </div>
 
-              {activeReplyId === rev.id && (
-                <div className="space-y-2 pt-2 animate-fade-in">
-                  <textarea
-                    rows={2}
-                    value={replyTexts[rev.id] || ""}
-                    onChange={(e) =>
-                      setReplyTexts((prev) => ({ ...prev, [rev.id]: e.target.value }))
-                    }
-                    placeholder="Escribe la respuesta oficial..."
-                    className="flex w-full rounded-2xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none text-foreground placeholder:text-muted-foreground"
-                  />
-                  <div className="flex gap-2 justify-end">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="rounded-xl text-xs"
-                      onClick={() => {
-                        setActiveReplyId(null);
-                        setReplyTexts((prev) => ({ ...prev, [rev.id]: "" }));
-                      }}
-                    >
-                      Cancelar
-                    </Button>
-                    <Button
-                      size="sm"
-                      className="rounded-xl text-xs bg-primary text-primary-foreground"
-                      onClick={() => handleSendReply(rev.id)}
-                    >
-                      Publicar Respuesta
-                    </Button>
-                  </div>
-                </div>
-              )}
+                      {m.phone ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            sendWhatsAppReviewRequest(m.phone, m.name);
+                          }}
+                          className="h-7 px-3 rounded-xl text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white gap-1 shadow-xs"
+                        >
+                          <Send className="h-3 w-3" /> Enviar
+                        </Button>
+                      ) : (
+                        <span className="text-[10px] text-muted-foreground italic">Sin WhatsApp</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <DialogFooter className="gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowRequestWhatsAppModal(false);
+                    setSelectedMemberModal(null);
+                    setMemberSearchModal("");
+                  }}
+                  className="rounded-xl text-xs font-bold w-full sm:w-auto"
+                >
+                  Cerrar
+                </Button>
+              </DialogFooter>
             </div>
-          ))}
-        </div>
-      </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Confirmation Modal for Deletions */}
+      {deleteConfirmState && (
+        <AlertDialog open={!!deleteConfirmState} onOpenChange={(open) => !open && setDeleteConfirmState(null)}>
+          <AlertDialogContent className="sm:max-w-md border border-border bg-card p-6 rounded-3xl shadow-2xl">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+                <Trash2 className="h-5 w-5 text-rose-600" /> Confirmar Eliminación
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-xs text-muted-foreground pt-1 leading-relaxed">
+                {deleteConfirmState.type === "reply_delete" && (
+                  <>¿Estás seguro de que deseas eliminar tu <strong>Respuesta Oficial</strong> a la reseña de <strong>"{deleteConfirmState.name}"</strong>? La reseña volverá a quedar como pendiente de respuesta.</>
+                )}
+                {deleteConfirmState.type === "private_delete" && (
+                  <>¿Estás seguro de que deseas eliminar la sugerencia privada enviada por <strong>"{deleteConfirmState.name}"</strong>?</>
+                )}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter className="gap-2 pt-3">
+              <AlertDialogCancel
+                onClick={() => setDeleteConfirmState(null)}
+                className="rounded-xl text-xs font-bold border-border"
+              >
+                Cancelar
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleConfirmDeleteAction}
+                className="rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-xs"
+              >
+                Sí, Eliminar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </div>
   );
 }
@@ -5161,7 +7339,16 @@ function AsistenciasTab({
     },
   ]);
 
-  const [recentCheckinsList, setRecentCheckinsList] = useState([
+  const [recentCheckinsList, setRecentCheckinsList] = useState<
+    Array<{
+      name: string;
+      time: string;
+      method: string;
+      alert?: string | null;
+      alertColor?: string;
+      photo: string;
+    }>
+  >([
     {
       name: "Agustín Gómez",
       time: "11:24 AM",
@@ -7420,6 +9607,7 @@ interface Membership {
   isMultisede?: boolean;
   freezeDays?: number | null;
   dailyClassLimit?: string | null;
+  isFeatured?: boolean;
 }
 
 interface MembresiasTabProps {
@@ -7511,6 +9699,11 @@ function MembresiasTab({
   const [registrationFee, setRegistrationFee] = useState("0");
   const [freezeDays, setFreezeDays] = useState("0");
   const [dailyClassLimit, setDailyClassLimit] = useState("Ilimitado");
+
+  // Search & Filter States
+  const [searchQuery, setSearchQuery] = useState("");
+  const [tagFilter, setTagFilter] = useState("all");
+  const [periodicityFilter, setPeriodicityFilter] = useState("all");
 
   // Edit / Delete states
   const [editingPlan, setEditingPlan] = useState<Membership | null>(null);
@@ -7668,6 +9861,54 @@ function MembresiasTab({
             act.toLowerCase().includes(editSearchActivity.toLowerCase()) &&
             !editIncludedActivities.includes(act),
         );
+
+  const handleDuplicatePlan = (m: Membership) => {
+    const newPlan: Membership = {
+      ...m,
+      id: `plan-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      name: `${m.name} (Copia)`,
+      activeCount: 0,
+      isFeatured: false,
+    };
+    setMembershipsList((prev) => [...prev, newPlan]);
+    toast.success(`✓ Plan "${m.name}" duplicado como "${newPlan.name}".`);
+  };
+
+  const handleToggleFeaturedPlan = (id: string) => {
+    setMembershipsList((prev) =>
+      prev.map((m) => ({
+        ...m,
+        isFeatured: m.id === id ? !m.isFeatured : false,
+      })),
+    );
+    const target = membershipsList.find((m) => m.id === id);
+    if (target && !target.isFeatured) {
+      toast.success(`★ Plan "${target.name}" marcado como Plan Destacado.`);
+    } else {
+      toast.info("Plan quitado de destacados.");
+    }
+  };
+
+  const filteredMemberships = useMemo(() => {
+    return membershipsList.filter((m) => {
+      const q = searchQuery.toLowerCase();
+      const matchSearch =
+        m.name.toLowerCase().includes(q) ||
+        (m.tag && m.tag.toLowerCase().includes(q)) ||
+        (m.includedActivities && m.includedActivities.some((act) => act.toLowerCase().includes(q)));
+
+      const matchTag =
+        tagFilter === "all"
+          ? true
+          : tagFilter === "featured"
+          ? !!m.isFeatured
+          : m.tag === tagFilter;
+
+      const matchPeriod = periodicityFilter === "all" || m.duration === periodicityFilter;
+
+      return matchSearch && matchTag && matchPeriod;
+    });
+  }, [membershipsList, searchQuery, tagFilter, periodicityFilter]);
 
   return (
     <div className="space-y-6">
@@ -8004,143 +10245,242 @@ function MembresiasTab({
         </DialogContent>
       </Dialog>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        {membershipsList.map((m, i) => (
-          <div
-            key={m.id}
-            className="rounded-3xl border border-border bg-card p-6 flex flex-col justify-between hover:border-foreground/20 transition"
-          >
-            <div>
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-bold text-lg">{m.name}</h3>
-                  {m.tag && (
-                    <span className="inline-block mt-1.5 text-[9px] font-bold bg-primary/10 text-primary px-1.5 py-0.5 rounded uppercase tracking-wider">
-                      {m.tag}
+      {/* Search & Multi-Filters Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-secondary/20 border border-border/50 rounded-2xl">
+        <div className="relative flex-1 min-w-[200px] sm:max-w-xs">
+          <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Buscar por nombre o actividad..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="h-9 w-full pl-8 pr-3 rounded-xl border border-border bg-background text-xs font-bold text-foreground focus-visible:outline-none placeholder:font-normal placeholder:text-muted-foreground"
+          />
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <Select value={tagFilter} onValueChange={setTagFilter}>
+            <SelectTrigger className="w-full sm:w-[170px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
+              <SelectValue placeholder="Categoría" />
+            </SelectTrigger>
+            <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
+              <SelectItem value="all">Todas las Categorías</SelectItem>
+              <SelectItem value="featured">★ Plan Destacado</SelectItem>
+              <SelectItem value="Pase Libre">Pase Libre</SelectItem>
+              <SelectItem value="Planes Premium">Planes Premium</SelectItem>
+              <SelectItem value="Solo Clases">Solo Clases</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={periodicityFilter} onValueChange={setPeriodicityFilter}>
+            <SelectTrigger className="w-full sm:w-[160px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
+              <SelectValue placeholder="Periodicidad" />
+            </SelectTrigger>
+            <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
+              <SelectItem value="all">Todas las Duraciones</SelectItem>
+              <SelectItem value="Semanal">Semanal</SelectItem>
+              <SelectItem value="Mensual">Mensual</SelectItem>
+              <SelectItem value="Trimestral">Trimestral</SelectItem>
+              <SelectItem value="Semestral">Semestral</SelectItem>
+              <SelectItem value="Anual">Anual</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {(searchQuery || tagFilter !== "all" || periodicityFilter !== "all") && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setSearchQuery("");
+                setTagFilter("all");
+                setPeriodicityFilter("all");
+              }}
+              className="h-9 text-[11px] font-bold text-muted-foreground hover:text-rose-600 rounded-xl"
+            >
+              Limpiar Filtros
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {filteredMemberships.length === 0 ? (
+        <div className="p-8 text-center bg-card border border-border/80 rounded-3xl text-muted-foreground italic text-xs">
+          No se encontraron planes de membresía con los filtros seleccionados.
+        </div>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-3">
+          {filteredMemberships.map((m) => (
+            <div
+              key={m.id}
+              className={`rounded-3xl border bg-card p-6 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 shadow-xs ${
+                m.isFeatured
+                  ? "border-amber-500/50 dark:border-amber-400/50 ring-1 ring-amber-500/30 shadow-md"
+                  : "border-border hover:border-foreground/30"
+              }`}
+            >
+              <div>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <h3 className="font-bold text-lg text-foreground">{m.name}</h3>
+                      {m.isFeatured && (
+                        <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-300 border border-amber-500/30 text-[9.5px] font-black flex items-center gap-1">
+                          ★ Más Elegido
+                        </span>
+                      )}
+                    </div>
+                    {m.tag && (
+                      <span className="inline-block mt-1.5 text-[9.5px] font-extrabold bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                        {m.tag}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-xs text-muted-foreground font-semibold bg-secondary/50 px-2.5 py-1 rounded-xl border border-border/50">
+                    {m.duration}
+                  </span>
+                </div>
+                <div className="mt-4 text-3xl font-extrabold tracking-tight text-foreground">
+                  {m.originalPrice && (
+                    <span className="text-sm font-normal text-muted-foreground line-through mr-2">
+                      ${m.originalPrice.toLocaleString("es-AR")}
                     </span>
                   )}
+                  ${m.price.toLocaleString("es-AR")}
                 </div>
-                <span className="text-xs text-muted-foreground font-medium">{m.duration}</span>
-              </div>
-              <div className="mt-4 text-3xl font-extrabold tracking-tight">
-                {m.originalPrice && (
-                  <span className="text-sm font-normal text-muted-foreground line-through mr-2">
-                    ${m.originalPrice.toLocaleString("es-AR")}
-                  </span>
-                )}
-                ${m.price.toLocaleString("es-AR")}
-              </div>
 
-              {/* Pass Type & Hours Badges */}
-              <div className="mt-4 space-y-1.5 border-t border-border/60 pt-3">
-                <div className="text-xs text-muted-foreground flex items-center gap-1.5">
-                  <span>🎟️</span>
-                  <span>
-                    {m.passType === "Por Créditos"
-                      ? `${m.creditsCount} clases / créditos`
-                      : "Pase Libre (Ilimitado)"}
-                  </span>
-                </div>
-                <div className="text-xs text-muted-foreground flex items-center gap-1.5">
-                  <span>🕒</span>
-                  <span>
-                    {m.accessHoursType === "Off-Peak"
-                      ? `Franja Off-Peak (${m.offPeakStart} - ${m.offPeakEnd} hs)`
-                      : "Acceso Completo (Todo Horario)"}
-                  </span>
-                </div>
-                <div className="text-xs text-muted-foreground flex items-center gap-1.5">
-                  <span>💵</span>
-                  <span>
-                    {m.registrationFee && m.registrationFee > 0
-                      ? `Matrícula: $${m.registrationFee.toLocaleString("es-AR")}`
-                      : "Matrícula Bonificada 🎉"}
-                  </span>
-                </div>
-                {m.freezeDays && m.freezeDays > 0 ? (
-                  <div className="text-xs text-muted-foreground flex items-center gap-1.5">
-                    <span>❄️</span>
-                    <span>Congelamiento: {m.freezeDays} días/año</span>
-                  </div>
-                ) : null}
-                {m.dailyClassLimit && m.dailyClassLimit !== "Ilimitado" ? (
-                  <div className="text-xs text-muted-foreground flex items-center gap-1.5">
-                    <span>🛡️</span>
-                    <span>Límite: {m.dailyClassLimit}</span>
-                  </div>
-                ) : null}
-              </div>
-
-              {/* Included Activities badges */}
-              {m.includedActivities && m.includedActivities.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-1">
-                  {m.includedActivities.map((act) => (
-                    <span
-                      key={act}
-                      className="text-[9.5px] bg-secondary text-secondary-foreground px-2.5 py-0.5 rounded-full font-medium"
-                    >
-                      {act}
+                {/* Pass Type & Hours Badges (Clean Lucide Icons) */}
+                <div className="mt-4 space-y-2 border-t border-border/60 pt-3 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <Ticket className="h-3.5 w-3.5 text-primary shrink-0" />
+                    <span>
+                      {m.passType === "Por Créditos"
+                        ? `${m.creditsCount} clases / créditos`
+                        : "Pase Libre (Ilimitado)"}
                     </span>
-                  ))}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                    <span>
+                      {m.accessHoursType === "Off-Peak"
+                        ? `Franja Off-Peak (${m.offPeakStart} - ${m.offPeakEnd} hs)`
+                        : "Acceso Completo (Todo Horario)"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CreditCard className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                    <span>
+                      {m.registrationFee && m.registrationFee > 0
+                        ? `Matrícula: $${m.registrationFee.toLocaleString("es-AR")}`
+                        : "Matrícula Bonificada"}
+                    </span>
+                  </div>
+                  {m.freezeDays && m.freezeDays > 0 ? (
+                    <div className="flex items-center gap-2">
+                      <Snowflake className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+                      <span>Congelamiento: {m.freezeDays} días/año</span>
+                    </div>
+                  ) : null}
+                  {m.dailyClassLimit && m.dailyClassLimit !== "Ilimitado" ? (
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                      <span>Límite: {m.dailyClassLimit}</span>
+                    </div>
+                  ) : null}
                 </div>
-              )}
 
-              <ul className="mt-4 space-y-2 border-t border-border/60 pt-3">
-                {m.includedServices.map((serviceId) => {
-                  const serviceName = amenities.find((a) => a.id === serviceId)?.name || serviceId;
-                  return (
-                    <li
-                      key={serviceId}
-                      className="flex items-center gap-1.5 text-xs text-muted-foreground"
-                    >
-                      <CheckCircle2 className="h-3.5 w-3.5 text-primary" /> {serviceName}
-                    </li>
-                  );
-                })}
-                {m.includedServices.length === 0 && (
-                  <li className="text-xs text-muted-foreground italic">
-                    Sin amenities especiales incluidos.
-                  </li>
+                {/* Included Activities badges */}
+                {m.includedActivities && m.includedActivities.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-1">
+                    {m.includedActivities.map((act) => (
+                      <span
+                        key={act}
+                        className="text-[9.5px] bg-secondary text-secondary-foreground border border-border/50 px-2.5 py-0.5 rounded-full font-bold"
+                      >
+                        {act}
+                      </span>
+                    ))}
+                  </div>
                 )}
-              </ul>
-            </div>
 
-            <div className="space-y-4 mt-6">
-              <div className="border-t border-border/60 pt-4 flex items-center justify-between text-xs text-muted-foreground">
-                <span>Miembros activos:</span>
-                <span className="font-bold text-foreground bg-secondary px-2.5 py-0.5 rounded-full">
-                  {m.activeCount}
-                </span>
+                <ul className="mt-4 space-y-2 border-t border-border/60 pt-3">
+                  {m.includedServices.map((serviceId) => {
+                    const serviceName = amenities.find((a) => a.id === serviceId)?.name || serviceId;
+                    return (
+                      <li
+                        key={serviceId}
+                        className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium"
+                      >
+                        <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" /> {serviceName}
+                      </li>
+                    );
+                  })}
+                  {m.includedServices.length === 0 && (
+                    <li className="text-xs text-muted-foreground italic">
+                      Sin amenities especiales incluidos.
+                    </li>
+                  )}
+                </ul>
               </div>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => openEditModal(m)}
-                  className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl border border-border bg-background hover:bg-secondary text-xs text-muted-foreground hover:text-foreground font-semibold flex-1 transition"
-                >
-                  <Edit2 className="h-3.5 w-3.5" /> Editar
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (m.activeCount > 0) {
-                      alert(
-                        `No se puede eliminar el plan "${m.name}" porque tiene ${m.activeCount} alumnos activos. Debes migrarlos a otro plan antes de poder eliminarlo.`,
-                      );
-                    } else {
-                      setDeletingPlan(m);
-                      setDeleteConfirmText("");
-                    }
-                  }}
-                  className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl border border-destructive/ bg-destructive/ hover:bg-destructive hover:text-white text-xs text-destructive font-semibold flex-1 transition"
-                >
-                  <Trash2 className="h-3.5 w-3.5" /> Eliminar
-                </button>
+
+              <div className="space-y-4 mt-6">
+                <div className="border-t border-border/60 pt-4 flex items-center justify-between text-xs text-muted-foreground font-semibold">
+                  <span>Miembros activos:</span>
+                  <span className="font-bold text-foreground bg-secondary/80 border border-border/60 px-2.5 py-0.5 rounded-full font-mono">
+                    {m.activeCount}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => handleToggleFeaturedPlan(m.id)}
+                    className={`flex items-center justify-center gap-1 px-2 py-1.5 rounded-xl border text-[10.5px] font-bold transition ${
+                      m.isFeatured
+                        ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30 hover:bg-amber-500/20"
+                        : "border-border bg-background hover:bg-secondary text-muted-foreground hover:text-foreground"
+                    }`}
+                    title="Marcar como Plan Destacado en el Perfil del Gimnasio"
+                  >
+                    <Star className={`h-3.5 w-3.5 ${m.isFeatured ? "fill-amber-500 text-amber-500" : ""}`} />
+                    {m.isFeatured ? "Destacado" : "Destacar"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDuplicatePlan(m)}
+                    className="flex items-center justify-center gap-1 px-2 py-1.5 rounded-xl border border-border bg-background hover:bg-secondary text-[10.5px] text-muted-foreground hover:text-foreground font-bold transition"
+                    title="Duplicar plan"
+                  >
+                    <Copy className="h-3.5 w-3.5" /> Clonar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => openEditModal(m)}
+                    className="flex items-center justify-center gap-1 px-2 py-1.5 rounded-xl border border-border bg-background hover:bg-secondary text-[10.5px] text-muted-foreground hover:text-foreground font-bold transition"
+                  >
+                    <Edit2 className="h-3.5 w-3.5" /> Editar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (m.activeCount > 0) {
+                        toast.error(
+                          `No se puede eliminar el plan "${m.name}" porque tiene ${m.activeCount} alumnos activos.`,
+                        );
+                      } else {
+                        setDeletingPlan(m);
+                        setDeleteConfirmText("");
+                      }
+                    }}
+                    className="flex items-center justify-center gap-1 px-2 py-1.5 rounded-xl border border-border bg-background hover:bg-rose-500/10 hover:text-rose-600 text-[10.5px] text-muted-foreground font-bold transition"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" /> Eliminar
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Edit Membership Modal Dialog */}
       <Dialog open={!!editingPlan} onOpenChange={(open) => !open && setEditingPlan(null)}>
@@ -8436,57 +10776,46 @@ function MembresiasTab({
         </DialogContent>
       </Dialog>
 
-      {/* Delete Membership Modal */}
+      {/* Delete Membership AlertDialog */}
       {deletingPlan && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 z-50 animate-fade-in text-foreground">
-          <div className="relative bg-card border border-border w-full max-w-[420px] rounded-3xl p-6 text-center flex flex-col items-center">
-            <button
-              onClick={() => setDeletingPlan(null)}
-              className="absolute right-4 top-4 p-2 rounded-full hover:bg-secondary transition"
-            >
-              <X className="h-5 w-5" />
-            </button>
+        <AlertDialog open={!!deletingPlan} onOpenChange={(open) => !open && setDeletingPlan(null)}>
+          <AlertDialogContent className="sm:max-w-md border border-border bg-card p-6 rounded-3xl shadow-2xl">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+                <Trash2 className="h-5 w-5 text-rose-600" /> Confirmar Eliminación de Plan
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-xs text-muted-foreground pt-1">
+                Para confirmar la eliminación definitiva del plan <strong>"{deletingPlan.name}"</strong>, escribe la palabra clave <strong>ELIMINAR</strong> a continuación:
+              </AlertDialogDescription>
+            </AlertDialogHeader>
 
-            <div className="h-12 w-12 rounded-full bg-destructive/ text-destructive flex items-center justify-center mb-4">
-              <ShieldAlert className="h-6 w-6" />
-            </div>
-
-            <h3 className="text-lg font-bold tracking-tight text-foreground">
-              ¿Eliminar Plan de Membresía?
-            </h3>
-            <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-              Esta acción es irreversible. Para confirmar la eliminación definitiva del plan{" "}
-              <strong>"{deletingPlan.name}"</strong>, escribe la palabra clave en mayúsculas a
-              continuación:
-            </p>
-
-            <div className="w-full mt-4 space-y-3">
+            <div className="py-2 space-y-2">
               <input
                 type="text"
                 value={deleteConfirmText}
                 onChange={(e) => setDeleteConfirmText(e.target.value)}
-                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-center focus-visible:outline-none font-bold placeholder:font-normal"
+                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-center focus-visible:outline-none font-bold text-foreground placeholder:font-normal"
                 placeholder="Escribe ELIMINAR para confirmar"
               />
-              <div className="flex gap-2">
-                <Button
-                  onClick={handleDeletePlan}
-                  disabled={deleteConfirmText !== "ELIMINAR"}
-                  className="rounded-xl flex-1 bg-destructive hover:bg-destructive text-white font-bold text-xs"
-                >
-                  Confirmar Eliminación
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setDeletingPlan(null)}
-                  className="rounded-xl flex-1 text-xs"
-                >
-                  Cancelar
-                </Button>
-              </div>
             </div>
-          </div>
-        </div>
+
+            <AlertDialogFooter className="gap-2 pt-2">
+              <AlertDialogCancel
+                onClick={() => setDeletingPlan(null)}
+                className="rounded-xl text-xs font-bold border-border"
+              >
+                Cancelar
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeletePlan}
+                disabled={deleteConfirmText !== "ELIMINAR"}
+                className="rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-xs disabled:opacity-50"
+              >
+                Sí, Eliminar Plan
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       )}
     </div>
   );
@@ -11078,83 +13407,90 @@ function ClasesTab({
         </div>
       </div>
 
-      {/* Advanced Filters Bar */}
-      <div className="flex flex-wrap items-center gap-3 p-3.5 bg-secondary/15 rounded-2xl border border-border/40 text-xs text-foreground">
-        <span className="font-bold text-muted-foreground uppercase text-[9.5px] tracking-wider pr-1">
-          Filtros Rápidos:
-        </span>
+      {/* Barra de Filtros de Clases - Visible en Vista Semanal y Lista de Hoy */}
+      <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-card border border-border rounded-3xl shadow-xs mt-6 mb-6">
+        <div className="flex items-center gap-2">
+          <Filter className="h-4 w-4 text-primary shrink-0" />
+          <span className="font-bold text-xs uppercase tracking-wider text-muted-foreground/90">
+            Filtrar clases:
+          </span>
+        </div>
 
-        {/* Room Filter */}
-        <Select
-          value={selectedCalendarSalaId || "all"}
-          onValueChange={(val) => setSelectedCalendarSalaId(val === "all" ? "" : val)}
-        >
-          <SelectTrigger className="h-8 rounded-xl border border-border bg-background px-3 text-xs text-foreground font-semibold w-[160px]">
-            <SelectValue placeholder="Todas las salas" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todas las salas</SelectItem>
-            {salasList.map((s) => (
-              <SelectItem key={s.id} value={s.id}>
-                {s.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {/* Coach Filter */}
-        <Select
-          value={selectedFilterCoachId || "all"}
-          onValueChange={(val) => setSelectedFilterCoachId(val === "all" ? "" : val)}
-        >
-          <SelectTrigger className="h-8 rounded-xl border border-border bg-background px-3 text-xs text-foreground font-semibold w-[170px]">
-            <SelectValue placeholder="Todos los profesores" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos los profesores</SelectItem>
-            {staffList.map((s) => (
-              <SelectItem key={s.id} value={s.id}>
-                {s.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {/* Activity Filter */}
-        <Select
-          value={selectedFilterActivity || "all"}
-          onValueChange={(val) => setSelectedFilterActivity(val === "all" ? "" : val)}
-        >
-          <SelectTrigger className="h-8 rounded-xl border border-border bg-background px-3 text-xs text-foreground font-semibold w-[170px]">
-            <SelectValue placeholder="Todas las actividades" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todas las actividades</SelectItem>
-            {Array.from(new Set(classesList.map((c) => c.name)))
-              .sort()
-              .map((actName) => (
-                <SelectItem key={actName} value={actName}>
-                  {actName}
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* Room Filter */}
+          <Select
+            value={selectedCalendarSalaId || "all"}
+            onValueChange={(val) => setSelectedCalendarSalaId(val === "all" ? "" : val)}
+          >
+            <SelectTrigger className="h-8 rounded-xl border border-border bg-background px-3 text-xs text-foreground font-bold w-[160px]">
+              <SelectValue placeholder="Todas las salas" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas las salas</SelectItem>
+              {salasList.map((s) => (
+                <SelectItem key={s.id} value={s.id}>
+                  {s.name}
                 </SelectItem>
               ))}
-          </SelectContent>
-        </Select>
+            </SelectContent>
+          </Select>
 
-        {/* Clear Filters Button */}
-        {(selectedCalendarSalaId || selectedFilterCoachId || selectedFilterActivity) && (
-          <button
-            type="button"
-            onClick={() => {
-              setSelectedCalendarSalaId("");
-              setSelectedFilterCoachId("");
-              setSelectedFilterActivity("");
-            }}
-            className="h-8 px-3 text-xs font-bold text-destructive hover:text-destructive bg-destructive/ rounded-xl transition hover:bg-destructive/ shrink-0"
+          {/* Coach Filter */}
+          <Select
+            value={selectedFilterCoachId || "all"}
+            onValueChange={(val) => setSelectedFilterCoachId(val === "all" ? "" : val)}
           >
-            Limpiar filtros
-          </button>
-        )}
+            <SelectTrigger className="h-8 rounded-xl border border-border bg-background px-3 text-xs text-foreground font-bold w-[170px]">
+              <SelectValue placeholder="Todos los profesores" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos los profesores</SelectItem>
+              {staffList.map((s) => (
+                <SelectItem key={s.id} value={s.id}>
+                  {s.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Activity Filter */}
+          <Select
+            value={selectedFilterActivity || "all"}
+            onValueChange={(val) => setSelectedFilterActivity(val === "all" ? "" : val)}
+          >
+            <SelectTrigger className="h-8 rounded-xl border border-border bg-background px-3 text-xs text-foreground font-bold w-[170px]">
+              <SelectValue placeholder="Todas las actividades" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas las actividades</SelectItem>
+              {Array.from(new Set(classesList.map((c) => c.name)))
+                .sort()
+                .map((actName) => (
+                  <SelectItem key={actName} value={actName}>
+                    {actName}
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
+
+          {/* Clear Filters Button */}
+          {(selectedCalendarSalaId || selectedFilterCoachId || selectedFilterActivity) && (
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedCalendarSalaId("");
+                setSelectedFilterCoachId("");
+                setSelectedFilterActivity("");
+              }}
+              className="h-8 px-3 text-xs font-bold text-rose-600 hover:text-rose-700 bg-rose-500/10 hover:bg-rose-500/20 rounded-xl transition border border-rose-500/20 shrink-0"
+            >
+              Limpiar filtros
+            </button>
+          )}
+        </div>
       </div>
+
+
 
       {/* Modal Dialog: Crear / Editar Clase */}
       <Dialog open={showAddForm} onOpenChange={setShowAddForm}>
@@ -12087,11 +14423,9 @@ function ClasesTab({
           </div>
         </div>
       ) : (
-        <div className="grid gap-6 md:grid-cols-1 items-start">
-          {/* Left 3 columns: Weekly Calendar Grid */}
-          <div className="col-span-1 space-y-4">
-            {/* Weekly Calendar Grid Container */}
-            <div className="rounded-3xl border border-border bg-card p-6 space-y-6 overflow-x-auto pb-4 transition-all duration-300 hover:border-foreground/30 hover:shadow-lg shadow-xs">
+        <div className="space-y-4">
+          {/* Weekly Calendar Grid Container */}
+          <div className="rounded-3xl border border-border bg-card p-6 space-y-6 overflow-x-auto pb-4 transition-all duration-300 hover:border-foreground/30 hover:shadow-lg shadow-xs">
               <div className="min-w-[680px] space-y-6">
                 {/* Grid Header (Days of the week) */}
                 <div className="grid grid-cols-8 gap-3 text-center select-none font-bold text-xs text-muted-foreground border-b border-border/40 pb-3">
@@ -12198,7 +14532,6 @@ function ClasesTab({
               </div>
             </div>
           </div>
-        </div>
       )}
 
       {renderClassDetailSidebar()}
@@ -12827,27 +15160,32 @@ function ConfigTab({
         className="border-b border-border flex gap-4 pb-0 overflow-x-auto [&::-webkit-scrollbar]:hidden cursor-grab active:cursor-grabbing select-none"
       >
         {[
-          { id: "basico", label: "Ficha Básica" },
-          { id: "politicas", label: "Políticas" },
-          { id: "amenities", label: "Amenities & Servicios" },
-          { id: "equipamiento", label: "Equipamiento" },
-          { id: "requisitos", label: "Normas de Ingreso" },
-          { id: "staff", label: "Equipo (Staff)" },
-          { id: "salas", label: "Salas / Salones" },
-          { id: "cierres", label: "Días de Cierre" },
-        ].map((sub) => (
-          <button
-            key={sub.id}
-            onClick={() => setSubTab(sub.id)}
-            className={`pb-3 text-sm font-semibold border-b-2 transition whitespace-nowrap ${
-              subTab === sub.id
-                ? "border-primary text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {sub.label}
-          </button>
-        ))}
+          { id: "basico", label: "Ficha Básica", icon: Building2 },
+          { id: "politicas", label: "Políticas", icon: ShieldCheck },
+          { id: "amenities", label: "Amenities & Servicios", icon: Sparkles },
+          { id: "equipamiento", label: "Equipamiento", icon: Dumbbell },
+          { id: "requisitos", label: "Normas de Ingreso", icon: FileCheck },
+          { id: "staff", label: "Equipo (Staff)", icon: Users },
+          { id: "salas", label: "Salas / Salones", icon: Layers },
+          { id: "cierres", label: "Días de Cierre", icon: CalendarX },
+        ].map((sub) => {
+          const Icon = sub.icon;
+          const isActive = subTab === sub.id;
+          return (
+            <button
+              key={sub.id}
+              onClick={() => setSubTab(sub.id)}
+              className={`pb-3 text-xs sm:text-sm font-bold border-b-2 transition whitespace-nowrap flex items-center gap-2 ${
+                isActive
+                  ? "border-primary text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Icon className={`h-4 w-4 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+              {sub.label}
+            </button>
+          );
+        })}
       </div>
 
       <>
@@ -14243,47 +16581,47 @@ function ConfigTab({
             </div>
           )}
 
-          {/* Universal Delete Confirmation Modal (Ponytail: One modal for all 4 sections) */}
-          <Dialog open={!!deletingItem} onOpenChange={(o) => !o && setDeletingItem(null)}>
-            <DialogContent className="max-w-md border border-border bg-card text-center sm:text-center">
-              <DialogHeader>
-                <DialogTitle className="text-center">¿Confirmar Eliminación?</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 py-2 flex flex-col items-center">
-                <div className="h-12 w-12 rounded-full bg-destructive/ text-destructive flex items-center justify-center">
-                  <ShieldAlert className="h-6 w-6" />
+          {/* Universal Delete AlertDialog */}
+          {deletingItem && (
+            <AlertDialog open={!!deletingItem} onOpenChange={(open) => !open && setDeletingItem(null)}>
+              <AlertDialogContent className="sm:max-w-md border border-border bg-card p-6 rounded-3xl shadow-2xl">
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+                    <Trash2 className="h-5 w-5 text-rose-600" /> Confirmar Eliminación
+                  </AlertDialogTitle>
+                  <AlertDialogDescription className="text-xs text-muted-foreground pt-1 leading-relaxed">
+                    Estás a punto de eliminar <strong>"{deletingItem?.name}"</strong> del sistema. Para confirmar la eliminación definitiva, escribe la palabra clave <strong>ELIMINAR</strong> a continuación:
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+
+                <div className="py-2 space-y-2">
+                  <input
+                    type="text"
+                    value={deleteConfirmText}
+                    onChange={(e) => setDeleteConfirmText(e.target.value)}
+                    className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-center focus-visible:outline-none font-bold text-foreground placeholder:font-normal"
+                    placeholder="Escribe ELIMINAR para confirmar"
+                  />
                 </div>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Estás a punto de eliminar <strong>"{deletingItem?.name}"</strong> del sistema.
-                  Esta acción no se puede deshacer. Para confirmar, escribe la palabra clave{" "}
-                  <strong>Eliminar</strong> a continuación:
-                </p>
-                <input
-                  type="text"
-                  value={deleteConfirmText}
-                  onChange={(e) => setDeleteConfirmText(e.target.value)}
-                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-center focus-visible:outline-none font-bold placeholder:font-normal"
-                  placeholder="Escribe Eliminar para confirmar"
-                />
-                <div className="flex gap-2 w-full pt-2">
-                  <Button
-                    variant="outline"
-                    className="rounded-xl flex-1 font-bold text-xs"
+
+                <AlertDialogFooter className="gap-2 pt-2">
+                  <AlertDialogCancel
                     onClick={() => setDeletingItem(null)}
+                    className="rounded-xl text-xs font-bold border-border"
                   >
                     Cancelar
-                  </Button>
-                  <Button
+                  </AlertDialogCancel>
+                  <AlertDialogAction
                     onClick={handleConfirmRemoveItem}
                     disabled={deleteConfirmText.trim().toLowerCase() !== "eliminar"}
-                    className="rounded-xl flex-1 bg-destructive hover:bg-destructive text-white font-bold text-xs disabled:opacity-50"
+                    className="rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-xs disabled:opacity-50"
                   >
-                    Confirmar Eliminación
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+                    Sí, Eliminar
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
           {/* ponytail: Sucursales / Sedes subtab removed per user request */}
 
           {/* Subtab: Salas / Salones de Sede */}

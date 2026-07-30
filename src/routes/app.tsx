@@ -3641,7 +3641,8 @@ function DiarioTab() {
       try {
         // @ts-ignore
         const times = SunCalc.getTimes(new Date(), lat, lng);
-        const formatTime = (date: Date) => {
+        const formatTime = (date: Date | null) => {
+          if (!date) return "--:--";
           return date.toLocaleTimeString("es-AR", {
             hour: "2-digit",
             minute: "2-digit",
@@ -4440,7 +4441,7 @@ function DiarioTab() {
                   <span>${d.percentage}%</span>
                 </div>
                 <div class="bar-track">
-                  <div class="bar-fill" style="background-color: ${WHY_EAT_CHART_CONFIG[d.reason as keyof typeof WHY_EAT_CHART_CONFIG]?.color || '#10b981'}; width: ${d.percentage}%;"></div>
+                  <div class="bar-fill" style="background-color: ${(WHY_EAT_CHART_CONFIG[d.reason as keyof typeof WHY_EAT_CHART_CONFIG] as any)?.color || '#10b981'}; width: ${d.percentage}%;"></div>
                 </div>
               </div>
             `).join('')}
@@ -4945,7 +4946,7 @@ function DiarioTab() {
                       dataKey="value" 
                       background={{ fill: "var(--muted)" }} 
                       cornerRadius={10} 
-                      barSize={15}
+                      {...({ barSize: 15 } as any)}
                     />
                     <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
                       <Label
