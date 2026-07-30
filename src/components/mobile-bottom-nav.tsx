@@ -8,6 +8,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function MobileBottomNav() {
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -147,6 +148,15 @@ export function MobileBottomNav() {
             </div>
 
             <div className="grid gap-2">
+              {/* Tema Visual (Claro / Oscuro Rimu) */}
+              <div className="flex items-center justify-between w-full p-3.5 rounded-2xl border border-border/60 bg-background/50">
+                <div>
+                  <div className="text-xs font-semibold text-foreground">Tema & Apariencia</div>
+                  <div className="text-[11px] text-muted-foreground">Claro, Oscuro (Rimu) o Sistema</div>
+                </div>
+                <ThemeToggle variant="outline" size="sm" showLabel />
+              </div>
+
               {/* Configuración */}
               <button
                 onClick={() => handleNavClick("config")}
