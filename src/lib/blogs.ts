@@ -944,7 +944,7 @@ La FDA y normativas internacionales permiten hasta un **20% de margen de error**
     content: `
 El entrenamiento de fuerza y la hipertrofia muscular dependen de un equilibrio preciso entre el **estímulo estresante (carga mecánica y daño tisular)** y el **proceso fisiológico de reparación y supercompensación**. 
 
-Cuando el algoritmo de la IA de **Shakerfy (Studio Pulse)** evalúa el estado de los grupos musculares del usuario, establece una regla clave: **cualquier grupo muscular cuyo porcentaje de recuperación sea inferior al 70% se excluye automáticamente de la generación de cargas pesadas o de alta intensidad.**
+Cuando el algoritmo de la IA de **Shakerfy** evalúa el estado de los grupos musculares del usuario, establece una regla clave: **cualquier grupo muscular cuyo porcentaje de recuperación sea inferior al 70% se excluye automáticamente de la generación de cargas pesadas o de alta intensidad.**
 
 Pero, ¿por qué el 70%? ¿Cuál es la evidencia biomecánica y metabólica detrás de esta cifra?
 
@@ -1027,7 +1027,7 @@ Al mantener la exclusión en el **70%**, garantizamos que cada rutina generada p
     content: `
 La constancia en la actividad física es el determinante número uno para la salud cardiovascular, metabólica y el bienestar mental a largo plazo. Sin embargo, los sistemas tradicionales de seguimiento que exigen una "meta fija diaria de 10.000 pasos" o entrenamientos perfectos de lunes a domingo suelen fracasar por una razón psicológica clara: el **efecto de violación de la abstinencia** (*abstinence violation effect*). Cuando un usuario se salta un día por trabajo, cansancio o viaje, siente que ha "fallado", pierde la racha y abandona el hábito.
 
-En **Shakerfy (Studio Pulse)**, desarrollamos la **Racha de Actividad** basada en la neurociencia del hábito y el principio del **promedio ponderado de 7 días** alimentado por **Equivalentes Metabólicos (METs)**.
+En **Shakerfy**, desarrollamos la **Racha de Actividad** basada en la neurociencia del hábito y el principio del **promedio ponderado de 7 días** alimentado por **Equivalentes Metabólicos (METs)**.
 
 ---
 
@@ -1123,7 +1123,7 @@ La hidratación adecuada es uno de los pilares biológicos más subestimados tan
 
 Para monitorear el estado hídrico celular de forma práctica e hiperprecisa, el **Dr. Lawrence E. Armstrong** (Laboratorio de Rendimiento Humano de la Universidad de Connecticut, 1994, 1998) desarrolló la **Escala de Color de la Orina de Armstrong (Ucol)**, validada por el *American College of Sports Medicine (ACSM)*.
 
-En **Shakerfy (Studio Pulse)**, integramos este estándar clínico de 8 niveles dentro de tu diario de control para ofrecerte recomendaciones adaptadas en tiempo real.
+En **Shakerfy**, integramos este estándar clínico de 8 niveles dentro de tu diario de control para ofrecerte recomendaciones adaptadas en tiempo real.
 
 ---
 

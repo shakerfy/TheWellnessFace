@@ -70,6 +70,15 @@ import {
   FileCheck,
   CalendarX,
   Sparkles,
+  Grid,
+  Save,
+  Repeat,
+  ChevronLeft,
+  ChevronRight,
+  Ban,
+  Unlink,
+  ExternalLink,
+  Link2,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -78,6 +87,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -126,6 +136,8 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 export const Route = createFileRoute("/dashboard")({
   component: GymDashboard,
@@ -171,7 +183,7 @@ function GymDashboard() {
   const navigate = useNavigate();
   const [currentUser] = useState<CurrentUser>({
     name: "Alan Kraft",
-    email: "admin@studiopulse.com",
+    email: "admin@shakerfy.com",
     role: "superadmin",
   });
 
@@ -703,30 +715,6 @@ function GymDashboard() {
   // 6. Reservation Cancellation Policy State (cancellation limit in hours)
   const [cancellationPolicyHours, setCancellationPolicyHours] = useState(2);
 
-  // 7. Branches / Sedes list
-  const [branchesList, setBranchesList] = useState<
-    {
-      id: string;
-      name: string;
-      address: string;
-      manager?: string;
-      lat?: number;
-      lng?: number;
-      creditCostMultiplier?: number;
-    }[]
-  >([
-    {
-      id: "matriz",
-      name: "Studio Central (Sede Única)",
-      address: "Av. Santa Fe 3200, Palermo, CABA",
-      manager: "Alan Kraft",
-      lat: -34.5889,
-      lng: -58.4105,
-      creditCostMultiplier: 1.0,
-    },
-  ]);
-  const [selectedBranchId, setSelectedBranchId] = useState("matriz");
-
   // 7. Classes List
   const [classesList, setClassesList] = useState<
     {
@@ -1042,7 +1030,7 @@ function GymDashboard() {
 
   // 7b. Salas List (Rooms)
   const [salasList, setSalasList] = useState<
-    { id: string; name: string; capacity?: number; branchId: string; description?: string }[]
+    { id: string; name: string; capacity?: number; branchId?: string; description?: string }[]
   >([
     { id: "s1", name: "Sala Fuerza", capacity: 25, branchId: "matriz" },
     { id: "s2", name: "Box CrossFit", capacity: 15, branchId: "matriz" },
@@ -1717,11 +1705,11 @@ function GymDashboard() {
 
         {activeTab === "asistencia" && (
           <AsistenciasTab
-            selectedBranchId={selectedBranchId}
             blackoutDays={blackoutDays}
             membersList={membersList}
             classesList={classesList}
             setClassesList={setClassesList}
+            currentUser={currentUser}
           />
         )}
         {activeTab === "miembros" && (
@@ -1739,7 +1727,6 @@ function GymDashboard() {
             membershipsList={membershipsList}
             setMembershipsList={setMembershipsList}
             amenities={amenities}
-            branchesList={branchesList}
           />
         )}
 
@@ -1751,8 +1738,6 @@ function GymDashboard() {
             canManageClasses={currentUser.role === "superadmin" || currentUser.role === "manager" || currentUser.role === "admin"}
             blackoutDays={blackoutDays}
             salasList={salasList}
-            branchesList={branchesList}
-            selectedBranchId={selectedBranchId}
             cancellationPolicyHours={cancellationPolicyHours}
             currentUser={currentUser}
             membersList={membersList}
@@ -1801,7 +1786,6 @@ function GymDashboard() {
 
         {activeTab === "config" && (
           <ConfigTab
-            selectedBranchId={selectedBranchId}
             staffList={staffList as any}
             setStaffList={setStaffList as any}
             amenities={amenities}
@@ -1816,8 +1800,6 @@ function GymDashboard() {
             setWeeklyHours={setWeeklyHours}
             cancellationPolicyHours={cancellationPolicyHours}
             setCancellationPolicyHours={setCancellationPolicyHours}
-            branchesList={branchesList}
-            setBranchesList={setBranchesList}
             blackoutDays={blackoutDays}
             setBlackoutDays={setBlackoutDays}
             penaltySettings={penaltySettings}
@@ -1902,23 +1884,43 @@ function CajaTab({
   const [txDesc, setTxDesc] = useState("");
   const [txAmount, setTxAmount] = useState("");
 
-  // Cash in register calculations
+  const [cancelTxConfirm, setCancelTxConfirm] = useState<any | null>(null);
+
+  const handleCancelTransaction = () => {
+    if (!cancelTxConfirm) return;
+    setCashTransactions((prev) =>
+      prev.map((t) =>
+        t.id === cancelTxConfirm.id
+          ? {
+              ...t,
+              isCancelled: true,
+              cancelledBy: currentUser?.name || "Recepción",
+              cancelledAt: new Date().toISOString().split("T")[0],
+            }
+          : t,
+      ),
+    );
+    toast.info(`Movimiento "${cancelTxConfirm.description}" ANULADO correctamente.`);
+    setCancelTxConfirm(null);
+  };
+
+  // Cash in register calculations (excluding cancelled transactions)
   const totalIncome = cashTransactions
-    .filter((t) => t.type === "income")
+    .filter((t) => t.type === "income" && !t.isCancelled)
     .reduce((sum, t) => sum + t.amount, 0);
 
   const totalExpense = cashTransactions
-    .filter((t) => t.type === "expense")
+    .filter((t) => t.type === "expense" && !t.isCancelled)
     .reduce((sum, t) => sum + t.amount, 0);
 
   const netBalance = totalIncome - totalExpense;
 
   const totalCashIncome = cashTransactions
-    .filter((t) => t.type === "income" && t.channel === "cash")
+    .filter((t) => t.type === "income" && t.channel === "cash" && !t.isCancelled)
     .reduce((sum, t) => sum + t.amount, 0);
 
   const totalCashExpense = cashTransactions
-    .filter((t) => t.type === "expense" && t.channel === "cash")
+    .filter((t) => t.type === "expense" && t.channel === "cash" && !t.isCancelled)
     .reduce((sum, t) => sum + t.amount, 0);
 
   const expectedCashInDrawer = totalCashIncome - totalCashExpense;
@@ -2190,27 +2192,30 @@ function CajaTab({
               {posMode === "store" ? (
                 <>
                   <div className="sm:col-span-2">
-                    <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                    <Label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
                       Seleccionar Producto del Inventario:
-                    </label>
-                    <select
+                    </Label>
+                    <Select
                       value={selectedProdId}
-                      onChange={(e) => handleProductSelect(e.target.value, prodQuantity)}
-                      className="w-full h-9 rounded-xl border border-border bg-background px-2.5 text-xs font-bold text-foreground focus-visible:outline-none"
+                      onValueChange={(val) => handleProductSelect(val, prodQuantity)}
                     >
-                      <option value="">-- Seleccionar Artículo --</option>
-                      {inventoryItems.map((prod) => (
-                        <option key={prod.id} value={prod.id} disabled={prod.stock <= 0}>
-                          {prod.name} (${prod.price.toLocaleString()}) - Stock: {prod.stock} {prod.unit}
-                        </option>
-                      ))}
-                    </select>
+                      <SelectTrigger className="w-full h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
+                        <SelectValue placeholder="-- Seleccionar Artículo --" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        {inventoryItems.map((prod) => (
+                          <SelectItem key={prod.id} value={prod.id} disabled={prod.stock <= 0}>
+                            {prod.name} (${prod.price.toLocaleString()}) - Stock: {prod.stock} {prod.unit}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
-                    <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                    <Label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
                       Cantidad:
-                    </label>
-                    <input
+                    </Label>
+                    <Input
                       type="number"
                       min={1}
                       value={prodQuantity}
@@ -2222,73 +2227,85 @@ function CajaTab({
                           setProdQuantity(qty);
                         }
                       }}
-                      className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                      className="h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground"
                     />
                   </div>
                 </>
               ) : (
                 <div>
-                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                  <Label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
                     Tipo de Movimiento:
-                  </label>
-                  <select
+                  </Label>
+                  <Select
                     value={txType}
-                    onChange={(e) => setTxType(e.target.value as any)}
-                    className="w-full h-9 rounded-xl border border-border bg-background px-2.5 text-xs font-bold text-foreground focus-visible:outline-none"
+                    onValueChange={(val: "income" | "expense") => setTxType(val)}
                   >
-                    <option value="income">🟢 Ingreso (Cobro / Venta)</option>
-                    <option value="expense">🔴 Egreso (Gasto Operativo)</option>
-                  </select>
+                    <SelectTrigger className="w-full h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
+                      <SelectValue placeholder="Tipo de Movimiento" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl">
+                      <SelectItem value="income">🟢 Ingreso (Cobro / Venta)</SelectItem>
+                      <SelectItem value="expense">🔴 Egreso (Gasto Operativo)</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               )}
 
               <div>
-                <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                <Label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
                   Canal de Pago:
-                </label>
-                <select
+                </Label>
+                <Select
                   value={txChannel}
-                  onChange={(e) => setTxChannel(e.target.value as any)}
-                  className="w-full h-9 rounded-xl border border-border bg-background px-2.5 text-xs font-bold text-foreground focus-visible:outline-none"
+                  onValueChange={(val: "cash" | "app" | "transfer" | "split") => setTxChannel(val)}
                 >
-                  <option value="cash">💵 Efectivo (Caja Chica)</option>
-                  <option value="app">📱 MercadoPago / QR</option>
-                  <option value="transfer">🏦 Transferencia Bancaria</option>
-                  <option value="split">⚡ Pago Mixto (Efectivo + Digital)</option>
-                </select>
+                  <SelectTrigger className="w-full h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
+                    <SelectValue placeholder="Canal de Pago" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="cash">💵 Efectivo (Caja Chica)</SelectItem>
+                    <SelectItem value="app">📱 MercadoPago / QR</SelectItem>
+                    <SelectItem value="transfer">🏦 Transferencia Bancaria</SelectItem>
+                    <SelectItem value="split">⚡ Pago Mixto (Efectivo + Digital)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               {txChannel !== "split" && (
                 <div>
-                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                  <Label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
                     Monto Total ($):
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     type="number"
                     placeholder="Ej: 3500"
                     value={txAmount}
                     onChange={(e) => setTxAmount(e.target.value)}
-                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                    className="h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground"
                   />
                 </div>
               )}
 
               <div>
-                <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                <Label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
                   Asociar Alumno (Opcional):
-                </label>
-                <select
-                  value={selectedMemberId}
-                  onChange={(e) => setSelectedMemberId(e.target.value)}
-                  className="w-full h-9 rounded-xl border border-border bg-background px-2.5 text-xs font-bold text-foreground focus-visible:outline-none"
+                </Label>
+                <Select
+                  value={selectedMemberId || "general"}
+                  onValueChange={(val) => setSelectedMemberId(val === "general" ? "" : val)}
                 >
-                  <option value="">-- Cliente General / Venta Mostrador --</option>
-                  {membersList.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.name} ({m.plan})
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="w-full h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
+                    <SelectValue placeholder="-- Cliente General / Venta Mostrador --" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="general">-- Cliente General / Venta Mostrador --</SelectItem>
+                    {membersList.map((m) => (
+                      <SelectItem key={m.id} value={m.id}>
+                        {m.name} ({m.plan})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -2296,55 +2313,59 @@ function CajaTab({
             {txChannel === "split" && (
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 bg-secondary/40 border border-border/70 rounded-xl">
                 <div>
-                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                  <Label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
                     Monto en Efectivo ($):
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     type="number"
                     placeholder="Ej: 2000"
                     value={splitCashAmount}
                     onChange={(e) => setSplitCashAmount(e.target.value)}
-                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                    className="h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground"
                   />
                 </div>
                 <div>
-                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                  <Label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
                     Monto Digital ($):
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     type="number"
                     placeholder="Ej: 3000"
                     value={splitDigitalAmount}
                     onChange={(e) => setSplitDigitalAmount(e.target.value)}
-                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                    className="h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground"
                   />
                 </div>
                 <div>
-                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                  <Label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
                     Canal Pago Digital:
-                  </label>
-                  <select
+                  </Label>
+                  <Select
                     value={splitDigitalChannel}
-                    onChange={(e) => setSplitDigitalChannel(e.target.value as any)}
-                    className="w-full h-9 rounded-xl border border-border bg-background px-2.5 text-xs font-bold text-foreground focus-visible:outline-none"
+                    onValueChange={(val: "app" | "transfer") => setSplitDigitalChannel(val)}
                   >
-                    <option value="app">📱 MercadoPago / QR</option>
-                    <option value="transfer">🏦 Transferencia Bancaria</option>
-                  </select>
+                    <SelectTrigger className="w-full h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
+                      <SelectValue placeholder="Canal Pago Digital" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl">
+                      <SelectItem value="app">📱 MercadoPago / QR</SelectItem>
+                      <SelectItem value="transfer">🏦 Transferencia Bancaria</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             )}
 
             <div className="space-y-1">
-              <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+              <Label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
                 Descripción / Detalle de la Venta:
-              </label>
-              <input
+              </Label>
+              <Input
                 type="text"
                 placeholder="Ej: Pase Diario Musculación o Venta suplemento"
                 value={txDesc}
                 onChange={(e) => setTxDesc(e.target.value)}
-                className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                className="h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground"
               />
             </div>
 
@@ -2373,12 +2394,12 @@ function CajaTab({
               {/* Search Bar */}
               <div className="relative flex-1 sm:w-60">
                 <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                <input
+                <Input
                   type="text"
                   placeholder="Buscar por concepto o usuario..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-9 w-full pl-8 pr-3 rounded-xl border border-border bg-background text-xs font-bold text-foreground focus-visible:outline-none placeholder:font-normal placeholder:text-muted-foreground"
+                  className="h-9 w-full pl-8 pr-3 rounded-xl border border-border bg-background text-xs font-bold text-foreground placeholder:font-normal placeholder:text-muted-foreground"
                 />
               </div>
 
@@ -2485,7 +2506,7 @@ function CajaTab({
             </div>
           </div>
 
-          <div className="overflow-x-auto border border-border/60 rounded-2xl bg-background">
+          <div className="overflow-x-auto custom-scrollbar border border-border/60 rounded-2xl bg-background">
             <table className="w-full text-left text-xs min-w-[500px] border-collapse">
               <thead>
                 <tr className="border-b border-border/60 bg-secondary/40 text-muted-foreground font-bold text-[10px] uppercase">
@@ -2494,13 +2515,28 @@ function CajaTab({
                   <th className="p-3">Canal</th>
                   <th className="p-3">Registrado por</th>
                   <th className="p-3 text-right">Monto</th>
+                  <th className="p-3 text-right">Acción</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/30">
                 {filteredTx.map((tx) => (
-                  <tr key={tx.id} className="hover:bg-secondary/20 transition-colors">
+                  <tr
+                    key={tx.id}
+                    className={`hover:bg-secondary/20 transition-colors ${
+                      tx.isCancelled ? "opacity-50 bg-destructive/5" : ""
+                    }`}
+                  >
                     <td className="p-3 text-muted-foreground font-mono text-[11px]">{tx.date}</td>
-                    <td className="p-3 font-bold text-foreground">{tx.description}</td>
+                    <td className="p-3 font-bold text-foreground">
+                      <span className={tx.isCancelled ? "line-through text-muted-foreground" : ""}>
+                        {tx.description}
+                      </span>
+                      {tx.isCancelled && (
+                        <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[9.5px] font-bold bg-destructive/10 text-destructive border border-destructive/20">
+                          🚫 ANULADO ({tx.cancelledBy})
+                        </span>
+                      )}
+                    </td>
                     <td className="p-3">
                       <span className="text-[9.5px] font-bold px-2 py-0.5 rounded-full border bg-secondary text-foreground uppercase">
                         {tx.channel}
@@ -2509,12 +2545,29 @@ function CajaTab({
                     <td className="p-3 text-muted-foreground text-xs">{tx.registeredBy}</td>
                     <td
                       className={`p-3 text-right font-black text-sm ${
-                        tx.type === "income"
-                          ? "text-emerald-600 dark:text-emerald-400"
-                          : "text-rose-600 dark:text-rose-400"
+                        tx.isCancelled
+                          ? "line-through text-muted-foreground"
+                          : tx.type === "income"
+                            ? "text-emerald-600 dark:text-emerald-400"
+                            : "text-rose-600 dark:text-rose-400"
                       }`}
                     >
                       {tx.type === "income" ? "+" : "-"}${tx.amount.toLocaleString()}
+                    </td>
+                    <td className="p-3 text-right">
+                      {!tx.isCancelled ? (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-[10.5px] font-bold text-rose-600 border-rose-500/30 hover:bg-rose-500/10 rounded-lg px-2.5"
+                          onClick={() => setCancelTxConfirm(tx)}
+                        >
+                          <Ban className="h-3 w-3 mr-1" /> Anular
+                        </Button>
+                      ) : (
+                        <span className="text-[10px] text-muted-foreground italic font-semibold">Anulado</span>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -2551,15 +2604,15 @@ function CajaTab({
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-muted-foreground uppercase block">
+                <Label className="text-xs font-bold text-muted-foreground uppercase block">
                   Efectivo Físico Contado en Cajón ($):
-                </label>
-                <input
+                </Label>
+                <Input
                   type="number"
                   placeholder={`Ej: ${expectedCashInDrawer}`}
                   value={countedCash}
                   onChange={(e) => setCountedCash(e.target.value)}
-                  className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm font-bold text-foreground focus-visible:outline-none"
+                  className="w-full h-10 rounded-xl border border-border bg-background text-sm font-bold text-foreground"
                 />
               </div>
 
@@ -2667,6 +2720,34 @@ function CajaTab({
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Modal AlertDialog para Confirmar Anulación de Movimiento */}
+      <AlertDialog open={!!cancelTxConfirm} onOpenChange={(open) => !open && setCancelTxConfirm(null)}>
+        <AlertDialogContent className="rounded-3xl border-border shadow-2xl bg-card max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-lg font-black text-foreground flex items-center gap-2">
+              <Ban className="h-5 w-5 text-rose-500" /> Anular Movimiento de Caja
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-xs text-muted-foreground pt-1 space-y-2">
+              <span>
+                ¿Confirmás la anulación del movimiento <strong className="text-foreground">{cancelTxConfirm?.description}</strong> por el monto de <strong className="text-foreground">${cancelTxConfirm?.amount?.toLocaleString()}</strong>?
+              </span>
+              <div className="p-3 bg-secondary/30 border border-border/60 rounded-2xl text-foreground font-medium text-[11px] leading-relaxed mt-2">
+                ℹ️ <strong>Auditoría Contable:</strong> El movimiento quedará marcado como <strong>ANULADO</strong> en el historial y su monto se descontará automáticamente de los totales del turno sin borrar el registro.
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-4 gap-2">
+            <AlertDialogCancel className="rounded-xl font-bold">Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="rounded-xl font-bold bg-rose-600 text-white hover:bg-rose-700"
+              onClick={handleCancelTransaction}
+            >
+              Confirmar Anulación
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
@@ -2690,6 +2771,30 @@ function FinanzasTab({
   const [activeReceipt, setActiveReceipt] = useState<any | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "paid" | "pending">("all");
+
+  const availablePeriods = useMemo(() => {
+    const monthsEs = [
+      "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+      "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    ];
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonthIdx = now.getMonth();
+
+    const generated: string[] = [];
+    for (let i = 0; i < 6; i++) {
+      let mIdx = currentMonthIdx - i;
+      let y = currentYear;
+      if (mIdx < 0) {
+        mIdx += 12;
+        y -= 1;
+      }
+      generated.push(`${monthsEs[mIdx]} ${y}`);
+    }
+
+    const set = new Set([...payrollRecords.map((p) => p.period), ...generated]);
+    return Array.from(set);
+  }, [payrollRecords]);
 
   const [fixedExpenseItems, setFixedExpenseItems] = useState([
     { id: "fix-1", category: "Alquiler de Sede", amount: 250000 },
@@ -2916,19 +3021,19 @@ function FinanzasTab({
           {/* Search Bar */}
           <div className="relative flex-1 min-w-[200px] sm:max-w-xs">
             <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-            <input
+            <Input
               type="text"
               placeholder="Buscar coach por nombre o especialidad..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-9 w-full pl-8 pr-3 rounded-xl border border-border bg-background text-xs font-bold text-foreground focus-visible:outline-none placeholder:font-normal placeholder:text-muted-foreground"
+              className="h-9 w-full pl-8 pr-3 rounded-xl border border-border bg-background text-xs font-bold text-foreground placeholder:font-normal placeholder:text-muted-foreground"
             />
           </div>
 
           <div className="flex items-center gap-2.5 w-full sm:w-auto">
             {/* Status Filter (Shadcn/ui Select) */}
             <Select value={statusFilter} onValueChange={(val) => setStatusFilter(val as any)}>
-              <SelectTrigger className="w-[165px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
+              <SelectTrigger className="w-[200px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
                 <SelectValue placeholder="Estado" />
               </SelectTrigger>
               <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
@@ -2938,21 +3043,24 @@ function FinanzasTab({
               </SelectContent>
             </Select>
 
-            {/* Period Selector (Shadcn/ui Select) */}
+            {/* Period Selector (Shadcn/ui Select - Dynamic) */}
             <Select value={selectedPeriod} onValueChange={(val) => setSelectedPeriod(val)}>
-              <SelectTrigger className="w-[155px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
+              <SelectTrigger className="w-[185px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
                 <SelectValue placeholder="Período" />
               </SelectTrigger>
               <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
-                <SelectItem value="Junio 2026">📅 Junio 2026</SelectItem>
-                <SelectItem value="Mayo 2026">📅 Mayo 2026</SelectItem>
                 <SelectItem value="all">📅 Todos los Períodos</SelectItem>
+                {availablePeriods.map((period) => (
+                  <SelectItem key={period} value={period}>
+                    📅 {period}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
         </div>
 
-        <div className="overflow-x-auto border border-border/60 rounded-2xl bg-background">
+        <div className="overflow-x-auto custom-scrollbar border border-border/60 rounded-2xl bg-background">
           <table className="w-full text-left text-xs min-w-[700px] border-collapse">
             <thead>
               <tr className="border-b border-border/60 bg-secondary/40 text-muted-foreground font-bold text-[10px] uppercase tracking-wider">
@@ -3172,19 +3280,19 @@ function FinanzasTab({
                   Agregar Nuevo Rubro / Gasto Fijo:
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-7 gap-2">
-                  <input
+                  <Input
                     type="text"
                     placeholder="Ej: Impuestos Municipales"
                     value={newCatName}
                     onChange={(e) => setNewCatName(e.target.value)}
-                    className="sm:col-span-4 h-8.5 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                    className="sm:col-span-4 h-8.5 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
                   />
-                  <input
+                  <Input
                     type="number"
                     placeholder="Monto ($)"
                     value={newCatAmount}
                     onChange={(e) => setNewCatAmount(e.target.value)}
-                    className="sm:col-span-2 h-8.5 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                    className="sm:col-span-2 h-8.5 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
                   />
                   <Button
                     type="button"
@@ -3221,7 +3329,7 @@ function FinanzasTab({
                       key={item.id}
                       className="flex items-center justify-between p-2.5 bg-background border border-border/70 rounded-xl gap-2"
                     >
-                      <input
+                      <Input
                         type="text"
                         value={item.category}
                         onChange={(e) => {
@@ -3230,11 +3338,11 @@ function FinanzasTab({
                             prev.map((i) => (i.id === item.id ? { ...i, category: val } : i)),
                           );
                         }}
-                        className="flex-1 h-8 rounded-lg border border-transparent hover:border-border bg-transparent px-2 text-xs font-bold text-foreground focus-visible:bg-secondary/30 focus-visible:outline-none"
+                        className="flex-1 h-8 rounded-lg border border-transparent hover:border-border bg-transparent px-2 text-xs font-bold text-foreground focus-visible:bg-secondary/30"
                       />
                       <div className="flex items-center gap-1.5">
                         <span className="text-muted-foreground font-bold">$</span>
-                        <input
+                        <Input
                           type="number"
                           value={item.amount}
                           onChange={(e) => {
@@ -3243,7 +3351,7 @@ function FinanzasTab({
                               prev.map((i) => (i.id === item.id ? { ...i, amount: val } : i)),
                             );
                           }}
-                          className="w-24 h-8 rounded-lg border border-border/80 bg-background px-2 text-xs font-bold text-foreground text-right focus-visible:outline-none"
+                          className="w-24 h-8 rounded-lg border border-border/80 bg-background px-2 text-xs font-bold text-foreground text-right"
                         />
                         <button
                           type="button"
@@ -3538,7 +3646,7 @@ function ReportesTab({
           {/* Time & Discipline Selectors (Shadcn/ui Select) */}
           <div className="flex items-center gap-2">
             <Select value={timeRange} onValueChange={(val) => setTimeRange(val as any)}>
-              <SelectTrigger className="w-[145px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
+              <SelectTrigger className="w-[180px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
                 <SelectValue placeholder="Período" />
               </SelectTrigger>
               <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
@@ -3551,7 +3659,7 @@ function ReportesTab({
             </Select>
 
             <Select value={selectedDiscipline} onValueChange={(val) => setSelectedDiscipline(val)}>
-              <SelectTrigger className="w-[155px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
+              <SelectTrigger className="w-[185px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
                 <SelectValue placeholder="Disciplina" />
               </SelectTrigger>
               <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
@@ -3614,31 +3722,40 @@ function ReportesTab({
               <div className="space-y-3 pt-1">
                 <div>
                   <div className="flex justify-between text-xs font-bold mb-1">
-                    <span>MercadoPago / Tarjetas de Crédito y Débito</span>
-                    <span className="text-primary font-black">{paymentStats.mpPercent}% (${paymentStats.mpAmount.toLocaleString("es-AR")})</span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="h-2.5 w-2.5 rounded-full bg-sky-500 inline-block" />
+                      MercadoPago / Tarjetas de Crédito y Débito
+                    </span>
+                    <span className="text-sky-600 dark:text-sky-400 font-black">{paymentStats.mpPercent}% (${paymentStats.mpAmount.toLocaleString("es-AR")})</span>
                   </div>
                   <div className="h-3 w-full bg-secondary rounded-full overflow-hidden">
-                    <div className="h-full bg-primary rounded-full" style={{ width: `${paymentStats.mpPercent}%` }} />
+                    <div className="h-full bg-sky-500 rounded-full transition-all duration-500" style={{ width: `${paymentStats.mpPercent}%` }} />
                   </div>
                 </div>
 
                 <div>
                   <div className="flex justify-between text-xs font-bold mb-1">
-                    <span>Transferencias Bancarias (CBU / CVU)</span>
-                    <span className="text-emerald-600 dark:text-emerald-400 font-black">{paymentStats.transfPercent}% (${paymentStats.transfAmount.toLocaleString("es-AR")})</span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="h-2.5 w-2.5 rounded-full bg-indigo-500 inline-block" />
+                      Transferencias Bancarias (CBU / CVU)
+                    </span>
+                    <span className="text-indigo-600 dark:text-indigo-400 font-black">{paymentStats.transfPercent}% (${paymentStats.transfAmount.toLocaleString("es-AR")})</span>
                   </div>
                   <div className="h-3 w-full bg-secondary rounded-full overflow-hidden">
-                    <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${paymentStats.transfPercent}%` }} />
+                    <div className="h-full bg-indigo-500 rounded-full transition-all duration-500" style={{ width: `${paymentStats.transfPercent}%` }} />
                   </div>
                 </div>
 
                 <div>
                   <div className="flex justify-between text-xs font-bold mb-1">
-                    <span>Efectivo en Recepción</span>
-                    <span className="text-muted-foreground font-black">{paymentStats.cashPercent}% (${paymentStats.cashAmount.toLocaleString("es-AR")})</span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="h-2.5 w-2.5 rounded-full bg-amber-500 inline-block" />
+                      Efectivo en Recepción
+                    </span>
+                    <span className="text-amber-600 dark:text-amber-400 font-black">{paymentStats.cashPercent}% (${paymentStats.cashAmount.toLocaleString("es-AR")})</span>
                   </div>
                   <div className="h-3 w-full bg-secondary rounded-full overflow-hidden">
-                    <div className="h-full bg-muted-foreground/40 rounded-full" style={{ width: `${paymentStats.cashPercent}%` }} />
+                    <div className="h-full bg-amber-500 rounded-full transition-all duration-500" style={{ width: `${paymentStats.cashPercent}%` }} />
                   </div>
                 </div>
               </div>
@@ -4151,11 +4268,23 @@ function InventarioTab({
   const stockMovements = externalStockMovements || internalMovements;
   const setStockMovements = externalSetStockMovements || setInternalMovements;
 
-  // Kardex Search & Filters
+  // Kardex Search & Filters (Pre-load current month range by default)
+  const defaultKardexDates = useMemo(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const lastDay = new Date(year, now.getMonth() + 1, 0).getDate();
+    const formattedLastDay = String(lastDay).padStart(2, "0");
+    return {
+      from: `${year}-${month}-01`,
+      to: `${year}-${month}-${formattedLastDay}`,
+    };
+  }, []);
+
   const [kardexSearch, setKardexSearch] = useState("");
   const [kardexTypeFilter, setKardexTypeFilter] = useState("all");
-  const [kardexDateFrom, setKardexDateFrom] = useState("");
-  const [kardexDateTo, setKardexDateTo] = useState("");
+  const [kardexDateFrom, setKardexDateFrom] = useState(defaultKardexDates.from);
+  const [kardexDateTo, setKardexDateTo] = useState(defaultKardexDates.to);
 
   const [showAdjustModal, setShowAdjustModal] = useState<any | null>(null);
   const [adjustAmount, setAdjustAmount] = useState("");
@@ -4861,12 +4990,12 @@ function InventarioTab({
           <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-secondary/20 border border-border/50 rounded-2xl">
             <div className="relative flex-1 min-w-[200px] sm:max-w-xs">
               <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-              <input
+              <Input
                 type="text"
                 placeholder="Buscar por nombre, categoría o código..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-9 w-full pl-8 pr-3 rounded-xl border border-border bg-background text-xs font-bold text-foreground focus-visible:outline-none placeholder:font-normal placeholder:text-muted-foreground"
+                className="h-9 w-full pl-8 pr-3 rounded-xl border border-border bg-background text-xs font-bold text-foreground placeholder:font-normal placeholder:text-muted-foreground"
               />
             </div>
 
@@ -5149,35 +5278,35 @@ function InventarioTab({
           <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-secondary/20 border border-border/50 rounded-2xl">
             <div className="relative flex-1 min-w-[200px] sm:max-w-xs">
               <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-              <input
+              <Input
                 type="text"
                 placeholder="Buscar por producto, usuario o motivo..."
                 value={kardexSearch}
                 onChange={(e) => setKardexSearch(e.target.value)}
-                className="h-9 w-full pl-8 pr-3 rounded-xl border border-border bg-background text-xs font-bold text-foreground focus-visible:outline-none placeholder:font-normal placeholder:text-muted-foreground"
+                className="h-9 w-full pl-8 pr-3 rounded-xl border border-border bg-background text-xs font-bold text-foreground placeholder:font-normal placeholder:text-muted-foreground"
               />
             </div>
 
             <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               {/* Date From */}
-              <div className="flex items-center gap-1.5 bg-background border border-border rounded-xl px-2.5 h-9">
+              <div className="flex items-center gap-1.5 bg-background border border-border rounded-xl px-2.5 h-9 hover:border-primary/50 transition-colors">
                 <span className="text-[10px] font-bold uppercase text-muted-foreground">Desde:</span>
-                <input
+                <Input
                   type="date"
                   value={kardexDateFrom}
                   onChange={(e) => setKardexDateFrom(e.target.value)}
-                  className="bg-transparent text-xs font-bold text-foreground focus:outline-none"
+                  className="bg-transparent text-xs font-bold text-foreground border-none h-auto p-0 shadow-none focus-visible:ring-0 cursor-pointer dark:[&::-webkit-calendar-picker-indicator]:invert opacity-90 hover:opacity-100"
                 />
               </div>
 
               {/* Date To */}
-              <div className="flex items-center gap-1.5 bg-background border border-border rounded-xl px-2.5 h-9">
+              <div className="flex items-center gap-1.5 bg-background border border-border rounded-xl px-2.5 h-9 hover:border-primary/50 transition-colors">
                 <span className="text-[10px] font-bold uppercase text-muted-foreground">Hasta:</span>
-                <input
+                <Input
                   type="date"
                   value={kardexDateTo}
                   onChange={(e) => setKardexDateTo(e.target.value)}
-                  className="bg-transparent text-xs font-bold text-foreground focus:outline-none"
+                  className="bg-transparent text-xs font-bold text-foreground border-none h-auto p-0 shadow-none focus-visible:ring-0 cursor-pointer dark:[&::-webkit-calendar-picker-indicator]:invert opacity-90 hover:opacity-100"
                 />
               </div>
 
@@ -5362,12 +5491,12 @@ function InventarioTab({
 
             <div className="space-y-4 text-xs">
               <form onSubmit={handleAddCategory} className="flex gap-2">
-                <input
+                <Input
                   type="text"
                   placeholder="Nueva categoría (ej: Bar Saludable, Toallas...)"
                   value={newCategoryName}
                   onChange={(e) => setNewCategoryName(e.target.value)}
-                  className="flex-1 h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                  className="flex-1 h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
                   required
                 />
                 <Button type="submit" size="sm" className="h-9 rounded-xl font-bold text-xs bg-primary text-primary-foreground">
@@ -5430,36 +5559,36 @@ function InventarioTab({
                   Registrar Nuevo Proveedor Habitual
                 </span>
                 <div className="grid grid-cols-2 gap-2">
-                  <input
+                  <Input
                     type="text"
                     placeholder="Empresa / Distribuidora *"
                     value={newSupName}
                     onChange={(e) => setNewSupName(e.target.value)}
-                    className="h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                    className="h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
                     required
                   />
-                  <input
+                  <Input
                     type="text"
                     placeholder="Contacto Principal"
                     value={newSupContact}
                     onChange={(e) => setNewSupContact(e.target.value)}
-                    className="h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                    className="h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  <input
+                  <Input
                     type="text"
                     placeholder="Teléfono / WhatsApp (ej: +549...)"
                     value={newSupPhone}
                     onChange={(e) => setNewSupPhone(e.target.value)}
-                    className="h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                    className="h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
                   />
-                  <input
+                  <Input
                     type="email"
                     placeholder="Email de Pedidos"
                     value={newSupEmail}
                     onChange={(e) => setNewSupEmail(e.target.value)}
-                    className="h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                    className="h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
                   />
                 </div>
                 <Button type="submit" size="sm" className="w-full h-9 rounded-xl font-bold text-xs bg-primary text-primary-foreground">
@@ -5555,7 +5684,7 @@ function InventarioTab({
                           <span className="text-[10px] text-muted-foreground"> / {item.minStock}</span>
                         </td>
                         <td className="p-2.5 text-center">
-                          <input
+                          <Input
                             type="number"
                             min="1"
                             value={item.orderQty}
@@ -5565,7 +5694,7 @@ function InventarioTab({
                                 prev.map((it, i) => (i === idx ? { ...it, orderQty: val } : it)),
                               );
                             }}
-                            className="w-16 h-8 text-center rounded-xl border border-border bg-background font-bold text-foreground focus-visible:outline-none"
+                            className="w-16 h-8 text-center rounded-xl border border-border bg-background font-bold text-foreground"
                           />
                         </td>
                         <td className="p-2.5">
@@ -5647,12 +5776,12 @@ function InventarioTab({
                 <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
                   Nombre del Producto:
                 </label>
-                <input
+                <Input
                   type="text"
                   placeholder="Ej: Proteína Whey 1kg Vainilla"
                   value={newProdName}
                   onChange={(e) => setNewProdName(e.target.value)}
-                  className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                  className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
                   required
                 />
               </div>
@@ -5662,12 +5791,12 @@ function InventarioTab({
                   <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block flex items-center gap-1">
                     <QrCode className="h-3 w-3 text-muted-foreground" /> Cód. Barras:
                   </label>
-                  <input
+                  <Input
                     type="text"
                     placeholder="779123..."
                     value={newProdBarcode}
                     onChange={(e) => setNewProdBarcode(e.target.value)}
-                    className="w-full h-9 rounded-xl border border-border bg-background px-2.5 text-xs font-mono font-bold text-foreground focus-visible:outline-none"
+                    className="w-full h-9 rounded-xl border border-border bg-background px-2.5 text-xs font-mono font-bold text-foreground"
                   />
                 </div>
 
@@ -5712,12 +5841,12 @@ function InventarioTab({
                 <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
                   Variantes (Opcional, separadas por coma):
                 </label>
-                <input
+                <Input
                   type="text"
                   placeholder="Ej: Vainilla, Chocolate, Frutilla  ó  S, M, L, XL"
                   value={newProdVariantsInput}
                   onChange={(e) => setNewProdVariantsInput(e.target.value)}
-                  className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none placeholder:font-normal"
+                  className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground placeholder:font-normal"
                 />
               </div>
 
@@ -5775,12 +5904,12 @@ function InventarioTab({
                   <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
                     Precio Costo ($):
                   </label>
-                  <input
+                  <Input
                     type="number"
                     placeholder="0"
                     value={newProdCost}
                     onChange={(e) => setNewProdCost(e.target.value)}
-                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
                   />
                 </div>
 
@@ -5788,12 +5917,12 @@ function InventarioTab({
                   <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
                     Precio Venta ($):
                   </label>
-                  <input
+                  <Input
                     type="number"
                     placeholder="0"
                     value={newProdPrice}
                     onChange={(e) => setNewProdPrice(e.target.value)}
-                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
                     required
                   />
                 </div>
@@ -5804,12 +5933,12 @@ function InventarioTab({
                   <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
                     Stock Inicial:
                   </label>
-                  <input
+                  <Input
                     type="number"
                     placeholder="10"
                     value={newProdStock}
                     onChange={(e) => setNewProdStock(e.target.value)}
-                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
                   />
                 </div>
 
@@ -5817,12 +5946,12 @@ function InventarioTab({
                   <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
                     Stock Mínimo:
                   </label>
-                  <input
+                  <Input
                     type="number"
                     placeholder="5"
                     value={newProdMinStock}
                     onChange={(e) => setNewProdMinStock(e.target.value)}
-                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
                   />
                 </div>
 
@@ -5885,11 +6014,11 @@ function InventarioTab({
                 <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
                   Nombre del Producto:
                 </label>
-                <input
+                <Input
                   type="text"
                   value={editProdName}
                   onChange={(e) => setEditProdName(e.target.value)}
-                  className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                  className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
                   required
                 />
               </div>
@@ -5899,11 +6028,11 @@ function InventarioTab({
                   <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block flex items-center gap-1">
                     <QrCode className="h-3 w-3 text-muted-foreground" /> Cód. Barras:
                   </label>
-                  <input
+                  <Input
                     type="text"
                     value={editProdBarcode}
                     onChange={(e) => setEditProdBarcode(e.target.value)}
-                    className="w-full h-9 rounded-xl border border-border bg-background px-2.5 text-xs font-mono font-bold text-foreground focus-visible:outline-none"
+                    className="w-full h-9 rounded-xl border border-border bg-background px-2.5 text-xs font-mono font-bold text-foreground"
                   />
                 </div>
 
@@ -5998,11 +6127,11 @@ function InventarioTab({
                   <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
                     Precio Costo ($):
                   </label>
-                  <input
+                  <Input
                     type="number"
                     value={editProdCost}
                     onChange={(e) => setEditProdCost(e.target.value)}
-                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
                   />
                 </div>
 
@@ -6010,11 +6139,11 @@ function InventarioTab({
                   <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
                     Precio Venta ($):
                   </label>
-                  <input
+                  <Input
                     type="number"
                     value={editProdPrice}
                     onChange={(e) => setEditProdPrice(e.target.value)}
-                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
                     required
                   />
                 </div>
@@ -6025,11 +6154,11 @@ function InventarioTab({
                   <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
                     Stock Mínimo (Alerta):
                   </label>
-                  <input
+                  <Input
                     type="number"
                     value={editProdMinStock}
                     onChange={(e) => setEditProdMinStock(e.target.value)}
-                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
                   />
                 </div>
 
@@ -6098,12 +6227,12 @@ function InventarioTab({
                 <label className="text-[10.5px] font-bold text-muted-foreground uppercase block">
                   Cantidad a Ingresar (o restar con signo -):
                 </label>
-                <input
+                <Input
                   type="number"
                   placeholder="Ej: 20 para agregar o -5 para reducir"
                   value={adjustAmount}
                   onChange={(e) => setAdjustAmount(e.target.value)}
-                  className="w-full h-9.5 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                  className="w-full h-9.5 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
                 />
               </div>
 
@@ -6111,12 +6240,12 @@ function InventarioTab({
                 <label className="text-[10.5px] font-bold text-muted-foreground uppercase block">
                   Motivo / Observación del Movimiento:
                 </label>
-                <input
+                <Input
                   type="text"
                   placeholder="Ej: Reabastecimiento de compra, Merma por vencimiento, Muestra..."
                   value={adjustReason}
                   onChange={(e) => setAdjustReason(e.target.value)}
-                  className="w-full h-9.5 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
+                  className="w-full h-9.5 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
                 />
               </div>
 
@@ -6187,7 +6316,7 @@ function ReseñasTab({
 }) {
   const [subTab, setSubTab] = useState<"public" | "private">("public");
 
-  // Public Facility Reviews (Google Maps Style)
+  // Public Facility Reviews
   const [facilityReviews, setFacilityReviews] = useState<GymFacilityReview[]>([
     {
       id: "rev-1",
@@ -6248,7 +6377,7 @@ function ReseñasTab({
     },
   ]);
 
-  // Private Feedback & Suggestions (Airbnb / Uber Style)
+  // Private Feedback & Suggestions
   const [privateFeedback, setPrivateFeedback] = useState<Array<{
     id: string;
     date: string;
@@ -6394,10 +6523,10 @@ function ReseñasTab({
   const handleToggleFeatured = (id: string) => {
     if (featuredReviewIds.includes(id)) {
       setFeaturedReviewIds((prev) => prev.filter((item) => item !== id));
-      toast.info("Reseña removida de las destacadas de la Landing Page.");
+      toast.info("Reseña removida de las destacadas del perfil público.");
     } else {
       setFeaturedReviewIds((prev) => [...prev, id]);
-      toast.success("★ Reseña destacada para la Landing Page pública.");
+      toast.success("★ Reseña destacada para el perfil público.");
     }
   };
 
@@ -6601,14 +6730,14 @@ function ReseñasTab({
 
         <div className="bg-card border border-border/80 p-5 rounded-3xl shadow-xs space-y-1 hover:-translate-y-1 transition-all duration-300">
           <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-            Destacadas en Landing Web
+            Destacadas en Perfil
           </span>
           <div className="flex items-baseline gap-2">
             <span className="text-3xl font-black text-primary">{featuredReviewIds.length}</span>
             <span className="text-xs text-muted-foreground">reseñas</span>
           </div>
           <p className="text-[11px] text-muted-foreground pt-1">
-            Visibles en la página pública del centro.
+            Visibles en el perfil público del centro.
           </p>
         </div>
 
@@ -6696,12 +6825,12 @@ function ReseñasTab({
           <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-secondary/20 border border-border/50 rounded-2xl">
             <div className="relative flex-1 min-w-[200px] sm:max-w-xs">
               <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-              <input
+              <Input
                 type="text"
                 placeholder="Buscar por alumno o comentario..."
                 value={publicSearch}
                 onChange={(e) => setPublicSearch(e.target.value)}
-                className="h-9 w-full pl-8 pr-3 rounded-xl border border-border bg-background text-xs font-bold text-foreground focus-visible:outline-none placeholder:font-normal placeholder:text-muted-foreground"
+                className="h-9 w-full pl-8 pr-3 rounded-xl border border-border bg-background text-xs font-bold text-foreground placeholder:font-normal placeholder:text-muted-foreground"
               />
             </div>
 
@@ -6728,7 +6857,7 @@ function ReseñasTab({
                   <SelectItem value="all">Todos los Estados</SelectItem>
                   <SelectItem value="unreplied">⚠️ Sin Responder</SelectItem>
                   <SelectItem value="replied">✅ Respondidas</SelectItem>
-                  <SelectItem value="featured">★ Destacadas en Web</SelectItem>
+                  <SelectItem value="featured">★ Destacadas en Perfil</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -6776,7 +6905,7 @@ function ReseñasTab({
                             <span>{rev.studentName}</span>
                             {isFeatured && (
                               <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20 text-[10px] font-extrabold flex items-center gap-1">
-                                ★ Destacada en Web
+                                ★ Destacada en Perfil
                               </span>
                             )}
                           </div>
@@ -6870,14 +6999,14 @@ function ReseñasTab({
 
                     {activeReplyId === rev.id && (
                       <div className="space-y-2 pt-2 animate-fade-in">
-                        <textarea
+                        <Textarea
                           rows={2}
                           value={replyTexts[rev.id] || ""}
                           onChange={(e) =>
                             setReplyTexts((prev) => ({ ...prev, [rev.id]: e.target.value }))
                           }
                           placeholder="Escribe la respuesta oficial para el alumno..."
-                          className="flex w-full rounded-2xl border border-border bg-background px-3 py-2 text-xs font-bold text-foreground focus-visible:outline-none placeholder:font-normal placeholder:text-muted-foreground"
+                          className="flex w-full rounded-2xl border border-border bg-background px-3 py-2 text-xs font-bold text-foreground placeholder:font-normal placeholder:text-muted-foreground"
                         />
                         <div className="flex gap-2 justify-end">
                           <Button
@@ -6910,7 +7039,7 @@ function ReseñasTab({
           </div>
         </div>
       ) : (
-        /* Private Suggestions & Feedback View (Airbnb / Uber Style) */
+        /* Private Suggestions & Feedback View */
         <div className="space-y-6">
           {/* Info Header */}
           <div className="p-4 rounded-2xl bg-secondary/30 border border-border/60 flex items-start gap-3">
@@ -6929,12 +7058,12 @@ function ReseñasTab({
           <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-secondary/20 border border-border/50 rounded-2xl">
             <div className="relative flex-1 min-w-[200px] sm:max-w-xs">
               <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-              <input
+              <Input
                 type="text"
                 placeholder="Buscar por alumno, mensaje o categoría..."
                 value={privateSearch}
                 onChange={(e) => setPrivateSearch(e.target.value)}
-                className="h-9 w-full pl-8 pr-3 rounded-xl border border-border bg-background text-xs font-bold text-foreground focus-visible:outline-none placeholder:font-normal placeholder:text-muted-foreground"
+                className="h-9 w-full pl-8 pr-3 rounded-xl border border-border bg-background text-xs font-bold text-foreground placeholder:font-normal placeholder:text-muted-foreground"
               />
             </div>
 
@@ -7075,14 +7204,14 @@ function ReseñasTab({
 
                     {activeNoteId === fb.id && (
                       <div className="space-y-2 pt-2 animate-fade-in">
-                        <textarea
+                        <Textarea
                           rows={2}
                           value={adminNoteTexts[fb.id] || ""}
                           onChange={(e) =>
                             setAdminNoteTexts((prev) => ({ ...prev, [fb.id]: e.target.value }))
                           }
                           placeholder="Escribe una nota interna (ej: 'Revisado con el staff de limpieza el 29/07')..."
-                          className="flex w-full rounded-2xl border border-border bg-background px-3 py-2 text-xs font-bold text-foreground focus-visible:outline-none placeholder:font-normal placeholder:text-muted-foreground"
+                          className="flex w-full rounded-2xl border border-border bg-background px-3 py-2 text-xs font-bold text-foreground placeholder:font-normal placeholder:text-muted-foreground"
                         />
                         <div className="flex gap-2 justify-end">
                           <Button
@@ -7134,12 +7263,12 @@ function ReseñasTab({
               {/* Member Search input */}
               <div className="relative">
                 <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                <input
+                <Input
                   type="text"
                   placeholder="Buscar socio por nombre o número de teléfono..."
                   value={memberSearchModal}
                   onChange={(e) => setMemberSearchModal(e.target.value)}
-                  className="w-full h-9 rounded-xl border border-border bg-background pl-8 pr-3 text-xs font-bold text-foreground focus-visible:outline-none placeholder:font-normal placeholder:text-muted-foreground"
+                  className="w-full h-9 rounded-xl border border-border bg-background pl-8 pr-3 text-xs font-bold text-foreground placeholder:font-normal placeholder:text-muted-foreground"
                 />
               </div>
 
@@ -7255,26 +7384,24 @@ function ReseñasTab({
 
 // Subcomponent: Asistencias Tab
 function AsistenciasTab({
-  selectedBranchId,
   blackoutDays,
   membersList = [],
   classesList = [],
   setClassesList,
+  currentUser,
 }: {
-  selectedBranchId: string;
   blackoutDays: { id: string; date: string; reason: string }[];
   membersList?: any[];
   classesList?: any[];
   setClassesList?: React.Dispatch<React.SetStateAction<any[]>>;
+  currentUser?: any;
 }) {
   const [historySearch, setHistorySearch] = useState("");
   const [methodFilter, setMethodFilter] = useState("Todos");
   const [dateFilter, setDateFilter] = useState("Todos");
   const [statusFilter, setStatusFilter] = useState("Todos");
 
-  // Interactive History & Delete Confirmation states
-  const [isClearModalOpen, setIsClearModalOpen] = useState(false);
-  const [clearConfirmInput, setClearConfirmInput] = useState("");
+
 
   const [historyList, setHistoryList] = useState([
     {
@@ -7462,6 +7589,34 @@ function AsistenciasTab({
       return true;
     });
   }, [historyList, historySearch, methodFilter, dateFilter, statusFilter]);
+
+  const handleContactNoAttendanceMember = (memberName: string) => {
+    const member = (membersList || []).find(
+      (m: any) => m.name.toLowerCase().trim() === memberName.toLowerCase().trim(),
+    );
+
+    const actualGymName = (currentUser as any)?.gymName || "Kraft Strength Club";
+
+    const messageText = `Hola ${memberName}, ¡te extrañamos en ${actualGymName}! 👋 Notamos que hace unos días no registras asistencia a tus clases. ¿Cómo venís con tus entrenamientos? Avisanos si necesitas ayuda para agendar tus horarios. 💪`;
+
+    if (member?.phone) {
+      const cleanPhone = member.phone.replace(/[^0-9]/g, "");
+      const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(messageText)}`;
+      window.open(waUrl, "_blank");
+      toast.success(`Redirigiendo a WhatsApp para enviar mensaje a ${memberName}...`);
+      return;
+    }
+
+    if (member?.email) {
+      const subject = encodeURIComponent(`¡Te extrañamos en ${actualGymName}!`);
+      const body = encodeURIComponent(messageText);
+      window.open(`mailto:${member.email}?subject=${subject}&body=${body}`, "_blank");
+      toast.success(`Abriendo cliente de correo para contactar a ${memberName}...`);
+      return;
+    }
+
+    toast.error(`No hay teléfono ni correo registrado en la ficha de ${memberName}.`);
+  };
 
   const handleExport = () => {
     const csvHeader = "Nombre,Fecha,Hora,Metodo,Estado,Detalle,Clase\n";
@@ -7668,25 +7823,33 @@ function AsistenciasTab({
             </p>
 
             <div className="space-y-3 text-xs">
-              <div className="p-3 rounded-2xl bg-card border border-border flex items-center justify-between">
-                <div>
-                  <span className="font-bold text-foreground block">Martín Silva</span>
-                  <span className="text-[10px] text-muted-foreground">Pase 8 Clases · Hace 14 días</span>
-                </div>
-                <Button size="sm" variant="outline" className="rounded-full text-[10px] h-7 px-2.5 gap-1 border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10" onClick={() => alert("Abriendo WhatsApp con plantilla de re-engagement para Martín Silva...")}>
-                  <MessageCircle className="w-3 h-3" /> Contactar
-                </Button>
-              </div>
-
-              <div className="p-3 rounded-2xl bg-card border border-border flex items-center justify-between">
-                <div>
-                  <span className="font-bold text-foreground block">Valeria Ríos</span>
-                  <span className="text-[10px] text-muted-foreground">CrossFit 12 · Hace 16 días</span>
-                </div>
-                <Button size="sm" variant="outline" className="rounded-full text-[10px] h-7 px-2.5 gap-1 border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10" onClick={() => alert("Abriendo WhatsApp con plantilla de re-engagement para Valeria Ríos...")}>
-                  <MessageCircle className="w-3 h-3" /> Contactar
-                </Button>
-              </div>
+              {(membersList || [])
+                .filter((m: any) => m.status === "activo" || m.status === "vencido")
+                .slice(0, 3)
+                .map((m: any, idx: number) => {
+                  const days = 12 + idx * 2;
+                  return (
+                    <div
+                      key={m.name || idx}
+                      className="p-3 rounded-2xl bg-card border border-border flex items-center justify-between"
+                    >
+                      <div>
+                        <span className="font-bold text-foreground block">{m.name}</span>
+                        <span className="text-[10px] text-muted-foreground">
+                          {m.plan || "Pase General"} · Hace {days} días
+                        </span>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="rounded-full text-[10px] h-7 px-2.5 gap-1 border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10 font-bold"
+                        onClick={() => handleContactNoAttendanceMember(m.name)}
+                      >
+                        <MessageCircle className="w-3 h-3" /> Contactar
+                      </Button>
+                    </div>
+                  );
+                })}
             </div>
           </div>
         </div>
@@ -7710,7 +7873,7 @@ function AsistenciasTab({
             </p>
           </div>
 
-          {/* Top Actions: Export & Delete */}
+          {/* Top Actions: Export CSV */}
           <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
             {/* Export CSV */}
             <Button
@@ -7720,19 +7883,6 @@ function AsistenciasTab({
               onClick={handleExport}
             >
               <Download className="h-3.5 w-3.5" /> Exportar CSV
-            </Button>
-
-            {/* Clear / Delete History Button */}
-            <Button
-              size="sm"
-              variant="outline"
-              className="rounded-xl gap-1.5 text-xs h-8 px-3 border-destructive/40 text-destructive hover:bg-destructive/10"
-              onClick={() => {
-                setClearConfirmInput("");
-                setIsClearModalOpen(true);
-              }}
-            >
-              <Trash2 className="h-3.5 w-3.5" /> Eliminar Historial
             </Button>
           </div>
         </div>
@@ -7878,57 +8028,6 @@ function AsistenciasTab({
           </table>
         </div>
       </div>
-
-      {/* Delete History Strict Confirmation Dialog */}
-      <Dialog open={isClearModalOpen} onOpenChange={setIsClearModalOpen}>
-        <DialogContent className="sm:max-w-md rounded-3xl border border-border bg-card p-6 gap-4">
-          <DialogHeader>
-            <DialogTitle className="text-base font-bold text-destructive flex items-center gap-2">
-              <Trash2 className="w-5 h-5" /> Eliminar Historial de Asistencias
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground mt-1 leading-relaxed">
-              Esta acción eliminará de forma permanente todos los registros de asistencias del gimnasio. Esta acción no se puede deshacer.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="p-4 rounded-2xl bg-destructive/10 border border-destructive/20 space-y-3 text-xs text-destructive">
-            <span className="font-bold block">Confirmación de seguridad requerida:</span>
-            <p className="text-[11px] opacity-90 leading-normal">
-              Escribe la palabra <strong className="underline uppercase font-black">Eliminar</strong> en el campo a continuación para habilitar la confirmación:
-            </p>
-            <input
-              type="text"
-              placeholder="Escribe 'Eliminar'"
-              value={clearConfirmInput}
-              onChange={(e) => setClearConfirmInput(e.target.value)}
-              className="w-full h-9 px-3 rounded-xl border border-destructive/40 bg-background text-foreground text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-destructive"
-            />
-          </div>
-
-          <div className="flex gap-2 justify-end pt-2 border-t border-border">
-            <Button
-              variant="outline"
-              onClick={() => setIsClearModalOpen(false)}
-              className="rounded-full text-xs font-semibold"
-            >
-              Cancelar
-            </Button>
-            <Button
-              disabled={clearConfirmInput.trim().toLowerCase() !== "eliminar"}
-              onClick={() => {
-                setHistoryList([]);
-                setIsClearModalOpen(false);
-                setClearConfirmInput("");
-                alert("El historial de asistencias ha sido eliminado correctamente.");
-              }}
-              variant="destructive"
-              className="rounded-full text-xs font-bold gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Trash2 className="w-3.5 h-3.5" /> Confirmar Eliminación
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Modal Shadcn UI: Check-in en Recepción & Validación Presencial */}
       <Dialog open={isCheckInModalOpen} onOpenChange={setIsCheckInModalOpen}>
@@ -8207,13 +8306,34 @@ function MiembrosTab({
     });
   };
 
+  const [deleteConfirmMember, setDeleteConfirmMember] = useState<string | null>(null);
+  const [cancelConfirmMember, setCancelConfirmMember] = useState<any | null>(null);
+  const [cantDeleteWarningMember, setCantDeleteWarningMember] = useState<any | null>(null);
+  const [mpRenewAction, setMpRenewAction] = useState<"skip" | "cancel">("skip");
+  const [freezeDialogMember, setFreezeDialogMember] = useState<string | null>(null);
+  const [freezeDaysInput, setFreezeDaysInput] = useState<string>("15");
+
+  const getStatusBadgeColor = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case "activo":
+        return "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20";
+      case "pendiente":
+      case "vencido":
+        return "text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20";
+      case "congelado":
+        return "text-blue-600 dark:text-blue-400 bg-blue-500/10 border border-blue-500/20";
+      case "cancelado":
+        return "text-muted-foreground bg-secondary border border-border";
+      default:
+        return "text-destructive bg-destructive/10 border border-destructive/20";
+    }
+  };
+
   const handleConfirmCheckIn = () => {
     if (!checkInResult || !checkInResult.member) return;
-
-    // Simulate logging attendance by pushing to checking history or adding a generic check-in
+    toast.success(`Asistencia registrada con éxito para ${checkInResult.member.name}`);
     setCheckInResult(null);
     setCheckInQuery("");
-    alert(`Asistencia registrada con éxito para ${checkInResult.member.name}`);
   };
 
   const filteredMembers = useMemo(() => {
@@ -8223,9 +8343,11 @@ function MiembrosTab({
         (m.dni && m.dni.includes(searchTerm));
       if (!matchesSearch) return false;
 
-      if (filterStatus === "all") return true;
+      if (filterStatus === "all") return m.status !== "cancelado";
       if (filterStatus === "activos") return m.status === "activo";
       if (filterStatus === "vencidos") return m.status === "vencido" || m.status === "pendiente";
+      if (filterStatus === "congelados") return m.status === "congelado";
+      if (filterStatus === "archivados") return m.status === "cancelado";
       if (filterStatus === "apto")
         return (
           m.hasApto !== "Entregado" ||
@@ -8281,20 +8403,14 @@ function MiembrosTab({
             return {
               ...m,
               ...newMember,
-              color:
-                newMember.status === "activo"
-                  ? "text-primary bg-primary/"
-                  : newMember.status === "pendiente"
-                    ? "text-secondary-foreground bg-secondary/"
-                    : newMember.status === "cancelado"
-                      ? "text-neutral-500 bg-neutral-500/10"
-                      : "text-destructive bg-destructive/",
+              color: getStatusBadgeColor(newMember.status),
               photo: m.photo,
             };
           }
           return m;
         }),
       );
+      toast.success(`Datos de ${newMember.name} actualizados.`);
     } else {
       const initialPayments =
         newMember.status === "activo"
@@ -8312,16 +8428,12 @@ function MiembrosTab({
 
       const memberToAdd = {
         ...newMember,
-        color:
-          newMember.status === "activo"
-            ? "text-primary bg-primary/"
-            : newMember.status === "pendiente"
-              ? "text-secondary-foreground bg-secondary/"
-              : "text-destructive bg-destructive/",
+        color: getStatusBadgeColor(newMember.status),
         photo: "https://api.dicebear.com/7.x/initials/svg?seed=" + newMember.name,
         payments: initialPayments,
       };
       setMembersList([memberToAdd, ...membersList]);
+      toast.success(`Alumno ${newMember.name} registrado con éxito.`);
     }
     setIsAddOpen(false);
     setEditingMemberId(null);
@@ -8368,20 +8480,133 @@ function MiembrosTab({
     setIsAddOpen(true);
   };
 
-  const handleCancelPlan = (memberName: string) => {
+  const handleCancelPlan = (member: any) => {
+    setCancelConfirmMember(member);
+  };
+
+  const confirmCancelPlanAction = () => {
+    if (!cancelConfirmMember) return;
+    const isMp =
+      cancelConfirmMember.paymentMethod === "Mercado Pago (Auto)" ||
+      cancelConfirmMember.isAutoRenew;
+
     setMembersList((prev: any) =>
       prev.map((m: any) =>
-        m.name === memberName
-          ? { ...m, status: "cancelado", color: "text-neutral-500 bg-neutral-500/10" }
+        m.name === cancelConfirmMember.name
+          ? {
+              ...m,
+              status: "cancelado",
+              color: getStatusBadgeColor("cancelado"),
+              isAutoRenew: false,
+            }
           : m,
       ),
     );
+
+    if (isMp) {
+      toast.info(
+        `Alumno ${cancelConfirmMember.name} dado de baja. Suscripción de Mercado Pago cancelada vía API.`,
+      );
+    } else {
+      toast.info(`Alumno ${cancelConfirmMember.name} dado de baja / archivado.`);
+    }
+    setCancelConfirmMember(null);
   };
 
-  const handleDeleteMember = (memberName: string) => {
-    if (window.confirm(`¿Seguro que deseas eliminar definitivamente a ${memberName}?`)) {
-      setMembersList((prev: any) => prev.filter((m: any) => m.name !== memberName));
+  const handleReactivateMember = (memberName: string) => {
+    setMembersList((prev: any) =>
+      prev.map((m: any) =>
+        m.name === memberName
+          ? { ...m, status: "activo", color: getStatusBadgeColor("activo") }
+          : m,
+      ),
+    );
+    toast.success(`Membresía de ${memberName} reactivada con éxito.`);
+  };
+
+  const handleDeleteMember = (member: any) => {
+    if (member.payments && member.payments.length > 0) {
+      setCantDeleteWarningMember(member);
+    } else {
+      setDeleteConfirmMember(member.name);
     }
+  };
+
+  const confirmDeleteMemberAction = () => {
+    if (!deleteConfirmMember) return;
+    setMembersList((prev: any) => prev.filter((m: any) => m.name !== deleteConfirmMember));
+    toast.success(`Alumno ${deleteConfirmMember} eliminado del sistema.`);
+    setDeleteConfirmMember(null);
+  };
+
+  const handleFreezeMember = (memberName: string) => {
+    setFreezeDialogMember(memberName);
+    setFreezeDaysInput("15");
+  };
+
+  const handleUnfreezeMember = (memberName: string) => {
+    setMembersList((prev: any) =>
+      prev.map((m: any) =>
+        m.name === memberName
+          ? {
+              ...m,
+              status: "activo",
+              color: getStatusBadgeColor("activo"),
+              notes: (m.notes || "") + ` | Descongelado el ${new Date().toISOString().split("T")[0]}`,
+            }
+          : m,
+      ),
+    );
+    toast.success(`Membresía de ${memberName} reactivada / descongelada con éxito.`);
+  };
+
+  const confirmFreezeMemberAction = () => {
+    if (!freezeDialogMember) return;
+    const days = parseInt(freezeDaysInput) || 15;
+    setMembersList((prev: any) =>
+      prev.map((m: any) => {
+        if (m.name === freezeDialogMember) {
+          return {
+            ...m,
+            status: "congelado",
+            color: getStatusBadgeColor("congelado"),
+            notes:
+              (m.notes || "") +
+              ` | Congelado ${days}d desde ${new Date().toISOString().split("T")[0]}`,
+          };
+        }
+        return m;
+      }),
+    );
+    toast.success(`Membresía de ${freezeDialogMember} congelada por ${days} días.`);
+    setFreezeDialogMember(null);
+  };
+
+  const handleExportCSV = () => {
+    if (!filteredMembers.length) {
+      toast.error("No hay alumnos visibles para exportar.");
+      return;
+    }
+    const headers = ["Nombre", "DNI", "Email", "Teléfono", "Plan", "Estado", "Vencimiento", "Apto Médico"];
+    const rows = filteredMembers.map((m: any) => [
+      `"${m.name || ""}"`,
+      `"${m.dni || ""}"`,
+      `"${m.email || ""}"`,
+      `"${m.phone || ""}"`,
+      `"${m.plan || ""}"`,
+      `"${m.status || ""}"`,
+      `"${m.end || ""}"`,
+      `"${m.hasApto || "Pendiente"}"`,
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((r: string[]) => r.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `miembros_shakerfy_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Nómina de alumnos exportada a CSV con éxito.");
   };
 
   // Build attendance history per member from classesList (no new state)
@@ -8510,41 +8735,16 @@ function MiembrosTab({
             status: "activo",
             debtAmount: 0,
             end: nextEndStr,
-            color: "text-primary bg-primary/",
+            color: getStatusBadgeColor("activo"),
             payments: [newPayment, ...existingPayments],
           };
         }
         return m;
       }),
     );
+    toast.success(`Membresía de ${renewMemberId} renovada con éxito por ${renewMonths} mes(es).`);
     setRenewMemberId(null);
     setRenewMonths("1");
-  };
-
-  const handleFreezeMember = (memberName: string) => {
-    const daysStr = prompt(
-      `Congelar Membresía para ${memberName}.\n\n¿Por cuántos días deseas pausar la membresía?`,
-      "15",
-    );
-    if (!daysStr) return;
-    const days = parseInt(daysStr);
-    if (isNaN(days) || days <= 0) return;
-
-    setMembersList((prev: any) =>
-      prev.map((m: any) => {
-        if (m.name === memberName) {
-          return {
-            ...m,
-            status: "congelado",
-            color: "text-muted-foreground bg-secondary/50",
-            notes:
-              (m.notes || "") +
-              ` | Congelado ${days}d desde ${new Date().toISOString().split("T")[0]}`,
-          };
-        }
-        return m;
-      }),
-    );
   };
 
   const handleValidateApto = (memberName: string) => {
@@ -8572,12 +8772,22 @@ function MiembrosTab({
         <div>
           <h2 className="text-xl font-bold tracking-tight">Administración de Miembros</h2>
           <p className="text-sm text-muted-foreground">
-            Listado general de alumnos registrados en tu gimnasio.
+            Listado general de alumnos ({filteredMembers.length} de {membersList.length} registrados).
           </p>
         </div>
-        <Button size="sm" className="rounded-xl gap-1.5" onClick={() => setIsAddOpen(true)}>
-          <Plus className="h-4 w-4" /> Agregar Miembro
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-xl gap-1.5 font-semibold text-xs h-9 border-border hover:bg-secondary"
+            onClick={handleExportCSV}
+          >
+            <Download className="h-4 w-4 text-primary" /> Exportar CSV
+          </Button>
+          <Button size="sm" className="rounded-xl gap-1.5 font-bold h-9" onClick={() => setIsAddOpen(true)}>
+            <Plus className="h-4 w-4" /> Agregar Miembro
+          </Button>
+        </div>
       </div>
 
       <Dialog
@@ -8751,11 +8961,11 @@ function MiembrosTab({
               </div>
               <div className="space-y-2">
                 <Label>Notas Médicas / Alergias / Lesiones</Label>
-                <textarea
+                <Textarea
                   value={newMember.medicalNotes}
                   onChange={(e) => setNewMember({ ...newMember, medicalNotes: e.target.value })}
                   placeholder="Ej: Problemas lumbares, asma, etc."
-                  className="w-full min-h-[80px] rounded-lg border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  className="min-h-[80px] text-xs bg-background"
                 />
               </div>
             </div>
@@ -8824,50 +9034,47 @@ function MiembrosTab({
 
       {/* Panel de KPIs */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        <Card className=" border-border">
-          <CardContent className="p-4 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase">
-                Alumnos Activos
-              </p>
-              <h3 className="text-2xl font-black text-primary mt-1">{stats.actives}</h3>
-            </div>
-            <Users className="h-8 w-8 text-primary/20" />
-          </CardContent>
-        </Card>
-        <Card className=" border-border">
-          <CardContent className="p-4 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase">
-                En Mora / Deuda
-              </p>
-              <h3 className="text-2xl font-black text-destructive mt-1">{stats.debts}</h3>
-            </div>
-            <CreditCard className="h-8 w-8 text-destructive/20" />
-          </CardContent>
-        </Card>
-        <Card className=" border-border">
-          <CardContent className="p-4 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase">Apto Vencido</p>
-              <h3 className="text-2xl font-black text-secondary-foreground mt-1">
-                {stats.expiredAptos}
-              </h3>
-            </div>
-            <AlertCircle className="h-8 w-8 text-secondary-foreground/20" />
-          </CardContent>
-        </Card>
-        <Card className=" border-border">
-          <CardContent className="p-4 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase">
-                Riesgo de Baja
-              </p>
-              <h3 className="text-2xl font-black text-purple-600 mt-1">{stats.churnRisks}</h3>
-            </div>
-            <ShieldAlert className="h-8 w-8 text-purple-500/20" />
-          </CardContent>
-        </Card>
+        <div className="group rounded-3xl border border-border bg-card p-5 flex items-center justify-between transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg shadow-xs cursor-pointer">
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+              Alumnos Activos
+            </span>
+            <span className="text-2xl font-black text-primary mt-1 block">{stats.actives}</span>
+          </div>
+          <Users className="h-8 w-8 text-primary/30" />
+        </div>
+
+        <div className="group rounded-3xl border border-border bg-card p-5 flex items-center justify-between transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg shadow-xs cursor-pointer">
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+              En Mora / Deuda
+            </span>
+            <span className="text-2xl font-black text-destructive mt-1 block">{stats.debts}</span>
+          </div>
+          <CreditCard className="h-8 w-8 text-destructive/30" />
+        </div>
+
+        <div className="group rounded-3xl border border-border bg-card p-5 flex items-center justify-between transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg shadow-xs cursor-pointer">
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+              Apto Vencido
+            </span>
+            <span className="text-2xl font-black text-amber-500 mt-1 block">{stats.expiredAptos}</span>
+          </div>
+          <AlertCircle className="h-8 w-8 text-amber-500/30" />
+        </div>
+
+        <div className="group rounded-3xl border border-border bg-card p-5 flex items-center justify-between transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg shadow-xs cursor-pointer">
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+              Riesgo de Baja
+            </span>
+            <span className="text-2xl font-black text-purple-600 dark:text-purple-400 mt-1 block">
+              {stats.churnRisks}
+            </span>
+          </div>
+          <ShieldAlert className="h-8 w-8 text-purple-500/30" />
+        </div>
       </div>
 
 
@@ -8886,14 +9093,16 @@ function MiembrosTab({
           </div>
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
             <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-full sm:w-[160px] h-9 bg-transparent -none border-border">
+              <SelectTrigger className="w-full sm:w-[170px] h-9 bg-transparent -none border-border">
                 <SelectValue placeholder="Estado" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos los estados</SelectItem>
+                <SelectItem value="all">Todos los activos</SelectItem>
                 <SelectItem value="activos">Activos</SelectItem>
                 <SelectItem value="vencidos">Deuda / Vencidos</SelectItem>
+                <SelectItem value="congelados">Congelados</SelectItem>
                 <SelectItem value="apto">Apto Vencido</SelectItem>
+                <SelectItem value="archivados">Archivados / Bajas</SelectItem>
               </SelectContent>
             </Select>
 
@@ -8911,16 +9120,19 @@ function MiembrosTab({
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto custom-scrollbar">
           <table className="w-full text-sm text-left">
             <thead className="bg-muted/50 text-muted-foreground uppercase text-xs border-b border-border">
               <tr>
-                <th className="px-6 py-4 font-medium">Miembro</th>
-                <th className="px-6 py-4 font-medium">Contacto</th>
-                <th className="px-6 py-4 font-medium">Membresía</th>
-                <th className="px-6 py-4 font-medium">Estado</th>
-                <th className="px-6 py-4 font-medium">Asistencia</th>
-                <th className="px-6 py-4 font-medium text-right">Acciones</th>
+                <th className="px-5 py-3.5 font-medium whitespace-nowrap">Miembro</th>
+                <th className="px-5 py-3.5 font-medium whitespace-nowrap">Email</th>
+                <th className="px-5 py-3.5 font-medium whitespace-nowrap">Teléfono</th>
+                <th className="px-5 py-3.5 font-medium whitespace-nowrap">Membresía</th>
+                <th className="px-5 py-3.5 font-medium whitespace-nowrap">Vencimiento</th>
+                <th className="px-5 py-3.5 font-medium whitespace-nowrap">Método de Pago</th>
+                <th className="px-5 py-3.5 font-medium whitespace-nowrap">Estado</th>
+                <th className="px-5 py-3.5 font-medium whitespace-nowrap">Asistencia</th>
+                <th className="px-5 py-3.5 font-medium text-right whitespace-nowrap">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -8931,52 +9143,65 @@ function MiembrosTab({
                 return (
                   <Fragment key={m.name}>
                     <tr
-                      className={`hover:bg-muted/30 transition-colors cursor-pointer ${isOpen ? "bg-muted/30" : ""}`}
+                      className={`hover:bg-muted/30 transition-colors cursor-pointer ${isOpen ? "bg-slate-100/80 dark:bg-muted/30" : ""}`}
                       onClick={() => setExpandedMember(isOpen ? null : m.name)}
                     >
-                      <td className="px-6 py-4">
+                      <td className="px-5 py-3.5 whitespace-nowrap">
                         <div className="flex items-center gap-3">
                           <img
                             src={m.photo}
                             alt={m.name}
                             className="h-10 w-10 rounded-full object-cover border border-border/40 shrink-0"
                           />
-                          <span className="font-medium text-foreground">{m.name}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-col gap-1">
-                          <span className="text-xs text-muted-foreground">
-                            {m.email || m.name.toLowerCase().replace(/ /g, "") + "@email.com"}
-                          </span>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs">{m.phone}</span>
-                            <a
-                              href={`https://wa.me/${m.phone.replace(/[^0-9]/g, "")}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-green-500 hover:text-green-600 transition-colors"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <MessageCircle className="w-4 h-4" />
-                            </a>
+                          <div>
+                            <span className="font-semibold text-foreground block">{m.name}</span>
+                            {m.dni && <span className="text-[10.5px] text-muted-foreground">DNI: {m.dni}</span>}
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-col gap-1">
-                          <span className="text-xs font-medium">{m.plan}</span>
-                          <span className="text-[11px] text-muted-foreground">Vence: {m.end}</span>
+                      <td className="px-5 py-3.5 text-xs text-muted-foreground whitespace-nowrap">
+                        {m.email || `${m.name.toLowerCase().replace(/ /g, "")}@email.com`}
+                      </td>
+                      <td className="px-5 py-3.5 text-xs whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <span>{m.phone}</span>
+                          <a
+                            href={`https://wa.me/${m.phone.replace(/[^0-9]/g, "")}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-emerald-500 hover:text-emerald-600 transition-colors"
+                            title="Enviar WhatsApp"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <MessageCircle className="w-4 h-4" />
+                          </a>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-5 py-3.5 text-xs font-semibold text-foreground whitespace-nowrap">
+                        {m.plan}
+                      </td>
+                      <td className="px-5 py-3.5 text-xs text-muted-foreground whitespace-nowrap font-medium">
+                        {m.end}
+                      </td>
+                      <td className="px-5 py-3.5 whitespace-nowrap">
+                        {m.paymentMethod === "Mercado Pago (Auto)" || m.isAutoRenew ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                            💳 Mercado Pago (Auto)
+                          </span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground font-medium">
+                            {m.paymentMethod || "Efectivo / Transferencia"}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-5 py-3.5 whitespace-nowrap">
                         <span
-                          className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold capitalize ${m.color}`}
+                          className={`inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold capitalize ${getStatusBadgeColor(m.status)}`}
                         >
                           {m.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-5 py-3.5 whitespace-nowrap">
                         <div className="flex flex-col gap-1 items-start">
                           {history.attendanceRate !== null ? (
                             <span
@@ -8994,7 +9219,7 @@ function MiembrosTab({
                             <span className="text-xs text-muted-foreground">—</span>
                           )}
                           {history.isChurnRisk && (
-                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-destructive/ text-destructive border border-destructive/">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-bold bg-destructive/10 text-destructive border border-destructive/20">
                               ⚠️ Riesgo Baja
                             </span>
                           )}
@@ -9013,32 +9238,45 @@ function MiembrosTab({
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-48">
-                                <DropdownMenuItem onClick={() => setRenewMemberId(m.name)}>
-                                  <CreditCard className="h-4 w-4 mr-2" /> Renovar / Cobrar
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleFreezeMember(m.name)}>
-                                  <Snowflake className="h-4 w-4 mr-2 text-blue-400" /> Congelar
-                                  Membresía
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleValidateApto(m.name)}>
-                                  <CheckCircle2 className="h-4 w-4 mr-2 text-primary" /> Validar
-                                  Apto Médico
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleEditMemberClick(m)}>
-                                  <Edit2 className="h-4 w-4 mr-2" /> Editar Alumno
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  className="text-secondary-foreground focus:text-secondary-foreground"
-                                  onClick={() => handleCancelPlan(m.name)}
-                                >
-                                  <ShieldAlert className="h-4 w-4 mr-2" /> Dar de baja
-                                </DropdownMenuItem>
+                                               <DropdownMenuContent align="end" className="w-52 rounded-xl p-1.5 shadow-xl border-border">
+                                {m.status === "cancelado" ? (
+                                  <DropdownMenuItem onClick={() => handleReactivateMember(m.name)}>
+                                    <UserCheck className="h-4 w-4 mr-2 text-emerald-500" /> Reactivar Alumno
+                                  </DropdownMenuItem>
+                                ) : (
+                                  <>
+                                    <DropdownMenuItem onClick={() => setRenewMemberId(m.name)}>
+                                      <CreditCard className="h-4 w-4 mr-2 text-primary" /> Renovar / Cobrar
+                                    </DropdownMenuItem>
+                                    {m.status === "congelado" ? (
+                                      <DropdownMenuItem onClick={() => handleUnfreezeMember(m.name)}>
+                                        <Zap className="h-4 w-4 mr-2 text-emerald-500" /> Descongelar Membresía
+                                      </DropdownMenuItem>
+                                    ) : (
+                                      <DropdownMenuItem onClick={() => handleFreezeMember(m.name)}>
+                                        <Snowflake className="h-4 w-4 mr-2 text-blue-400" /> Congelar Membresía
+                                      </DropdownMenuItem>
+                                    )}
+                                    <DropdownMenuItem onClick={() => handleValidateApto(m.name)}>
+                                      <CheckCircle2 className="h-4 w-4 mr-2 text-primary" /> Validar Apto Médico
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleEditMemberClick(m)}>
+                                      <Edit2 className="h-4 w-4 mr-2" /> Editar Alumno
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      className="text-amber-600 dark:text-amber-400 focus:text-amber-600"
+                                      onClick={() => handleCancelPlan(m)}
+                                    >
+                                      <ShieldAlert className="h-4 w-4 mr-2" /> Dar de baja / Archivar
+                                    </DropdownMenuItem>
+                                  </>
+                                )}
+                                <DropdownMenuSeparator />
                                 <DropdownMenuItem
                                   className="text-destructive focus:text-destructive"
-                                  onClick={() => handleDeleteMember(m.name)}
+                                  onClick={() => handleDeleteMember(m)}
                                 >
-                                  <Trash2 className="h-4 w-4 mr-2" /> Eliminar
+                                  <Trash2 className="h-4 w-4 mr-2" /> Eliminar Definitivamente
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
@@ -9054,9 +9292,9 @@ function MiembrosTab({
 
                     {/* Expanded accordion: history & details */}
                     {isOpen && (
-                      <tr className="bg-secondary/5 border-b border-border/40">
-                        <td colSpan={6} className="p-0">
-                          <div className="p-6 space-y-5 animate-fade-in border-t border-border/40 bg-card/40">
+                      <tr className="bg-slate-50/70 dark:bg-background border-b border-border/60">
+                        <td colSpan={9} className="p-0">
+                          <div className="sticky left-0 min-w-full p-6 space-y-5 animate-fade-in border-t border-border/60 bg-slate-50/70 dark:bg-background">
                             {/* Sub-header with key member details */}
                             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                               <div className="flex items-center gap-3.5">
@@ -9178,7 +9416,7 @@ function MiembrosTab({
                                     e.stopPropagation();
                                     const cleanedPhone = m.phone.replace(/[^0-9]/g, "");
                                     const text = encodeURIComponent(
-                                      `¡Hola ${m.name}! Te extrañamos en Studio Pulse. Notamos que hace unos días no vienes a entrenar y queríamos saber si estaba todo bien o si necesitabas ayuda con tus reservas. ¡Te esperamos! 💪`,
+                                      `¡Hola ${m.name}! Te extrañamos en Shakerfy. Notamos que hace unos días no vienes a entrenar y queríamos saber si estaba todo bien o si necesitabas ayuda con tus reservas. ¡Te esperamos! 💪`,
                                     );
                                     window.open(
                                       `https://wa.me/${cleanedPhone || "5491100000000"}?text=${text}`,
@@ -9391,13 +9629,13 @@ function MiembrosTab({
                               </div>
 
                               {/* Próximas Clases Agendadas Card */}
-                              <div className="bg-card border border-border/50 rounded-2xl p-4.5 space-y-3.5 shadow-none transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-border/80 focus-within:shadow-md focus-within:-translate-y-0.5 h-full flex flex-col justify-between">
+                              <div className="group rounded-3xl border border-border bg-card p-5 space-y-4 transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg shadow-xs h-full flex flex-col justify-between">
                                 <div className="flex flex-col h-full justify-between space-y-3.5">
                                   <div className="flex items-center justify-between pb-2 border-b border-border/40">
                                     <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
                                       Próximas Clases Agendadas
                                     </span>
-                                    <span className="text-[10px] text-muted-foreground/70 font-semibold">
+                                    <span className="text-[10px] text-muted-foreground/70 font-semibold uppercase tracking-wider">
                                       {history.enrolled.length} reservas
                                     </span>
                                   </div>
@@ -9433,6 +9671,19 @@ function MiembrosTab({
                   </Fragment>
                 );
               })}
+              {filteredMembers.length === 0 && (
+                <tr>
+                  <td colSpan={9} className="py-12 text-center text-muted-foreground">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <Users className="h-10 w-10 text-muted-foreground/40" />
+                      <p className="font-semibold text-sm">No se encontraron miembros</p>
+                      <p className="text-xs text-muted-foreground/80">
+                        Intenta ajustar la búsqueda o los filtros seleccionados.
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -9447,36 +9698,79 @@ function MiembrosTab({
           }
         }}
       >
-        <DialogContent>
+        <DialogContent className="max-w-md rounded-3xl p-6 border-border shadow-2xl bg-card">
           <DialogHeader>
-            <DialogTitle>Registrar Pago / Renovar Plan</DialogTitle>
+            <DialogTitle className="text-lg font-black text-foreground flex items-center gap-2">
+              <CreditCard className="h-5 w-5 text-primary" /> Registrar Pago / Renovar Plan
+            </DialogTitle>
           </DialogHeader>
-          <div className="py-4 space-y-4">
-            <p className="text-sm text-muted-foreground">
-              ¿Confirmás la renovación del plan para <strong>{renewMemberId}</strong>?
-            </p>
-            <div className="space-y-2">
-              <Label>Duración de la renovación</Label>
-              <Select value={renewMonths} onValueChange={setRenewMonths}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar duración" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">1 Mes</SelectItem>
-                  <SelectItem value="3">3 Meses (Trimestre)</SelectItem>
-                  <SelectItem value="6">6 Meses (Semestre)</SelectItem>
-                  <SelectItem value="12">12 Meses (Año)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <p className="text-xs text-muted-foreground bg-primary/ text-primary p-2 rounded-lg border border-primary/">
-              Se actualizará su estado a <span className="font-bold">Activo</span> y se extenderá su
-              vencimiento por {renewMonths} mes{renewMonths === "1" ? "" : "es"}.
-            </p>
-          </div>
-          <DialogFooter>
+          {(() => {
+            const memberObj = membersList.find((m: any) => m.name === renewMemberId);
+            const isMp =
+              memberObj?.paymentMethod === "Mercado Pago (Auto)" || memberObj?.isAutoRenew;
+            return (
+              <div className="py-2 space-y-4">
+                <p className="text-xs text-muted-foreground">
+                  ¿Confirmás la renovación del plan para{" "}
+                  <strong className="text-foreground font-bold">{renewMemberId}</strong>?
+                </p>
+
+                {isMp && (
+                  <div className="p-3.5 bg-blue-500/10 border border-blue-500/30 rounded-2xl space-y-2.5 text-xs">
+                    <div className="font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
+                      <span>💳 Alumno con Débito Automático Activo</span>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      Este alumno abona mediante Mercado Pago. Selecciona la acción a tomar en la pasarela al registrar este cobro manual:
+                    </p>
+                    <RadioGroup
+                      value={mpRenewAction}
+                      onValueChange={(val: "skip" | "cancel") => setMpRenewAction(val)}
+                      className="space-y-2 pt-1"
+                    >
+                      <div className="flex items-start gap-2.5 cursor-pointer font-medium text-[11px]">
+                        <RadioGroupItem value="skip" id="mp-skip" className="mt-0.5" />
+                        <Label htmlFor="mp-skip" className="cursor-pointer font-normal">
+                          <span className="font-bold block text-foreground">Saltear este mes en Mercado Pago</span>
+                          <span className="text-muted-foreground text-[10px]">Pospone la fecha del próximo débito automático 30 días.</span>
+                        </Label>
+                      </div>
+                      <div className="flex items-start gap-2.5 cursor-pointer font-medium text-[11px]">
+                        <RadioGroupItem value="cancel" id="mp-cancel" className="mt-0.5" />
+                        <Label htmlFor="mp-cancel" className="cursor-pointer font-normal">
+                          <span className="font-bold block text-foreground">Cancelar Débito Automático</span>
+                          <span className="text-muted-foreground text-[10px]">Cancela la suscripción en MP para pasar a pago manual permanente.</span>
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+                )}
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold">Duración de la renovación</Label>
+                  <Select value={renewMonths} onValueChange={setRenewMonths}>
+                    <SelectTrigger className="h-9 rounded-xl text-xs bg-secondary/30">
+                      <SelectValue placeholder="Seleccionar duración" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl">
+                      <SelectItem value="1">1 Mes</SelectItem>
+                      <SelectItem value="3">3 Meses (Trimestre)</SelectItem>
+                      <SelectItem value="6">6 Meses (Semestre)</SelectItem>
+                      <SelectItem value="12">12 Meses (Año)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <p className="text-xs text-muted-foreground bg-primary/10 text-primary p-2.5 rounded-xl border border-primary/20">
+                  Se actualizará su estado a <span className="font-bold">Activo</span> y se extenderá su
+                  vencimiento por {renewMonths} mes{renewMonths === "1" ? "" : "es"}.
+                </p>
+              </div>
+            );
+          })()}
+          <DialogFooter className="gap-2">
             <Button
               variant="outline"
+              className="rounded-xl font-bold"
               onClick={() => {
                 setRenewMemberId(null);
                 setRenewMonths("1");
@@ -9486,9 +9780,112 @@ function MiembrosTab({
             </Button>
             <Button
               onClick={handleRenewMember}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold rounded-xl"
             >
               Confirmar Pago
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal AlertDialog para Confirmar Baja de Alumno (Shadcn/ui) */}
+      <AlertDialog open={!!cancelConfirmMember} onOpenChange={(open) => !open && setCancelConfirmMember(null)}>
+        <AlertDialogContent className="rounded-3xl border-border shadow-2xl bg-card max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-lg font-black text-foreground flex items-center gap-2">
+              <ShieldAlert className="h-5 w-5 text-amber-500" /> Dar de Baja / Archivar Alumno
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-xs text-muted-foreground pt-1 space-y-2">
+              <span>¿Confirmás la baja del alumno <strong className="text-foreground">{cancelConfirmMember?.name}</strong>?</span>
+              {(cancelConfirmMember?.paymentMethod === "Mercado Pago (Auto)" || cancelConfirmMember?.isAutoRenew) && (
+                <div className="p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-amber-700 dark:text-amber-300 font-medium text-[11px] leading-relaxed mt-2">
+                  ⚠️ <strong>Aviso Mercado Pago:</strong> Este alumno tiene una suscripción activa de Débito Automático. Al darlo de baja, la suscripción se cancelará automáticamente en Mercado Pago para evitar cobros futuros.
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-4 gap-2">
+            <AlertDialogCancel className="rounded-xl font-bold">Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="rounded-xl font-bold bg-amber-600 text-white hover:bg-amber-700"
+              onClick={confirmCancelPlanAction}
+            >
+              Confirmar Baja
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Modal AlertDialog de Protección contra Borrado Físico (Hard Delete Guard) */}
+      <AlertDialog open={!!cantDeleteWarningMember} onOpenChange={(open) => !open && setCantDeleteWarningMember(null)}>
+        <AlertDialogContent className="rounded-3xl border-border shadow-2xl bg-card max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-lg font-black text-foreground flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-destructive" /> No es posible eliminar
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-xs text-muted-foreground pt-1 space-y-2">
+              <span>No se puede eliminar físicamente la ficha de <strong className="text-foreground">{cantDeleteWarningMember?.name}</strong> porque cuenta con registros contables de pagos en Caja o Mercado Pago.</span>
+              <div className="p-3 bg-muted/40 border border-border/60 rounded-2xl text-foreground font-medium text-[11px] leading-relaxed mt-2">
+                💡 <strong>Recomendación de Producción:</strong> Te sugerimos usar la opción <strong>"Dar de Baja / Archivar"</strong> para pausar la cuenta y cancelar sus débitos sin alterar la integridad de tus reportes financieros.
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-4">
+            <AlertDialogAction
+              className="rounded-xl font-bold bg-primary text-primary-foreground hover:bg-primary/90"
+              onClick={() => setCantDeleteWarningMember(null)}
+            >
+              Entendido
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Modal Shadcn UI para Congelar Membresía */}
+      <Dialog open={!!freezeDialogMember} onOpenChange={(open) => !open && setFreezeDialogMember(null)}>
+        <DialogContent className="max-w-md rounded-3xl p-6 border-border shadow-2xl bg-card">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-black text-foreground flex items-center gap-2">
+              <Snowflake className="h-5 w-5 text-blue-500" /> Congelar Membresía
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground pt-1">
+              Selecciona o ingresa por cuántos días deseas pausar la membresía de <strong className="text-foreground">{freezeDialogMember}</strong>.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold">Días de Congelamiento</Label>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {["7", "15", "30", "45", "60"].map((d) => (
+                  <Button
+                    key={d}
+                    type="button"
+                    variant={freezeDaysInput === d ? "default" : "outline"}
+                    size="sm"
+                    className="rounded-xl text-xs font-bold"
+                    onClick={() => setFreezeDaysInput(d)}
+                  >
+                    {d} días
+                  </Button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Otro período (días personalizados):</Label>
+              <Input
+                type="number"
+                value={freezeDaysInput}
+                onChange={(e) => setFreezeDaysInput(e.target.value)}
+                className="rounded-xl text-xs bg-secondary/30"
+              />
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" className="rounded-xl font-bold" onClick={() => setFreezeDialogMember(null)}>
+              Cancelar
+            </Button>
+            <Button className="rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white" onClick={confirmFreezeMemberAction}>
+              Confirmar Congelamiento
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -9500,7 +9897,7 @@ function MiembrosTab({
           {viewingReceipt && (
             <div className="space-y-4">
               {/* Receipt Visual Design */}
-              <div className="border border-border/80 p-4 bg-secondary/ rounded-xl space-y-3 relative overflow-hidden">
+              <div className="border border-border/80 p-4 bg-secondary/30 rounded-xl space-y-3 relative overflow-hidden">
                 {/* Background "X" watermark */}
                 <div className="absolute right-4 top-2 text-[120px] font-black text-foreground/5 pointer-events-none select-none">
                   X
@@ -9565,19 +9962,66 @@ function MiembrosTab({
                   ¡Gracias por entrenar con nosotros!
                 </div>
               </div>
-              <DialogFooter className="sm:justify-between flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => setViewingReceipt(null)}>
-                  Cerrar
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    window.print();
-                  }}
-                  className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/95"
-                >
-                  <Download className="w-3.5 h-3.5" /> Imprimir Recibo
-                </Button>
+              <DialogFooter className="sm:justify-end flex flex-wrap gap-2 pt-2">
+                <div className="flex items-center gap-2">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5 text-xs font-bold rounded-xl border-border hover:bg-secondary"
+                      >
+                        <Send className="w-3.5 h-3.5 text-primary" />
+                        <span>Compartir</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48 rounded-xl p-1.5 shadow-xl border-border">
+                      <DropdownMenuItem
+                        disabled={!viewingReceipt.member.phone}
+                        onClick={() => {
+                          const phone = (viewingReceipt.member.phone || "").replace(/[^0-9]/g, "");
+                          const shareText = encodeURIComponent(
+                            `🧾 Recibo de Pago - Shakerfy\n\nAlumno: ${viewingReceipt.member.name}\nConcepto: Membresía ${viewingReceipt.member.plan} (${viewingReceipt.payment.duration})\nMonto: $${viewingReceipt.payment.amount}\nFecha: ${viewingReceipt.payment.date}\nNº Recibo: ${viewingReceipt.payment.id}\n\n¡Gracias por entrenar con nosotros! 💪`,
+                          );
+                          window.open(`https://wa.me/${phone}?text=${shareText}`, "_blank");
+                          toast.success("Recibo compartido por WhatsApp.");
+                        }}
+                        className="text-xs font-medium cursor-pointer"
+                      >
+                        <MessageCircle className="w-4 h-4 mr-2 text-emerald-500" />
+                        <span>Por WhatsApp</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        disabled={!viewingReceipt.member.email}
+                        onClick={() => {
+                          const email = viewingReceipt.member.email || "";
+                          const mailSubject = encodeURIComponent(
+                            `Recibo de Pago Nº ${viewingReceipt.payment.id} - Shakerfy`,
+                          );
+                          const mailBody = encodeURIComponent(
+                            `Hola ${viewingReceipt.member.name},\n\nAquí tienes el comprobante de tu recibo de pago:\n\nConcepto: Membresía ${viewingReceipt.member.plan} (${viewingReceipt.payment.duration})\nMonto Total: $${viewingReceipt.payment.amount}\nFecha: ${viewingReceipt.payment.date}\nNº Comprobante: ${viewingReceipt.payment.id}\n\n¡Gracias por entrenar con nosotros!`,
+                          );
+                          window.open(`mailto:${email}?subject=${mailSubject}&body=${mailBody}`);
+                          toast.success("Recibo compartido por Email.");
+                        }}
+                        className="text-xs font-medium cursor-pointer"
+                      >
+                        <Send className="w-4 h-4 mr-2 text-blue-500" />
+                        <span>Por Correo</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      window.print();
+                    }}
+                    className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/95 rounded-xl font-bold"
+                  >
+                    <Download className="w-3.5 h-3.5" /> Imprimir Recibo
+                  </Button>
+                </div>
               </DialogFooter>
             </div>
           )}
@@ -9614,7 +10058,6 @@ interface MembresiasTabProps {
   membershipsList: Membership[];
   setMembershipsList: React.Dispatch<React.SetStateAction<Membership[]>>;
   amenities: { id: string; name: string; category: string; checked: boolean }[];
-  branchesList: { id: string; name: string; address: string }[];
 }
 
 const FITNESS_ACTIVITIES = [
@@ -9678,7 +10121,6 @@ function MembresiasTab({
   membershipsList,
   setMembershipsList,
   amenities,
-  branchesList,
 }: MembresiasTabProps) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [name, setName] = useState("");
@@ -9957,23 +10399,23 @@ function MembresiasTab({
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="space-y-1.5 sm:col-span-1">
                 <label className="text-xs font-semibold text-muted-foreground">Nombre del Plan</label>
-                <input
+                <Input
                   type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none font-semibold text-foreground"
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground"
                   placeholder="Ej: Pase Libre"
                 />
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">Precio ($)</label>
-                <input
+                <Input
                   type="number"
                   required
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
-                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none font-semibold text-foreground"
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground"
                   placeholder="25000"
                 />
               </div>
@@ -9981,11 +10423,11 @@ function MembresiasTab({
                 <label className="text-xs font-semibold text-muted-foreground">
                   Original/Tachado ($)
                 </label>
-                <input
+                <Input
                   type="number"
                   value={originalPrice}
                   onChange={(e) => setOriginalPrice(e.target.value)}
-                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground"
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground"
                   placeholder="Opcional"
                 />
               </div>
@@ -10048,12 +10490,12 @@ function MembresiasTab({
                   <label className="text-xs font-semibold text-muted-foreground">
                     Créditos/Clases Incluidas
                   </label>
-                  <input
+                  <Input
                     type="number"
                     required
                     value={creditsCount}
                     onChange={(e) => setCreditsCount(e.target.value)}
-                    className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none font-semibold text-foreground"
+                    className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground"
                     placeholder="12"
                   />
                 </div>
@@ -10080,21 +10522,21 @@ function MembresiasTab({
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-semibold text-muted-foreground">Desde</label>
-                    <input
+                    <Input
                       type="text"
                       value={offPeakStart}
                       onChange={(e) => setOffPeakStart(e.target.value)}
-                      className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none text-foreground font-semibold"
+                      className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground font-semibold"
                       placeholder="12:00"
                     />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-semibold text-muted-foreground">Hasta</label>
-                    <input
+                    <Input
                       type="text"
                       value={offPeakEnd}
                       onChange={(e) => setOffPeakEnd(e.target.value)}
-                      className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none text-foreground font-semibold"
+                      className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground font-semibold"
                       placeholder="16:00"
                     />
                   </div>
@@ -10108,11 +10550,11 @@ function MembresiasTab({
                 <label className="text-xs font-semibold text-muted-foreground block">
                   Costo de Matrícula ($)
                 </label>
-                <input
+                <Input
                   type="number"
                   value={registrationFee}
                   onChange={(e) => setRegistrationFee(e.target.value)}
-                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground font-semibold"
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold"
                   placeholder="0 = Sin matrícula"
                 />
               </div>
@@ -10120,11 +10562,11 @@ function MembresiasTab({
                 <label className="text-xs font-semibold text-muted-foreground block">
                   Días Congelamiento/Año
                 </label>
-                <input
+                <Input
                   type="number"
                   value={freezeDays}
                   onChange={(e) => setFreezeDays(e.target.value)}
-                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground font-semibold"
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold"
                   placeholder="Ej: 15 días"
                 />
               </div>
@@ -10173,11 +10615,11 @@ function MembresiasTab({
                 )}
               </div>
 
-              <input
+              <Input
                 type="text"
                 value={searchActivity}
                 onChange={(e) => setSearchActivity(e.target.value)}
-                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground font-semibold"
+                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold"
                 placeholder="Buscar actividades a incluir..."
               />
 
@@ -10249,12 +10691,12 @@ function MembresiasTab({
       <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-secondary/20 border border-border/50 rounded-2xl">
         <div className="relative flex-1 min-w-[200px] sm:max-w-xs">
           <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-          <input
+          <Input
             type="text"
             placeholder="Buscar por nombre o actividad..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-9 w-full pl-8 pr-3 rounded-xl border border-border bg-background text-xs font-bold text-foreground focus-visible:outline-none placeholder:font-normal placeholder:text-muted-foreground"
+            className="h-9 w-full pl-8 pr-3 rounded-xl border border-border bg-background text-xs font-bold text-foreground placeholder:font-normal placeholder:text-muted-foreground"
           />
         </div>
 
@@ -10497,33 +10939,33 @@ function MembresiasTab({
                 <label className="text-xs font-semibold text-muted-foreground">
                   Nombre del Plan
                 </label>
-                <input
+                <Input
                   type="text"
                   required
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none font-semibold text-foreground"
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground"
                 />
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">Precio ($)</label>
-                <input
+                <Input
                   type="number"
                   required
                   value={editPrice}
                   onChange={(e) => setEditPrice(e.target.value)}
-                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none font-semibold text-foreground"
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground"
                 />
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">
                   Original/Tachado ($)
                 </label>
-                <input
+                <Input
                   type="number"
                   value={editOriginalPrice}
                   onChange={(e) => setEditOriginalPrice(e.target.value)}
-                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground"
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground"
                   placeholder="Opcional"
                 />
               </div>
@@ -10585,12 +11027,12 @@ function MembresiasTab({
                   <label className="text-xs font-semibold text-muted-foreground">
                     Créditos/Clases Incluidas
                   </label>
-                  <input
+                  <Input
                     type="number"
                     required
                     value={editCreditsCount}
                     onChange={(e) => setEditCreditsCount(e.target.value)}
-                    className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none font-semibold text-foreground"
+                    className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground"
                   />
                 </div>
               )}
@@ -10616,20 +11058,20 @@ function MembresiasTab({
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-semibold text-muted-foreground">Desde</label>
-                    <input
+                    <Input
                       type="text"
                       value={editOffPeakStart}
                       onChange={(e) => setEditOffPeakStart(e.target.value)}
-                      className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none text-foreground font-semibold"
+                      className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground font-semibold"
                     />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-semibold text-muted-foreground">Hasta</label>
-                    <input
+                    <Input
                       type="text"
                       value={editOffPeakEnd}
                       onChange={(e) => setEditOffPeakEnd(e.target.value)}
-                      className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none text-foreground font-semibold"
+                      className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground font-semibold"
                     />
                   </div>
                 </div>
@@ -10642,11 +11084,11 @@ function MembresiasTab({
                 <label className="text-xs font-semibold text-muted-foreground block">
                   Costo de Matrícula ($)
                 </label>
-                <input
+                <Input
                   type="number"
                   value={editRegistrationFee}
                   onChange={(e) => setEditRegistrationFee(e.target.value)}
-                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground font-semibold"
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold"
                   placeholder="0 = Sin matrícula"
                 />
               </div>
@@ -10654,11 +11096,11 @@ function MembresiasTab({
                 <label className="text-xs font-semibold text-muted-foreground block">
                   Días Congelamiento/Año
                 </label>
-                <input
+                <Input
                   type="number"
                   value={editFreezeDays}
                   onChange={(e) => setEditFreezeDays(e.target.value)}
-                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground font-semibold"
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold"
                   placeholder="Ej: 15 días"
                 />
               </div>
@@ -10709,11 +11151,11 @@ function MembresiasTab({
                 )}
               </div>
 
-              <input
+              <Input
                 type="text"
                 value={editSearchActivity}
                 onChange={(e) => setEditSearchActivity(e.target.value)}
-                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground font-semibold"
+                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold"
                 placeholder="Buscar actividades a incluir..."
               />
 
@@ -10790,11 +11232,11 @@ function MembresiasTab({
             </AlertDialogHeader>
 
             <div className="py-2 space-y-2">
-              <input
+              <Input
                 type="text"
                 value={deleteConfirmText}
                 onChange={(e) => setDeleteConfirmText(e.target.value)}
-                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-center focus-visible:outline-none font-bold text-foreground placeholder:font-normal"
+                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-center font-bold text-foreground placeholder:font-normal"
                 placeholder="Escribe ELIMINAR para confirmar"
               />
             </div>
@@ -10840,7 +11282,6 @@ export interface GymClassItem {
   capacity: number;
   booked: number;
   enrolledSpots: { [spotIndex: number]: string };
-  branchId?: string;
   salaId?: string;
   day: number;
   creditsCost?: number;
@@ -10874,11 +11315,8 @@ interface ClasesTabProps {
     id: string;
     name: string;
     capacity?: number;
-    branchId: string;
     description?: string;
   }[];
-  branchesList: { id: string; name: string; address: string }[];
-  selectedBranchId: string;
   cancellationPolicyHours: number;
   currentUser?: any;
   membersList?: any[];
@@ -10891,8 +11329,6 @@ function ClasesTab({
   canManageClasses,
   blackoutDays,
   salasList,
-  branchesList,
-  selectedBranchId,
   cancellationPolicyHours,
   currentUser,
   membersList,
@@ -10943,9 +11379,7 @@ function ClasesTab({
   const [staffId, setStaffId] = useState("");
   const [startTime, setStartTime] = useState("08:00");
   const [endTime, setEndTime] = useState("09:00");
-  const time = `${startTime} - ${endTime}`;
   const [creditsCost, setCreditsCost] = useState("1");
-  const [classBranchId, setClassBranchId] = useState("matriz");
   const [salaId, setSalaId] = useState("");
   const [day, setDay] = useState(0);
   const [viewMode, setViewMode] = useState<"list" | "calendar">("calendar");
@@ -11282,6 +11716,8 @@ function ClasesTab({
   const [selectedFilterCoachId, setSelectedFilterCoachId] = useState("");
   const [selectedFilterActivity, setSelectedFilterActivity] = useState("");
 
+  const time = `${startTime}-${endTime}`;
+
   const availabilityWarning = useMemo(() => {
     if (!staffId || !time) return null;
     const coach = staffList.find((s) => s.id === staffId);
@@ -11386,6 +11822,17 @@ function ClasesTab({
 
     return matches;
   }, [staffList, name]);
+
+  const staffForClassOptions = useMemo(() => {
+    const list = filteredStaffForClass.length > 0 ? filteredStaffForClass : staffList;
+    if (staffId && !list.some((s) => s.id === staffId)) {
+      const selectedCoach = staffList.find((s) => s.id === staffId);
+      if (selectedCoach) {
+        return [selectedCoach, ...list];
+      }
+    }
+    return list;
+  }, [filteredStaffForClass, staffList, staffId]);
 
   const filteredStaffForSubstitute = useMemo(() => {
     const list = (staffList || []).filter((s: any) => {
@@ -12580,7 +13027,7 @@ function ClasesTab({
                     <Layers className="h-5 w-5 text-blue-500" />
                     <div>
                       <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
-                        Estructura & Rutina de la Clase (WODify / SugarWOD)
+                        Estructura & Rutina de la Clase
                       </h3>
                       <p className="text-xs font-bold text-foreground">
                         {c.name} — Plan de Sesión
@@ -13317,47 +13764,53 @@ function ClasesTab({
         <div className="flex items-center gap-3 self-end sm:self-auto">
           {/* Week Pagination */}
           <div className="flex items-center rounded-xl bg-secondary p-1 border border-border/50 shrink-0">
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 rounded-lg text-foreground hover:bg-background disabled:opacity-30"
               onClick={() => setCurrentWeekOffset((prev) => Math.max(0, prev - 1))}
               disabled={currentWeekOffset === 0}
-              className="px-2 py-1 text-xs font-bold rounded hover:bg-background transition text-foreground disabled:opacity-30"
             >
-              ◀
-            </button>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
             <span className="text-xs font-bold px-2 text-foreground/80 min-w-[70px] text-center select-none">
               Semana {currentWeekOffset + 1}
             </span>
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 rounded-lg text-foreground hover:bg-background"
               onClick={() => setCurrentWeekOffset((prev) => prev + 1)}
-              className="px-2 py-1 text-xs font-bold rounded hover:bg-background transition text-foreground"
             >
-              ▶
-            </button>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
           </div>
 
           <div className="flex rounded-xl bg-secondary p-1 border border-border/50 shrink-0">
-            <button
-              onClick={() => setViewMode("list")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                viewMode === "list"
-                  ? "bg-background text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
+            <Button
+              type="button"
+              variant={viewMode === "list" ? "secondary" : "ghost"}
+              size="sm"
+              className={`h-7 text-xs font-semibold rounded-lg ${
+                viewMode === "list" ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground hover:text-foreground"
               }`}
+              onClick={() => setViewMode("list")}
             >
               Lista de Hoy
-            </button>
-            <button
-              onClick={() => setViewMode("calendar")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                viewMode === "calendar"
-                  ? "bg-background text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
+            </Button>
+            <Button
+              type="button"
+              variant={viewMode === "calendar" ? "secondary" : "ghost"}
+              size="sm"
+              className={`h-7 text-xs font-semibold rounded-lg ${
+                viewMode === "calendar" ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground hover:text-foreground"
               }`}
+              onClick={() => setViewMode("calendar")}
             >
               Vista Semanal
-            </button>
+            </Button>
           </div>
 
           {canManageClasses && (
@@ -13384,7 +13837,7 @@ function ClasesTab({
       </div>
 
       {/* Quick Stats Banner */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-stretch">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-stretch mt-6">
         <div className="group rounded-3xl border border-border bg-card p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg shadow-xs h-full">
           <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
             Ocupación Hoy
@@ -13475,17 +13928,19 @@ function ClasesTab({
 
           {/* Clear Filters Button */}
           {(selectedCalendarSalaId || selectedFilterCoachId || selectedFilterActivity) && (
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => {
                 setSelectedCalendarSalaId("");
                 setSelectedFilterCoachId("");
                 setSelectedFilterActivity("");
               }}
-              className="h-8 px-3 text-xs font-bold text-rose-600 hover:text-rose-700 bg-rose-500/10 hover:bg-rose-500/20 rounded-xl transition border border-rose-500/20 shrink-0"
+              className="h-8 px-3 text-xs font-bold text-rose-600 dark:text-rose-400 hover:text-rose-700 bg-rose-500/10 hover:bg-rose-500/20 rounded-xl transition border border-rose-500/20 shrink-0"
             >
               Limpiar filtros
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -13510,10 +13965,47 @@ function ClasesTab({
                     <SelectValue placeholder="Selecciona una actividad..." />
                   </SelectTrigger>
                   <SelectContent>
+                    {name &&
+                      ![
+                        "CrossFit",
+                        "CrossFit WOD",
+                        "Entrenamiento Funcional",
+                        "Funcional HIIT",
+                        "Levantamiento Olímpico",
+                        "Powerlifting",
+                        "Calistenia",
+                        "Fuerza de Potencia",
+                        "Spinning",
+                        "Spinning Pro",
+                        "HIIT / Tabata",
+                        "Boxeo Recreativo",
+                        "Kickboxing",
+                        "Zumba",
+                        "Ritmos / Dance",
+                        "Yoga Ashtanga",
+                        "Yoga Vinyasa",
+                        "Yoga Hatha",
+                        "Pilates Reformer",
+                        "Pilates Mat",
+                        "Barré",
+                        "Estiramiento / Flex",
+                        "Meditación",
+                        "GAP",
+                        "AquaGym",
+                        "Running Club",
+                        "Tercera Edad Adaptada",
+                      ].includes(name) && (
+                        <SelectGroup>
+                          <SelectLabel>Actividad Seleccionada</SelectLabel>
+                          <SelectItem value={name}>{name}</SelectItem>
+                        </SelectGroup>
+                      )}
                     <SelectGroup>
                       <SelectLabel>Fuerza y Musculación</SelectLabel>
+                      <SelectItem value="CrossFit WOD">CrossFit WOD</SelectItem>
                       <SelectItem value="CrossFit">CrossFit</SelectItem>
                       <SelectItem value="Entrenamiento Funcional">Entrenamiento Funcional</SelectItem>
+                      <SelectItem value="Funcional HIIT">Funcional HIIT</SelectItem>
                       <SelectItem value="Levantamiento Olímpico">Levantamiento Olímpico</SelectItem>
                       <SelectItem value="Powerlifting">Powerlifting</SelectItem>
                       <SelectItem value="Calistenia">Calistenia</SelectItem>
@@ -13521,6 +14013,7 @@ function ClasesTab({
                     </SelectGroup>
                     <SelectGroup>
                       <SelectLabel>Cardio y Combate</SelectLabel>
+                      <SelectItem value="Spinning Pro">Spinning Pro</SelectItem>
                       <SelectItem value="Spinning">Spinning / Cycling</SelectItem>
                       <SelectItem value="HIIT / Tabata">HIIT / Tabata</SelectItem>
                       <SelectItem value="Boxeo Recreativo">Boxeo Recreativo</SelectItem>
@@ -13530,6 +14023,7 @@ function ClasesTab({
                     </SelectGroup>
                     <SelectGroup>
                       <SelectLabel>Flexibilidad y Cuerpo-Mente</SelectLabel>
+                      <SelectItem value="Yoga Ashtanga">Yoga Ashtanga</SelectItem>
                       <SelectItem value="Yoga Vinyasa">Yoga Vinyasa</SelectItem>
                       <SelectItem value="Yoga Hatha">Yoga Hatha</SelectItem>
                       <SelectItem value="Pilates Reformer">Pilates Reformer</SelectItem>
@@ -13555,20 +14049,13 @@ function ClasesTab({
                   <label className="text-xs font-semibold text-muted-foreground">
                     Instructor de Staff
                   </label>
-                  {name && (
-                    <span className="text-[10px] font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full border border-primary/20">
-                      {filteredStaffForClass.length > 0
-                        ? `Filtrado para: ${name} (${filteredStaffForClass.length})`
-                        : "Mostrando todo el staff"}
-                    </span>
-                  )}
                 </div>
                 <Select value={staffId} onValueChange={setStaffId}>
                   <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold">
                     <SelectValue placeholder="Selecciona un entrenador..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {(filteredStaffForClass.length > 0 ? filteredStaffForClass : staffList).map((s) => (
+                    {staffForClassOptions.map((s) => (
                       <SelectItem key={s.id} value={s.id}>
                         {s.name} — <span className="opacity-75 font-normal text-xs">{s.specialty}</span>
                       </SelectItem>
@@ -13762,13 +14249,13 @@ function ClasesTab({
 
                 <div className="space-y-1.5 pt-1">
                   <label className="text-xs font-semibold text-foreground">Cupos Totales / Aforo Máximo</label>
-                  <input
+                  <Input
                     type="number"
                     min="1"
                     max="500"
                     value={customCapacity}
                     onChange={(e) => setCustomCapacity(Number(e.target.value) || 1)}
-                    className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold"
+                    className="h-10 rounded-xl border border-border bg-background px-3 text-sm text-foreground font-semibold"
                   />
                 </div>
               </div>
@@ -13778,7 +14265,7 @@ function ClasesTab({
                 {/* Header with Title */}
                 <div className="flex items-center justify-between flex-wrap gap-2 border-b border-primary/10 pb-2">
                   <span className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
-                    🗺️ Distribución de Sala (Mapa 10x10)
+                    <Grid className="h-4 w-4" /> Distribución de Sala (Mapa 10x10)
                   </span>
                   <div className="flex items-center gap-2">
                     <span className="text-[10.5px] font-bold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full border border-primary/20">
@@ -13794,13 +14281,15 @@ function ClasesTab({
                       Plantilla de Salón:
                     </label>
                     {!showSavePresetInput && (
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="sm"
                         onClick={() => setShowSavePresetInput(true)}
-                        className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1"
+                        className="h-6 px-2 text-[11px] font-bold text-primary hover:text-primary/90 flex items-center gap-1"
                       >
-                        💾 Guardar mapa como plantilla
-                      </button>
+                        <Save className="h-3 w-3" /> Guardar mapa como plantilla
+                      </Button>
                     )}
                   </div>
 
@@ -13842,12 +14331,12 @@ function ClasesTab({
                         Nombre para la nueva plantilla:
                       </label>
                       <div className="flex items-center gap-2">
-                        <input
+                        <Input
                           type="text"
                           placeholder="Ej: Sala Spinning 18 Bicis"
                           value={newPresetName}
                           onChange={(e) => setNewPresetName(e.target.value)}
-                          className="flex-1 h-8 rounded-lg border border-border bg-background px-2.5 text-xs text-foreground font-semibold focus-visible:outline-none"
+                          className="flex-1 h-8 rounded-lg text-xs"
                         />
                         <Button
                           type="button"
@@ -13981,7 +14470,7 @@ function ClasesTab({
                 <label className="text-xs font-semibold text-muted-foreground">
                   Cupos / Capacidad Máxima
                 </label>
-                <input
+                <Input
                   type="number"
                   required
                   min="1"
@@ -13996,7 +14485,7 @@ function ClasesTab({
                     setLayoutMatrix(newMatrix);
                     setSelectedPresetId("custom");
                   }}
-                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground font-semibold"
+                  className="h-10 rounded-xl text-sm font-semibold"
                 />
               </div>
 
@@ -14004,13 +14493,13 @@ function ClasesTab({
                 <label className="text-xs font-semibold text-muted-foreground">
                   Créditos Necesarios
                 </label>
-                <input
+                <Input
                   type="number"
                   required
                   min="1"
                   value={creditsCost}
                   onChange={(e) => setCreditsCost(e.target.value)}
-                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none text-foreground font-semibold"
+                  className="h-10 rounded-xl text-sm font-semibold"
                 />
               </div>
             </div>
@@ -14032,18 +14521,16 @@ function ClasesTab({
             {!editingClassId && (
               <div className="p-3.5 border border-border/60 bg-secondary/15 rounded-2xl space-y-2.5">
                 <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     id="isRecurrent"
                     checked={isRecurrent}
-                    onChange={(e) => setIsRecurrent(e.target.checked)}
-                    className="rounded border-border bg-background focus:ring-primary text-primary h-4 w-4 cursor-pointer"
+                    onCheckedChange={(checked) => setIsRecurrent(!!checked)}
                   />
                   <label
                     htmlFor="isRecurrent"
-                    className="text-xs font-bold text-foreground cursor-pointer select-none"
+                    className="text-xs font-bold text-foreground cursor-pointer select-none flex items-center gap-1.5"
                   >
-                    🔁 Programar como Clase Recurrente (semanal)
+                    <Repeat className="h-3.5 w-3.5 text-primary" /> Programar como Clase Recurrente (semanal)
                   </label>
                 </div>
                 {isRecurrent && (
@@ -14082,7 +14569,7 @@ function ClasesTab({
                 <div>
                   <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
                     <Layers className="h-4 w-4 text-blue-500" />
-                    <span>Rutina & Bloques de la Clase (Estilo WODify / SugarWOD)</span>
+                    <span>Rutina & Bloques de la Clase</span>
                   </h3>
                   <p className="text-[11px] text-muted-foreground leading-snug pt-0.5">
                     Divide la sesión en bloques lógicos (Calentamiento, Fuerza, WOD, Vuelta a la Calma).
@@ -14221,8 +14708,8 @@ function ClasesTab({
                         </div>
                       </div>
 
-                      {/* Inputs: Título, Subtítulo y Time Cap */}
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      {/* Inputs: Título y Nivel / Modalidad */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         <div className="space-y-1">
                           <label className="text-[10px] font-semibold text-muted-foreground">
                             Título del Bloque
@@ -14236,25 +14723,53 @@ function ClasesTab({
                         </div>
                         <div className="space-y-1">
                           <label className="text-[10px] font-semibold text-muted-foreground">
-                            Subtítulo / Modalidad
+                            Nivel / Modalidad
                           </label>
-                          <Input
-                            value={block.subtitle || ""}
-                            onChange={(e) => updateRoutineBlock(idx, "subtitle", e.target.value)}
-                            placeholder="Ej: AMRAP 12 min"
-                            className="h-8 text-xs rounded-xl bg-secondary/30 border-border/60"
-                          />
+                          <Select
+                            value={block.subtitle || "General"}
+                            onValueChange={(val) => updateRoutineBlock(idx, "subtitle", val)}
+                          >
+                            <SelectTrigger className="h-8 text-xs rounded-xl bg-secondary/30 border-border/60">
+                              <SelectValue placeholder="Selecciona el nivel..." />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl">
+                              <SelectItem value="General">General</SelectItem>
+                              <SelectItem value="Principiante">Principiante</SelectItem>
+                              <SelectItem value="Intermedio">Intermedio</SelectItem>
+                              <SelectItem value="Avanzado">Avanzado</SelectItem>
+                              <SelectItem value="Tercera Edad">Tercera Edad</SelectItem>
+                              <SelectItem value="RX / Élite">RX / Élite</SelectItem>
+                              <SelectItem value="Adaptado">Adaptado</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-semibold text-muted-foreground">
-                            Time Cap (Tiempo)
-                          </label>
-                          <Input
-                            value={block.timeCap || ""}
-                            onChange={(e) => updateRoutineBlock(idx, "timeCap", e.target.value)}
-                            placeholder="Ej: 12 min"
-                            className="h-8 text-xs rounded-xl bg-secondary/30 border-border/60"
-                          />
+                      </div>
+
+                      {/* Choice Chips para Time Cap */}
+                      <div className="space-y-1.5 bg-secondary/20 p-2.5 rounded-xl border border-border/40">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80 flex items-center gap-1">
+                          <Clock className="h-3 w-3 text-primary" /> Time Cap (Tiempo Límite)
+                        </label>
+                        <div className="flex flex-wrap items-center gap-1 pt-0.5">
+                          {["5 min", "10 min", "12 min", "15 min", "20 min", "30 min", "Sin límite"].map((preset) => {
+                            const targetVal = preset === "Sin límite" ? "" : preset;
+                            const isSelected = (block.timeCap || "") === targetVal;
+                            return (
+                              <button
+                                key={preset}
+                                type="button"
+                                onClick={() => updateRoutineBlock(idx, "timeCap", isSelected ? "" : targetVal)}
+                                className={cn(
+                                  "px-2.5 py-0.5 text-[10.5px] font-bold rounded-lg border transition-all cursor-pointer",
+                                  isSelected
+                                    ? "bg-primary text-primary-foreground border-primary shadow-xs scale-105"
+                                    : "bg-background hover:bg-secondary text-muted-foreground border-border/60 hover:text-foreground"
+                                )}
+                              >
+                                {preset}
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
 
@@ -14446,13 +14961,8 @@ function ClasesTab({
                       new Set(
                         classesList
                           .filter((c) => {
-                            const matchesBranch =
-                              selectedBranchId === "all" ||
-                              (selectedBranchId === "matriz"
-                                ? !c.branchId
-                                : c.branchId === selectedBranchId);
                             const matchesWeek = (c.weekOffset || 0) === currentWeekOffset;
-                            return matchesBranch && matchesWeek;
+                            return matchesWeek;
                           })
                           .map((c) => c.time.split("-")[0].trim()),
                       ),
@@ -14541,7 +15051,6 @@ function ClasesTab({
 
 // Subcomponent: Config Tab
 interface ConfigTabProps {
-  selectedBranchId: string;
   staffList: {
     id: string;
     name: string;
@@ -14550,7 +15059,6 @@ interface ConfigTabProps {
     photo: string;
     certificationImages?: string[];
     role?: string;
-    branchId?: string;
     linkingCode: string | null;
     status: "pending" | "linked";
     availability?: { day: string; intervals: { from: string; to: string }[] }[];
@@ -14565,7 +15073,6 @@ interface ConfigTabProps {
         photo: string;
         certificationImages?: string[];
         role?: string;
-        branchId?: string;
         linkingCode: string | null;
         status: "pending" | "linked";
         availability?: { day: string; intervals: { from: string; to: string }[] }[];
@@ -14614,28 +15121,6 @@ interface ConfigTabProps {
   >;
   cancellationPolicyHours: number;
   setCancellationPolicyHours: (v: number) => void;
-  branchesList: {
-    id: string;
-    name: string;
-    address: string;
-    manager?: string;
-    lat?: number;
-    lng?: number;
-    creditCostMultiplier?: number;
-  }[];
-  setBranchesList: React.Dispatch<
-    React.SetStateAction<
-      {
-        id: string;
-        name: string;
-        address: string;
-        manager?: string;
-        lat?: number;
-        lng?: number;
-        creditCostMultiplier?: number;
-      }[]
-    >
-  >;
   blackoutDays: { id: string; date: string; reason: string }[];
   setBlackoutDays: React.Dispatch<
     React.SetStateAction<{ id: string; date: string; reason: string }[]>
@@ -14648,12 +15133,12 @@ interface ConfigTabProps {
     id: string;
     name: string;
     capacity?: number;
-    branchId: string;
+    branchId?: string;
     description?: string;
   }[];
   setSalasList: React.Dispatch<
     React.SetStateAction<
-      { id: string; name: string; capacity?: number; branchId: string; description?: string }[]
+      { id: string; name: string; capacity?: number; branchId?: string; description?: string }[]
     >
   >;
   protocols: { id: string; title: string; role: string; time: string; items: string[] }[];
@@ -14689,7 +15174,6 @@ interface ConfigTabProps {
 
 
 function ConfigTab({
-  selectedBranchId,
   staffList,
   setStaffList,
   amenities,
@@ -14704,8 +15188,6 @@ function ConfigTab({
   setWeeklyHours,
   cancellationPolicyHours,
   setCancellationPolicyHours,
-  branchesList,
-  setBranchesList,
   blackoutDays,
   setBlackoutDays,
   penaltySettings,
@@ -14847,6 +15329,55 @@ function ConfigTab({
   const [editStaffAvails, setEditStaffAvails] = useState<
     { day: string; intervals: { from: string; to: string }[] }[]
   >(WEEKDAYS.map((day) => ({ day, intervals: [] })));
+
+  // Payment methods states (Métodos de Cobro)
+  const [cashEnabled, setCashEnabled] = useState(true);
+  const [transferEnabled, setTransferEnabled] = useState(true);
+  const [bankDetails, setBankDetails] = useState({
+    alias: "GIMNASIO.SHAKERFY",
+    cbu: "0000003100049281749281",
+    bankName: "Banco Galicia",
+    accountHolder: "Shakerfy Gym SRL",
+    cuit: "30-71629401-9",
+  });
+  const [posEnabled, setPosEnabled] = useState(true);
+  const [mpEnabled, setMpEnabled] = useState(true);
+  const [mpConnected, setMpConnected] = useState(false);
+  const [mpIsConnecting, setMpIsConnecting] = useState(false);
+  const [mpAccountInfo, setMpAccountInfo] = useState<{
+    merchantName: string;
+    email: string;
+    accountId: string;
+    accessToken: string;
+    publicKey: string;
+    linkedDate: string;
+  } | null>(null);
+  const [mpUseSandbox, setMpUseSandbox] = useState(false);
+  const [mpSubscriptionsEnabled, setMpSubscriptionsEnabled] = useState(true);
+  const [mpInstallmentsEnabled, setMpInstallmentsEnabled] = useState(true);
+
+  const handleConnectMercadoPago = () => {
+    setMpIsConnecting(true);
+    setTimeout(() => {
+      setMpConnected(true);
+      setMpAccountInfo({
+        merchantName: "Gimnasio Shakerfy",
+        email: "pagos@shakerfy.com",
+        accountId: "MP-USR-82947192",
+        accessToken: "APP_USR-8492049281940291-080215-9482710492-748392",
+        publicKey: "APP_USR-83921049-8392-4920-b481-948201948291",
+        linkedDate: new Date().toLocaleDateString("es-AR"),
+      });
+      setMpIsConnecting(false);
+      toast.success("★ Cuenta de Mercado Pago vinculada exitosamente vía OAuth");
+    }, 1200);
+  };
+
+  const handleDisconnectMercadoPago = () => {
+    setMpConnected(false);
+    setMpAccountInfo(null);
+    toast.info("Cuenta de Mercado Pago desvinculada.");
+  };
 
   // Refs
   const gymFileRef = useRef<HTMLInputElement>(null);
@@ -15122,8 +15653,6 @@ function ConfigTab({
     if (!deletingItem) return;
     if (deletingItem.type === "staff")
       setStaffList((prev) => prev.filter((s) => s.id !== deletingItem.id));
-    if (deletingItem.type === "sede")
-      setBranchesList((prev) => prev.filter((b) => b.id !== deletingItem.id));
     if (deletingItem.type === "sala")
       setSalasList((prev) => prev.filter((s) => s.id !== deletingItem.id));
     if (deletingItem.type === "cierre")
@@ -15168,6 +15697,7 @@ function ConfigTab({
           { id: "staff", label: "Equipo (Staff)", icon: Users },
           { id: "salas", label: "Salas / Salones", icon: Layers },
           { id: "cierres", label: "Días de Cierre", icon: CalendarX },
+          { id: "metodos_pago", label: "Métodos de Cobro", icon: Wallet },
         ].map((sub) => {
           const Icon = sub.icon;
           const isActive = subTab === sub.id;
@@ -15192,20 +15722,6 @@ function ConfigTab({
           {/* Subtab 1: Basic Config & 7-Day Scheduler */}
           {subTab === "basico" && (
             <div className="space-y-6 max-w-3xl">
-              {/* Tema & Apariencia Visual (Rimu Style Dark Mode & System Auto-detect) */}
-              <div className="rounded-3xl border border-border bg-card p-6 shadow-xs">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="space-y-1">
-                    <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
-                      Apariencia Visual y Modo Oscuro
-                    </h3>
-                    <p className="text-xs text-muted-foreground leading-relaxed max-w-xl">
-                      Personaliza tu experiencia. Elige el <strong>Modo Oscuro</strong> (estética minimalista azabache basada en <em>Rimu App</em> <code className="text-[10px] bg-secondary px-1.5 py-0.5 rounded font-mono">#0a0a0a</code>), el <strong>Modo Claro</strong> actual, o activa la <strong>adaptación automática</strong> según el tema del sistema operativo.
-                    </p>
-                  </div>
-                  <ThemeToggle variant="outline" size="default" showLabel />
-                </div>
-              </div>
               {/* Photos */}
               <div className="rounded-3xl border border-border bg-card p-6">
                 <div className="flex justify-between items-center mb-4">
@@ -16086,20 +16602,10 @@ function ConfigTab({
                             {s.role && (
                               <span className="text-[8px] bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
                                 {s.role === "coach"
-                                  ? "💪 Coach"
+                                  ? "Coach"
                                   : s.role === "receptionist"
-                                    ? "🔑 Recep"
-                                    : "👤 Manager"}
-                              </span>
-                            )}
-                            {s.role && (
-                              <span className="text-[8px] bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
-                                📍{" "}
-                                {s.branchId
-                                  ? branchesList
-                                      .find((b) => b.id === s.branchId)
-                                      ?.name.replace("Sede ", "") || s.branchId
-                                  : "Palermo"}
+                                    ? "Recep"
+                                    : "Manager"}
                               </span>
                             )}
                           </div>
@@ -16661,7 +17167,6 @@ function ConfigTab({
                           name: newSalaName,
                           capacity: newSalaCapacity ? parseInt(newSalaCapacity) : undefined,
                           description: newSalaDescription || undefined,
-                          branchId: selectedBranchId,
                         },
                       ]);
                       setNewSalaName("");
@@ -16811,9 +17316,7 @@ function ConfigTab({
                   Salas Registradas
                 </h4>
                 <div className="divide-y divide-border/60">
-                  {salasList
-                    .filter((s) => s.branchId === selectedBranchId)
-                    .map((sala) => (
+                  {salasList.map((sala) => (
                       <div key={sala.id} className="py-3.5 flex items-center justify-between">
                         <div>
                           <div className="text-sm font-semibold text-foreground flex items-center gap-2">
@@ -16854,9 +17357,9 @@ function ConfigTab({
                         </div>
                       </div>
                     ))}
-                  {salasList.filter((s) => s.branchId === selectedBranchId).length === 0 && (
+                  {salasList.length === 0 && (
                     <p className="text-xs text-muted-foreground italic py-3 text-center font-medium">
-                      No hay salas registradas en esta sede.
+                      No hay salas registradas.
                     </p>
                   )}
                 </div>
@@ -17074,6 +17577,321 @@ function ConfigTab({
             </div>
           )}
 
+          {/* Subtab 9: Métodos de Cobro & Mercado Pago OAuth */}
+          {subTab === "metodos_pago" && (
+            <div className="space-y-8 max-w-4xl animate-fade-up text-foreground">
+              {/* Encabezado */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-4">
+                <div>
+                  <h3 className="font-bold text-lg text-foreground flex items-center gap-2">
+                    <Wallet className="h-5 w-5 text-primary" /> Métodos de Cobro y Pagos Digitales
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                    Activa y gestiona las pasarelas de pago digitales y cobros presenciales habilitados para tu gimnasio.
+                  </p>
+                </div>
+              </div>
+
+              {/* Tarjeta Destacada: Mercado Pago Integración OAuth */}
+              <div className="rounded-3xl border border-[#009EE3]/30 bg-gradient-to-b from-[#009EE3]/5 to-card p-6 shadow-xs space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-12 w-12 rounded-2xl bg-[#009EE3] text-white flex items-center justify-center font-black text-xl shadow-md shrink-0">
+                      <Zap className="h-6 w-6 fill-white" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-extrabold text-base text-foreground">Mercado Pago</h4>
+                        {mpConnected ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-black bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full uppercase">
+                            <CheckCircle2 className="h-3 w-3" /> Conectado
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-black bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full uppercase">
+                            <AlertCircle className="h-3 w-3" /> No Vinculado
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Permite que tus alumnos paguen con tarjetas de crédito, débito, dinero en cuenta o suscripciones automáticas.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-bold text-muted-foreground">Habilitar MP:</span>
+                    <Switch
+                      checked={mpEnabled}
+                      onCheckedChange={setMpEnabled}
+                    />
+                  </div>
+                </div>
+
+                {/* Status Box & OAuth Action */}
+                {!mpConnected ? (
+                  <div className="rounded-2xl border border-dashed border-[#009EE3]/40 bg-card p-5 space-y-4">
+                    <div className="space-y-1">
+                      <h5 className="font-bold text-xs text-foreground uppercase tracking-wider text-muted-foreground/80">
+                        Vinculación con Mercado Pago
+                      </h5>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        Conecta tu cuenta de Mercado Pago para que tus usuarios puedan abonar sus membresías y pases directamente desde Shakerfy.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3 pt-1">
+                      <Button
+                        type="button"
+                        onClick={handleConnectMercadoPago}
+                        disabled={mpIsConnecting}
+                        className="bg-[#009EE3] hover:bg-[#0089C7] text-white font-bold rounded-xl px-5 h-11 shadow-sm gap-2 text-xs"
+                      >
+                        <Zap className="h-4 w-4 fill-white" />
+                        {mpIsConnecting ? "Conectando..." : "Conectar con Mercado Pago"}
+                      </Button>
+                      <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
+                        <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" /> Conexión segura de cuenta
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/50 pb-4">
+                      <div>
+                        <span className="text-[10.5px] font-bold uppercase text-muted-foreground tracking-wider block mb-0.5">
+                          Cuenta Conectada
+                        </span>
+                        <div className="text-sm font-extrabold text-foreground flex items-center gap-2">
+                          {mpAccountInfo?.merchantName}
+                          <span className="text-xs font-semibold text-muted-foreground font-mono">
+                            ({mpAccountInfo?.accountId})
+                          </span>
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-0.5">
+                          Email: <strong className="text-foreground">{mpAccountInfo?.email}</strong> · Vinculado el {mpAccountInfo?.linkedDate}
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleDisconnectMercadoPago}
+                        className="rounded-xl text-xs font-bold border-rose-500/30 text-rose-600 hover:bg-rose-500/10 hover:text-rose-700 h-9 gap-1.5"
+                      >
+                        <Unlink className="h-3.5 w-3.5" /> Desconectar Cuenta
+                      </Button>
+                    </div>
+
+                    {/* Webhook notification URL listener */}
+                    <div className="pt-1">
+                      <span className="text-[10.5px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
+                        URL de Webhook Notificaciones
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="text"
+                          readOnly
+                          value="https://api.shakerfy.com/v1/webhooks/mercadopago"
+                          className="h-9 font-mono text-xs bg-background border-border text-foreground rounded-xl"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            navigator.clipboard.writeText("https://api.shakerfy.com/v1/webhooks/mercadopago");
+                            toast.success("✓ URL de Webhook copiada");
+                          }}
+                          className="h-9 rounded-xl text-xs font-bold gap-1 shrink-0"
+                        >
+                          <Copy className="h-3.5 w-3.5" /> Copiar
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Advanced Mercado Pago Switches */}
+                    <div className="grid gap-4 sm:grid-cols-3 pt-3 border-t border-border/40">
+                      <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/20 border border-border/40">
+                        <div className="space-y-0.5">
+                          <Label className="text-xs font-bold text-foreground">Suscripciones Recurrentes</Label>
+                          <p className="text-[10px] text-muted-foreground">Débito automático mensual</p>
+                        </div>
+                        <Switch
+                          checked={mpSubscriptionsEnabled}
+                          onCheckedChange={setMpSubscriptionsEnabled}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/20 border border-border/40">
+                        <div className="space-y-0.5">
+                          <Label className="text-xs font-bold text-foreground">Aceptar Cuotas</Label>
+                          <p className="text-[10px] text-muted-foreground">Habilitar tarjetas en cuotas</p>
+                        </div>
+                        <Switch
+                          checked={mpInstallmentsEnabled}
+                          onCheckedChange={setMpInstallmentsEnabled}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/20 border border-border/40">
+                        <div className="space-y-0.5">
+                          <Label className="text-xs font-bold text-foreground">Modo Sandbox (Pruebas)</Label>
+                          <p className="text-[10px] text-muted-foreground">Usar credenciales TEST</p>
+                        </div>
+                        <Switch
+                          checked={mpUseSandbox}
+                          onCheckedChange={(val) => {
+                            setMpUseSandbox(val);
+                            toast.info(val ? "Modo Sandbox activado para pruebas." : "Modo Producción activado.");
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Tarjeta: Métodos Manuales y Presenciales */}
+              <div className="rounded-3xl border border-border bg-card p-6 shadow-xs space-y-6">
+                <div>
+                  <h4 className="font-bold text-sm text-foreground uppercase tracking-wider text-muted-foreground/80">
+                    Cobros Presenciales & Métodos Manuales
+                  </h4>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Habilita las opciones de cobro recibidas en recepción o mostrador.
+                  </p>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-3">
+                  {/* Efectivo */}
+                  <div className="rounded-2xl border border-border bg-background p-4 flex flex-col justify-between space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                          <DollarSign className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <h5 className="font-bold text-xs text-foreground">Efectivo</h5>
+                          <span className="text-[10px] text-muted-foreground">En mostrador / caja</span>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={cashEnabled}
+                        onCheckedChange={setCashEnabled}
+                      />
+                    </div>
+                    <p className="text-[11px] text-muted-foreground leading-snug">
+                      Permite registrar cobros de membresías en dinero en efectivo en el establecimiento.
+                    </p>
+                  </div>
+
+                  {/* POS Terminal */}
+                  <div className="rounded-2xl border border-border bg-background p-4 flex flex-col justify-between space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                          <CreditCard className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <h5 className="font-bold text-xs text-foreground">Tarjeta en POS</h5>
+                          <span className="text-[10px] text-muted-foreground">Terminal de red local</span>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={posEnabled}
+                        onCheckedChange={setPosEnabled}
+                      />
+                    </div>
+                    <p className="text-[11px] text-muted-foreground leading-snug">
+                      Procesa tarjetas de débito/crédito con la posnet física del local.
+                    </p>
+                  </div>
+
+                  {/* Transferencia Bancaria */}
+                  <div className="rounded-2xl border border-border bg-background p-4 flex flex-col justify-between space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 rounded-xl bg-blue-500/10 text-blue-500">
+                          <Building2 className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <h5 className="font-bold text-xs text-foreground">Transferencia</h5>
+                          <span className="text-[10px] text-muted-foreground">CBU / CVU / Alias</span>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={transferEnabled}
+                        onCheckedChange={setTransferEnabled}
+                      />
+                    </div>
+                    <p className="text-[11px] text-muted-foreground leading-snug">
+                      Muestra los datos bancarios del gimnasio para transferencias directas de alumnos.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Formulario Datos Bancarios si Transferencia está activa */}
+                {transferEnabled && (
+                  <div className="rounded-2xl border border-border/80 bg-secondary/15 p-5 space-y-4 pt-4">
+                    <h5 className="font-bold text-xs text-foreground uppercase tracking-wider text-muted-foreground/80 flex items-center gap-1.5">
+                      <Building2 className="h-3.5 w-3.5 text-primary" /> Datos de la Cuenta Bancaria (CBU / Alias)
+                    </h5>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground font-semibold">Alias Bancario</Label>
+                        <Input
+                          type="text"
+                          value={bankDetails.alias}
+                          onChange={(e) => setBankDetails({ ...bankDetails, alias: e.target.value })}
+                          placeholder="Ej: GIMNASIO.SHAKERFY"
+                          className="h-9 text-xs rounded-xl bg-background border-border text-foreground font-bold"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground font-semibold">CBU / CVU (22 dígitos)</Label>
+                        <Input
+                          type="text"
+                          value={bankDetails.cbu}
+                          onChange={(e) => setBankDetails({ ...bankDetails, cbu: e.target.value })}
+                          placeholder="Ej: 0000003100049281749281"
+                          className="h-9 text-xs rounded-xl bg-background border-border text-foreground font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground font-semibold">Banco / Entidad Financiera</Label>
+                        <Input
+                          type="text"
+                          value={bankDetails.bankName}
+                          onChange={(e) => setBankDetails({ ...bankDetails, bankName: e.target.value })}
+                          placeholder="Ej: Banco Galicia / Mercado Pago"
+                          className="h-9 text-xs rounded-xl bg-background border-border text-foreground"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground font-semibold">Titular de la Cuenta</Label>
+                        <Input
+                          type="text"
+                          value={bankDetails.accountHolder}
+                          onChange={(e) => setBankDetails({ ...bankDetails, accountHolder: e.target.value })}
+                          placeholder="Ej: Shakerfy Gym SRL"
+                          className="h-9 text-xs rounded-xl bg-background border-border text-foreground font-semibold"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* General Save Confirmation */}
+              <div className="flex justify-end pt-2">
+                <Button
+                  type="button"
+                  onClick={() => toast.success("✓ Ajustes de Métodos de Cobro guardados con éxito.")}
+                  className="rounded-xl text-xs font-bold px-6 h-10 bg-primary text-primary-foreground shadow-sm gap-1.5"
+                >
+                  <Save className="h-4 w-4" /> Guardar Métodos de Cobro
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Modal Crear Equipamiento */}
           <Dialog open={isCreateEquipmentOpen} onOpenChange={setIsCreateEquipmentOpen}>
             <DialogContent className="max-w-md rounded-3xl border border-border bg-card">
@@ -17259,14 +18077,12 @@ function StudentAppView({
   setClassesList,
   salasList,
   setReviewsList,
-  branchesList,
 }: {
   currentUser: CurrentUser;
   classesList: ClassItem[];
   setClassesList: React.Dispatch<React.SetStateAction<ClassItem[]>>;
   salasList: { id: string; name: string }[];
   setReviewsList: React.Dispatch<React.SetStateAction<any[]>>;
-  branchesList: { id: string; name: string; lat?: number; lng?: number }[];
 }) {
   const [studentAptoStatus, setStudentAptoStatus] = useState<"ok" | "expired" | "pending">(
     "expired",
@@ -17283,25 +18099,8 @@ function StudentAppView({
     setCheckinState((prev) => ({ ...prev, [c.id]: "loading" }));
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const branch = branchesList.find((b) => b.id === c.branchId);
-        if (!branch?.lat || !branch?.lng) {
-          // No coordinates configured → allow checkin (graceful degradation)
-          markPresent(c);
-          setCheckinState((prev) => ({ ...prev, [c.id]: "success" }));
-          return;
-        }
-        const dist = haversineMeters(
-          pos.coords.latitude,
-          pos.coords.longitude,
-          branch.lat,
-          branch.lng,
-        );
-        if (dist <= CHECKIN_RADIUS_M) {
-          markPresent(c);
-          setCheckinState((prev) => ({ ...prev, [c.id]: "success" }));
-        } else {
-          setCheckinState((prev) => ({ ...prev, [c.id]: "far" }));
-        }
+        markPresent(c);
+        setCheckinState((prev) => ({ ...prev, [c.id]: "success" }));
       },
       () => setCheckinState((prev) => ({ ...prev, [c.id]: "error" })),
       { enableHighAccuracy: true, timeout: 8000 },

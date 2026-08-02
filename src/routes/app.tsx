@@ -7474,7 +7474,7 @@ function ShoppingCartModal({
   };
 
   const getFormattedList = () => {
-    return `🛒 LISTA DE COMPRAS (Shakerfy Studio Pulse)\n\n` +
+    return `🛒 LISTA DE COMPRAS (Shakerfy)\n\n` +
       `Recetas (${selectedRecipes.length}):\n` +
       selectedRecipes.map(r => `- ${r.title}`).join('\n') +
       `\n\nIngredientes:\n` +

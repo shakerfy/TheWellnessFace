@@ -39,7 +39,6 @@ export type Gym = {
     duration: number;
     capacity: number;
     booked: number;
-    branchId?: string;
   }[];
   requirements?: string[];
   staff?: {
@@ -54,20 +53,6 @@ export type Gym = {
     availability?: { day: string; intervals: { from: string; to: string }[] }[];
   }[];
   amenities?: string[];
-  branches?: {
-    id: string;
-    name: string;
-    address: string;
-    manager?: string;
-    lat?: number;
-    lng?: number;
-    creditCostMultiplier?: number;
-    roamingStaffIds?: string[];
-    weeklyHours?: { day: string; intervals: { from: string; to: string }[] }[];
-    images?: string[];
-    requirements?: string[];
-    amenities?: string[];
-  }[];
   weeklyHours?: { day: string; intervals: { from: string; to: string }[] }[];
   occupancyData?: Record<string, number[]>;
   instagram?: string;
@@ -254,96 +239,6 @@ export const GYMS: Gym[] = [
       price: 0, // gratis por defecto
       description: "Clase introductoria para evaluar nivel y conocer las instalaciones.",
     },
-    branches: [
-      {
-        id: "1",
-        name: "Sede Belgrano",
-        address: "Av. Cabildo 1820, Belgrano, CABA",
-        manager: "Marcos Pérez",
-        lat: -34.5612,
-        lng: -58.4568,
-        creditCostMultiplier: 1.0,
-        roamingStaffIds: ["1", "3"],
-        weeklyHours: [
-          { day: "Lunes", intervals: [{ from: "07:00", to: "21:00" }] },
-          { day: "Martes", intervals: [{ from: "07:00", to: "21:00" }] },
-          { day: "Miércoles", intervals: [{ from: "07:00", to: "21:00" }] },
-          { day: "Jueves", intervals: [{ from: "07:00", to: "21:00" }] },
-          { day: "Viernes", intervals: [{ from: "07:00", to: "21:00" }] },
-          { day: "Sábado", intervals: [] },
-          { day: "Domingo", intervals: [] },
-        ],
-        images: [img("photo-1540496905036-5937c10647cc"), img("photo-1534258936925-c58bed479fcb")],
-        requirements: ["Apto médico obligatorio", "Toalla de mano", "Solo mayores de 16 años"],
-        amenities: [
-          "Duchas y Vestuarios",
-          "Lockers de Seguridad",
-          "Estacionamiento Gratuito",
-          "Sauna Húmedo",
-        ],
-      },
-      {
-        id: "2",
-        name: "Sede Las Cañitas",
-        address: "Ortega y Gasset 1520, Las Cañitas, CABA",
-        manager: "Sofía Rodríguez",
-        lat: -34.5715,
-        lng: -58.4352,
-        creditCostMultiplier: 1.2,
-        roamingStaffIds: ["2", "3"],
-        weeklyHours: [
-          {
-            day: "Lunes",
-            intervals: [
-              { from: "08:00", to: "12:00" },
-              { from: "16:00", to: "20:00" },
-            ],
-          },
-          {
-            day: "Martes",
-            intervals: [
-              { from: "08:00", to: "12:00" },
-              { from: "16:00", to: "20:00" },
-            ],
-          },
-          {
-            day: "Miércoles",
-            intervals: [
-              { from: "08:00", to: "12:00" },
-              { from: "16:00", to: "20:00" },
-            ],
-          },
-          {
-            day: "Jueves",
-            intervals: [
-              { from: "08:00", to: "12:00" },
-              { from: "16:00", to: "20:00" },
-            ],
-          },
-          {
-            day: "Viernes",
-            intervals: [
-              { from: "08:00", to: "12:00" },
-              { from: "16:00", to: "20:00" },
-            ],
-          },
-          { day: "Sábado", intervals: [{ from: "09:00", to: "13:00" }] },
-          { day: "Domingo", intervals: [] },
-        ],
-        images: [img("photo-1545205597-3d9d02c29597"), img("photo-1518611012118-696072aa579a")],
-        requirements: [
-          "Apto médico obligatorio",
-          "Uso obligatorio de gorro en pileta",
-          "Calzado limpio de recambio",
-        ],
-        amenities: [
-          "Duchas y Vestuarios",
-          "Lockers de Seguridad",
-          "Pileta Climatizada",
-          "Cafetería",
-        ],
-      },
-    ],
   },
   {
     slug: "atelier-yoga-house",
@@ -568,11 +463,6 @@ function defaultSchedule(): Gym["classes"] {
   const out: Gym["classes"] = [];
   for (let d = 0; d < 7; d++) {
     base.forEach((c, i) => {
-      if ((d + i) % 5 === 2 && d === 6) return; // gap on sunday
-      let branchId: string | undefined = undefined;
-      if ((d + i) % 3 === 0) branchId = "1";
-      else if ((d + i) % 3 === 1) branchId = "2";
-
       out.push({
         day: d,
         name: c.name,
@@ -584,7 +474,6 @@ function defaultSchedule(): Gym["classes"] {
           0,
           Math.min(c.capacity, Math.round((Math.sin(d * 7 + i * 3) + 1) * (c.capacity / 2))),
         ),
-        branchId,
       });
     });
   }
