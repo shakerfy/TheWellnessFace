@@ -79,6 +79,7 @@ import {
   Unlink,
   ExternalLink,
   Link2,
+  ArrowRight,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -138,6 +139,13 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+
 
 export const Route = createFileRoute("/dashboard")({
   component: GymDashboard,
@@ -170,6 +178,7 @@ const TABS = [
   { id: "reseñas", label: "Reseñas", icon: MessageCircle },
   { id: "membresias", label: "Membresías", icon: CreditCard },
   { id: "config", label: "Configuración", icon: Settings },
+  { id: "ayuda", label: "Ayuda", icon: HelpCircle },
 ];
 
 interface CurrentUser {
@@ -1584,10 +1593,6 @@ function GymDashboard() {
     },
   ]);
 
-  const pendingSubstitutionsCount = useMemo(() => {
-    return classesList.filter((c: any) => c.seekingBackup).length;
-  }, [classesList]);
-
   const visibleClasses = classesList;
   const visibleTabs = TABS;
 
@@ -1617,7 +1622,6 @@ function GymDashboard() {
         <nav className="flex-1 flex flex-col gap-1.5 overflow-y-auto pr-2 pb-6 [&::-webkit-scrollbar]:hidden">
           {visibleTabs.map((tab) => {
             const Icon = tab.icon;
-            const hasSubstitutionsBadge = tab.id === "clases" && pendingSubstitutionsCount > 0;
 
             return (
               <button
@@ -1631,12 +1635,6 @@ function GymDashboard() {
               >
                 <Icon className={`h-4 w-4 shrink-0 ${activeTab === tab.id ? "text-primary" : "text-muted-foreground"}`} />
                 <span className="truncate">{tab.label}</span>
-                {hasSubstitutionsBadge && (
-                  <span className="ml-auto bg-primary/10 text-primary font-extrabold text-[9px] px-2 py-0.5 rounded-full shrink-0 animate-pulse uppercase tracking-wider border border-primary/20">
-                    {pendingSubstitutionsCount} suplencia
-                    {pendingSubstitutionsCount > 1 ? "s" : ""}
-                  </span>
-                )}
               </button>
             );
           })}
@@ -1673,32 +1671,6 @@ function GymDashboard() {
 
       {/* Main Content Area */}
       <main className="flex-1 p-6 md:p-10 w-full max-w-7xl mx-auto overflow-x-auto min-w-0">
-
-        {currentUser.role === "coach" && pendingSubstitutionsCount > 0 && (
-          <div className="mb-6 p-4 rounded-xl bg-secondary/35 border border-border text-xs flex items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-secondary/ text-secondary-foreground shrink-0">
-                <AlertCircle className="h-5 w-5" />
-              </div>
-              <div>
-                <div className="font-extrabold text-foreground text-sm">
-                  🟡 ¡Hay suplencias disponibles en la bolsa!
-                </div>
-                <div className="text-muted-foreground mt-0.5 font-medium">
-                  Hay {pendingSubstitutionsCount} clase{pendingSubstitutionsCount > 1 ? "s" : ""}{" "}
-                  esperando un profesor suplente. Puedes revisarlas y tomarlas desde la agenda.
-                </div>
-              </div>
-            </div>
-            <Button
-              size="sm"
-              className="rounded-xl font-bold bg-secondary text-white hover:bg-secondary shrink-0 text-[11px]"
-              onClick={() => setActiveTab("clases")}
-            >
-              Ver Agenda
-            </Button>
-          </div>
-        )}
 
         {/* Staff Operations Checklist (Mejora 4) */}
 
@@ -1811,6 +1783,9 @@ function GymDashboard() {
             checklistLogs={checklistLogs}
             setChecklistLogs={setChecklistLogs}
           />
+        )}
+        {activeTab === "ayuda" && (
+          <AyudaTab onNavigateTab={(tabId) => setActiveTab(tabId)} />
         )}
       </main>
 
@@ -18518,6 +18493,1842 @@ function StudentAppView({
             ))}
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+// Subcomponent: Ayuda Tab (Centro de Ayuda y Guías del Administrador)
+function AyudaTab({ onNavigateTab }: { onNavigateTab?: (tabId: string) => void }) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("Todas");
+  const [activeGuideId, setActiveGuideId] = useState<string | null>(null);
+
+  const categories = ["Todas", "Asistencias", "Clases", "Miembros", "Caja / POS", "Finanzas", "Reportes", "Inventario", "Reseñas", "Membresías", "Configuración"];
+
+  const guidesList = [
+    {
+      id: "asistencia",
+      title: "Guía Completa: Control de Asistencias y Accesos",
+      category: "Asistencias",
+      status: "Publicada",
+      badgeColor: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+      description:
+        "Instrucciones detalladas para gestionar check-ins presenciales por QR, GPS y Recepción, monitoreo de aforo en vivo, alertas preventivas, retención por WhatsApp y exportación de reportes en CSV.",
+      modulesCount: 7,
+      lastUpdated: "Hoy",
+    },
+    {
+      id: "clases",
+      title: "Guía Completa: Gestión de Clases, Horarios y Salones",
+      category: "Clases",
+      status: "Publicada",
+      badgeColor: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+      description:
+        "Manual exhaustivo de administración de clases, salones con mapa de spots, diseñador universal de rutinas por bloques (Yoga, Pilates, Funcional, etc.), inscripciones directas, lista de espera y cancelaciones masivas.",
+      modulesCount: 8,
+      lastUpdated: "Hoy",
+    },
+    {
+      id: "miembros",
+      title: "Guía Completa: Gestión de Miembros y Certificados Médicos",
+      category: "Miembros",
+      status: "Publicada",
+      badgeColor: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+      description:
+        "Instrucciones detalladas para alta de socios, renovación de cuotas, emisión de comprobantes, control de certificados médicos (apto físico), congelamiento temporal de cuentas y fichas de salud.",
+      modulesCount: 7,
+      lastUpdated: "Hoy",
+    },
+    {
+      id: "caja",
+      title: "Guía Completa: Caja / POS y Cobros Presenciales",
+      category: "Caja / POS",
+      status: "Publicada",
+      badgeColor: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+      description:
+        "Apertura y arqueo diario de caja, terminal POS para cobros libres y ventas de productos de tienda, soporte de pago mixto, arqueo de turno y exportación de reportes.",
+      modulesCount: 6,
+      lastUpdated: "Hoy",
+    },
+    {
+      id: "finanzas",
+      title: "Guía Completa: Liquidación de Staff y Finanzas",
+      category: "Finanzas",
+      status: "Publicada",
+      badgeColor: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+      description:
+        "Análisis de salud financiera en tiempo real, cálculo automático de liquidaciones de staff por asistencias, gestor de rubros de gastos fijos y emisión de recibos.",
+      modulesCount: 5,
+      lastUpdated: "Hoy",
+    },
+    {
+      id: "reportes",
+      title: "Guía Completa: Reportes & Analítica de Negocio",
+      category: "Reportes",
+      status: "Publicada",
+      badgeColor: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+      description:
+        "Indicadores ejecutivos de facturación, desglose por canal de cobro, tasa de retención de alumnos, mapa de ocupación por disciplina y exportación de auditorías a CSV / PDF.",
+      modulesCount: 5,
+      lastUpdated: "Hoy",
+    },
+    {
+      id: "inventario",
+      title: "Guía Completa: Control de Inventario y Kardex",
+      category: "Inventario",
+      status: "Publicada",
+      badgeColor: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+      description:
+        "Catálogo de productos de tienda, alertas de stock mínimo, variantes de productos, historial de movimientos Kardex, directorio de proveedores y orden de compra automática.",
+      modulesCount: 6,
+      lastUpdated: "Hoy",
+    },
+    {
+      id: "reseñas",
+      title: "Guía Completa: Gestión de Reseñas y Feedback",
+      category: "Reseñas",
+      status: "Publicada",
+      badgeColor: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+      description:
+        "Moderación de evaluaciones de socios, selección de opiniones destacadas para la landing page, respuestas oficiales del centro, buzón privado de sugerencias y campañas de solicitud por WhatsApp.",
+      modulesCount: 5,
+      lastUpdated: "Hoy",
+    },
+    {
+      id: "membresias",
+      title: "Guía Completa: Gestión de Membresías y Tarifas",
+      category: "Membresías",
+      status: "Publicada",
+      badgeColor: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+      description:
+        "Configuración de pases libres y bolsas de créditos, tarifas con promociones, franjas Off-Peak (Horario Valle), amenities incluidos, duplicación de planes y destacado en Landing Page.",
+      modulesCount: 6,
+      lastUpdated: "Hoy",
+    },
+    {
+      id: "config",
+      title: "Guía Completa: Configuración de Sede y Políticas",
+      category: "Configuración",
+      status: "Publicada",
+      badgeColor: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+      description:
+        "Información general de la sede, multisedes y salones, nómina de staff y salarios, integraciones de cobro (Mercado Pago / CBU), políticas de cancelación y protocolos operativos.",
+      modulesCount: 6,
+      lastUpdated: "Hoy",
+    },
+  ];
+
+  const filteredGuides = useMemo(() => {
+    return guidesList.filter((g) => {
+      const matchesSearch =
+        g.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        g.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        g.category.toLowerCase().includes(searchQuery.toLowerCase());
+
+      if (!matchesSearch) return false;
+
+      if (selectedCategory !== "Todas" && g.category !== selectedCategory) {
+        return false;
+      }
+      return true;
+    });
+  }, [searchQuery, selectedCategory]);
+
+  const handleCopyAsistenciaGuideText = () => {
+    const guideText = `GUÍA DE USO COMPLETA: MÓDULO DE ASISTENCIAS — STUDIO PULSE SMART
+
+1. INDICADORES CLAVE EN TIEMPO REAL:
+- Aforo Actual Sede: Ocupación en tiempo real vs capacidad máxima (ej: 42/80).
+- Check-ins QR: % e ingresos validados por escáner QR en recepción.
+- Check-ins GPS: % e ingresos autovalidados por cercanía (<50m).
+- Recepción Manual: % y accesos confirmados por el personal en mostrador.
+
+2. FLUJO DE VALIDACIÓN PRESENCIAL EN RECEPCIÓN:
+- Haz clic en [Buscar Socio para Check-in].
+- Busca por DNI, Nombre o Teléfono.
+- Revisa la alerta de Apto Físico (Vigente / Pendiente).
+- Para alumnos con reserva previa, presiona [Confirmar Check-in].
+- Para alumnos sin reserva previa, presiona [Ingreso General].
+
+3. MONITOR DE ENTRADAS RECIENTES Y ALERTAS PREVENTIVAS:
+- Muestra el live feed con fotos, horarios y método de entrada.
+- Despliega alertas en tiempo real: Pago Pendiente, Lesión Médica o Apto Físico Pendiente.
+
+4. GESTIÓN DE RETENCIÓN DE ALUMNOS (RIESGO DE CHURN):
+- Identifica automáticamente alumnos sin asistencia por más de 12 días.
+- Haz clic en [Contactar] para abrir WhatsApp con un mensaje amigable pre-redactado.
+
+5. HISTORIAL GENERAL Y EXPORTACIÓN CSV:
+- Busca registros por texto y filtra por Fecha, Método o Estado.
+- Presiona [Exportar CSV] para descargar el reporte detallado.
+
+6. DÍAS DE CIERRE O FERIADOS (BLACKOUT DAYS):
+- Inhabilita automáticamente check-ins en días no laborables con banner de aviso.
+
+7. IMPACTO EN OTROS MÓDULOS:
+- Permite calcular liquidaciones de staff (Base + Asistencia), aplicar penalizaciones de No-Show y analizar estadísticas de ocupación.`;
+
+    navigator.clipboard.writeText(guideText);
+    toast.success("✓ Guía de Asistencias copiada al portapapeles con éxito.");
+  };
+
+  const handleCopyClasesGuideText = () => {
+    const guideText = `GUÍA DE USO COMPLETA: MÓDULO DE CLASES Y GRILLA HORARIA — STUDIO PULSE SMART
+
+1. VISTAS DE GRILLA (CALENDARIO VS LISTA):
+- Modo Calendario: Agenda por días (Lunes a Domingo) y salones/salas. Navega semanas con [<] [Semana Actual] [>].
+- Modo Lista: Listado de clases con filtros rápidos por nombre, profesor o sala.
+
+2. CONFIGURACIÓN DE SALONES Y MAPA DE SPOTS:
+- Asigna salones con grilla física de ubicaciones (filas x columnas de mats, bicis o espacios).
+- Activa "Requerir Selección de Spot / Lugar" en la clase.
+
+3. ALTA, EDICIÓN Y DUPLICACIÓN DE CLASES:
+- Define Nombre, Profesor asignado, Día, Horario (Inicio/Fin), Sala, Capacidad máxima y Costo en Créditos.
+- Duplica sesiones horarias en otros días de la semana con un solo clic.
+
+4. DISEÑADOR UNIVERSAL DE BLOQUES DE ENTRENAMIENTO:
+- Estructura sesiones con presets para cualquier disciplina (Yoga, Pilates, Funcional, Spinning, Musculación, CrossFit, HIIT).
+- Bloques: Calentamiento/Movilidad/Pranayama, Fuerza/Técnica/Asanas, Metcon/Rutina Central, Vuelta a la Calma/Savasana y Bloques Personalizados.
+
+5. MATRIZ DE SPOTS Y LOCKS DE RESERVA (3 MINUTOS):
+- Matriz visual por estado (Disponible, Ocupado, Bloqueado 3 min).
+- Lock automático de 3 minutos para evitar reservas simultáneas duplicadas.
+
+6. ACCIONES CON ALUMNOS DENTRO DE LA CLASE:
+- Inscripción manual directa presencial.
+- Ficha de alumno y estado del Apto Físico.
+- Marcación de asistencia: [Presente] o [Ausente / No-Show].
+- Liberación/reventa de spot y cancelación con reembolso automático de crédito.
+
+7. LISTA DE ESPERA INTELIGENTE (WAITLIST):
+- Reservas en espera con posición asignada (#1, #2).
+- Promoción automática y notificación cuando se libera un lugar.
+
+8. CANCELACIÓN MASIVA Y REEMBOLSO DE CRÉDITOS:
+- Cancela sesiones por feriado o imprevisto reimbursando créditos masivamente.`;
+
+    navigator.clipboard.writeText(guideText);
+    toast.success("✓ Guía de Clases copiada al portapapeles con éxito.");
+  };
+
+  const handleCopyMiembrosGuideText = () => {
+    const guideText = `GUÍA DE USO COMPLETA: MÓDULO DE MIEMBROS Y APTO FÍSICO — STUDIO PULSE SMART
+
+1. MÉTRICAS DE PADRÓN Y ESTADO DE ALUMNOS:
+- Monitorea en tiempo real Total Socios, Activos, Cuotas Vencidas/Pendientes, Cuentas Congeladas y Aptos Físicos Vencidos.
+- Filtra por estado (Activos, Vencidos, Congelados, Archivados, Apto Vencido) y ordena por A-Z o Vencimiento.
+
+2. ALTA Y REGISTRO DE NUEVOS ALUMNOS:
+- Presiona [+ Nuevo Socio] y completa Nombre, DNI, Email, Teléfono y Foto.
+- Asigna la membresía inicial (Pase Libre, Créditos, Estudiante), fecha de inicio y método de pago.
+
+3. RENOVACIÓN MANUAL Y EMISIÓN DE COMPROBANTES:
+- Presiona [Renovar] en la ficha del socio, selecciona la cantidad de meses (1, 3, 6, 12).
+- Registra el ingreso en la Caja registradora e imprime/descarga el Comprobante Digital.
+
+4. VERIFICACIÓN Y CARGA DE CERTIFICADO MÉDICO (APTO FÍSICO):
+- Revisa los estados: Entregado y Vigente, Pendiente o Vencido.
+- Carga el archivo PDF/Imagen del certificado e ingresa la fecha de vencimiento.
+
+5. CONGELAMIENTO Y DESCONGELAMIENTO TEMPORAL:
+- Pausa la membresía por lesión o viaje ingresando los días de suspensión.
+- El sistema posterga automáticamente la fecha de vencimiento final.
+- Permite descongelar anticipadamente si el alumno retorna antes.
+
+6. FICHA MÉDICA Y OBSERVACIONES DEL ALUMNO:
+- Registra alergias, condiciones médicas, lesiones preexistentes y notas internas visible en recepción y para profesores.
+
+7. CANCELACIÓN Y INTEGRIDAD DE DATOS (BORRADO LÓGICO):
+- Cancela la membresía y gestiona débitos automáticos.
+- Para preservar el historial contable y auditorías, el sistema archiva al socio en estado Cancelado evitando borrados que dañen reportes.`;
+
+    navigator.clipboard.writeText(guideText);
+    toast.success("✓ Guía de Miembros copiada al portapapeles con éxito.");
+  };
+
+  const handleCopyCajaGuideText = () => {
+    const guideText = `GUÍA DE USO COMPLETA: MÓDULO DE CAJA / POS Y COBROS PRESENCIALES — STUDIO PULSE SMART
+
+1. MÉTRICAS DE CAJA EN TIEMPO REAL:
+- Monitorea Ingresos en Caja (Turno), Egresos & Gastos Menores y Efectivo Esperado en Cajón (Efectivo Ingresos - Efectivo Egresos).
+
+2. TERMINAL POS - COBRO LIBRE Y TIENDA:
+- Presiona [Nuevo Movimiento] para abrir la terminal POS.
+- Modo Cobro Libre: Para pases diarios, musculación, eventos o gastos operativos.
+- Modo Venta de Producto (Tienda): Selecciona artículos del inventario descontando stock automáticamente.
+- Asocia opcionalmente la transacción a un alumno del padrón.
+
+3. CANALES DE PAGO Y SOPORTE DE PAGO MIXTO (SPLIT PAYMENT):
+- Canales estándar: Efectivo, MercadoPago/QR y Transferencia Bancaria.
+- Pago Mixto: Permite fraccionar un cobro combinando Efectivo y Digital (ej: $5.000 Efectivo + $10.000 MercadoPago).
+
+4. ARQUEO DE CAJA Y CIERRE DE TURNO:
+- Presiona [Arqueo & Cierre] e ingresa el conteo de dinero físico del cajón.
+- Compara el efectivo contado con el dinero esperado informando sobrantes, faltantes o Caja Cuadrada ($0).
+
+5. HISTORIAL DE TRANSACCIONES Y FILTROS:
+- Busca por concepto, socio o usuario.
+- Filtra por Tipo (Ingreso/Egreso), Canal de Pago (Efectivo, QR, Transferencia) y Rango de Fecha (Hoy, Semana, Mes).
+
+6. ANULACIÓN DE MOVIMIENTOS Y EXPORTACIÓN CSV:
+- Reversión/Anulación: Marca movimientos erróneos como ANULADO manteniendo registro de auditoría.
+- Exportar CSV: Descarga la planilla de balance de caja.`;
+
+    navigator.clipboard.writeText(guideText);
+    toast.success("✓ Guía de Caja / POS copiada al portapapeles con éxito.");
+  };
+
+  const handleCopyFinanzasGuideText = () => {
+    const guideText = `GUÍA DE USO COMPLETA: MÓDULO DE FINANZAS Y LIQUIDACIONES DE STAFF — STUDIO PULSE SMART
+
+1. SALUD FINANCIERA Y MARGEN OPERATIVO NETO:
+- Monitorea Ingresos Brutos (Membresías + POS), Honorarios Liquidados, Gastos Fijos & Operativos y Margen Neto.
+
+2. GESTOR DE GASTOS FIJOS Y ESTRUCTURALES:
+- Presiona [Ajustar Rubros] para configurar Alquiler, Luz, Agua, Internet, Mantenimiento y agregar nuevos costos.
+
+3. MOTOR DE CÁLCULO DE LIQUIDACIONES DE STAFF (PAYROLL ENGINE):
+- Honorario = Sueldo Base + (Clases x Tarifa) + (Alumnos x Bonificación por Asistencia).
+- Presiona [Recalcular Asistencias] para cruzar la grilla horaria con check-ins reales en tiempo real.
+
+4. ACREDITACIÓN DE PAGOS Y RECIBOS DIGITALES:
+- Presiona [Acreditar Pago] para cambiar el estado a Pagado y registrar el egreso contable en caja.
+- Genera y descarga el Recibo Digital oficial con el desglose del período.
+
+5. SELECCIÓN DE PERÍODO, FILTROS Y EXPORTACIÓN CSV:
+- Selecciona el mes a auditar (Junio 2026, Mayo 2026) o consulta la vista histórica.
+- Presiona [Exportar CSV] para descargar la planilla de liquidaciones.`;
+
+    navigator.clipboard.writeText(guideText);
+    toast.success("✓ Guía de Finanzas copiada al portapapeles con éxito.");
+  };
+
+  const handleCopyReportesGuideText = () => {
+    const guideText = `GUÍA DE USO COMPLETA: MÓDULO DE REPORTES & ANALÍTICA DE NEGOCIO — STUDIO PULSE SMART
+
+1. TOOLBAR EJECUTIVO Y FILTROS MULTIDIMENSIONALES:
+- Filtra por Período (Hoy, 7 días, Mes, Trimestre) y por Disciplina (CrossFit, Spinning, Yoga, Pilates, Funcional).
+- Navega las 4 sub-pestañas: Finanzas, Asistencia y Ocupación, Retención de Socios y Staff & Coaches.
+
+2. ANALÍTICA FINANCIERA Y DESGLOSE DE COBROS:
+- Audita Facturación Total, Socios Activos y Ticket Promedio.
+- Revisa la distribución de ingresos por canal: MercadoPago (%), Transferencia (%) y Efectivo (%).
+
+3. OCUPACIÓN DE SALONES Y EFICIENCIA DE CLASES:
+- Monitorea el % de ocupación global y la demanda por salón y horario para ajustar la grilla horaria.
+
+4. RETENCIÓN DE ALUMNOS Y RE-ENGAGEMENT POR WHATSAPP:
+- Detecta alumnos con inasistencias prolongadas y presiona [Contactar por WhatsApp] para enviar una invitación directa de retorno.
+
+5. RENDIMIENTO DEL STAFF Y EXPORTACIÓN A CSV / PDF:
+- Audita clases dictadas, asistencia promedio por coach y satisfacción de alumnos.
+- Presiona [Exportar CSV] o [Imprimir / PDF] para descargar informes ejecutivos completos.`;
+
+    navigator.clipboard.writeText(guideText);
+    toast.success("✓ Guía de Reportes copiada al portapapeles con éxito.");
+  };
+
+  const handleCopyInventarioGuideText = () => {
+    const guideText = `GUÍA DE USO COMPLETA: MÓDULO DE INVENTARIO Y KARDEX — STUDIO PULSE SMART
+
+1. CATÁLOGO DE PRODUCTOS Y MÉTRICAS DE STOCK EN TIEMPO REAL:
+- Monitorea el Total de Productos, Valoración Económica ($ ARS), Alertas de Stock Bajo/Agotado y Categorías.
+- Filtra por Categoría (Suplementos, Bebidas, Accesorios, Indumentaria) y Estado de Stock.
+
+2. ALTA, EDICIÓN Y VARIANTES DE PRODUCTOS:
+- Presiona [+ Nuevo Producto] y define Nombre, Categoría, Precio de Costo, Precio de Venta, Stock Inicial, Stock Mínimo y Código de Barras.
+- Configura variantes de productos (Talles S/M/L, Sabores Vainilla/Chocolate) con stock individual.
+
+3. AJUSTES MANUALES DE INVENTARIO (KARDEX):
+- Presiona [Ajustar Stock] para registrar Entradas de proveedor, Ajustes Manuales o Mermas por rotura/expiración con motivo justificado.
+
+4. REGISTRO KARDEX Y AUDITORÍA CONTABLE DE MOVIMIENTOS:
+- Sub-pestaña Kardex: Historial cronológico completo con filtros por Fecha (Desde/Hasta), Tipo de Movimiento y Producto.
+
+5. DIRECTORIO DE PROVEEDORES Y ORDEN DE COMPRA AUTOMÁTICA:
+- Registra proveedores con datos de contacto (Empresa, Teléfono, Email).
+- Presiona [Generar Orden de Compra] para calcular automáticamente los pedidos de reposición según el stock mínimo.
+
+6. INTEGRACIÓN CON LA TERMINAL POS DE CAJA:
+- El catálogo de inventario está sincronizado en tiempo real con el mostrador POS. Las ventas descuentan stock automáticamente y asientan la salida en el Kardex.`;
+
+    navigator.clipboard.writeText(guideText);
+    toast.success("✓ Guía de Inventario copiada al portapapeles con éxito.");
+  };
+
+  const handleCopyResenasGuideText = () => {
+    const guideText = `GUÍA DE USO COMPLETA: MÓDULO DE RESEÑAS Y FEEDBACK — STUDIO PULSE SMART
+
+1. MÉTRICAS DE CALIDAD DE LA SEDE:
+- Monitorea la Calificación General (⭐ 4.9) y el desglose en Limpieza, Equipamiento, Staff y Precio.
+
+2. RESEÑAS PÚBLICAS Y DESTACADAS EN LANDING PAGE:
+- Examina los comentarios de los socios.
+- Presiona [Destacar en Landing] para publicar opiniones seleccionadas en la portada pública del gimnasio.
+
+3. RESPUESTAS OFICIALES DEL GIMNASIO:
+- Presiona [Responder] en cualquier comentario para publicar una respuesta institucional que será visible públicamente.
+
+4. BUZÓN PRIVADO DE SUGERENCIAS Y RECLAMOS:
+- Revisa mensajes privados por categoría (Instalaciones, Clases, Climatización, Staff).
+- Cambia el estado entre Pendiente y Atendido e ingresa Notas Internas administrativas.
+
+5. CAMPAÑAS DE SOLICITUD DE RESEÑAS POR WHATSAPP:
+- Presiona [Solicitar Reseña por WhatsApp] para enviar un enlace personalizado a los alumnos de la sede.`;
+
+    navigator.clipboard.writeText(guideText);
+    toast.success("✓ Guía de Reseñas copiada al portapapeles con éxito.");
+  };
+
+  const handleCopyMembresiasGuideText = () => {
+    const guideText = `GUÍA DE USO COMPLETA: MÓDULO DE MEMBRESÍAS Y TARIFAS — STUDIO PULSE SMART
+
+1. CATÁLOGO DE PLANES, TARIFAS Y MÉTRICAS DE ADHESIÓN:
+- Visualiza tarjetas de pases con precio de lista, precio de promoción tachado, duración y cantidad de alumnos adheridos.
+
+2. ALTA Y CONFIGURACIÓN AVANZADA DE MEMBRESÍAS:
+- Presiona [+ Nueva Membresía] y define Nombre, Precio, Matrícula, Etiqueta y Período (Mensual, Trimestral, Anual).
+- Tipo de Pase: Pase Libre o Por Créditos (bolsa de créditos mensuales).
+- Configura Límite Diario de Clases y Días de Congelamiento autorizados.
+
+3. FRANJAS HORARIAS (OFF-PEAK) Y DISCIPLINAS INCLUIDAS:
+- Configura Horario Valle (Off-Peak) para promociones en horas de menor afluencia (ej: 12:00 a 16:00 hs).
+- Selecciona las disciplinas incluidas (CrossFit, Yoga, Pilates, Spinning, Funcional).
+
+4. AMENITIES INCLUIDOS Y PLAN DESTACADO EN LANDING PAGE:
+- Asocia servicios adicionales de la sede (Toalla sin cargo, Lockers VIP, Estacionamiento).
+- Presiona [Destacar en Landing] para resaltar la membresía principal en la portada pública.
+
+5. DUPLICACIÓN RÁPIDA Y EDICIÓN DE PLANES:
+- Presiona [Duplicar] para clonar estructuras de planes y crear opciones de distinta duración rápidamente.
+
+6. REGLAS DE INTEGRIDAD Y ELIMINACIÓN SEGURA:
+- Confirmación obligatoria escribiendo "ELIMINAR" para prevenir bajas accidentales de pases con alumnos adheridos.`;
+
+    navigator.clipboard.writeText(guideText);
+    toast.success("✓ Guía de Membresías copiada al portapapeles con éxito.");
+  };
+
+  const handleCopyConfigGuideText = () => {
+    const guideText = `GUÍA DE USO COMPLETA: MÓDULO DE CONFIGURACIÓN Y POLÍTICAS — STUDIO PULSE SMART
+
+1. INFORMACIÓN GENERAL Y HORARIOS DE APERTURA:
+- Configura Nombre de la Sede, Dirección, WhatsApp, Redes Sociales (Instagram, TikTok) y Fotos.
+- Define el esquema horario semanal de 7 días con ventanas de apertura e intervalos.
+
+2. GESTIÓN MULTISEDE Y SALONES DE ENTRENAMIENTO:
+- Agrega sucursales secundarias y administra salones con su capacidad física máxima.
+
+3. DIRECTO DE STAFF, DISPONIBILIDAD Y LIQUIDACIONES:
+- Registra entrenadores y recepcionistas con especialidades, diplomas y disponibilidad horaria.
+- Define la estructura salarial (Sueldo Base, Tarifa por Clase Dictada y Bonificación por Alumno).
+
+4. MÉTODOS DE COBRO E INTEGRACIÓN MERCADO PAGO:
+- Vinculación OAuth de Mercado Pago para suscripciones recurrentes y cobro con QR/App.
+- Configuración de CBU/Alias para transferencias bancarias y cobros en efectivo POS.
+
+5. POLÍTICAS DE CANCELACIÓN, NO-SHOWS Y DÍAS DE CIERRE:
+- Límite de horas para cancelación anticipada sin penalización (ej: 2 horas antes).
+- Días de cierre (Blackout Days): Bloqueo automático de calendario por feriados o refacciones.
+
+6. MANTENIMIENTO DE EQUIPAMIENTO Y CHECKLISTS DE PROTOCOLOS:
+- Catálogo de máquinas/equipamiento y registro de mantenimiento preventivo.
+- Protocolos de apertura/cierre para recepción y coaches con trazabilidad de cumplimiento.`;
+
+    navigator.clipboard.writeText(guideText);
+    toast.success("✓ Guía de Configuración copiada al portapapeles con éxito.");
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* Banner de Encabezado */}
+      <div className="rounded-3xl border border-border bg-card p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg transition-all duration-300">
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2.5 rounded-2xl bg-primary/10 text-primary border border-primary/20">
+              <HelpCircle className="w-6 h-6" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold tracking-tight text-foreground">
+                Centro de Ayuda y Guías Oficiales
+              </h2>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block mt-0.5">
+                Studio Pulse Smart · Base de Conocimiento para Administradores
+              </span>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed pl-1 pt-1 max-w-2xl">
+            Explora las guías operativas detalladas para dominar la gestión de tu centro deportivo, controlar accesos, configurar clases y optimizar la retención de socios.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="text-right hidden sm:block">
+            <span className="text-xs font-bold text-foreground block">10 Guías Publicadas</span>
+            <span className="text-[10.5px] text-emerald-600 font-semibold">100% Cobertura</span>
+          </div>
+          <div className="h-10 w-10 rounded-2xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center justify-center font-bold text-xs">
+            10/10
+          </div>
+        </div>
+      </div>
+
+      {/* Toolbar: Buscador y Filtros por Categoría */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-card p-4 rounded-3xl border border-border shadow-xs">
+        {/* Buscador */}
+        <div className="relative shrink-0 w-full sm:w-72">
+          <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar por módulo o tema..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 rounded-2xl text-xs bg-secondary/30 border-border/60 h-9"
+          />
+        </div>
+
+        {/* Categories Pills */}
+        <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-1 lg:pb-0">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                selectedCategory === cat
+                  ? "bg-primary text-primary-foreground shadow-2xs font-bold"
+                  : "bg-secondary/60 text-muted-foreground hover:bg-secondary hover:text-foreground border border-border/40"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Grid de Guías Operativas */}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+            Manuales Operativos Disponibles ({filteredGuides.length})
+          </h3>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full items-stretch">
+          {filteredGuides.map((guide) => {
+            const isAsistencias = guide.id === "asistencia";
+            const isClases = guide.id === "clases";
+            const isMiembros = guide.id === "miembros";
+            const isCaja = guide.id === "caja";
+            const isFinanzas = guide.id === "finanzas";
+            const isReportes = guide.id === "reportes";
+            const isInventario = guide.id === "inventario";
+            const isResenas = guide.id === "reseñas";
+            const isMembresias = guide.id === "membresias";
+            const isConfig = guide.id === "config";
+            const isExpanded = activeGuideId === guide.id;
+
+            return (
+              <div
+                key={guide.id}
+                className={cn(
+                  "rounded-3xl border border-border bg-card shadow-xs p-6 flex flex-col justify-between hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg transition-all duration-300",
+                  isExpanded && "border-primary/40 ring-1 ring-primary/20 md:col-span-2"
+                )}
+              >
+                <div>
+                  {/* Badge & Meta */}
+                  <div className="flex items-center justify-between gap-3 mb-3">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80 bg-secondary px-2.5 py-1 rounded-full border border-border/60">
+                      {guide.category}
+                    </span>
+                    <span
+                      className={`text-[10px] font-bold uppercase border px-2.5 py-0.5 rounded-full ${guide.badgeColor}`}
+                    >
+                      {guide.status}
+                    </span>
+                  </div>
+
+                  {/* Title & Subtitle */}
+                  <h4 className="text-base font-bold text-foreground tracking-tight mb-2">
+                    {guide.title}
+                  </h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed mb-4">
+                    {guide.description}
+                  </p>
+                </div>
+
+                {/* Expanded Details for Asistencias Guide */}
+                {isAsistencias && isExpanded && (
+                  <div className="mt-4 pt-4 border-t border-border space-y-5 animate-in fade-in duration-200">
+                    <div className="flex items-center justify-between flex-wrap gap-2 bg-muted/40 p-3 rounded-2xl border border-border/60">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                        <span className="text-xs font-bold text-foreground">
+                          Guía Oficial de Operación de Asistencias (7 Módulos Clave)
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="rounded-xl text-xs h-8 gap-1.5 font-semibold"
+                          onClick={handleCopyAsistenciaGuideText}
+                        >
+                          <Copy className="w-3.5 h-3.5" /> Copiar Guía
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="rounded-xl text-xs h-8 gap-1.5 font-bold bg-primary text-primary-foreground hover:bg-primary/90"
+                          onClick={() => onNavigateTab?.("asistencia")}
+                        >
+                          Ir al Módulo <ArrowRight className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Accordion de Módulos de Asistencias */}
+                    <Accordion type="single" collapsible defaultValue="item-1" className="w-full space-y-2">
+                      <AccordionItem value="item-1" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          1. Indicadores Clave y Aforo en Tiempo Real
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            El panel desplegará 4 tarjetas dinámicas en la parte superior:
+                          </p>
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Aforo Actual Sede:</strong> Porcentaje de ocupación en tiempo real (ej. 42 / 80 socios).</li>
+                            <li><strong>Check-ins QR:</strong> Proporción de ingresos mediante escaneo del código QR digital del socio.</li>
+                            <li><strong>Check-ins GPS (50m):</strong> Ingresos autovalidados cuando la app detecta que el socio está a menos de 50 metros del centro.</li>
+                            <li><strong>Recepción Manual:</strong> Ingresos confirmados manualmente en mostrador.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-2" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          2. Flujo A: Control de Acceso Presencial en Recepción
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <ol className="list-decimal pl-4 space-y-1 text-[11.5px]">
+                            <li>Haz clic en el botón <strong>[Buscar Socio para Check-in]</strong>.</li>
+                            <li>Ingresa el Nombre, DNI o Teléfono en el buscador.</li>
+                            <li>Verifica el estado del <strong>Apto Físico</strong> (Vigente o Pendiente/Vencido).</li>
+                            <li>Si posee reserva previa para hoy, presiona <strong>[Confirmar Check-in]</strong> para marcar su presencia en la clase.</li>
+                            <li>Si no posee reserva (Pase Libre o Musculación), presiona <strong>[Ingreso General]</strong>.</li>
+                          </ol>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-3" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          3. Flujo B: Monitor de Entradas Recientes y Alertas Preventivas
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            Muestra el listado de ingresos en vivo con foto del socio, hora exacta y método utilizado. Genera alertas de prevención:
+                          </p>
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><span className="text-destructive font-bold">Pago Pendiente:</span> El socio posee una cuota vencida.</li>
+                            <li><span className="text-amber-600 dark:text-amber-400 font-bold">Lesión o Condición Médica:</span> Notificación para alertar al instructor.</li>
+                            <li><span className="text-amber-600 dark:text-amber-400 font-bold">Apto Físico Pendiente:</span> Requiere exigir certificado médico.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-4" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          4. Flujo C: Gestión de Retención de Alumnos (Riesgo de Churn)
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            El sistema detecta automáticamente a los socios activos que llevan <strong>más de 12 días sin registrar asistencia</strong>.
+                          </p>
+                          <p className="text-[11.5px]">
+                            Al presionar <strong>[Contactar]</strong>, abre WhatsApp con un mensaje prediseñado: <em>"Hola [Nombre], ¡te extrañamos en [Gimnasio]! 👋..."</em> para incentivar el retorno al entrenamiento.
+                          </p>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-5" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          5. Flujo D: Historial General y Exportación a CSV
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            Permite realizar búsquedas por texto, aplicar filtros por Fecha (Hoy, Ayer, Esta Semana) y filtrar por Método de Acceso o Estado (Presente / Ausente).
+                          </p>
+                          <p className="text-[11.5px]">
+                            El botón <strong>[Exportar CSV]</strong> genera una planilla descargable lista para auditorías internas.
+                          </p>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-6" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          6. Flujo E: Días de Cierre o Feriados (Blackout Days)
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            Cuando la sede registra un día no hábil, el sistema despliega un banner de advertencia superior e inhabilita los check-ins para evitar marcas inconsistentes.
+                          </p>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-7" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          7. Integración con otros Módulos de la Plataforma
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Liquidaciones del Staff:</strong> Cálculo de honorarios de profesores por base + asistencias registradas.</li>
+                            <li><strong>Políticas de No-Show:</strong> Reglas configurables para limitar reservas si el alumno incurre en ausencias injustificadas.</li>
+                            <li><strong>Reportes de Ocupación:</strong> Análisis de días y horarios pico en la pestaña de Reportes.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                  </div>
+                )}
+
+                {/* Expanded Details for Clases Guide */}
+                {isClases && isExpanded && (
+                  <div className="mt-4 pt-4 border-t border-border space-y-5 animate-in fade-in duration-200">
+                    <div className="flex items-center justify-between flex-wrap gap-2 bg-muted/40 p-3 rounded-2xl border border-border/60">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                        <span className="text-xs font-bold text-foreground">
+                          Guía Oficial de Operación de Clases y Horarios (8 Módulos Clave)
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="rounded-xl text-xs h-8 gap-1.5 font-semibold"
+                          onClick={handleCopyClasesGuideText}
+                        >
+                          <Copy className="w-3.5 h-3.5" /> Copiar Guía
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="rounded-xl text-xs h-8 gap-1.5 font-bold bg-primary text-primary-foreground hover:bg-primary/90"
+                          onClick={() => onNavigateTab?.("clases")}
+                        >
+                          Ir al Módulo <ArrowRight className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Accordion de Módulos de Clases */}
+                    <Accordion type="single" collapsible defaultValue="item-1" className="w-full space-y-2">
+                      <AccordionItem value="item-1" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          1. Vistas de Grilla (Calendario por Salón vs Lista Semanal)
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            El administrador gestiona 100% la grilla desde 2 modos de visualización:
+                          </p>
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Modo Calendario:</strong> Muestra la agenda semanal (Lunes a Domingo) filtrable por Sala/Salón (ej. Sala Principal, Salón Yoga, Sala Spinning). Controles <strong>[&lt;] [Semana Actual] [&gt;]</strong> para avanzar o retroceder en la planificación.</li>
+                            <li><strong>Modo Lista:</strong> Lista compacta con buscador rápido por nombre de clase, profesor o sala.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-2" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          2. Configuración de Salones y Distribución de Lugares (Spots Layout)
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            Para que una clase requiera selección de ubicación física:
+                          </p>
+                          <ol className="list-decimal pl-4 space-y-1 text-[11.5px]">
+                            <li>En <strong>Configuración &gt; Salones</strong> se crea la sala definiendo la grilla de ubicaciones (filas x columnas de mats, máquinas o lugares).</li>
+                            <li>Al crear/editar la clase, activa la casilla <strong>"Requerir Selección de Spot / Lugar"</strong> y selecciona el Salón asignado (ej. <em>Salón Yoga - 20 Mats</em>, <em>Sala Spinning - 15 Bicis</em>).</li>
+                          </ol>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-3" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          3. Alta, Edición y Duplicación de Clases
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Alta de Clase:</strong> Haz clic en <strong>[+ Crear Clase]</strong> y define Nombre, Profesor a cargo, Día de la semana, Horario de Inicio/Fin, Sala, Capacidad máxima y Costo en Créditos.</li>
+                            <li><strong>Edición:</strong> Modifica cualquier parámetro de una clase activa en tiempo real.</li>
+                            <li><strong>Duplicación:</strong> Usa el botón <strong>[Duplicar]</strong> para replicar la estructura horaria y bloques de entrenamiento en otros días de la semana con un solo clic.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-4" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          4. Diseñador Universal de Bloques de Entrenamiento (Rutinas)
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            Herramienta adaptable a <strong>cualquier disciplina deportiva o física</strong> (Yoga, Pilates, Functional, Spinning, Musculación, CrossFit, HIIT, etc.):
+                          </p>
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li>🟡 <strong>Calentamiento / Movilidad / Pranayama:</strong> Entrada en calor o respiración inicial.</li>
+                            <li>🔵 <strong>Fuerza / Técnica / Asanas Principal:</strong> Trabajo de fuerza, técnica o secuencias de posturas.</li>
+                            <li>🔴 <strong>Metcon / Trabajo Intensivo / Rutina Central:</strong> Circuito funcional o fase principal.</li>
+                            <li>🟢 <strong>Vuelta a la Calma / Savasana / Relajación:</strong> Estiramientos o relajación guiada.</li>
+                            <li>⚪ <strong>Bloque Personalizado:</strong> Texto libre para observaciones o rutinas especiales.</li>
+                          </ul>
+                          <p className="text-[11.5px] pt-1">
+                            Cada bloque permite ajustar Título, Subtítulo, Descripción técnica, <strong>Time Cap</strong> (duración estimada) y reordenar con los botones <strong>[▲ Subir]</strong> y <strong>[▼ Bajar]</strong>.
+                          </p>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-5" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          5. Matriz de Spots y Temporizador de Reserva (Spot Locks - 3 Minutos)
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            El mapa interactivo refleja en tiempo real 3 estados por lugar: <strong>Disponible</strong>, <strong>Ocupado por Socio</strong> (foto/nombre) y <strong>Bloqueado Temporalmente (Lock)</strong>.
+                          </p>
+                          <p className="text-[11.5px]">
+                            Cuando un alumno o administrador selecciona un lugar, el sistema aplica un <strong>Spot Lock automático de 3 minutos</strong> (03:00) para evitar reservas duplicadas simultáneas sobre la misma máquina/mat.
+                          </p>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-6" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          6. Acciones Completas con Alumnos en la Clase
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Inscripción Manual Presencial:</strong> Haz clic en un spot libre para buscar a un socio por DNI/Nombre e inscribirlo directamente.</li>
+                            <li><strong>Verificación Ficha de Alumno:</strong> Visualiza plan activo, créditos restantes y vigencia del <strong>Apto Físico</strong>.</li>
+                            <li><strong>Marcación de Asistencia:</strong> Presiona <strong>[Presente]</strong> (verde) o <strong>[Ausente / No-Show]</strong> (rojo).</li>
+                            <li><strong>Liberación / Reventa de Spot:</strong> Opción para dar de baja un lugar ocupado y ponerlo a disposición de otros socios en lista de espera.</li>
+                            <li><strong>Cancelación de Reserva Individual:</strong> Desinscribe a un alumno acreditando automáticamente el crédito consumido a su cuenta.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-7" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          7. Lista de Espera Inteligente (Waitlist)
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            Si los cupos de la clase están al 100%, las reservaciones ingresan en la Lista de Espera con turno asignado (Puesto #1, #2, etc.).
+                          </p>
+                          <p className="text-[11.5px]">
+                            <strong>Promoción Automática:</strong> Si un alumno cancela dentro del plazo estipulado, el sistema promueve automáticamente al primer socio en espera y le envía una notificación. El administrador también puede promover o gestionar manualmente la lista.
+                          </p>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-8" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          8. Cancelación Masiva de Clase y Reembolso de Créditos
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            En caso de suspensión por feriado imprevisto o evento de la sede, la opción <strong>[Cancelar Clase]</strong> da de baja la sesión, notifica a los participantes y efectúa el <strong>reembolso masivo de créditos</strong> a todos los alumnos anotados.
+                          </p>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                  </div>
+                )}
+
+                {/* Expanded Details for Miembros Guide */}
+                {isMiembros && isExpanded && (
+                  <div className="mt-4 pt-4 border-t border-border space-y-5 animate-in fade-in duration-200">
+                    <div className="flex items-center justify-between flex-wrap gap-2 bg-muted/40 p-3 rounded-2xl border border-border/60">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                        <span className="text-xs font-bold text-foreground">
+                          Guía Oficial de Operación de Miembros y Certificados Médicos (7 Módulos Clave)
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="rounded-xl text-xs h-8 gap-1.5 font-semibold"
+                          onClick={handleCopyMiembrosGuideText}
+                        >
+                          <Copy className="w-3.5 h-3.5" /> Copiar Guía
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="rounded-xl text-xs h-8 gap-1.5 font-bold bg-primary text-primary-foreground hover:bg-primary/90"
+                          onClick={() => onNavigateTab?.("miembros")}
+                        >
+                          Ir al Módulo <ArrowRight className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Accordion de Módulos de Miembros */}
+                    <Accordion type="single" collapsible defaultValue="item-1" className="w-full space-y-2">
+                      <AccordionItem value="item-1" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          1. Métricas de Padrón y Estado de Alumnos
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            El panel superior resume la salud del padrón de socios en 5 indicadores:
+                          </p>
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Total Socios:</strong> Padrón completo de alumnos registrados.</li>
+                            <li><strong>Socios Activos:</strong> Alumnos con plan vigente y cuota al día.</li>
+                            <li><strong>Cuotas Vencidas / Pendientes:</strong> Alumnos con membresía expirada o pago en mora.</li>
+                            <li><strong>Cuentas Congeladas:</strong> Alumnos con pausa temporal autorizada por viaje o lesión.</li>
+                            <li><strong>Aptos Físicos Vencidos:</strong> Alumnos que requieren renovar su certificado médico.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-2" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          2. Alta y Registro de Nuevos Alumnos
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <ol className="list-decimal pl-4 space-y-1 text-[11.5px]">
+                            <li>Haz clic en el botón <strong>[+ Nuevo Socio]</strong>.</li>
+                            <li>Completa los datos obligatorios: Nombre completo, DNI, Email, Teléfono y carga opcional de Foto de Perfil.</li>
+                            <li>Selecciona el Plan / Membresía de ingreso (ej. <em>Pase Libre Full</em>, <em>Pase 8 Créditos</em>, <em>Pase Estudiante</em>).</li>
+                            <li>Establece la fecha de inicio del plan y registra el Método de Pago inicial (<em>Efectivo</em>, <em>Transferencia</em>, <em>MercadoPago</em>).</li>
+                          </ol>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-3" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          3. Renovación Manual de Membresía y Emisión de Comprobantes
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            Para renovar una cuota o extender un pase expirado:
+                          </p>
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li>En la tarjeta del alumno, presiona <strong>[Renovar]</strong>.</li>
+                            <li>Selecciona la cantidad de meses (1, 3, 6, 12). El sistema recalcula automáticamente la nueva fecha de vencimiento sumando la vigencia al plan.</li>
+                            <li>Registra el cobro en la Caja registradora e imprime/descarga el <strong>Comprobante Digital / Recibo</strong> de pago para el socio.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-4" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          4. Verificación y Carga de Certificado Médico (Apto Físico)
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            El sistema audita de forma estricta la salud preventiva de los socios:
+                          </p>
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li>🟢 <strong>Entregado y Vigente:</strong> Certificado validado con fecha futura.</li>
+                            <li>🟡 <strong>Pendiente / Sin Entregar:</strong> El alumno aún no presentó su certificado.</li>
+                            <li>🔴 <strong>Vencido:</strong> La fecha de expiración ha caducado.</li>
+                          </ul>
+                          <p className="text-[11.5px] pt-1">
+                            En la ficha expandida del socio, presiona <strong>[Cargar Apto Físico]</strong> para adjuntar la foto/PDF del certificado e ingresar la fecha de vencimiento.
+                          </p>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-5" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          5. Congelamiento y Descongelamiento Temporal (Pausar Membresía)
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Pausa por Viaje / Lesión:</strong> Presiona <strong>[Congelar]</strong> e ingresa los días de suspensión autorizados (ej. 15 días). La cuenta cambiará a estado <em>Congelado</em>.</li>
+                            <li><strong>Extensión Automática de Vencimiento:</strong> El sistema prorroga la fecha final de la membresía sumando exactamente los días de congelamiento.</li>
+                            <li><strong>Descongelamiento Anticipado:</strong> Si el alumno regresa antes de lo previsto, presiona <strong>[Descongelar]</strong> para reactivar el pase al instante ajustando los días utilizados.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-6" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          6. Ficha Médica y Observaciones del Alumno
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            Cada socio posee un panel de observaciones clínicas y operativas. Registra alergias, lesiones articulares preexistentes, patologías o notas de atención al cliente.
+                          </p>
+                          <p className="text-[11.5px]">
+                            Esta información se despliega automáticamente en el monitor de recepción y alerta a los profesores al momento del check-in.
+                          </p>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-7" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          7. Cancelación de Membresías y Reglas de Integridad (Archivado / Borrado)
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Dar de Baja:</strong> Cancela la membresía activa y permite pausar/cancelar suscripciones recurrentes de MercadoPago.</li>
+                            <li><strong>Regla de Protección Contable (Borrado Lógico):</strong> Para prevenir daños en los reportes financieros y de asistencias históricas, si el alumno posee movimientos contables, el sistema rechaza la eliminación física y traslada la cuenta al estado <strong>Archivado (Cancelado)</strong>.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                  </div>
+                )}
+
+                {/* Expanded Details for Caja Guide */}
+                {isCaja && isExpanded && (
+                  <div className="mt-4 pt-4 border-t border-border space-y-5 animate-in fade-in duration-200">
+                    <div className="flex items-center justify-between flex-wrap gap-2 bg-muted/40 p-3 rounded-2xl border border-border/60">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                        <span className="text-xs font-bold text-foreground">
+                          Guía Oficial de Operación de Caja, POS y Cobros Presenciales (6 Módulos Clave)
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="rounded-xl text-xs h-8 gap-1.5 font-semibold"
+                          onClick={handleCopyCajaGuideText}
+                        >
+                          <Copy className="w-3.5 h-3.5" /> Copiar Guía
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="rounded-xl text-xs h-8 gap-1.5 font-bold bg-primary text-primary-foreground hover:bg-primary/90"
+                          onClick={() => onNavigateTab?.("caja")}
+                        >
+                          Ir al Módulo <ArrowRight className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Accordion de Módulos de Caja */}
+                    <Accordion type="single" collapsible defaultValue="item-1" className="w-full space-y-2">
+                      <AccordionItem value="item-1" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          1. Métricas de Caja en Tiempo Real (Resumen de Turno)
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            El encabezado resume los números del turno en 3 tarjetas dinámicas:
+                          </p>
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Ingresos en Caja (Turno):</strong> Suma total de cobros registrados por Efectivo, MercadoPago/QR y Transferencias.</li>
+                            <li><strong>Egresos & Gastos Menores:</strong> Salidas de dinero por insumos de limpieza, compras de mostrador o viáticos.</li>
+                            <li><strong>Efectivo Esperado en Cajón:</strong> Cálculo del dinero físico que debe haber en el cajón de efectivo (<code>Ingresos Efectivo - Egresos Efectivo</code>).</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-2" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          2. Terminal POS - Cobro Libre y Venta de Productos de Tienda
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            Presiona <strong>[Nuevo Movimiento]</strong> para desplegar la terminal de venta:
+                          </p>
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Modo Cobro / Movimiento Libre:</strong> Para pases diarios de musculación, pases de invitado, eventos o gastos operativos.</li>
+                            <li><strong>Modo Venta de Producto (Tienda):</strong> Selecciona artículos del inventario (suplementos, bebidas, toallas) descontando automáticamente las unidades del stock.</li>
+                            <li><strong>Asociación a Alumno:</strong> Selecciona un socio del padrón para vincular la compra a su historial.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-3" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          3. Canales de Pago y Soporte de Pago Mixto (Split Payment)
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            Soporta cobro directo por <strong>Efectivo</strong>, <strong>MercadoPago / QR</strong> y <strong>Transferencia Bancaria</strong>.
+                          </p>
+                          <p className="text-[11.5px]">
+                            <strong>Pago Mixto (Split Payment):</strong> Selecciona la opción <strong>[Pago Mixto]</strong> para dividir un cobro combinando Efectivo y Digital (ej. $5.000 Efectivo + $10.000 MercadoPago). El sistema asienta automáticamente ambos renglones en el libro de caja.
+                          </p>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-4" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          4. Arqueo de Caja y Cierre de Turno
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            Al finalizar el turno, presiona <strong>[Arqueo & Cierre]</strong>:
+                          </p>
+                          <ol className="list-decimal pl-4 space-y-1 text-[11.5px]">
+                            <li>Ingresa el monto total de billetes en efectivo contados físicamente en el cajón de dinero.</li>
+                            <li>El sistema auditor compara el conteo contra el <em>Efectivo Esperado en Cajón</em> e informa:
+                              <br />• 🟢 <strong>Caja Cuadrada ($0 diferencia):</strong> Conteo exacto.
+                              <br />• 🔴 <strong>Faltante de Caja (-$X):</strong> Alerta de dinero faltante con registro de auditoría.
+                              <br />• 🔵 <strong>Sobrante de Caja (+$X):</strong> Alerta de dinero sobrante.
+                            </li>
+                          </ol>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-5" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          5. Historial de Transacciones, Buscador y Filtros Avanzados
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Buscador por Texto:</strong> Filtra por concepto, nombre del alumno o recepcionista que registró el movimiento.</li>
+                            <li><strong>Filtros por Canal:</strong> Selecciona Todos, Efectivo, MercadoPago/QR o Transferencia.</li>
+                            <li><strong>Filtros por Rango de Fecha:</strong> Transacciones de Hoy, Última Semana, Mes Actual o Todo el Historial.</li>
+                            <li><strong>Filtros por Tipo:</strong> Alterna entre Todos los movimientos, Solo Ingresos o Solo Egresos.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-6" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          6. Anulación de Movimientos y Exportación a CSV
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Anulación Auditoría:</strong> Permite revertir una transacción errónea. La transacción no se elimina del historial por integridad contable, sino que queda rotulada con la etiqueta <strong>ANULADO</strong> indicando el administrador y la fecha.</li>
+                            <li><strong>Exportar CSV:</strong> Haz clic en <strong>[Exportar CSV]</strong> para descargar la planilla descargable de movimientos del turno para auditorías externas.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                  </div>
+                )}
+
+                {/* Expanded Details for Finanzas Guide */}
+                {isFinanzas && isExpanded && (
+                  <div className="mt-4 pt-4 border-t border-border space-y-5 animate-in fade-in duration-200">
+                    <div className="flex items-center justify-between flex-wrap gap-2 bg-muted/40 p-3 rounded-2xl border border-border/60">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                        <span className="text-xs font-bold text-foreground">
+                          Guía Oficial de Operación de Liquidación de Staff y Finanzas (5 Módulos Clave)
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="rounded-xl text-xs h-8 gap-1.5 font-semibold"
+                          onClick={handleCopyFinanzasGuideText}
+                        >
+                          <Copy className="w-3.5 h-3.5" /> Copiar Guía
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="rounded-xl text-xs h-8 gap-1.5 font-bold bg-primary text-primary-foreground hover:bg-primary/90"
+                          onClick={() => onNavigateTab?.("finanzas")}
+                        >
+                          Ir al Módulo <ArrowRight className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Accordion de Módulos de Finanzas */}
+                    <Accordion type="single" collapsible defaultValue="item-1" className="w-full space-y-2">
+                      <AccordionItem value="item-1" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          1. Salud Financiera & Margen Operativo Neto (KPIs en Tiempo Real)
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            El panel superior audita la salud contable mensual a través de 4 métricas clave:
+                          </p>
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Ingresos Brutos (Mes Actual):</strong> Suma de la facturación de membresías + cobros presenciales registrados en el POS de Caja.</li>
+                            <li><strong>Honorarios Staff Liquidados:</strong> Monto total abonado a profesores y coaches en el período.</li>
+                            <li><strong>Gastos Fijos & Operativos:</strong> Costos estructurales (Alquiler, Servicios públicos, Mantenimiento) + Salidas registradas en Caja.</li>
+                            <li><strong>Margen Operativo Neto:</strong> Utilidad neta mensual (<code>Ingresos Brutos - Honorarios - Gastos Fijos y Operativos</code>).</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-2" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          2. Configuración y Personalización de Rubros de Gastos Fijos
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            Haz clic en <strong>[Ajustar Rubros]</strong> para personalizar la matriz de costos estructurales:
+                          </p>
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Rubros Base Predefinidos:</strong> Alquiler de Sede, Luz & Energía Eléctrica, Agua & Servicios Sanitarios, Internet, Software & Servidores, Mantenimiento & Seguridad.</li>
+                            <li><strong>Edición de Costos y Nuevas Categorías:</strong> Ajusta los valores mensuales de cada servicio o agrega nuevos rubros con su importe en pesos.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-3" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          3. Motor de Cálculo y Liquidación de Staff por Asistencias (Payroll Engine)
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            Cálculo transparente de sueldos combinando la grilla horaria y los check-ins de alumnos:
+                          </p>
+                          <p className="text-[11.5px] bg-muted/60 p-2 rounded-xl border border-border/40 font-mono">
+                            Honorario = Sueldo Base + (Clases Dictadas x Tarifa Clase) + (Alumnos Atendidos x Bonificación Asistencia)
+                          </p>
+                          <p className="text-[11.5px] pt-1">
+                            Presiona <strong>[Recalcular Asistencias]</strong> para actualizar instantáneamente las liquidaciones del mes cruzando las asistencias reales de la agenda.
+                          </p>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-4" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          4. Gestión de Pagos, Comprobantes de Liquidación y Recibos de Staff
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Acreditar Pago:</strong> Presiona <strong>[Acreditar Pago]</strong> sobre la liquidación pendiente para cambiar su estado a <em>Pagado</em>, asentando el egreso contable en la caja del gimnasio.</li>
+                            <li><strong>Ver Recibo Digital:</strong> Presiona <strong>[Ver Recibo]</strong> para desplegar e imprimir el comprobante oficial con el detalle de clases dictadas, alumnos atendidos y firma de acreditación.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-5" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          5. Buscador, Filtros de Período y Exportación CSV Auditora
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Selector de Período:</strong> Alterna entre meses específicos (<em>Junio 2026</em>, <em>Mayo 2026</em>) o consulta <em>Todos los Períodos</em>.</li>
+                            <li><strong>Filtros por Estado:</strong> Selecciona <em>Todos</em>, <em>Pendientes de Pago</em> o <em>Acreditados / Pagados</em>.</li>
+                            <li><strong>Buscador de Coach:</strong> Búsqueda por Nombre o Especialidad del entrenador.</li>
+                            <li><strong>Exportar CSV:</strong> Presiona <strong>[Exportar CSV]</strong> para descargar la planilla descargable de liquidaciones para liquidación impositiva o contabilidad externa.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                  </div>
+                )}
+
+                {/* Expanded Details for Reportes Guide */}
+                {isReportes && isExpanded && (
+                  <div className="mt-4 pt-4 border-t border-border space-y-5 animate-in fade-in duration-200">
+                    <div className="flex items-center justify-between flex-wrap gap-2 bg-muted/40 p-3 rounded-2xl border border-border/60">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                        <span className="text-xs font-bold text-foreground">
+                          Guía Oficial de Operación de Reportes y Analítica de Negocio (5 Módulos Clave)
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="rounded-xl text-xs h-8 gap-1.5 font-semibold"
+                          onClick={handleCopyReportesGuideText}
+                        >
+                          <Copy className="w-3.5 h-3.5" /> Copiar Guía
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="rounded-xl text-xs h-8 gap-1.5 font-bold bg-primary text-primary-foreground hover:bg-primary/90"
+                          onClick={() => onNavigateTab?.("reportes")}
+                        >
+                          Ir al Módulo <ArrowRight className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Accordion de Módulos de Reportes */}
+                    <Accordion type="single" collapsible defaultValue="item-1" className="w-full space-y-2">
+                      <AccordionItem value="item-1" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          1. Toolbar Ejecutivo y Filtros Multidimensionales
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            El panel ejecutivo permite filtrar y consultar datos clave en tiempo real:
+                          </p>
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Rango de Fecha:</strong> Alterna entre <em>Hoy</em>, <em>Últimos 7 días</em>, <em>Este Mes</em>, <em>Mes Anterior</em> y <em>Trimestre Actual</em>.</li>
+                            <li><strong>Filtro por Disciplina:</strong> Filtra datos por clases específicas (<em>CrossFit</em>, <em>Spinning</em>, <em>Yoga</em>, <em>Pilates</em>, <em>Funcional</em>) o visualiza <em>Todas las Clases</em>.</li>
+                            <li><strong>Sub-Pestañas de Análisis:</strong> Alterna entre <em>Finanzas e Ingresos</em>, <em>Asistencia y Ocupación</em>, <em>Retención y Alumnos</em> y <em>Staff & Coaches</em>.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-2" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          2. Analítica Financiera y Desglose por Métodos de Pago
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            Audita la facturación ejecutiva y canales de cobro:
+                          </p>
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Facturación Total & Ticket Promedio:</strong> Recaudación bruta del período y valor promedio cobrado por socio activo.</li>
+                            <li><strong>Desglose por Canal de Cobro:</strong> Porcentaje e importe en pesos acumulados por <em>MercadoPago / App</em>, <em>Transferencia Bancaria</em> y <em>Efectivo en Mostrador</em>.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-3" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          3. Ocupación de Salones y Eficiencia de Clases
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            Analiza el rendimiento del espacio físico de la sede:
+                          </p>
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Tasa de Ocupación Global (%):</strong> Relación entre lugares reservados vs capacidad total ofrecida.</li>
+                            <li><strong>Optimización de Agenda:</strong> Identifica horarios pico con cupos al 100% y horarios con baja demanda para reconfigurar la grilla.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-4" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          4. Retención de Alumnos y Re-Engagement por WhatsApp
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            Monitorea la retención del padrón e identifica socios en riesgo de abandono (Churn):
+                          </p>
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Identificación Automática:</strong> Alumnos activos sin asistencias registradas en los últimos 12+ días.</li>
+                            <li><strong>Contacto Directo:</strong> Presiona <strong>[Contactar por WhatsApp]</strong> para iniciar una conversación directa con un mensaje pre-redactado amigable para incentivar su regreso.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-5" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          5. Rendimiento del Staff y Exportación de Reportes (CSV & PDF/Print)
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Métricas de Profesores:</strong> Clases impartidas, promedio de alumnos por sesión y calificación general.</li>
+                            <li><strong>Exportar a CSV:</strong> Genera una planilla descargable con los datos de la pestaña activa (Finanzas, Asistencias, Socios o Staff).</li>
+                            <li><strong>Imprimir / PDF:</strong> Presiona <strong>[Imprimir / PDF]</strong> para abrir el diálogo de impresión con diseño optimizado para presentaciones o auditorías.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                  </div>
+                )}
+
+                {/* Expanded Details for Inventario Guide */}
+                {isInventario && isExpanded && (
+                  <div className="mt-4 pt-4 border-t border-border space-y-5 animate-in fade-in duration-200">
+                    <div className="flex items-center justify-between flex-wrap gap-2 bg-muted/40 p-3 rounded-2xl border border-border/60">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                        <span className="text-xs font-bold text-foreground">
+                          Guía Oficial de Operación de Inventario y Kardex (6 Módulos Clave)
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="rounded-xl text-xs h-8 gap-1.5 font-semibold"
+                          onClick={handleCopyInventarioGuideText}
+                        >
+                          <Copy className="w-3.5 h-3.5" /> Copiar Guía
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="rounded-xl text-xs h-8 gap-1.5 font-bold bg-primary text-primary-foreground hover:bg-primary/90"
+                          onClick={() => onNavigateTab?.("inventario")}
+                        >
+                          Ir al Módulo <ArrowRight className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Accordion de Módulos de Inventario */}
+                    <Accordion type="single" collapsible defaultValue="item-1" className="w-full space-y-2">
+                      <AccordionItem value="item-1" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          1. Catálogo de Productos y Métricas de Stock en Tiempo Real
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            El panel de tienda audita el inventario físico mediante 4 tarjetas principales:
+                          </p>
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Total Productos:</strong> Cantidad de artículos activos registrados en el catálogo.</li>
+                            <li><strong>Valoración del Inventario ($ ARS):</strong> Suma del valor monetario total del stock a precio de costo/venta.</li>
+                            <li><strong>Alertas de Stock Bajo / Agotado:</strong> Artículos que han alcanzado o superado el límite mínimo configurado.</li>
+                            <li><strong>Categorías Activas:</strong> Clasificación de productos (<em>Suplementos</em>, <em>Bebidas</em>, <em>Accesorios</em>, <em>Indumentaria</em>, <em>Snacks</em>).</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-2" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          2. Alta, Edición y Variantes de Productos
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            Haz clic en <strong>[+ Nuevo Producto]</strong> para dar de alta artículos en el catálogo:
+                          </p>
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Datos del Producto:</strong> Nombre, Categoría, Precio de Costo, Precio de Venta en Mostrador, Stock Inicial, Stock Mínimo de Alerta, Unidad de Medida y Código de Barras.</li>
+                            <li><strong>Variantes de Producto:</strong> Configura atributos específicos (ej. Talles <em>S, M, L, XL</em> o Sabores <em>Vainilla, Chocolate, Frutilla</em>) manteniendo control de stock independiente.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-3" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          3. Ajustes Manuales de Inventario (Entradas, Muestras y Mermas)
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            En la tarjeta de cualquier artículo, presiona <strong>[Ajustar Stock]</strong> para efectuar modificaciones:
+                          </p>
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li>🟢 <strong>Entrada:</strong> Ingreso de mercadería por reabastecimiento directo de proveedor.</li>
+                            <li>🟡 <strong>Ajuste Manual:</strong> Corrección de diferencias de conteo o degustaciones de muestra.</li>
+                            <li>🔴 <strong>Merma / Pérdida:</strong> Bajas por producto dañado, vencido o roto. Obliga a ingresar motivo para auditoría.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-4" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          4. Registro Kardex y Auditoría Contable de Movimientos
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            La sub-pestaña <strong>Kardex de Movimientos</strong> ofrece trazabilidad total de cada producto:
+                          </p>
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Historial Cronológico:</strong> Registra fecha, hora, producto, tipo de movimiento, unidades modificadas, stock resultante, usuario administrador y observaciones.</li>
+                            <li><strong>Filtros Avanzados:</strong> Búsqueda por Rango de Fechas (<em>Desde / Hasta</em>), Tipo (<em>Entrada</em>, <em>Salida / Venta POS</em>, <em>Ajuste Manual</em>, <em>Merma</em>) y Buscador por texto.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-5" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          5. Directorio de Proveedores y Orden de Compra Automática
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Directorio de Proveedores:</strong> Mantiene la nómina de distribuidores y empresas asociadas con nombre, contacto, teléfono, email y rubro.</li>
+                            <li><strong>Generador de Pedido de Reposición:</strong> Haz clic en <strong>[Generar Orden de Compra]</strong> para que el sistema detecte de forma inteligente todos los ítems por debajo del stock mínimo y calcule las cantidades a pedir por proveedor.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-6" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          6. Integración con la Terminal POS de Caja y Descuento Automático
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            El catálogo de productos se sincroniza en vivo con el <strong>Módulo de Caja / POS</strong>.
+                          </p>
+                          <p className="text-[11.5px]">
+                            Al cobrar un producto de la tienda en mostrador, el sistema efectúa la <strong>baja automática de stock</strong> en el catálogo y genera el asiento contable de salida correspondiente en el Kardex.
+                          </p>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                  </div>
+                )}
+
+                {/* Expanded Details for Reseñas Guide */}
+                {isResenas && isExpanded && (
+                  <div className="mt-4 pt-4 border-t border-border space-y-5 animate-in fade-in duration-200">
+                    <div className="flex items-center justify-between flex-wrap gap-2 bg-muted/40 p-3 rounded-2xl border border-border/60">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                        <span className="text-xs font-bold text-foreground">
+                          Guía Oficial de Operación de Reseñas y Feedback (5 Módulos Clave)
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="rounded-xl text-xs h-8 gap-1.5 font-semibold"
+                          onClick={handleCopyResenasGuideText}
+                        >
+                          <Copy className="w-3.5 h-3.5" /> Copiar Guía
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="rounded-xl text-xs h-8 gap-1.5 font-bold bg-primary text-primary-foreground hover:bg-primary/90"
+                          onClick={() => onNavigateTab?.("reseñas")}
+                        >
+                          Ir al Módulo <ArrowRight className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Accordion de Módulos de Reseñas */}
+                    <Accordion type="single" collapsible defaultValue="item-1" className="w-full space-y-2">
+                      <AccordionItem value="item-1" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          1. Métricas de Calidad de la Sede
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            El panel superior audita la percepción de los socios a través de indicadores promediados:
+                          </p>
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Puntuación General (⭐ 4.9):</strong> Calificación global promedio otorgada por los alumnos.</li>
+                            <li><strong>Puntuación por Criterios:</strong> Desglose individual en <em>Limpieza e Higiene</em>, <em>Equipamiento y Máquinas</em>, <em>Atención del Staff</em> y <em>Relación Precio / Calidad</em>.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-2" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          2. Reseñas Públicas y Destacadas en Landing Page
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            Administración del testimonio público de la sede:
+                          </p>
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Moderación de Opiniones:</strong> Filtra comentarios por estrellas (5★, 4★, 3★, 2★, 1★) y por estado (con o sin respuesta).</li>
+                            <li><strong>Destacar en Landing Page:</strong> Presiona el botón <strong>[Destacar en Landing]</strong> (ícono de estrella) en las mejores reseñas para exhibirlas públicamente en la portada web oficial de la sede.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-3" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          3. Respuestas Oficiales del Gimnasio
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            Construye reputación institucional respondiendo a las evaluaciones:
+                          </p>
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li>Haz clic en <strong>[Responder]</strong> sobre cualquier comentario para ingresar el mensaje oficial de agradecimiento o aclaración.</li>
+                            <li>Permite editar o eliminar una respuesta previa manteniendo el historial institucional.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-4" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          4. Buzón Privado de Sugerencias y Reclamos
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            Gestión confidencial de reclamos e ideas de los alumnos:
+                          </p>
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Categorías de Feedback:</strong> <em>Instalaciones</em>, <em>Clases & Horarios</em>, <em>Climatización</em>, <em>Atención / Staff</em>.</li>
+                            <li><strong>Gestión de Estados:</strong> Alterna la sugerencia entre <em>Pendiente</em> (amarillo) y <em>Atendido</em> (verde).</li>
+                            <li><strong>Notas Internas:</strong> Agrega comentarios de gestión interna (ej. <em>"Dispenser extra será instalado el próximo martes"</em>) solo visible para administradores.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-5" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          5. Campañas de Solicitud de Reseñas por WhatsApp
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            Incentiva la recolección de testimonios positivos de forma proactiva:
+                          </p>
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li>Presiona <strong>[Solicitar Reseñas por WhatsApp]</strong> para abrir el selector de socios.</li>
+                            <li>Busca al alumno por Nombre o DNI para autocompletar su número telefónico.</li>
+                            <li>El sistema abre WhatsApp con un mensaje cordial e invitación directa a calificar la experiencia en la sede.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                  </div>
+                )}
+
+                {/* Expanded Details for Membresías Guide */}
+                {isMembresias && isExpanded && (
+                  <div className="mt-4 pt-4 border-t border-border space-y-5 animate-in fade-in duration-200">
+                    <div className="flex items-center justify-between flex-wrap gap-2 bg-muted/40 p-3 rounded-2xl border border-border/60">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                        <span className="text-xs font-bold text-foreground">
+                          Guía Oficial de Operación de Membresías y Tarifas (6 Módulos Clave)
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="rounded-xl text-xs h-8 gap-1.5 font-semibold"
+                          onClick={handleCopyMembresiasGuideText}
+                        >
+                          <Copy className="w-3.5 h-3.5" /> Copiar Guía
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="rounded-xl text-xs h-8 gap-1.5 font-bold bg-primary text-primary-foreground hover:bg-primary/90"
+                          onClick={() => onNavigateTab?.("membresias")}
+                        >
+                          Ir al Módulo <ArrowRight className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Accordion de Módulos de Membresías */}
+                    <Accordion type="single" collapsible defaultValue="item-1" className="w-full space-y-2">
+                      <AccordionItem value="item-1" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          1. Catálogo de Planes, Tarifas y Métricas de Adhesión
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            El panel de membresías exhibe las tarjetas de pases comercializados por la sede:
+                          </p>
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Información Comercial:</strong> Nombre del Plan, Precio Actual ($), Precio Anterior (Tachado para ofertas), Duración (<em>Mensual</em>, <em>Trimestral</em>, <em>Semestral</em>, <em>Anual</em>) y Cantidad de Socios Adheridos.</li>
+                            <li><strong>Buscador y Filtros:</strong> Filtra planes por texto o por etiquetas (<em>Pase Libre</em>, <em>Por Créditos</em>, <em>Estudiantes</em>, <em>Corporativo</em>, <em>VIP</em>).</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-2" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          2. Alta y Configuración Avanzada de Membresías
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            Haz clic en <strong>[+ Nueva Membresía]</strong> para crear una opción tarifaria:
+                          </p>
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Modelos de Acceso:</strong> Elige entre <em>Pase Libre</em> (asistencia ilimitada) o <em>Por Créditos</em> (bolsa de créditos mensuales consumibles por reserva de clase).</li>
+                            <li><strong>Límite Diario de Clases:</strong> Define restricciones por día (<em>Ilimitado</em>, <em>1 clase por día</em>, <em>2 clases por día</em>).</li>
+                            <li><strong>Días de Congelamiento Autorizados:</strong> Días de pausa/congelamiento de cuota permitidos por año (ej: 15 o 30 días de viaje).</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-3" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          3. Franjas Horarias (Off-Peak / Horario Valle) y Disciplinas Incluidas
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            Personalización de restricciones y alcance de la membresía:
+                          </p>
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Horario Off-Peak:</strong> Permite configurar una tarifa reducida válida únicamente en ventanas de menor afluencia (ej: 12:00 a 16:00 hs).</li>
+                            <li><strong>Disciplinas Incluidas:</strong> Tilda qué disciplinas comprende la cuota (<em>Musculación</em>, <em>CrossFit</em>, <em>Spinning</em>, <em>Yoga</em>, <em>Pilates</em>, <em>Funcional</em>).</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-4" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          4. Amenities Incluidos y Plan Destacado en Landing Page
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Servicios Adicionales:</strong> Asocia servicios extra que el socio disfrutará sin cargo (<em>Estacionamiento gratuito</em>, <em>Toalla sin cargo</em>, <em>Lockers VIP</em>).</li>
+                            <li><strong>Plan Destacado en Landing Page:</strong> Marca la opción <strong>[Destacar en Landing]</strong> en el plan estrella para exhibirlo resaltado con badge promocional en la web pública.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-5" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          5. Duplicación Rápida y Edición de Tarifas
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Duplicar Plan:</strong> Presiona <strong>[Duplicar]</strong> sobre cualquier membresía existente para clonar sus parámetros y crear variaciones rápidamente (ej. crear el plan Trimestral duplicando el Mensual).</li>
+                            <li><strong>Edición de Precios:</strong> Actualización instantánea de costos de lista, precios de oferta o matrículas de inscripción.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-6" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          6. Reglas de Integridad Contable y Eliminación Segura
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            Protección de la consistencia del padrón financiero del gimnasio.
+                          </p>
+                          <p className="text-[11.5px]">
+                            Para eliminar un plan sin uso, el sistema requiere escribir la palabra de confirmación <strong>ELIMINAR</strong>. Si el plan posee socios activos adheridos, el sistema impedirá el borrado directo solicitando reasignar previamente a los alumnos a otra tarifa activa.
+                          </p>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                  </div>
+                )}
+
+                {/* Expanded Details for Configuración Guide */}
+                {isConfig && isExpanded && (
+                  <div className="mt-4 pt-4 border-t border-border space-y-5 animate-in fade-in duration-200">
+                    <div className="flex items-center justify-between flex-wrap gap-2 bg-muted/40 p-3 rounded-2xl border border-border/60">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                        <span className="text-xs font-bold text-foreground">
+                          Guía Oficial de Configuración de Sede y Políticas (6 Módulos Clave)
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="rounded-xl text-xs h-8 gap-1.5 font-semibold"
+                          onClick={handleCopyConfigGuideText}
+                        >
+                          <Copy className="w-3.5 h-3.5" /> Copiar Guía
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="rounded-xl text-xs h-8 gap-1.5 font-bold bg-primary text-primary-foreground hover:bg-primary/90"
+                          onClick={() => onNavigateTab?.("configuracion")}
+                        >
+                          Ir al Módulo <ArrowRight className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Accordion de Módulos de Configuración */}
+                    <Accordion type="single" collapsible defaultValue="item-1" className="w-full space-y-2">
+                      <AccordionItem value="item-1" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          1. Información General de la Sede y Grilla Horaria de 7 Días
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            Administración de la identidad de la marca y horario comercial:
+                          </p>
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Ficha de la Sede:</strong> Nombre Comercial, Dirección Física, Teléfono WhatsApp, Redes Sociales (Instagram, TikTok) y Galería de Fotos del Gimnasio.</li>
+                            <li><strong>Esquema Horario Semanal:</strong> Configura la apertura e intervalos por cada día de la semana (Lunes a Domingo) para delimitar las franjas de reserva.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-2" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          2. Gestión Multisede y Salones de Entrenamiento
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            Control de sucursales físicas y espacios interiores:
+                          </p>
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Multisedes:</strong> Alta de sucursales con dirección, manager responsable y coordenadas GPS.</li>
+                            <li><strong>Salones de Entrenamiento:</strong> Creación de salones (ej: <em>Arena Principal</em>, <em>Sala de Yoga / Pilates</em>, <em>Spinning Zone</em>) con capacidad máxima de cupos.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-3" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          3. Directorio de Staff, Disponibilidad Horaria y Esquema Salarial
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            Administración del equipo de entrenadores y personal de recepción:
+                          </p>
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Ficha de Staff:</strong> Nombre, Rol (<em>Coach</em> / <em>Recepción</em>), Especialidades y Certificados / Diplomas acreditados.</li>
+                            <li><strong>Disponibilidad Horaria:</strong> Configura días e intervalos horarios en que cada entrenador está disponible para ser asignado en la grilla.</li>
+                            <li><strong>Estructura Salarial:</strong> Define Sueldo Base Mensual, Tarifa por Clase Dictada y Bonificación por Alumno Atendido para el cálculo automatizado de sueldos.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-4" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          4. Métodos de Pago y Vinculación Mercado Pago (OAuth)
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <p>
+                            Configuración de pasarelas y canales de recaudación:
+                          </p>
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Mercado Pago OAuth:</strong> Vinculación directa con tu cuenta comercial para habilitar cobros en la app de alumnos y débitos automáticos.</li>
+                            <li><strong>Transferencias Bancarias:</strong> Carga de CBU, Alias, CUIT y Razón Social para recibir transferencias directas.</li>
+                            <li><strong>Efectivo & POS Presencial:</strong> Habilitación de cobros presenciales en la caja receptora.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-5" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          5. Políticas de Cancelación, No-Shows y Días de Cierre (Blackout Days)
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Límite de Cancelación Anticipada:</strong> Horas previas requeridas para cancelar una reserva de clase sin perder la clase o crédito (ej. 2 horas antes).</li>
+                            <li><strong>Regla de No-Shows:</strong> Definición de sanciones o penalizaciones por inasistencia sin aviso.</li>
+                            <li><strong>Días de Cierre (Blackout Days):</strong> Registro de feriados nacionales o jornadas de mantenimiento donde el sistema cancela y bloquea automáticamente la agenda horaria.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="item-6" className="border border-border rounded-2xl px-4 bg-secondary/20">
+                        <AccordionTrigger className="text-xs font-bold text-foreground hover:no-underline py-3">
+                          6. Mantenimiento de Equipamiento y Checklists de Protocolos Operativos
+                        </AccordionTrigger>
+                        <AccordionContent className="text-xs text-muted-foreground space-y-2 leading-relaxed pb-3">
+                          <ul className="list-disc pl-4 space-y-1 text-[11.5px]">
+                            <li><strong>Catálogo de Equipamiento:</strong> Inventario de máquinas, mancuernas y accesorios con registro de maintenance preventivo.</li>
+                            <li><strong>Protocolos Operativos & Checklists:</strong> Tareas de apertura y cierre asignadas por turno a Recepción y Coaches con firmas de cumplimiento con hora exacta.</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                  </div>
+                )}
+
+                {/* Footer Controls */}
+                <div className="flex items-center justify-between pt-4 mt-4 border-t border-border/50 text-xs">
+                  <span className="text-[10.5px] text-muted-foreground font-medium">
+                    {guide.modulesCount} Módulos explicados · Actualizado: {guide.lastUpdated}
+                  </span>
+
+                  {isAsistencias || isClases || isMiembros || isCaja || isFinanzas || isReportes || isInventario || isResenas || isMembresias || isConfig ? (
+                    <Button
+                      size="sm"
+                      variant={isExpanded ? "outline" : "default"}
+                      className="rounded-xl font-bold text-xs h-8 px-4"
+                      onClick={() => setActiveGuideId(isExpanded ? null : guide.id)}
+                    >
+                      {isExpanded ? "Ocultar Detalles" : "Ver Guía Completa"}
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled
+                      className="rounded-xl font-medium text-xs h-8 px-3 opacity-60"
+                    >
+                      Próximamente
+                    </Button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
