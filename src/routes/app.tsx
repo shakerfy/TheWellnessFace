@@ -3852,19 +3852,175 @@ function DiarioTab() {
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
   const [showStreakInfo, setShowStreakInfo] = useState(false);
 
-  const [muscleRecovery, setMuscleRecovery] = useState<Record<string, number>>({
-    "pecho": 95,
-    "espalda": 80,
-    "espalda-baja": 45,
-    "hombros": 90,
-    "biceps": 85,
-    "triceps": 60,
-    "abdominales": 100,
-    "cuadriceps": 50,
-    "isquiotibiales": 75,
-    "gluteos": 80,
-    "gemelos": 90
+  const [muscleRecovery, setMuscleRecovery] = useState<Record<string, number>>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("shakerfy_muscle_recovery");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (e) {}
+      }
+    }
+    return {
+      "pecho": 95,
+      "espalda": 80,
+      "espalda-baja": 45,
+      "hombros": 90,
+      "biceps": 85,
+      "triceps": 60,
+      "abdominales": 100,
+      "cuadriceps": 50,
+      "isquiotibiales": 75,
+      "gluteos": 80,
+      "gemelos": 90
+    };
   });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("shakerfy_muscle_recovery", JSON.stringify(muscleRecovery));
+    }
+  }, [muscleRecovery]);
+
+  const [editingTimelineItem, setEditingTimelineItem] = useState<any | null>(null);
+
+  const [userTimelineItems, setUserTimelineItems] = useState<any[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("shakerfy_user_timeline_items");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        } catch (e) {}
+      }
+    }
+    return [
+      {
+        id: "1",
+        date: "2026-07-15",
+        time: "12:30 PM",
+        title: "Avocado Toast & Hojas Verdes",
+        subtitle: "Almuerzo",
+        type: "food",
+        img: "https://images.unsplash.com/photo-1541532713592-79a0317b6b77?auto=format&fit=crop&w=600&q=80",
+        kcal: 420,
+        protein: "14g",
+        carbs: "48g",
+        fat: "18g",
+        tags: ["Alta en Fibra", "Grasas Saludables"],
+        tag: "Alta en Fibra",
+        coachFeedback: "Excelente balance de grasas saludables. Considerá agregar una fuente de proteína la próxima vez para prolongar la saciedad.",
+      },
+      {
+        id: "2",
+        date: "2026-07-15",
+        time: "02:00 PM",
+        title: "Registro de Hidratación",
+        subtitle: "Control de Rutina",
+        type: "hydration",
+        img: null,
+        kcal: 0,
+        tag: "Armstrong 5",
+        coachFeedback: "Nivel 5 indica deshidratación leve. Toma 500ml de agua ahora mismo para compensar el entrenamiento o la actividad.",
+      },
+      {
+        id: "3",
+        date: "2026-07-15",
+        time: "08:15 AM",
+        title: "Café Negro",
+        subtitle: "Desayuno",
+        type: "coffee",
+        img: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=150&q=80",
+        kcal: 2,
+        protein: "0g",
+        carbs: "0g",
+        fat: "0g",
+        tags: ["Sin Azúcar", "Cero Calorías"],
+        tag: "Sin Azúcar",
+        coachFeedback: null,
+      },
+      {
+        id: "4",
+        date: "2026-07-14",
+        time: "09:30 AM",
+        title: "Omelette de Espinacas & Queso",
+        subtitle: "Desayuno",
+        type: "food",
+        img: "https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=600&q=80",
+        kcal: 320,
+        protein: "24g",
+        carbs: "4g",
+        fat: "22g",
+        tags: ["Alta en Proteínas", "Baja en Carbohidratos"],
+        tag: "Alta en Proteínas",
+        coachFeedback: "Muy buena elección proteica por la mañana. Mantener un desayuno con bajo índice glucémico estabiliza tu energía por horas.",
+      },
+      {
+        id: "5",
+        date: "2026-07-14",
+        time: "04:15 PM",
+        title: "Snack de Nueces y Almendras",
+        subtitle: "Snack",
+        type: "food",
+        img: null,
+        kcal: 180,
+        protein: "6g",
+        carbs: "8g",
+        fat: "15g",
+        tags: ["Grasas Saludables", "Baja en Carbohidratos"],
+        tag: "Grasas Saludables",
+        coachFeedback: "El snack de frutos secos aporta ácidos grasos esenciales y saciedad antes de tu cena.",
+      },
+      {
+        id: "6",
+        date: "2026-07-13",
+        time: "08:30 AM",
+        title: "Café con Leche y Tostadas de Masa Madre",
+        subtitle: "Desayuno",
+        type: "food",
+        img: null,
+        kcal: 280,
+        protein: "10g",
+        carbs: "40g",
+        fat: "8g",
+        tags: ["Energía Compleja", "Microbiota Amigable"],
+        tag: "Energía Compleja",
+        coachFeedback: "La masa madre es excelente para tu microbiota digestiva. Buena combinación energética para arrancar el día.",
+      },
+      {
+        id: "7",
+        date: "2026-07-13",
+        time: "08:30 PM",
+        title: "Salmón Grillado con Espárragos",
+        subtitle: "Cena",
+        type: "food",
+        img: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=600&q=80",
+        kcal: 540,
+        protein: "44g",
+        carbs: "6g",
+        fat: "36g",
+        tags: ["Alta en Proteínas", "Baja en Carbohidratos", "Omega 3"],
+        tag: "Alta en Proteínas",
+        coachFeedback: "Excelente cena ligera y rica en grasas saludables que promueven la recuperación celular durante el sueño profundo.",
+      }
+    ];
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("shakerfy_user_timeline_items", JSON.stringify(userTimelineItems));
+    }
+  }, [userTimelineItems]);
+
+  const handleDeleteTimelineItem = (id: string) => {
+    setUserTimelineItems(prev => prev.filter(item => item.id !== id));
+  };
+
+  const handleSaveEditedTimelineItem = (updated: any) => {
+    setUserTimelineItems(prev => prev.map(item => item.id === updated.id ? updated : item));
+    setEditingTimelineItem(null);
+  };
+
   const [isEditingRecovery, setIsEditingRecovery] = useState(false);
   const [showMindfulRateInfo, setShowMindfulRateInfo] = useState(false);
 
@@ -3988,6 +4144,24 @@ function DiarioTab() {
       });
     });
 
+    const newFood = {
+      id: `food-${Date.now()}`,
+      date: new Date().toISOString().split("T")[0],
+      time: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+      title: "Chicken Phở con Vegetales",
+      subtitle: "Comida Registrada",
+      type: "food",
+      img: "https://images.unsplash.com/photo-1541532713592-79a0317b6b77?auto=format&fit=crop&w=600&q=80",
+      kcal: 480,
+      protein: "32g",
+      carbs: "54g",
+      fat: "12g",
+      tags: ["Mínimamente Procesado", "Score NRF 9.3"],
+      tag: "Score NRF 9.3 (88/100)",
+      coachFeedback: "Excelente balance de proteínas y fibra en la sopa. Considerá controlar el aporte de sodio del caldo para optimizar tu perfil diario.",
+    };
+    setUserTimelineItems(prev => [newFood, ...prev]);
+
     setActiveModal("none");
     setFoodAnalysisStep("upload");
   };
@@ -4019,116 +4193,16 @@ function DiarioTab() {
 
     const hydData = getHydrationFeedback(hydrationLevel);
 
-    const baseItems = [
-      {
-        id: "1",
-        date: "2026-07-15",
-        time: "12:30 PM",
-        title: "Avocado Toast & Hojas Verdes",
-        subtitle: "Almuerzo",
-        type: "food",
-        img: "https://images.unsplash.com/photo-1541532713592-79a0317b6b77?auto=format&fit=crop&w=600&q=80",
-        kcal: 420,
-        protein: "14g",
-        carbs: "48g",
-        fat: "18g",
-        tags: ["Alta en Fibra", "Grasas Saludables"],
-        tag: "Alta en Fibra",
-        coachFeedback: "Excelente balance de grasas saludables. Considerá agregar una fuente de proteína la próxima vez para prolongar la saciedad.",
-      },
-      {
-        id: "2",
-        date: "2026-07-15",
-        time: "02:00 PM",
-        title: "Registro de Hidratación",
-        subtitle: "Control de Rutina",
-        type: "hydration",
-        img: null,
-        kcal: 0,
-        tag: hydData.tag,
-        coachFeedback: hydData.feedback,
-      },
-      {
-        id: "3",
-        date: "2026-07-15",
-        time: "08:15 AM",
-        title: "Café Negro",
-        subtitle: "Desayuno",
-        type: "coffee",
-        img: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=150&q=80",
-        kcal: 2,
-        protein: "0g",
-        carbs: "0g",
-        fat: "0g",
-        tags: ["Sin Azúcar", "Cero Calorías"],
-        tag: "Sin Azúcar",
-        coachFeedback: null,
-      },
-      {
-        id: "4",
-        date: "2026-07-14",
-        time: "09:30 AM",
-        title: "Omelette de Espinacas & Queso",
-        subtitle: "Desayuno",
-        type: "food",
-        img: "https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=600&q=80",
-        kcal: 320,
-        protein: "24g",
-        carbs: "4g",
-        fat: "22g",
-        tags: ["Alta en Proteínas", "Baja en Carbohidratos"],
-        tag: "Alta en Proteínas",
-        coachFeedback: "Muy buena elección proteica por la mañana. Mantener un desayuno con bajo índice glucémico estabiliza tu energía por horas.",
-      },
-      {
-        id: "5",
-        date: "2026-07-14",
-        time: "04:15 PM",
-        title: "Snack de Nueces y Almendras",
-        subtitle: "Snack",
-        type: "food",
-        img: null,
-        kcal: 180,
-        protein: "6g",
-        carbs: "8g",
-        fat: "15g",
-        tags: ["Grasas Saludables", "Baja en Carbohidratos"],
-        tag: "Grasas Saludables",
-        coachFeedback: "El snack de frutos secos aporta ácidos grasos esenciales y saciedad antes de tu cena.",
-      },
-      {
-        id: "6",
-        date: "2026-07-13",
-        time: "08:30 AM",
-        title: "Café con Leche y Tostadas de Masa Madre",
-        subtitle: "Desayuno",
-        type: "food",
-        img: null,
-        kcal: 280,
-        protein: "10g",
-        carbs: "40g",
-        fat: "8g",
-        tags: ["Energía Compleja", "Microbiota Amigable"],
-        tag: "Energía Compleja",
-        coachFeedback: "La masa madre es excelente para tu microbiota digestiva. Buena combinación energética para arrancar el día.",
-      },
-      {
-        id: "7",
-        date: "2026-07-13",
-        time: "08:30 PM",
-        title: "Salmón Grillado con Espárragos",
-        subtitle: "Cena",
-        type: "food",
-        img: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=600&q=80",
-        kcal: 540,
-        protein: "44g",
-        carbs: "6g",
-        fat: "36g",
-        tags: ["Alta en Proteínas", "Baja en Carbohidratos", "Omega 3"],
-        tag: "Alta en Proteínas",
-        coachFeedback: "Excelente cena ligera y rica en grasas saludables que promueven la recuperación celular durante el sueño profundo.",
+    const processedUserItems = userTimelineItems.map(item => {
+      if (item.type === "hydration") {
+        return {
+          ...item,
+          tag: hydData.tag,
+          coachFeedback: hydData.feedback
+        };
       }
-    ];
+      return item;
+    });
 
     const formatTime12h = (time24: string) => {
       try {
@@ -4146,7 +4220,7 @@ function DiarioTab() {
     const todayStr = new Date().toISOString().split("T")[0];
     const uniqueDates = Array.from(new Set([
       todayStr,
-      ...baseItems.map(item => item.date),
+      ...processedUserItems.map(item => item.date),
       ...customActivities.map(item => item.date),
     ]));
     
@@ -4166,11 +4240,9 @@ function DiarioTab() {
       const sunsetTime = formatTime12h(sunTimes.sunset);
       const sunsetMin = parseTimeToMinutes(sunsetTime);
 
-      // Para días pasados, mostrar todos los hitos.
-      // Para HOY, revelar progresivamente los hitos a medida que se aproxima o pasa su horario
       const showSunrise = !isToday || currentMinutes >= (sunriseMin - 60);
-      const showPeak = !isToday || currentMinutes >= (peakMin - 120); // 2hs antes de las 1:00 PM (11:00 AM)
-      const showSunset = !isToday || currentMinutes >= (sunsetMin - 120); // 2hs antes del atardecer (6:15 PM)
+      const showPeak = !isToday || currentMinutes >= (peakMin - 120);
+      const showSunset = !isToday || currentMinutes >= (sunsetMin - 120);
 
       if (showSunrise) {
         circadianEvents.push({
@@ -4218,7 +4290,7 @@ function DiarioTab() {
       }
     });
 
-    return [...baseItems, ...customActivities, ...circadianEvents].sort((a, b) => {
+    return [...processedUserItems, ...customActivities, ...circadianEvents].sort((a, b) => {
       if (a.date !== b.date) {
         return b.date.localeCompare(a.date);
       }
@@ -4711,6 +4783,34 @@ function DiarioTab() {
                                 alt={item.title} 
                                 className="w-full h-full object-cover" 
                               />
+                              {item.type !== "sunrise" && item.type !== "sunset" && item.type !== "peak" && (
+                                <div className="absolute top-3 right-3 flex items-center gap-1 bg-background/80 backdrop-blur-md px-2 py-1 rounded-full border border-border/60 shadow-sm">
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setEditingTimelineItem(item);
+                                    }}
+                                    className="p-1 text-muted-foreground hover:text-foreground transition cursor-pointer"
+                                    title="Editar registro"
+                                  >
+                                    <Edit className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (confirm(`¿Deseas eliminar "${item.title}" de tu diario?`)) {
+                                        handleDeleteTimelineItem(item.id);
+                                      }
+                                    }}
+                                    className="p-1 text-muted-foreground hover:text-rose-500 transition cursor-pointer"
+                                    title="Eliminar registro"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              )}
                             </div>
                           )}
 
@@ -4754,17 +4854,47 @@ function DiarioTab() {
                                   {item.subtitle}
                                 </CardDescription>
                               </div>
-                              {!item.img && (
-                                <div className="w-9 h-9 rounded-full bg-secondary text-muted-foreground flex items-center justify-center shrink-0 border border-border/40">
-                                  {item.type === "hydration" && <Droplet className="w-4.5 h-4.5" />}
-                                  {item.type === "coffee" && <Coffee className="w-4.5 h-4.5" />}
-                                  {item.type === "thought" && <Sparkles className="w-4.5 h-4.5" />}
-                                  {item.type === "sunrise" && <Sun className="w-4.5 h-4.5 text-amber-500" />}
-                                  {item.type === "sunset" && <Moon className="w-4.5 h-4.5 text-indigo-400" />}
-                                  {item.type === "peak" && <TrendingUp className="w-4.5 h-4.5 text-emerald-500" />}
-                                  {item.type === "activity" && <Activity className="w-4.5 h-4.5 text-orange-500" />}
-                                </div>
-                              )}
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                {!item.img && item.type !== "sunrise" && item.type !== "sunset" && item.type !== "peak" && (
+                                  <div className="flex items-center gap-1">
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setEditingTimelineItem(item);
+                                      }}
+                                      className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition cursor-pointer"
+                                      title="Editar registro"
+                                    >
+                                      <Edit className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (confirm(`¿Deseas eliminar "${item.title}" de tu diario?`)) {
+                                          handleDeleteTimelineItem(item.id);
+                                        }
+                                      }}
+                                      className="p-1.5 rounded-lg hover:bg-rose-500/10 text-muted-foreground hover:text-rose-500 transition cursor-pointer"
+                                      title="Eliminar registro"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                )}
+                                {!item.img && (
+                                  <div className="w-9 h-9 rounded-full bg-secondary text-muted-foreground flex items-center justify-center shrink-0 border border-border/40">
+                                    {item.type === "hydration" && <Droplet className="w-4.5 h-4.5" />}
+                                    {item.type === "coffee" && <Coffee className="w-4.5 h-4.5" />}
+                                    {item.type === "thought" && <Sparkles className="w-4.5 h-4.5" />}
+                                    {item.type === "sunrise" && <Sun className="w-4.5 h-4.5 text-amber-500" />}
+                                    {item.type === "sunset" && <Moon className="w-4.5 h-4.5 text-indigo-400" />}
+                                    {item.type === "peak" && <TrendingUp className="w-4.5 h-4.5 text-emerald-500" />}
+                                    {item.type === "activity" && <Activity className="w-4.5 h-4.5 text-orange-500" />}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </CardHeader>
 
@@ -5567,7 +5697,7 @@ function DiarioTab() {
               tag: recipe.tag,
               coachFeedback: recipe.coachFeedback,
             };
-            setCustomActivities(prev => [newMeal, ...prev]);
+            setUserTimelineItems(prev => [newMeal, ...prev]);
             setActiveRecipeDetail(null);
             setSubTab("diario");
             alert(`¡Registrado! Se añadió "${recipe.title}" a tu diario de hoy.`);
@@ -6163,48 +6293,64 @@ function DiarioTab() {
       {/* Estado Actual Modal */}
       {activeModal === "estado-actual" && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-md bg-card border border-border rounded-[2rem] shadow-2xl flex flex-col overflow-hidden max-h-[90vh]">
+          <div className="relative w-full max-w-md bg-card/90 dark:bg-card/85 backdrop-blur-xl border border-border rounded-[2rem] shadow-2xl flex flex-col overflow-hidden max-h-[90vh]">
+            {/* Animated Hero Pastel Orbs Background */}
+            <div aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-50 dark:opacity-45">
+              <div
+                className="absolute -right-[30px] -top-[30px] h-[200px] w-[200px] rounded-full bg-[#ff7b7c]/70 blur-[45px]"
+                style={{ animation: "orb1 22s infinite ease-in-out" }}
+              />
+              <div
+                className="absolute -left-[40px] top-[25%] h-[220px] w-[220px] rounded-full bg-[#aafc75]/70 blur-[50px]"
+                style={{ animation: "orb2 25s infinite ease-in-out 1s" }}
+              />
+              <div
+                className="absolute -bottom-[30px] -right-[30px] h-[200px] w-[200px] rounded-full bg-[#60f2fc]/70 blur-[50px]"
+                style={{ animation: "orb3 28s infinite ease-in-out 3s" }}
+              />
+            </div>
+
             {/* Header */}
-            <div className="px-6 pt-8 pb-4 flex justify-between items-center bg-card">
+            <div className="relative z-10 px-6 pt-8 pb-4 flex justify-between items-center bg-card/40 backdrop-blur-md border-b border-border/40">
               <div>
                 <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest block mb-0.5">Control de Bienestar</span>
                 <h3 className="text-lg font-bold text-foreground">Estado Actual</h3>
               </div>
               <button 
                 onClick={() => setActiveModal("none")} 
-                className="p-2 rounded-full bg-secondary/50 hover:bg-secondary transition-colors"
+                className="p-2 rounded-full bg-secondary/60 hover:bg-secondary transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
 
             {/* Body */}
-            <div className="p-6 pt-2 space-y-6 overflow-y-auto">
+            <div className="relative z-10 p-6 pt-4 space-y-6 overflow-y-auto">
               <CustomSlider 
                 value={mood} 
                 onChange={setMood} 
                 labelLeft="Ansioso" 
                 labelRight="Calmo" 
-                colorClass="from-[#150a21] to-[#7f20df] dark:from-[#0a0410] dark:to-[#7f20df]"
+                colorClass="from-[#ff7b7c]/30 via-[#ff7b7c]/70 to-[#ff7b7c]"
               />
               <CustomSlider 
                 value={hunger} 
                 onChange={setHunger} 
                 labelLeft="Hambriento" 
                 labelRight="Saciado" 
-                colorClass="from-[#041f14] to-[#10b981] dark:from-[#020f0a] dark:to-[#10b981]"
+                colorClass="from-[#8ee853]/30 via-[#9ee853]/70 to-[#8ee853]"
               />
               <CustomSlider 
                 value={energy} 
                 onChange={setEnergy} 
                 labelLeft="Cansado" 
                 labelRight="Enérgico" 
-                colorClass="from-[#221a05] to-[#f59e0b] dark:from-[#181203] dark:to-[#f59e0b]"
+                colorClass="from-[#46e8f5]/30 via-[#46e8f5]/70 to-[#46e8f5]"
               />
               
               <Button 
                 onClick={() => setActiveModal("none")}
-                className="w-full rounded-xl h-11 text-sm font-bold bg-foreground text-background hover:opacity-90 mt-4"
+                className="w-full rounded-xl h-11 text-sm font-bold bg-foreground text-background hover:opacity-90 mt-4 shadow-md"
               >
                 Guardar Registro
               </Button>
@@ -6248,12 +6394,116 @@ function DiarioTab() {
               tag: `${metPoints} Pts MET`,
               coachFeedback: `Registraste ${duration} min de ${activityName} (intensidad ${intensity === "low" ? "Baja" : intensity === "med" ? "Media" : "Alta"}). Sumaste ${metPoints} puntos MET a tu curva de actividad diaria. ¡Gran trabajo!`
             };
-            setCustomActivities(prev => [newAct, ...prev]);
+            setUserTimelineItems(prev => [newAct, ...prev]);
           }}
           activities={MET_ACTIVITIES}
         />
       )}
+
+      {/* Modal Editar Registro de Timeline */}
+      {editingTimelineItem && (
+        <EditTimelineItemModal
+          item={editingTimelineItem}
+          onClose={() => setEditingTimelineItem(null)}
+          onSave={handleSaveEditedTimelineItem}
+        />
+      )}
     </div>
+  );
+}
+
+// Subcomponent: Edit Timeline Item Modal
+function EditTimelineItemModal({
+  item,
+  onClose,
+  onSave,
+}: {
+  item: any;
+  onClose: () => void;
+  onSave: (updated: any) => void;
+}) {
+  const [title, setTitle] = useState(item.title || "");
+  const [subtitle, setSubtitle] = useState(item.subtitle || "");
+  const [kcal, setKcal] = useState(item.kcal || 0);
+  const [coachFeedback, setCoachFeedback] = useState(item.coachFeedback || "");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave({
+      ...item,
+      title,
+      subtitle,
+      kcal: Number(kcal),
+      coachFeedback,
+    });
+  };
+
+  return (
+    <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-md p-6 bg-card border border-border rounded-3xl">
+        <DialogHeader className="mb-4">
+          <DialogTitle className="text-lg font-bold text-foreground">Editar Registro del Diario</DialogTitle>
+          <DialogDescription className="text-xs text-muted-foreground">
+            Modifica la información de tu tarjeta registrada en la línea de tiempo.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-muted-foreground">Título</label>
+            <input
+              type="text"
+              required
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="flex w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-foreground font-semibold"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground">Categoría / Momento</label>
+              <input
+                type="text"
+                required
+                value={subtitle}
+                onChange={(e) => setSubtitle(e.target.value)}
+                className="flex w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-foreground font-semibold"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground">Calorías (kcal)</label>
+              <input
+                type="number"
+                min="0"
+                value={kcal}
+                onChange={(e) => setKcal(Number(e.target.value))}
+                className="flex w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-foreground font-semibold"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-muted-foreground">Nota / AI Feedback</label>
+            <textarea
+              rows={3}
+              value={coachFeedback}
+              onChange={(e) => setCoachFeedback(e.target.value)}
+              placeholder="Agrega una nota o sugerencia nutricional..."
+              className="flex w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-foreground font-medium"
+            />
+          </div>
+
+          <div className="flex gap-2 justify-end pt-2">
+            <Button type="button" variant="outline" onClick={onClose} className="rounded-xl text-xs font-bold">
+              Cancelar
+            </Button>
+            <Button type="submit" className="rounded-xl text-xs font-bold bg-foreground text-background hover:opacity-90">
+              Guardar Cambios
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 
