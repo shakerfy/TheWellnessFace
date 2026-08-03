@@ -4687,8 +4687,27 @@ function DiarioTab() {
         <>
           {/* Timeline */}
           <div className="relative pl-6 md:pl-0">
+            {/* Animated Pastel Orbs Background behind Timeline */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-60 dark:opacity-40"
+            >
+              <div
+                className="absolute -right-[60px] top-[2%] h-[260px] w-[260px] rounded-full bg-[#ff7b7c]/65 blur-[65px] md:-right-[120px] md:h-[380px] md:w-[380px] md:blur-[85px]"
+                style={{ animation: "orb1 25s infinite ease-in-out" }}
+              />
+              <div
+                className="absolute -left-[70px] top-[32%] h-[280px] w-[280px] rounded-full bg-[#aafc75]/65 blur-[65px] md:-left-[140px] md:h-[420px] md:w-[420px] md:blur-[85px]"
+                style={{ animation: "orb2 28s infinite ease-in-out 1s" }}
+              />
+              <div
+                className="absolute -right-[60px] top-[65%] h-[260px] w-[260px] rounded-full bg-[#60f2fc]/65 blur-[65px] md:-right-[120px] md:h-[380px] md:w-[380px] md:blur-[85px]"
+                style={{ animation: "orb3 30s infinite ease-in-out 3s" }}
+              />
+            </div>
+
             {/* Vertical Line */}
-            <div className="absolute left-6 md:left-[50%] top-0 bottom-0 w-[2px] bg-border transform -translate-x-1/2 md:-translate-x-[1px]"></div>
+            <div className="absolute left-6 md:left-[50%] top-0 bottom-0 w-[2px] bg-border transform -translate-x-1/2 md:-translate-x-[1px] z-0"></div>
 
             {/* Recipe Swipe Stack timeline item */}
             {showSwipeStack && (
