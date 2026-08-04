@@ -15046,70 +15046,7 @@ function ConfigTab({
                   </div>
                 </div>
 
-                {/* No-show Penalties configuration */}
-                <div className="border-t border-border/40 pt-4 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-bold text-xs">
-                        Penalización por Inasistencias (No-Shows)
-                      </h4>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">
-                        Sanciona automáticamente a alumnos que no asistan o cancelen fuera de
-                        término.
-                      </p>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={penaltySettings.enabled}
-                      onChange={(e) =>
-                        setPenaltySettings((prev) => ({ ...prev, enabled: e.target.checked }))
-                      }
-                      className="h-5 w-10 accent-primary rounded-full cursor-pointer shrink-0"
-                    />
-                  </div>
 
-                  {penaltySettings.enabled && (
-                    <div className="grid gap-4 sm:grid-cols-2 bg-secondary/10 p-4 rounded-2xl animate-fade-in space-y-2 sm:space-y-0">
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-muted-foreground block">
-                          Tipo de Castigo / Penalidad
-                        </label>
-                        <select
-                          value={penaltySettings.type}
-                          onChange={(e) =>
-                            setPenaltySettings((prev) => ({ ...prev, type: e.target.value }))
-                          }
-                          className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none text-foreground"
-                        >
-                          <option value="deduct_credit">
-                            💵 Descontar crédito de clase igualmente
-                          </option>
-                          <option value="block_reservations">
-                            🚫 Bloquear reservas por 48 horas (Pase Libre)
-                          </option>
-                        </select>
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-muted-foreground block">
-                          Cantidad de Inasistencias Toleradas
-                        </label>
-                        <input
-                          type="number"
-                          min="1"
-                          max="5"
-                          value={penaltySettings.maxAbsences}
-                          onChange={(e) =>
-                            setPenaltySettings((prev) => ({
-                              ...prev,
-                              maxAbsences: parseInt(e.target.value) || 2,
-                            }))
-                          }
-                          className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none text-foreground"
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
 
                 <Button
                   type="button"
