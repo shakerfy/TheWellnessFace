@@ -102,7 +102,7 @@ function BlogIndexPage() {
               <Sparkles className="mr-1.5 h-3.5 w-3.5 text-primary" />
               Conocimiento & Comunidad Fitness
             </Badge>
-            <h1 className="text-balance text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl">
+            <h1 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl">
               Blog & Novedades
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-balance text-base text-muted-foreground sm:text-lg">
@@ -200,7 +200,7 @@ function BlogIndexPage() {
                     </p>
                   </div>
 
-                  <div className="mt-8 flex items-center justify-between border-t border-border/50 pt-4">
+                  <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-t border-border/50 pt-4">
                     <div className="flex items-center gap-3">
                       <img
                         src={featuredPost.author.avatar}

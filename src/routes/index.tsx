@@ -221,7 +221,7 @@ export function Index({ hideHeader = false }: { hideHeader?: boolean } = {}) {
               Curados por nuestra IA según ubicación, disciplina y presupuesto.
             </p>
           </div>
-          <div className="-mx-6 flex w-screen gap-2 overflow-x-auto px-6 md:mx-0 md:w-auto md:overflow-visible">
+          <div className="flex w-full gap-2 overflow-x-auto max-w-full md:overflow-visible">
             <button
               onClick={() => {
                 setShowOnlyFavorites(!showOnlyFavorites);
@@ -858,7 +858,7 @@ function StudentCTASection() {
             Explorar gimnasios
           </a>
         </div>
-        <div className="mt-12 flex items-center justify-center gap-6 text-xs text-background/60">
+        <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-xs text-background/60">
           <div className="flex items-center gap-1.5">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Registro en 30 segundos
           </div>
@@ -1006,7 +1006,7 @@ function ValueSection() {
               Aparecé en miles de búsquedas, gestioná membresías y digitalizá tus clases.
             </p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
             <Button variant="outline" className="rounded-full">
               Ver demo
             </Button>

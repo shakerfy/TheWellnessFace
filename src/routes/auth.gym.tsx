@@ -36,7 +36,7 @@ function GymAuthPage() {
         <ArrowLeft className="h-4 w-4" /> Volver a Alumnos
       </Link>
 
-      <div className="w-full max-w-[400px] rounded-3xl border border-border bg-card p-8 ">
+      <div className="w-full max-w-sm sm:max-w-[400px] rounded-3xl border border-border bg-card p-6 sm:p-8 ">
         <div className="flex flex-col items-center text-center">
           <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary text-primary-foreground mb-4">
             <Building2 className="h-5 w-5" />

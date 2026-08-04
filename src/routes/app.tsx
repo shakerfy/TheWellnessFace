@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import React, { useState, useEffect, useMemo } from "react";
+import { toast } from "sonner";
 import { SiteHeader } from "@/components/site-header";
 import { Index } from "./index";
 import { GYMS } from "@/lib/gyms";
@@ -7,7 +8,7 @@ import {
   User, Calendar, BarChart3, CreditCard, Settings, 
   LogOut, QrCode, CheckCircle, Clock, AlertTriangle, 
   MapPin, ChevronRight, ChevronLeft, X, Sparkles, Shield, AlertCircle, ShieldAlert, Star, Heart,
-  Flame, Coffee, Droplet, TrendingUp, Info, Edit, Sun, Moon, ArrowUpRight, Utensils,
+  Flame, Coffee, Droplet, TrendingUp, Info, Edit, Sun, Moon, ArrowUpRight, Utensils, Zap, Wheat, MessageSquare,
   Camera, Dumbbell, Brain, Activity, Plus, Check, Loader2, ShoppingCart, Copy, Share2,
   Play, Pause, RotateCcw, Search, ChevronUp, ChevronDown, Trash2, FileDown, Navigation, Scan, Smartphone
 } from "lucide-react";
@@ -60,19 +61,19 @@ const SYMPTOMS_CHART_CONFIG = {
   ninguno: { label: "Ninguno", color: "#10b981" },
   cabeza: { label: "Dolor de cabeza", color: "#8b5cf6" },
   fatiga: { label: "Fatiga", color: "#f59e0b" },
-  hinchazon: { label: "Hinchazón", color: "#f97316" },
+  hinchazon: { label: "HinchazÃ³n", color: "#f97316" },
   humor: { label: "Cambios de humor", color: "#ec4899" },
-  estomago: { label: "Dolor de estómago", color: "#ef4444" },
-  nauseas: { label: "Náuseas", color: "#eab308" },
+  estomago: { label: "Dolor de estÃ³mago", color: "#ef4444" },
+  nauseas: { label: "NÃ¡useas", color: "#eab308" },
   otro: { label: "Otro", color: "#94a3b8" }
 };
 
 const WHY_EAT_DATA = [
   { reason: "hambre", label: "Hambre", percentage: 35, fill: "var(--color-hambre)" },
-  { reason: "estres", label: "Estrés", percentage: 15, fill: "var(--color-estres)" },
+  { reason: "estres", label: "EstrÃ©s", percentage: 15, fill: "var(--color-estres)" },
   { reason: "sabor", label: "Sabor", percentage: 15, fill: "var(--color-sabor)" },
   { reason: "social", label: "Social", percentage: 10, fill: "var(--color-social)" },
-  { reason: "habito", label: "Hábito", percentage: 10, fill: "var(--color-habito)" },
+  { reason: "habito", label: "HÃ¡bito", percentage: 10, fill: "var(--color-habito)" },
   { reason: "emocional", label: "Emocional", percentage: 8, fill: "var(--color-emocional)" },
   { reason: "aburrimiento", label: "Aburrimiento", percentage: 5, fill: "var(--color-aburrimiento)" },
   { reason: "otro", label: "Otro", percentage: 2, fill: "var(--color-otro)" }
@@ -83,10 +84,10 @@ const WHY_EAT_CHART_CONFIG = {
     label: "Porcentaje"
   },
   hambre: { label: "Hambre", color: "#10b981" },
-  estres: { label: "Estrés", color: "#ef4444" },
+  estres: { label: "EstrÃ©s", color: "#ef4444" },
   sabor: { label: "Sabor", color: "#eab308" },
   social: { label: "Social", color: "#0ea5e9" },
-  habito: { label: "Hábito", color: "#6366f1" },
+  habito: { label: "HÃ¡bito", color: "#6366f1" },
   emocional: { label: "Emocional", color: "#ec4899" },
   aburrimiento: { label: "Aburrimiento", color: "#a855f7" },
   otro: { label: "Otro", color: "#94a3b8" }
@@ -108,9 +109,9 @@ const ADHERENCE_CHART_CONFIG = {
 
 const STABILITY_DATA = [
   { subject: "Horarios", value: 85 },
-  { subject: "Nutrición", value: 90 },
+  { subject: "NutriciÃ³n", value: 90 },
   { subject: "Humor", value: 75 },
-  { subject: "Hidratación", value: 80 },
+  { subject: "HidrataciÃ³n", value: 80 },
   { subject: "Consistencia", value: 95 }
 ];
 
@@ -135,9 +136,9 @@ const COLOR_PLATE_CHART_CONFIG = {
     label: "Porcentaje"
   },
   verde: { label: "Verde (Vegetales)", color: "#10b981" },
-  amarillo: { label: "Amarillo/Naranja (Cítricos)", color: "#f59e0b" },
+  amarillo: { label: "Amarillo/Naranja (CÃ­tricos)", color: "#f59e0b" },
   rojo: { label: "Rojo (Frutos rojos)", color: "#f43f5e" },
-  marron: { label: "Marrón (Granos/Proteínas)", color: "#92400e" },
+  marron: { label: "MarrÃ³n (Granos/ProteÃ­nas)", color: "#92400e" },
   blanco: { label: "Blanco (Ajo/Hongos)", color: "#cbd5e1" },
   otros: { label: "Otros (Semillas)", color: "#94a3b8" }
 } satisfies ChartConfig;
@@ -152,18 +153,14 @@ const TABS = [
   { id: "clases", label: "Check-in", icon: QrCode },
   { id: "favoritos", label: "Favoritos", icon: Heart },
   { id: "progreso", label: "Mi Progreso", icon: BarChart3 },
-  { id: "pagos", label: "Suscripción", icon: CreditCard },
-  { id: "config", label: "Configuración", icon: Settings },
+  { id: "pagos", label: "SuscripciÃ³n", icon: CreditCard },
+  { id: "config", label: "ConfiguraciÃ³n", icon: Settings },
 ];
 
 function StudentDashboard() {
-  const [activeTab, setActiveTab] = useState(() => {
-    if (typeof window !== "undefined") {
-      const tab = new URLSearchParams(window.location.search).get("tab");
-      if (tab && TABS.some((t) => t.id === tab)) return tab;
-    }
-    return "inicio";
-  });
+  // ponytail: always start with "inicio" server-side to avoid SSR hydration mismatch;
+  // useEffect below syncs from URL on client mount.
+  const [activeTab, setActiveTab] = useState("inicio");
 
   useEffect(() => {
     const updateTabFromUrl = () => {
@@ -224,7 +221,7 @@ function StudentDashboard() {
 
       <div className="flex-1 pb-16 md:pb-0">
         {/* Main Content Area */}
-        <main className={`flex-1 w-full ${activeTab === "inicio" ? "" : "p-6 md:p-10 max-w-5xl mx-auto"}`}>
+        <main className={`flex-1 w-full ${activeTab === "inicio" ? "" : "px-3 py-4 sm:p-6 md:p-10 max-w-5xl mx-auto"}`}>
 
         {activeTab === "inicio" && <InicioTab />}
         {activeTab === "diario" && <DiarioTab />}
@@ -239,7 +236,7 @@ function StudentDashboard() {
       {/* QR Modal Overlay */}
       {qrOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 z-50 animate-fade-in">
-          <div className="relative bg-card border border-border w-full max-w-[360px] rounded-3xl p-8  text-center">
+          <div className="relative bg-card border border-border w-full max-w-[360px] rounded-3xl p-6 sm:p-8  text-center">
             <button 
               onClick={() => setQrOpen(false)}
               className="absolute right-4 top-4 p-2 rounded-full hover:bg-secondary transition"
@@ -248,7 +245,7 @@ function StudentDashboard() {
             </button>
 
             <h3 className="text-lg font-bold tracking-tight">QR de Ingreso</h3>
-            <p className="text-xs text-muted-foreground mt-1">Escanea este código en la entrada</p>
+            <p className="text-xs text-muted-foreground mt-1">Escanea este cÃ³digo en la entrada</p>
 
             {/* Simulated QR Code Visual */}
             <div className="mx-auto my-6 p-4 bg-white rounded-2xl w-48 h-48 flex flex-col items-center justify-center relative border border-border -inner">
@@ -262,7 +259,7 @@ function StudentDashboard() {
             </div>
             
             <p className="text-[11px] text-muted-foreground mt-4 flex items-center justify-center gap-1">
-              <Shield className="h-3 w-3" /> Token de seguridad dinámico encriptado
+              <Shield className="h-3 w-3" /> Token de seguridad dinÃ¡mico encriptado
             </p>
           </div>
         </div>
@@ -283,8 +280,8 @@ function StudentDashboard() {
               <ShieldAlert className="h-6 w-6" />
             </div>
 
-            <h3 className="text-lg font-bold tracking-tight text-foreground">Cancelación Excedida</h3>
-            <p className="text-xs text-muted-foreground mt-1">No cumple con la política de anticipación mínima.</p>
+            <h3 className="text-lg font-bold tracking-tight text-foreground">CancelaciÃ³n Excedida</h3>
+            <p className="text-xs text-muted-foreground mt-1">No cumple con la polÃ­tica de anticipaciÃ³n mÃ­nima.</p>
 
             <div className="mt-4 p-4 rounded-2xl bg-secondary/35 text-xs text-left space-y-2 border border-border w-full">
               <div className="flex justify-between">
@@ -296,13 +293,13 @@ function StudentDashboard() {
                 <span className="font-semibold text-rose-500">{blockedCancellationClass.timeRemainingLabel}</span>
               </div>
               <div className="flex justify-between border-t border-border/60 pt-2 mt-2">
-                <span className="text-muted-foreground">Política del Gimnasio:</span>
-                <span className="font-semibold text-foreground">Mínimo 2 horas antes</span>
+                <span className="text-muted-foreground">PolÃ­tica del Gimnasio:</span>
+                <span className="font-semibold text-foreground">MÃ­nimo 2 horas antes</span>
               </div>
             </div>
 
             <p className="text-xs text-muted-foreground mt-4 leading-relaxed">
-              De acuerdo con las normas de <strong>Kraft Strength Club</strong>, las cancelaciones deben realizarse con al menos 2 horas de antelación para permitir que otros alumnos en lista de espera tomen el cupo.
+              De acuerdo con las normas de <strong>Kraft Strength Club</strong>, las cancelaciones deben realizarse con al menos 2 horas de antelaciÃ³n para permitir que otros alumnos en lista de espera tomen el cupo.
             </p>
 
             <div className="mt-6 flex gap-2 w-full">
@@ -332,7 +329,7 @@ function StudentDashboard() {
           <form 
             onSubmit={(e) => {
               e.preventDefault();
-              alert("¡Gracias por tu opinión! Tu reseña ha sido verificada con tus check-ins de asistencia por QR y fue publicada exitosamente.");
+              alert("Â¡Gracias por tu opiniÃ³n! Tu reseÃ±a ha sido verificada con tus check-ins de asistencia por QR y fue publicada exitosamente.");
               setShowReviewPrompt(false);
               setReviewModalOpen(false);
             }}
@@ -351,7 +348,7 @@ function StudentDashboard() {
                 <Sparkles className="h-5 w-5" />
               </div>
               <h3 className="text-base font-bold tracking-tight">Califica tu Centro</h3>
-              <p className="text-xs text-muted-foreground">Miembro Verificado: Agustín Gómez</p>
+              <p className="text-xs text-muted-foreground">Miembro Verificado: AgustÃ­n GÃ³mez</p>
             </div>
 
             <div className="space-y-4">
@@ -359,8 +356,8 @@ function StudentDashboard() {
               {[
                 { label: "Limpieza", value: ratingCleanliness, setter: setRatingCleanliness },
                 { label: "Equipamiento", value: ratingEquipment, setter: setRatingEquipment },
-                { label: "Atención del Staff", value: ratingStaff, setter: setRatingStaff },
-                { label: "Relación Calidad/Precio", value: ratingPrice, setter: setRatingPrice }
+                { label: "AtenciÃ³n del Staff", value: ratingStaff, setter: setRatingStaff },
+                { label: "RelaciÃ³n Calidad/Precio", value: ratingPrice, setter: setRatingPrice }
               ].map((cat) => (
                 <div key={cat.label} className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-muted-foreground">{cat.label}</span>
@@ -381,20 +378,20 @@ function StudentDashboard() {
 
               {/* Textarea for comments */}
               <div className="space-y-1.5 mt-2">
-                <label className="text-xs font-semibold text-muted-foreground">Escribe tu opinión</label>
+                <label className="text-xs font-semibold text-muted-foreground">Escribe tu opiniÃ³n</label>
                 <textarea
                   required
                   rows={3}
                   value={reviewComment}
                   onChange={(e) => setReviewComment(e.target.value)}
-                  placeholder="Cuéntale a otros qué tal tu experiencia con los coaches, la limpieza del lugar, etc..."
+                  placeholder="CuÃ©ntale a otros quÃ© tal tu experiencia con los coaches, la limpieza del lugar, etc..."
                   className="flex w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 />
               </div>
             </div>
 
             <Button type="submit" className="rounded-xl mt-6">
-              Enviar Reseña Verificada
+              Enviar ReseÃ±a Verificada
             </Button>
           </form>
         </div>
@@ -463,7 +460,7 @@ function FavoritosTab() {
           </div>
           <h3 className="text-sm font-semibold text-foreground">No tienes gimnasios guardados</h3>
           <p className="mt-1 text-xs text-muted-foreground max-w-sm mx-auto">
-            Explora gimnasios en la página principal y presiona el ícono de corazón para guardarlos aquí.
+            Explora gimnasios en la pÃ¡gina principal y presiona el Ã­cono de corazÃ³n para guardarlos aquÃ­.
           </p>
           <Button
             onClick={() => navigate({ to: "/" })}
@@ -543,1319 +540,221 @@ function FavoritosTab() {
   );
 }
 
-// ponytail: Haversine distance calculation in meters between 2 lat/lon coordinates
-function getHaversineDistanceInMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371e3;
-  const φ1 = (lat1 * Math.PI) / 180;
-  const φ2 = (lat2 * Math.PI) / 180;
-  const Δφ = ((lat2 - lat1) * Math.PI) / 180;
-  const Δλ = ((lon2 - lon1) * Math.PI) / 180;
-  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return Math.round(R * c);
-}
 
-// Subcomponent: User Class Detail Modal
+
+
+// Subcomponent: User Class Detail Modal (simple)
 function UserClassDetailModal({
   classData,
   isOpen,
   onClose,
   onOpenQr,
-  onBook,
-  onCancel,
-  userMemberships = [],
-  setUserMemberships,
 }: {
   classData: any | null;
   isOpen: boolean;
   onClose: () => void;
   onOpenQr?: () => void;
-  onBook?: (classId: string, spotIndex: number | null) => void;
-  onCancel?: (classId: string) => void;
-  userMemberships?: any[];
-  setUserMemberships?: React.Dispatch<React.SetStateAction<any[]>>;
 }) {
   if (!classData) return null;
-
-  const [selectedSpot, setSelectedSpot] = useState<number | null>(classData.userSpotIndex ?? 4);
-  const [isUserProfilePublic, setIsUserProfilePublic] = useState<boolean>(true);
-
-  // Interactive Waitlist state
-  const [isOnWaitlist, setIsOnWaitlist] = useState<boolean>(classData.isUserOnWaitlist ?? false);
-  const [waitlistCount, setWaitlistCount] = useState<number>(classData.waitlistCount ?? 3);
-
-  // Interactive Surrender / Ceder lugar state
-  const [isSpotSurrendered, setIsSpotSurrendered] = useState<boolean>(classData.isSpotSurrendered ?? false);
-
-  // Check-in QR & Geolocalización states
-  const [isQrScannerOpen, setIsQrScannerOpen] = useState<boolean>(false);
-  const [isGpsVerifying, setIsGpsVerifying] = useState<boolean>(false);
-  const [gpsError, setGpsError] = useState<string | null>(null);
-  const [checkInSuccess, setCheckInSuccess] = useState<{ method: "QR" | "GPS"; time: string; distance?: number } | null>(null);
-
-  // Gym coordinates (Palermo/Belgrano Sede default)
-  const GYM_GPS = { lat: -34.5889, lon: -58.4305 };
-
-  const handleGpsCheckIn = () => {
-    setGpsError(null);
-    setIsGpsVerifying(true);
-
-    if (!navigator.geolocation) {
-      setIsGpsVerifying(false);
-      setGpsError("Tu navegador no soporta geolocalización. Utiliza el escáner QR.");
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setIsGpsVerifying(false);
-        const userLat = position.coords.latitude;
-        const userLon = position.coords.longitude;
-        const dist = getHaversineDistanceInMeters(userLat, userLon, GYM_GPS.lat, GYM_GPS.lon);
-
-        if (dist <= 50) {
-          setCheckInSuccess({
-            method: "GPS",
-            time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-            distance: dist,
-          });
-        } else {
-          setGpsError(`Te encuentras a ${dist}m de la sede. Debes estar a menos de 50m para confirmar por GPS.`);
-        }
-      },
-      (error) => {
-        setIsGpsVerifying(false);
-        // ponytail: fallback simulated check-in for demo environment if location permission is denied
-        const confirmDemo = confirm(
-          "⚠️ No se obtuvo la ubicación GPS real del navegador.\n\n¿Deseas simular estar a 18 metros del gimnasio para validar la experiencia de Check-in GPS?"
-        );
-        if (confirmDemo) {
-          setCheckInSuccess({
-            method: "GPS",
-            time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-            distance: 18,
-          });
-        } else {
-          setGpsError("Permiso de ubicación no disponible o denegado.");
-        }
-      },
-      { enableHighAccuracy: true, timeout: 8000 }
-    );
-  };
-
-  const handleQrCheckInSuccess = () => {
-    setIsQrScannerOpen(false);
-    setCheckInSuccess({
-      method: "QR",
-      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    });
-  };
-
-  // Active User Plan Validation Logic
-  const userPlan = useMemo(() => {
-    if (!classData || !userMemberships.length) return null;
-    return (
-      userMemberships.find(
-        (m) =>
-          m.id === classData.gymId ||
-          (classData.gymName && m.gymName.toLowerCase().includes(classData.gymName.toLowerCase())) ||
-          (classData.location && m.location.toLowerCase().includes(classData.location.toLowerCase()))
-      ) || userMemberships[0]
-    );
-  }, [classData, userMemberships]);
-
-  const classActivityName = (classData?.discipline || classData?.name || "").toLowerCase();
-
-  const isActivityAllowed = useMemo(() => {
-    if (!userPlan) return true;
-    if (userPlan.passType === "Pase Libre") return true;
-    if (!userPlan.includedActivities || !userPlan.includedActivities.length) return true;
-    return userPlan.includedActivities.some((act: string) => {
-      const a = act.toLowerCase();
-      return a === "todas" || a === "pase libre" || classActivityName.includes(a) || a.includes(classActivityName);
-    });
-  }, [userPlan, classActivityName]);
-
-  const hasEnoughCredits = useMemo(() => {
-    if (!userPlan) return true;
-    if (userPlan.passType === "Pase Libre") return true;
-    return userPlan.remainingCredits !== null && userPlan.remainingCredits > 0;
-  }, [userPlan]);
-
-  // Enrolled students mock with privacy state
-  const enrolledStudents = classData.enrolledStudents || [
-    {
-      name: "Agustín Gómez (Tú)",
-      isUser: true,
-      isPublic: isUserProfilePublic,
-      photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-      spotIndex: isSpotSurrendered ? -1 : 4,
-    },
-    {
-      name: "Camila Díaz",
-      isUser: false,
-      isPublic: true,
-      photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
-      spotIndex: 1,
-    },
-    {
-      name: "Lucas Torres",
-      isUser: false,
-      isPublic: false,
-      photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
-      spotIndex: 3,
-    },
-    {
-      name: "Paula Cáceres",
-      isUser: false,
-      isPublic: true,
-      photo: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&auto=format&fit=crop&q=80",
-      spotIndex: 7,
-    },
-    {
-      name: "Sofía Martínez",
-      isUser: false,
-      isPublic: true,
-      photo: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80",
-      spotIndex: 10,
-    },
-    {
-      name: "Mateo R.",
-      isUser: false,
-      isPublic: false,
-      photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
-      spotIndex: 12,
-    },
-  ];
-
-  // 16 circular spots in room layout grid
-  const spots = Array.from({ length: 16 }, (_, i) => {
-    const isUserSpot = !isSpotSurrendered && i === (classData.userSpotIndex ?? 4) && classData.status === "booked";
-    const occupant = enrolledStudents.find((st: any) => st.spotIndex === i);
-    const occupiedByOther = !isUserSpot && !!occupant;
-
-    return {
-      index: i + 1,
-      isUserSpot,
-      occupiedByOther,
-      occupant,
-      isAvailable: !isUserSpot && !occupiedByOther,
-    };
-  });
+  const isBooked = classData.status === "booked";
+  const isFull = classData.status === "full";
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0 gap-0 border border-border bg-card rounded-3xl">
-        {/* Banner Header */}
-        <div className="relative p-6 bg-gradient-to-br from-zinc-950 via-neutral-900 to-black border-b border-border text-white overflow-hidden">
-          {/* Ambient Glow */}
-          <div className="absolute -right-10 -top-10 w-48 h-48 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
-
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative z-10">
-            <div className="flex items-center gap-2 flex-wrap">
-              <Badge className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold uppercase">
-                {classData.gymName || "Centro Deportivo"}
-              </Badge>
-
-              {classData.status === "booked" ? (
-                isSpotSurrendered ? (
-                  <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold">
-                    🟡 Lugar Cedido (Re-reserva en curso)
-                  </Badge>
-                ) : (
-                  <Badge className="bg-emerald-500 text-black text-xs font-black">
-                    ✓ Tu Reserva Confirmada
-                  </Badge>
-                )
-              ) : classData.status === "urgent" ? (
-                <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-semibold">
-                  ⚠️ Últimos cupos
-                </Badge>
-              ) : classData.status === "full" ? (
-                <Badge variant="secondary" className="text-xs font-semibold">
-                  Completo
-                </Badge>
-              ) : (
-                <Badge className="bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs font-semibold">
-                  Cupos Disponibles
-                </Badge>
-              )}
-
-              <Badge variant="outline" className="text-xs font-bold border-white/20 text-white bg-white/5">
-                🪙 {classData.creditsCost || 1} Crédito
-              </Badge>
-            </div>
-          </div>
-
-          <div className="mt-4 relative z-10">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">{classData.name}</h2>
-            <p className="text-xs text-zinc-300 mt-1 flex items-center gap-2">
-              <span className="flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5 text-emerald-400" />
-                {classData.salaName || "Sala Principal WOD"} · {classData.location || "Palermo, CABA"}
-              </span>
-            </p>
-          </div>
-        </div>
-
-        <div className="p-6 space-y-6">
-          {/* User Privacy Control Banner */}
-          <div className="p-3.5 rounded-2xl bg-secondary/40 border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-2">
-              <Shield className="w-4 h-4 text-emerald-500 shrink-0" />
-              <div>
-                <span className="font-bold text-foreground block">Visibilidad de tu Perfil en Clase</span>
-                <span className="text-muted-foreground text-[11px]">
-                  {isUserProfilePublic
-                    ? "🟢 Tu perfil es Público. Otros alumnos pueden ver tu foto y lugar asignado."
-                    : "🔒 Tu perfil es Privado. Tu foto y nombre están ocultos para los demás alumnos."}
-                </span>
-              </div>
-            </div>
-
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsUserProfilePublic(!isUserProfilePublic)}
-              className="rounded-full text-xs font-semibold shrink-0"
-            >
-              {isUserProfilePublic ? "Cambiar a Privado" : "Cambiar a Público"}
-            </Button>
-          </div>
-
-          {/* Active Plan Status Banner */}
-          {userPlan && (
-            <div
-              className={`p-3.5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs ${
-                !isActivityAllowed || !hasEnoughCredits
-                  ? "bg-amber-500/10 border-amber-500/30 text-amber-900 dark:text-amber-200"
-                  : "bg-emerald-500/10 border-emerald-500/30 text-emerald-900 dark:text-emerald-200"
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <CreditCard className="w-4 h-4 shrink-0 text-emerald-500" />
-                <div>
-                  <div className="font-bold">
-                    Plan: {userPlan.planName} ({userPlan.gymName})
-                  </div>
-                  <div className="text-[11px] opacity-80 mt-0.5">
-                    {!isActivityAllowed
-                      ? `⚠️ Esta disciplina no está incluida en tu plan. (Incluye: ${userPlan.includedActivities?.join(", ") || "Disciplinas específicas"})`
-                      : !hasEnoughCredits
-                      ? `⚠️ No tienes créditos disponibles en tu plan (${userPlan.remainingCredits}/${userPlan.creditsCount} rest.).`
-                      : userPlan.passType === "Por Créditos"
-                      ? `Créditos restantes: ${userPlan.remainingCredits} de ${userPlan.creditsCount}`
-                      : "Pase Libre Ilimitado"}
-                  </div>
-                </div>
-              </div>
-
-              <Badge
-                variant="outline"
-                className={`text-[10px] font-bold uppercase tracking-wider shrink-0 ${
-                  !isActivityAllowed || !hasEnoughCredits
-                    ? "border-amber-500/40 bg-amber-500/20 text-amber-300"
-                    : "border-emerald-500/40 bg-emerald-500/20 text-emerald-300"
-                }`}
-              >
-                {!isActivityAllowed ? "Actividad Excluida" : !hasEnoughCredits ? "Sin Créditos" : "Plan Compatible"}
-              </Badge>
-            </div>
-          )}
-
-          {/* Interactive Check-in Options (QR & Geolocation GPS) */}
-          {classData.status === "booked" && !isSpotSurrendered && (
-            <div className="p-5 rounded-2xl border border-border bg-card shadow-sm space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 flex items-center gap-2">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                    </span>
-                    Confirmar Asistencia a la Clase
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Realiza tu check-in mediante el lector QR físico o validación por GPS al llegar al centro.
-                  </p>
-                </div>
-              </div>
-
-              {checkInSuccess ? (
-                <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center shrink-0 border border-emerald-500/30">
-                      <CheckCircle className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <span className="font-bold text-foreground block text-sm">
-                        Asistencia Confirmada por {checkInSuccess.method === "QR" ? "Escáner QR" : "Geolocalización GPS"}
-                      </span>
-                      <span className="text-muted-foreground text-[11px] block mt-0.5">
-                        Registrado a las {checkInSuccess.time} · {checkInSuccess.distance !== undefined ? `Distancia verificada: ${checkInSuccess.distance}m de la sede.` : "Validación de código QR completada."}
-                      </span>
-                    </div>
-                  </div>
-                  <Badge className="bg-emerald-500 text-black text-[10px] font-extrabold uppercase shrink-0">
-                    Presente
-                  </Badge>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {/* Button 1: QR Scanner */}
-                    <Button
-                      onClick={() => setIsQrScannerOpen(true)}
-                      className="h-auto py-3 px-4 rounded-2xl bg-foreground text-background hover:opacity-90 font-bold flex flex-col items-start gap-1 transition-all duration-300 hover:-translate-y-0.5 shadow-sm"
-                    >
-                      <div className="flex items-center gap-2 text-xs">
-                        <Scan className="w-4 h-4 text-emerald-400" />
-                        <span>Check-in con QR</span>
-                      </div>
-                      <span className="text-[10px] font-normal opacity-80">Escanear código en recepción</span>
-                    </Button>
-
-                    {/* Button 2: Geolocation GPS */}
-                    <Button
-                      onClick={handleGpsCheckIn}
-                      disabled={isGpsVerifying}
-                      variant="outline"
-                      className="h-auto py-3 px-4 rounded-2xl border-border bg-secondary/40 hover:bg-secondary hover:border-foreground/30 font-bold flex flex-col items-start gap-1 transition-all duration-300 hover:-translate-y-0.5 shadow-sm"
-                    >
-                      <div className="flex items-center gap-2 text-xs text-foreground">
-                        {isGpsVerifying ? (
-                          <Loader2 className="w-4 h-4 text-emerald-500 animate-spin" />
-                        ) : (
-                          <Navigation className="w-4 h-4 text-emerald-500" />
-                        )}
-                        <span>Check-in por GPS (50m)</span>
-                      </div>
-                      <span className="text-[10px] font-normal text-muted-foreground">Validar ubicación actual en la sede</span>
-                    </Button>
-                  </div>
-
-                  {gpsError && (
-                    <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-xs flex items-center gap-2">
-                      <AlertCircle className="w-4 h-4 shrink-0" />
-                      <span>{gpsError}</span>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Coach & Session Stats */}
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div className="p-4 rounded-2xl border border-border/80 bg-secondary/30 flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-500 font-extrabold text-base flex items-center justify-center border border-emerald-500/30 shrink-0">
-                {classData.instructor ? classData.instructor.charAt(0) : "M"}
-              </div>
-              <div>
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Profesor / Coach</span>
-                <span className="text-sm font-bold text-foreground block">{classData.instructor || "Mateo Rossi"}</span>
-                <span className="text-xs text-emerald-500 font-semibold flex items-center gap-1 mt-0.5">
-                  ★ 4.9 <span className="text-muted-foreground font-normal">(124 reseñas)</span>
-                </span>
-              </div>
-            </div>
-
-            <div className="p-4 rounded-2xl border border-border/80 bg-secondary/30 grid grid-cols-2 gap-2 text-xs">
-              <div>
-                <span className="text-muted-foreground block text-[10px] font-bold uppercase">Horario</span>
-                <span className="font-bold text-foreground mt-0.5 block flex items-center gap-1">
-                  <Clock className="w-3.5 h-3.5 text-amber-500" />
-                  {classData.time || "19:00 hs"}
-                </span>
-              </div>
-
-              <div>
-                <span className="text-muted-foreground block text-[10px] font-bold uppercase">Intensidad</span>
-                <span className="font-bold text-foreground mt-0.5 block flex items-center gap-1">
-                  <Activity className="w-3.5 h-3.5 text-emerald-500" />
-                  {classData.intensity || "Alta / Avanzado"}
-                </span>
-              </div>
-
-              <div>
-                <span className="text-muted-foreground block text-[10px] font-bold uppercase">Ocupación</span>
-                <span className="font-bold text-foreground mt-0.5 block">
-                  {classData.slots || "10/12 cupos"}
-                </span>
-              </div>
-
-              <div>
-                <span className="text-muted-foreground block text-[10px] font-bold uppercase">Duración</span>
-                <span className="font-bold text-foreground mt-0.5 block">
-                  {classData.duration || "60 min"}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* CIRCULAR SEAT / STUDIO LAYOUT GRID */}
-          {classData.requiresSpotSelection === false ? (
-            <div className="p-4 rounded-2xl border border-border bg-secondary/30 text-center space-y-1.5">
-              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
-                Modo Aforo General (Sin Selección de Lugar)
-              </span>
-              <p className="text-xs text-muted-foreground max-w-md mx-auto">
-                Esta actividad no requiere elegir una ubicación numerada. Tu reserva garantiza 1 cupo directo en la sesión.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4 p-5 rounded-2xl border border-border bg-card">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                  <Dumbbell className="w-4 h-4 text-emerald-500" />
-                  <span>Mapa de Círculos / Fotos de Asistencia</span>
-                </span>
-                <span className="text-[11px] text-muted-foreground font-medium">
-                  {classData.status === "booked"
-                    ? isSpotSurrendered
-                      ? "Lugar #5 cedido a la comunidad"
-                      : "Lugar #5 asignado a ti"
-                    : selectedSpot !== null
-                    ? `Lugar #${selectedSpot + 1} seleccionado (Toca de nuevo para des-elegir)`
-                    : "Toca un círculo libre para reservarlo"}
-                </span>
-              </div>
-
-              {/* Room Screen / Coach Stage indicator */}
-              <div className="w-full bg-muted/60 text-center py-1.5 rounded-xl text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground border border-border/50 shadow-inner">
-                🏋️ Escenario / Frente del Coach
-              </div>
-
-              {/* Circular Grid (4x4) */}
-              <div className="grid grid-cols-4 gap-3 py-2 justify-items-center">
-                {spots.map((spot, idx) => {
-                  const isSelected = selectedSpot === idx;
-                  const occupant = spot.occupant;
-
-                  return (
-                    <div key={idx} className="flex flex-col items-center gap-1">
-                      <button
-                        type="button"
-                        disabled={spot.occupiedByOther}
-                        onClick={() => {
-                          // TOGGLE SPOT SELECTION / DESELECT IF CLICKED AGAIN
-                          if (spot.occupiedByOther) return;
-                          setSelectedSpot((prev) => (prev === idx ? null : idx));
-                        }}
-                        className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center relative transition-all duration-200 ${
-                          spot.isUserSpot
-                            ? "ring-4 ring-emerald-500 ring-offset-2 ring-offset-card shadow-lg shadow-emerald-500/20 scale-105"
-                            : isSelected
-                            ? "ring-4 ring-emerald-400 ring-offset-2 ring-offset-card shadow-lg shadow-emerald-500/20 scale-105"
-                            : spot.occupiedByOther
-                            ? "cursor-not-allowed opacity-95"
-                            : "border-2 border-dashed border-emerald-500/40 bg-emerald-500/5 hover:border-emerald-500 hover:bg-emerald-500/15 hover:scale-105 cursor-pointer"
-                        }`}
-                      >
-                        {/* USER SPOT CIRCLE */}
-                        {spot.isUserSpot ? (
-                          <div className="w-full h-full rounded-full overflow-hidden relative border-2 border-emerald-400">
-                            {isUserProfilePublic ? (
-                              <img
-                                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
-                                alt="Tú"
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full bg-zinc-900 text-emerald-400 flex items-center justify-center">
-                                <User className="w-6 h-6" />
-                              </div>
-                            )}
-                            <span className="absolute bottom-0 inset-x-0 bg-emerald-500 text-black text-[9px] font-black text-center py-0.5 leading-none">
-                              TÚ
-                            </span>
-                          </div>
-                        ) : isSelected && !spot.occupiedByOther ? (
-                          /* SELECTED OPEN SPOT CIRCLE (CAN BE TOGGLED OFF) */
-                          <div className="w-full h-full rounded-full bg-emerald-500 text-black flex flex-col items-center justify-center font-black text-xs shadow-md relative">
-                            <Check className="w-5 h-5 stroke-[3]" />
-                            <span className="text-[8px] leading-none mt-0.5">#{spot.index}</span>
-                          </div>
-                        ) : spot.occupiedByOther ? (
-                          /* OCCUPIED SPOT CIRCLE (PUBLIC vs PRIVATE PHOTO) */
-                          <div className="w-full h-full rounded-full overflow-hidden relative border-2 border-zinc-700/60 bg-secondary/80">
-                            {occupant && occupant.isPublic ? (
-                              <img
-                                src={occupant.photo}
-                                alt={occupant.name}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full bg-zinc-900 text-zinc-400 flex flex-col items-center justify-center">
-                                <User className="w-5 h-5 opacity-60" />
-                                <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-tighter">Privado</span>
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          /* FREE SPOT CIRCLE */
-                          <div className="flex flex-col items-center justify-center text-emerald-500">
-                            <span className="text-xs font-bold">#{spot.index}</span>
-                            <span className="text-[8px] text-muted-foreground font-semibold">Libre</span>
-                          </div>
-                        )}
-                      </button>
-
-                      {/* Circle Label Subtitle */}
-                      <span className="text-[10px] font-semibold text-center text-muted-foreground truncate max-w-[70px]">
-                        {spot.isUserSpot
-                          ? "Agustín (Tú)"
-                          : isSelected
-                          ? `Lugar #${spot.index} (Elegido)`
-                          : spot.occupiedByOther
-                          ? occupant?.isPublic
-                            ? occupant.name
-                            : "Privado"
-                          : `Lugar #${spot.index}`}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Legend */}
-              <div className="flex items-center justify-center gap-5 text-[11px] text-muted-foreground pt-2 border-t border-border/50">
-                <span className="flex items-center gap-1.5 font-medium">
-                  <span className="w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-emerald-500/30" /> Tu lugar
-                </span>
-                <span className="flex items-center gap-1.5 font-medium">
-                  <span className="w-3 h-3 rounded-full border-2 border-emerald-500/50 bg-emerald-500/10" /> Libre
-                </span>
-                <span className="flex items-center gap-1.5 font-medium">
-                  <span className="w-3 h-3 rounded-full bg-zinc-800 border border-zinc-600" /> Ocupado
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* Lista de Espera Section (Interactive join & cancel waitlist) */}
-          {(classData.status === "full" || waitlistCount > 0 || isOnWaitlist) && (
-            <div className="p-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 space-y-3 text-xs">
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-amber-400 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
-                  <Clock className="w-3.5 h-3.5 text-amber-500" />
-                  Lista de Espera Activa
-                </span>
-                <Badge variant="outline" className="bg-amber-500/20 text-amber-300 border-amber-500/40 text-[10px] font-bold">
-                  {isOnWaitlist ? `Puesto #1 en espera (${waitlistCount} alumnos)` : `${waitlistCount} Alumnos aguardando`}
-                </Badge>
-              </div>
-
-              <p className="text-[11px] text-amber-200/90 leading-relaxed">
-                {isOnWaitlist
-                  ? "✓ Estás registrado en la Lista de Espera. Si algún alumno cancela o cede su lugar, serás inscripto automáticamente y se debitará 1 crédito de tu cuenta."
-                  : "Esta clase se encuentra al 100% de su capacidad. Al unirte a la lista de espera, la app te asignará automáticamente el lugar si se libera un cupo."}
-              </p>
-
-              <div className="pt-2 flex items-center justify-between border-t border-amber-500/20">
-                <span className="text-[10px] text-amber-300 font-semibold">
-                  {isOnWaitlist ? "Posición #1 · Notificación instantánea" : "Orden de asignación: Por horario de solicitud"}
-                </span>
-
-                {isOnWaitlist && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setIsOnWaitlist(false);
-                      setWaitlistCount((prev) => Math.max(0, prev - 1));
-                      alert("Has salido de la Lista de Espera exitosamente.");
-                    }}
-                    className="rounded-full text-[10px] h-7 px-3 border-amber-500/40 text-amber-300 hover:bg-amber-500/20"
-                  >
-                    Salir de la Lista de Espera
-                  </Button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Requisitos & Qué Traer */}
-          <div className="p-4 rounded-2xl border border-border bg-secondary/20 text-xs space-y-2">
-            <span className="font-bold text-foreground block">📋 Qué traer a la clase:</span>
-            <ul className="grid sm:grid-cols-3 gap-2 text-muted-foreground">
-              <li className="flex items-center gap-1.5">
-                <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" /> Toalla de entrenamiento
-              </li>
-              <li className="flex items-center gap-1.5">
-                <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" /> Botella de agua (1L)
-              </li>
-              <li className="flex items-center gap-1.5">
-                <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" /> Calzado deportivo técnico
-              </li>
-            </ul>
-          </div>
-
-          {/* Cancellation & Spot Surrender Policy Banner */}
-          <div className={`p-4 rounded-2xl border text-xs flex items-start gap-3 ${
-            classData.cannotCancel
-              ? isSpotSurrendered
-                ? "bg-amber-500/10 border-amber-500/30 text-amber-200"
-                : "bg-destructive/10 border-destructive/30 text-destructive-foreground"
-              : "bg-amber-500/10 border-amber-500/20 text-amber-200"
-          }`}>
-            <ShieldAlert className={`w-4 h-4 shrink-0 mt-0.5 ${
-              classData.cannotCancel ? (isSpotSurrendered ? "text-amber-400" : "text-destructive") : "text-amber-500"
-            }`} />
-            <div className="space-y-1">
-              <span className={`font-bold block ${
-                classData.cannotCancel ? (isSpotSurrendered ? "text-amber-400" : "text-destructive") : "text-amber-400"
-              }`}>
-                {classData.cannotCancel
-                  ? isSpotSurrendered
-                    ? "🟡 Lugar Cedido a la Comunidad (Re-reserva Activa)"
-                    : `⚠️ Política Post-Límite (${classData.cancellationPolicyHours || 2} hs de anticipación)`
-                  : `✓ Cancelación Estándar (${classData.cancellationPolicyHours || 2} hs de anticipación)`}
-              </span>
-              <p className="text-[11px] opacity-90 leading-relaxed">
-                {classData.cannotCancel ? (
-                  isSpotSurrendered ? (
-                    <>
-                      Has puesto tu lugar a disposición para <strong>Re-reserva</strong>. Si otro alumno o un usuario de la lista de espera se inscribe en tu lugar, <strong>recuperarás automáticamente tu crédito (🪙 1)</strong>. Puedes cancelar esta cesión y recuperar tu lugar mientras no haya sido reservado por alguien más.
-                    </>
-                  ) : (
-                    <>
-                      Faltan menos de {classData.cancellationPolicyHours || 2} horas para iniciar. La política estándar ya no permite cancelación directa, pero puedes <strong>Ceder tu Lugar para Re-reserva</strong>: Si otro alumno toma tu lugar cedido, ¡recuperarás tu crédito (🪙 1)!
-                    </>
-                  )
-                ) : (
-                  <>
-                    Cancelación sin penalización disponible hasta 2 horas antes de iniciar la clase. Al cancelar ahora, se reembolsará automáticamente 🪙 1 crédito a tu saldo.
-                  </>
-                )}
-              </p>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-2 border-t border-border">
-            <Button variant="outline" onClick={onClose} className="rounded-full w-full sm:w-auto">
-              Cerrar
-            </Button>
-
-            {classData.status === "booked" ? (
-              <>
-                {classData.cannotCancel ? (
-                  /* POST 2H CANCELATION WINDOW: CEDER / RE-RESERVA SYSTEM */
-                  isSpotSurrendered ? (
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setIsSpotSurrendered(false);
-                        alert("¡Has recuperado tu lugar en la clase! Tu reserva vuelve a estar activa.");
-                      }}
-                      className="rounded-full w-full sm:w-auto font-semibold border-amber-500/40 text-amber-300 hover:bg-amber-500/20"
-                    >
-                      ↩️ Recuperar mi Lugar
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="destructive"
-                      onClick={() => {
-                        if (confirm("⚠️ Han pasado las 2 horas de cancelación sin costo.\n\n¿Deseas Ceder tu Lugar para Re-reserva?\nSi otro alumno se inscribe en tu lugar, ¡recuperarás tu crédito (🪙 1)! Podrás arrepentirte y recuperar tu lugar mientras siga libre.")) {
-                          setIsSpotSurrendered(true);
-                          alert("Tu lugar se ha puesto a disposición para Re-reserva. Te notificaremos si otro alumno se inscribe para acreditarte 1 crédito.");
-                        }
-                      }}
-                      className="rounded-full w-full sm:w-auto font-semibold"
-                    >
-                      Ceder Lugar (Re-reserva con Crédito 🪙)
-                    </Button>
-                  )
-                ) : (
-                  /* STANDARD CANCELATION WINDOW (>2H) */
-                  <Button
-                    variant="destructive"
-                    onClick={() => {
-                      if (confirm("¿Confirmas cancelar tu reserva para esta clase?\nSe reembolsará 1 crédito a tu cuenta.")) {
-                        if (userPlan && userPlan.passType === "Por Créditos" && setUserMemberships) {
-                          setUserMemberships((prev) =>
-                            prev.map((m) =>
-                              m.id === userPlan.id && m.remainingCredits !== null
-                                ? { ...m, remainingCredits: m.remainingCredits + 1 }
-                                : m
-                            )
-                          );
-                        }
-                        if (onCancel) onCancel(classData.id);
-                        alert("Reserva cancelada exitosamente. Se ha reembolsado 1 crédito a tu saldo.");
-                        onClose();
-                      }
-                    }}
-                    className="rounded-full w-full sm:w-auto font-semibold"
-                  >
-                    Cancelar Reserva (🪙 Reembolso)
-                  </Button>
-                )}
-
-                {onOpenQr && !isSpotSurrendered && (
-                  <Button
-                    onClick={() => {
-                      onClose();
-                      onOpenQr();
-                    }}
-                    className="rounded-full bg-emerald-500 text-black hover:bg-emerald-400 font-bold gap-2 w-full sm:w-auto shadow-lg"
-                  >
-                    <QrCode className="w-4 h-4" />
-                    <span>Ver Pase QR / Check-in</span>
-                  </Button>
-                )}
-              </>
-            ) : classData.status === "full" ? (
-              isOnWaitlist ? (
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setIsOnWaitlist(false);
-                    setWaitlistCount((prev) => Math.max(0, prev - 1));
-                    alert("Has salido de la Lista de Espera exitosamente.");
-                  }}
-                  className="rounded-full border-amber-500/40 text-amber-300 font-bold w-full sm:w-auto"
-                >
-                  Salir de la Lista de Espera
-                </Button>
-              ) : (
-                <Button
-                  onClick={() => {
-                    setIsOnWaitlist(true);
-                    setWaitlistCount((prev) => prev + 1);
-                    alert("¡Te has inscripto a la Lista de Espera! Puesto #1. Te avisaremos automáticamente si se libera un cupo.");
-                  }}
-                  className="rounded-full bg-amber-500 text-black hover:bg-amber-400 font-extrabold gap-2 w-full sm:w-auto shadow-lg"
-                >
-                  <Clock className="w-4 h-4" />
-                  <span>Sumarse a Lista de Espera ({waitlistCount} en espera)</span>
-                </Button>
-              )
-            ) : (
-              <Button
-                disabled={!isActivityAllowed || !hasEnoughCredits}
-                onClick={() => {
-                  if (!isActivityAllowed) {
-                    alert(`⚠️ Tu plan "${userPlan?.planName}" no incluye la actividad "${classData.name}".\n\nActividades incluidas en tu plan: ${userPlan?.includedActivities?.join(", ") || "Disciplinas seleccionadas"}`);
-                    return;
-                  }
-                  if (!hasEnoughCredits) {
-                    alert(`⚠️ Has agotado los créditos de tu plan "${userPlan?.planName}".\nCréditos disponibles: 0 / ${userPlan?.creditsCount}. Renueva tu membresía para continuar.`);
-                    return;
-                  }
-                  if (userPlan && userPlan.passType === "Por Créditos" && setUserMemberships) {
-                    setUserMemberships((prev) =>
-                      prev.map((m) =>
-                        m.id === userPlan.id && m.remainingCredits !== null
-                          ? { ...m, remainingCredits: Math.max(0, m.remainingCredits - 1) }
-                          : m
-                      )
-                    );
-                  }
-                  if (onBook) onBook(classData.id, selectedSpot);
-                  alert(`¡Reserva confirmada en ${classData.name}! ${selectedSpot !== null ? `Lugar asignado: #${selectedSpot + 1}` : "Lugar automático asignado"}${userPlan?.passType === "Por Créditos" ? `\nSe descontó 1 crédito. Créditos restantes: ${Math.max(0, (userPlan.remainingCredits || 1) - 1)}` : ""}`);
-                  onClose();
-                }}
-                className={`rounded-full font-bold gap-2 w-full sm:w-auto shadow-lg ${
-                  !isActivityAllowed || !hasEnoughCredits
-                    ? "bg-muted text-muted-foreground opacity-60 cursor-not-allowed"
-                    : "bg-foreground text-background hover:opacity-90"
-                }`}
-              >
-                <Check className="w-4 h-4" />
-                <span>
-                  {!isActivityAllowed
-                    ? "Actividad fuera de Plan"
-                    : !hasEnoughCredits
-                    ? "Sin Créditos Disponibles"
-                    : `Reservar Cupo (${userPlan?.passType === "Por Créditos" ? "🪙 1 Crédito" : "✓ Pase Libre"})`}
-                </span>
-              </Button>
+      <DialogContent className="max-w-md rounded-3xl border border-border bg-card p-0 gap-0">
+        <div className="p-5 border-b border-border space-y-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-xs font-bold">
+              {classData.gymName || "Centro Deportivo"}
+            </Badge>
+            {isBooked && <Badge className="bg-emerald-500 text-black text-xs font-black">Reservada</Badge>}
+            {isFull && <Badge variant="secondary" className="text-xs">Completo</Badge>}
+            {classData.status === "urgent" && (
+              <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-xs">Ultimos cupos</Badge>
             )}
           </div>
+          <h2 className="text-xl font-extrabold text-foreground tracking-tight">{classData.name}</h2>
+          <p className="text-xs text-muted-foreground flex flex-wrap items-center gap-3">
+            <span className="flex items-center gap-1"><User className="w-3.5 h-3.5" /> {classData.instructor}</span>
+            <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {classData.time}</span>
+            {classData.location && <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {classData.location}</span>}
+          </p>
+        </div>
+        <div className="p-5 space-y-2 text-xs text-muted-foreground">
+          <div><span className="font-semibold text-foreground">Cupos: </span>{classData.slots}</div>
+          {classData.salaName && <div><span className="font-semibold text-foreground">Sala: </span>{classData.salaName}</div>}
+        </div>
+        <div className="px-5 pb-5 flex flex-col sm:flex-row gap-2">
+          <Button variant="outline" onClick={onClose} className="rounded-full flex-1">Cerrar</Button>
+          {isBooked ? (
+            onOpenQr && (
+              <Button onClick={() => { onClose(); onOpenQr(); }} className="rounded-full flex-1 bg-emerald-500 text-black hover:bg-emerald-400 font-bold gap-2">
+                <QrCode className="w-4 h-4" /> Check-in QR
+              </Button>
+            )
+          ) : isFull ? (
+            <Button variant="secondary" disabled className="rounded-full flex-1">Clase llena</Button>
+          ) : (
+            <Button onClick={() => { alert(`Reserva confirmada en ${classData.name}`); onClose(); }} className="rounded-full flex-1 font-bold">
+              Reservar
+            </Button>
+          )}
         </div>
       </DialogContent>
-
-      {/* QR Camera Scanner Sub-Modal */}
-      <Dialog open={isQrScannerOpen} onOpenChange={setIsQrScannerOpen}>
-        <DialogContent className="sm:max-w-md rounded-3xl border border-border bg-card p-6 gap-0">
-          <DialogHeader>
-            <DialogTitle className="text-base font-bold flex items-center gap-2">
-              <Scan className="w-5 h-5 text-emerald-500" /> Escáner de Código QR
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground mt-1">
-              Apunta la cámara de tu dispositivo hacia el código QR físico ubicado en la recepción del gimnasio.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="my-5 relative aspect-square rounded-2xl overflow-hidden bg-zinc-950 border-2 border-emerald-500/40 flex flex-col items-center justify-center shadow-inner">
-            {/* Ambient scanner laser line animation */}
-            <div className="absolute inset-x-6 top-1/3 h-0.5 bg-emerald-400 shadow-[0_0_15px_#10b981] animate-pulse pointer-events-none" />
-
-            <div className="w-44 h-44 border-2 border-dashed border-emerald-400/60 rounded-2xl flex flex-col items-center justify-center bg-emerald-500/5 p-4 text-center">
-              <QrCode className="w-20 h-20 text-emerald-400/50 animate-pulse mb-2" />
-              <span className="text-[10px] text-zinc-400 font-semibold uppercase tracking-wider">Alinear QR en el marco</span>
-            </div>
-
-            <span className="text-[11px] font-medium text-zinc-400 mt-4 animate-pulse">
-              📷 Buscando código QR de la sede...
-            </span>
-          </div>
-
-          <div className="flex gap-2 pt-2 border-t border-border">
-            <Button
-              variant="outline"
-              onClick={() => setIsQrScannerOpen(false)}
-              className="rounded-full flex-1 text-xs font-semibold"
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleQrCheckInSuccess}
-              className="rounded-full flex-1 bg-emerald-500 text-black hover:bg-emerald-400 font-bold text-xs gap-1.5 shadow-md"
-            >
-              <Check className="w-4 h-4" /> Simular Escaneo QR
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </Dialog>
   );
 }
 
 // Subcomponent: Clases / Check-in Tab
 function ClasesTab({ onOpenQr }: { onOpenQr?: () => void }) {
-  const [selectedGymId, setSelectedGymId] = useState<string | null>(null);
-  const [filter, setFilter] = useState("Todos");
   const [selectedClassDetail, setSelectedClassDetail] = useState<any | null>(null);
 
-  const [userMemberships, setUserMemberships] = useState([
-    {
-      id: "kraft-club",
-      gymName: "Kraft Club",
-      planName: "Pase Libre Total",
-      badge: "VIP PASSPORT",
-      code: "KC-884291",
-      status: "Activa (Pase Libre)",
-      validUntil: "15 Ago 2026",
-      location: "Palermo, CABA",
-      passType: "Pase Libre",
-      creditsCount: null,
-      remainingCredits: null,
-      includedActivities: ["Todas", "Pase Libre", "CrossFit", "Spinning", "Yoga", "Musculación", "HIIT", "Pilates"],
-      color: "from-zinc-950 via-zinc-900 to-black border-zinc-700/60 shadow-xl",
-      accentBg: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
-      accentGlow: "shadow-emerald-500/10",
-      logoIcon: "🏋️",
-    },
-    {
-      id: "fitflow-studio",
-      gymName: "FitFlow Studio",
-      planName: "Pase 8 Clases / Mes",
-      badge: "YOGA & PILATES",
-      code: "FF-330194",
-      status: "Activa",
-      validUntil: "30 Jul 2026",
-      location: "Recoleta, CABA",
-      passType: "Por Créditos",
-      creditsCount: 8,
-      remainingCredits: 5,
-      includedActivities: ["Yoga", "Pilates", "Stretch", "Barre"],
-      color: "from-slate-950 via-indigo-950 to-slate-900 border-indigo-500/40 shadow-xl",
-      accentBg: "bg-indigo-500/10 text-indigo-300 border-indigo-500/30",
-      accentGlow: "shadow-indigo-500/10",
-      logoIcon: "🧘",
-    },
-    {
-      id: "box-central",
-      gymName: "Box Central",
-      planName: "CrossFit 12 Sesiones",
-      badge: "OFFICIAL BOX",
-      code: "BC-772105",
-      status: "Activa",
-      validUntil: "10 Sep 2026",
-      location: "Belgrano, CABA",
-      passType: "Por Créditos",
-      creditsCount: 12,
-      remainingCredits: 3,
-      includedActivities: ["CrossFit", "Open Box", "Levantamiento", "Musculación"],
-      color: "from-stone-950 via-amber-950/90 to-neutral-950 border-amber-500/40 shadow-xl",
-      accentBg: "bg-amber-500/10 text-amber-300 border-amber-500/30",
-      accentGlow: "shadow-amber-500/10",
-      logoIcon: "⚡",
-    },
-  ]);
+  const userMemberships = [
+    { id: "kraft-club", gymName: "Kraft Club", planName: "Pase Libre Total", badge: "VIP PASSPORT", code: "KC-884291", status: "Activa (Pase Libre)", location: "Palermo, CABA", passType: "Pase Libre", remainingCredits: null as number | null, creditsCount: null as number | null, color: "from-zinc-950 via-zinc-900 to-black border-zinc-700/60 shadow-xl", accentBg: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30", logoIcon: "🏋️" },
+    { id: "fitflow-studio", gymName: "FitFlow Studio", planName: "Pase 8 Clases / Mes", badge: "YOGA & PILATES", code: "FF-330194", status: "Activa", location: "Recoleta, CABA", passType: "Por Creditos", remainingCredits: 5, creditsCount: 8, color: "from-slate-950 via-indigo-950 to-slate-900 border-indigo-500/40 shadow-xl", accentBg: "bg-indigo-500/10 text-indigo-300 border-indigo-500/30", logoIcon: "🧘" },
+    { id: "box-central", gymName: "Box Central", planName: "CrossFit 12 Sesiones", badge: "OFFICIAL BOX", code: "BC-772105", status: "Activa", location: "Belgrano, CABA", passType: "Por Creditos", remainingCredits: 3, creditsCount: 12, color: "from-stone-950 via-amber-950/90 to-neutral-950 border-amber-500/40 shadow-xl", accentBg: "bg-amber-500/10 text-amber-300 border-amber-500/30", logoIcon: "⚡" },
+  ];
 
   const upcomingReservations = [
-    {
-      id: "res-1",
-      gymId: "box-central",
-      gymName: "Box Central",
-      name: "CrossFit WOD",
-      instructor: "Mateo Rossi",
-      date: "Hoy",
-      time: "19:00 hs",
-      timeLabel: "Hoy, 19:00 hs",
-      location: "Belgrano, CABA",
-      status: "Confirmada",
-      cannotCancel: true,
-      timeRemainingLabel: "45 minutos",
-    },
-    {
-      id: "res-2",
-      gymId: "fitflow-studio",
-      gymName: "FitFlow Studio",
-      name: "Yoga Vinyasa Flow",
-      instructor: "Valeria Soto",
-      date: "Hoy",
-      time: "22:00 hs",
-      timeLabel: "Hoy, 22:00 hs",
-      location: "Recoleta, CABA",
-      status: "Confirmada",
-      cannotCancel: false,
-      timeRemainingLabel: "3 horas y 45 min",
-    },
-    {
-      id: "res-3",
-      gymId: "kraft-club",
-      gymName: "Kraft Club",
-      name: "Musculación & Funcional",
-      instructor: "Daniel Gómez",
-      date: "Mañana",
-      time: "10:00 hs",
-      timeLabel: "Mañana, 10:00 hs",
-      location: "Palermo, CABA",
-      status: "Confirmada",
-      cannotCancel: false,
-      timeRemainingLabel: "15 horas",
-    },
+    { id: "res-1", gymName: "Box Central", name: "CrossFit WOD", instructor: "Mateo Rossi", timeLabel: "Hoy, 19:00 hs", location: "Belgrano, CABA", status: "booked" },
+    { id: "res-2", gymName: "FitFlow Studio", name: "Yoga Vinyasa Flow", instructor: "Valeria Soto", timeLabel: "Hoy, 22:00 hs", location: "Recoleta, CABA", status: "booked" },
+    { id: "res-3", gymName: "Kraft Club", name: "Musculacion & Funcional", instructor: "Daniel Gomez", timeLabel: "Manana, 10:00 hs", location: "Palermo, CABA", status: "booked" },
   ];
-
-  const disciplines = ["Todos", "CrossFit", "Yoga", "Funcional", "Pilates"];
 
   const allClasses = [
-    { id: "c1", gymId: "box-central", gymName: "Box Central", discipline: "CrossFit", name: "CrossFit WOD Express", instructor: "Mateo Rossi", time: "08:00 hs", slots: "10 cupos", status: "available" },
-    { id: "c2", gymId: "fitflow-studio", gymName: "FitFlow Studio", discipline: "Yoga", name: "Yoga Ashtanga & Meditación", instructor: "Valeria Soto", time: "09:30 hs", slots: "Últimos 2 cupos", status: "urgent" },
-    { id: "c3", gymId: "kraft-club", gymName: "Kraft Club", discipline: "Funcional", name: "Entrenamiento Funcional Hiit", instructor: "Daniel Gómez", time: "18:00 hs", slots: "Completo", status: "full" },
-    { id: "c4", gymId: "box-central", gymName: "Box Central", discipline: "CrossFit", name: "CrossFit WOD Noche", instructor: "Mateo Rossi", time: "19:00 hs", slots: "Reservado", status: "booked" },
-    { id: "c5", gymId: "fitflow-studio", gymName: "FitFlow Studio", discipline: "Pilates", name: "Pilates Reformer Core", instructor: "Sofía Martínez", time: "20:00 hs", slots: "5 cupos", status: "available" },
-    { id: "c6", gymId: "kraft-club", gymName: "Kraft Club", discipline: "Funcional", name: "Body Sculpt & Stretch", instructor: "Lucía Fernández", time: "21:00 hs", slots: "7 cupos", status: "available" },
+    { id: "c1", gymName: "Box Central", name: "CrossFit WOD Express", instructor: "Mateo Rossi", time: "08:00 hs", slots: "10 cupos", status: "available" },
+    { id: "c2", gymName: "FitFlow Studio", name: "Yoga Ashtanga & Meditacion", instructor: "Valeria Soto", time: "09:30 hs", slots: "Ultimos 2 cupos", status: "urgent" },
+    { id: "c3", gymName: "Kraft Club", name: "Entrenamiento Funcional HIIT", instructor: "Daniel Gomez", time: "18:00 hs", slots: "Completo", status: "full" },
+    { id: "c4", gymName: "Box Central", name: "CrossFit WOD Noche", instructor: "Mateo Rossi", time: "19:00 hs", slots: "Reservado", status: "booked" },
+    { id: "c5", gymName: "FitFlow Studio", name: "Pilates Reformer Core", instructor: "Sofia Martinez", time: "20:00 hs", slots: "5 cupos", status: "available" },
+    { id: "c6", gymName: "Kraft Club", name: "Body Sculpt & Stretch", instructor: "Lucia Fernandez", time: "21:00 hs", slots: "7 cupos", status: "available" },
   ];
-
-  // Filtering upcoming reservations
-  const filteredReservations = upcomingReservations.filter((res) => {
-    if (selectedGymId && res.gymId !== selectedGymId) return false;
-    return true;
-  });
-
-  // Filtering available classes
-  const filteredClasses = allClasses.filter((c) => {
-    if (selectedGymId && c.gymId !== selectedGymId) return false;
-    if (filter !== "Todos" && c.discipline !== filter) return false;
-    return true;
-  });
-
-  const selectedMembership = userMemberships.find((m) => m.id === selectedGymId);
 
   return (
     <div className="space-y-8">
-      {/* Title & Fast QR Access Header */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold tracking-tight">Check-in & Membresías</h2>
-            <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-xs font-semibold">
-              Socio Activo
-            </Badge>
+            <h2 className="text-2xl font-bold tracking-tight">Check-in & Membresias</h2>
+            <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-xs font-semibold">Socio Activo</Badge>
           </div>
-          <p className="text-sm text-muted-foreground mt-1">
-            Selecciona un carnet para ingresar, ver tus pases digitales y filtrar tus clases.
-          </p>
+          <p className="text-sm text-muted-foreground mt-1">Tus carnets activos, proximas clases y horario disponible.</p>
         </div>
-
         {onOpenQr && (
-          <Button
-            onClick={onOpenQr}
-            className="rounded-full bg-foreground text-background font-semibold shadow-lg hover:opacity-90 transition flex items-center gap-2 self-start sm:self-auto"
-          >
-            <QrCode className="w-4 h-4" />
-            <span>Abrir Pase QR</span>
+          <Button onClick={onOpenQr} className="rounded-full bg-foreground text-background font-semibold shadow-lg hover:opacity-90 flex items-center gap-2 self-start sm:self-auto">
+            <QrCode className="w-4 h-4" /><span>Abrir Pase QR</span>
           </Button>
         )}
       </div>
 
-      {/* Carnets de Membresía (Row Carousel) */}
+      {/* Carnets */}
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            <CreditCard className="w-4 h-4 text-emerald-500" />
-            <span>Mis Carnets de Membresía ({userMemberships.length})</span>
-          </div>
-          {selectedGymId && (
-            <button
-              onClick={() => setSelectedGymId(null)}
-              className="text-xs text-emerald-500 hover:underline font-semibold flex items-center gap-1"
-            >
-              Ver todas ({userMemberships.length})
-            </button>
-          )}
+        <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+          <CreditCard className="w-4 h-4 text-emerald-500" /> Mis Carnets ({userMemberships.length})
         </div>
-
-        {/* Horizontally Scrollable Membership Cards Container */}
-        <div className="flex gap-4 overflow-x-auto pb-3 pt-1 snap-x scrollbar-none -mx-2 px-2">
-          {userMemberships.map((card) => {
-            const isSelected = selectedGymId === card.id;
-            return (
-              <div
-                key={card.id}
-                onClick={() => setSelectedGymId(isSelected ? null : card.id)}
-                className={`snap-start flex-shrink-0 w-[300px] sm:w-[320px] rounded-2xl p-5 border cursor-pointer transition-all duration-300 relative overflow-hidden bg-gradient-to-br ${card.color} ${
-                  isSelected
-                    ? "ring-2 ring-emerald-500 scale-[1.02] shadow-2xl border-emerald-500/80"
-                    : "hover:scale-[1.01] hover:border-foreground/40 opacity-90 hover:opacity-100"
-                }`}
-              >
-                {/* Background Ambient Glow */}
-                <div className="absolute -right-8 -bottom-8 w-36 h-36 rounded-full bg-white/5 blur-2xl pointer-events-none" />
-
-                {/* Top Row: Gym name & Badge */}
-                <div className="flex justify-between items-start relative z-10">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">{card.logoIcon}</span>
-                    <div>
-                      <h3 className="font-extrabold text-white text-base tracking-tight leading-none">
-                        {card.gymName}
-                      </h3>
-                      <p className="text-[11px] text-zinc-400 mt-0.5 flex items-center gap-1">
-                        <MapPin className="w-3 h-3 text-zinc-400" />
-                        {card.location}
-                      </p>
-                    </div>
-                  </div>
-
-                  <Badge className={`text-[10px] font-bold uppercase tracking-wider border ${card.accentBg}`}>
-                    {card.badge}
-                  </Badge>
-                </div>
-
-                {/* Card Body: Member Name & Plan */}
-                <div className="mt-6 mb-4 relative z-10">
-                  <div className="text-[10px] uppercase font-bold tracking-widest text-zinc-400">Titular</div>
-                  <div className="text-sm font-extrabold text-white tracking-wide">AGUSTÍN GÓMEZ</div>
-                  <div className="text-xs text-zinc-300 font-medium mt-1">{card.planName}</div>
-                </div>
-
-                {/* Card Footer: Status, Code & Selection Indicator */}
-                <div className="pt-3 border-t border-white/10 flex items-center justify-between relative z-10 text-xs">
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <span className="text-zinc-300 font-medium text-[11px]">
-                      {card.passType === "Por Créditos"
-                        ? `Activa (${card.remainingCredits}/${card.creditsCount} créditos)`
-                        : card.status}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-[10px] text-zinc-400 bg-white/5 px-2 py-0.5 rounded border border-white/10">
-                      {card.code}
-                    </span>
-                    {isSelected && (
-                      <span className="bg-emerald-500 text-black text-[10px] font-extrabold px-2 py-0.5 rounded-full flex items-center gap-0.5">
-                        <Check className="w-3 h-3" /> Filtrado
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Próximas Clases Section */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-emerald-500" />
-            <h3 className="text-lg font-bold tracking-tight">Próximas Clases</h3>
-            {selectedMembership && (
-              <Badge variant="secondary" className="text-xs font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                Filtrado por {selectedMembership.gymName}
-              </Badge>
-            )}
-          </div>
-          <span className="text-xs text-muted-foreground font-medium">
-            {filteredReservations.length} {filteredReservations.length === 1 ? "reserva activa" : "reservas activas"}
-          </span>
-        </div>
-
-        {filteredReservations.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border p-8 text-center bg-card/50">
-            <Calendar className="w-8 h-8 text-muted-foreground mx-auto mb-2 opacity-50" />
-            <p className="text-sm font-semibold text-foreground">No tienes reservas próximas para este centro</p>
-            <p className="text-xs text-muted-foreground mt-1">Explora el horario de clases disponibles a continuación para reservar tu lugar.</p>
-          </div>
-        ) : (
-          <div className="grid gap-3 sm:grid-cols-2">
-            {filteredReservations.map((res) => (
-              <div
-                key={res.id}
-                className="rounded-2xl border border-border bg-card p-4 hover:border-foreground/30 transition flex flex-col justify-between space-y-3 relative overflow-hidden shadow-sm"
-              >
-                <div className="flex justify-between items-start">
+        <div className="flex gap-4 overflow-x-auto pb-3 pt-1 snap-x [scrollbar-width:none] -mx-2 px-2">
+          {userMemberships.map((card) => (
+            <div key={card.id} className={`snap-start flex-shrink-0 w-[280px] sm:w-[300px] rounded-2xl p-5 border relative overflow-hidden bg-gradient-to-br ${card.color}`}>
+              <div className="absolute -right-8 -bottom-8 w-36 h-36 rounded-full bg-white/5 blur-2xl pointer-events-none" />
+              <div className="flex justify-between items-start relative z-10">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">{card.logoIcon}</span>
                   <div>
-                    <Badge variant="outline" className="text-[10px] font-bold text-emerald-500 border-emerald-500/30 bg-emerald-500/10 mb-1.5">
-                      {res.gymName}
-                    </Badge>
-                    <h4 className="text-base font-bold text-foreground leading-snug">{res.name}</h4>
-                    <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
-                      <User className="w-3.5 h-3.5" /> Prof. {res.instructor}
-                    </p>
-                  </div>
-                  <Badge variant="secondary" className="text-[11px] font-semibold flex items-center gap-1">
-                    <Clock className="w-3 h-3 text-amber-500" />
-                    {res.timeLabel || `${res.date}, ${res.time}`}
-                  </Badge>
-                </div>
-
-                <div className="flex items-center justify-between pt-2 border-t border-border/60">
-                  <span className="text-xs text-muted-foreground flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5" />
-                    {res.location}
-                  </span>
-
-                  <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setSelectedClassDetail({ ...res, status: "booked", userSpotIndex: 4, salaName: "Sala 1 - Principal" })}
-                      className="rounded-full text-xs font-semibold h-8 px-3"
-                    >
-                      Ver Detalles
-                    </Button>
-
-                    <Button
-                      size="sm"
-                      variant="default"
-                      onClick={onOpenQr}
-                      className="rounded-full text-xs font-semibold gap-1.5 h-8 px-3.5 bg-foreground text-background hover:opacity-90"
-                    >
-                      <QrCode className="w-3.5 h-3.5" />
-                      <span>Check-in QR</span>
-                    </Button>
+                    <h3 className="font-extrabold text-white text-base tracking-tight leading-none">{card.gymName}</h3>
+                    <p className="text-[11px] text-zinc-400 mt-0.5 flex items-center gap-1"><MapPin className="w-3 h-3" /> {card.location}</p>
                   </div>
                 </div>
+                <Badge className={`text-[10px] font-bold uppercase tracking-wider border ${card.accentBg}`}>{card.badge}</Badge>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Clases Disponibles Section */}
-      <div className="space-y-4 pt-2">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-border pt-6">
-          <div>
-            <h3 className="text-lg font-bold tracking-tight">Clases Disponibles</h3>
-            <p className="text-xs text-muted-foreground">Reserva tus próximas sesiones según tu plan activo.</p>
-          </div>
-
-          {/* Discipline Filters */}
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            {disciplines.map((d) => (
-              <button
-                key={d}
-                onClick={() => setFilter(d)}
-                className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-semibold border transition ${
-                  filter === d
-                    ? "border-foreground bg-foreground text-background"
-                    : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground"
-                }`}
-              >
-                {d}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Class List */}
-        <div className="rounded-2xl border border-border overflow-hidden bg-card">
-          <div className="bg-muted px-4 py-3 text-xs font-bold text-muted-foreground border-b border-border flex justify-between items-center">
-            <span>Horarios para hoy</span>
-            {selectedMembership && (
-              <span className="text-emerald-500 text-[11px] font-semibold">
-                Filtrado por: {selectedMembership.gymName}
-              </span>
-            )}
-          </div>
-          {filteredClasses.length === 0 ? (
-            <div className="p-8 text-center text-sm text-muted-foreground">
-              No se encontraron clases disponibles para los filtros seleccionados.
+              <div className="mt-5 mb-4 relative z-10">
+                <div className="text-[10px] uppercase font-bold tracking-widest text-zinc-400">Titular</div>
+                <div className="text-sm font-extrabold text-white tracking-wide">AGUSTIN GOMEZ</div>
+                <div className="text-xs text-zinc-300 font-medium mt-1">{card.planName}</div>
+              </div>
+              <div className="pt-3 border-t border-white/10 flex items-center justify-between relative z-10">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-zinc-300 font-medium text-[11px]">
+                    {card.passType === "Por Creditos" ? `${card.remainingCredits}/${card.creditsCount} creditos` : card.status}
+                  </span>
+                </div>
+                <span className="font-mono text-[10px] text-zinc-400 bg-white/5 px-2 py-0.5 rounded border border-white/10">{card.code}</span>
+              </div>
             </div>
-          ) : (
-            <ul className="divide-y divide-border">
-              {filteredClasses.map((c) => (
-                <li key={c.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-4 hover:bg-muted/30 transition">
-                  <div className="space-y-1 cursor-pointer" onClick={() => setSelectedClassDetail({ ...c, salaName: "Sala 2 - WOD & Studio", location: "Palermo/Belgrano, CABA" })}>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-foreground hover:underline">{c.name}</span>
-                      <Badge variant="outline" className="text-[10px] font-medium text-muted-foreground">
-                        {c.gymName}
-                      </Badge>
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      Prof. {c.instructor} · {c.time}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-4 justify-between sm:justify-start">
-                    <span
-                      className={`text-xs font-medium ${
-                        c.status === "urgent"
-                          ? "text-amber-500 font-semibold"
-                          : c.status === "booked"
-                          ? "text-emerald-500 font-semibold flex items-center gap-1"
-                          : c.status === "full"
-                          ? "text-muted-foreground"
-                          : "text-muted-foreground"
-                      }`}
-                    >
-                      {c.status === "booked" && <Check className="w-3.5 h-3.5 inline" />}
-                      {c.slots}
-                    </span>
-
-                    <Button
-                      size="sm"
-                      variant={c.status === "booked" ? "outline" : c.status === "full" ? "secondary" : "default"}
-                      onClick={() => setSelectedClassDetail({ ...c, salaName: "Sala 2 - WOD & Studio", location: "Palermo/Belgrano, CABA" })}
-                      className="rounded-full min-w-[100px]"
-                    >
-                      {c.status === "booked" ? "Ver Detalles" : c.status === "full" ? "Ver Detalles" : "Reservar"}
-                    </Button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
+          ))}
         </div>
       </div>
 
-      {/* User Class Detail Modal */}
-      <UserClassDetailModal
-        classData={selectedClassDetail}
-        isOpen={!!selectedClassDetail}
-        onClose={() => setSelectedClassDetail(null)}
-        onOpenQr={onOpenQr}
-        userMemberships={userMemberships}
-        setUserMemberships={setUserMemberships}
-        onCancel={(classId) => {
-          // Handled inside modal with credit reimbursement
-        }}
-        onBook={(classId, spotIndex) => {
-          // Handled inside modal with credit deduction
-        }}
-      />
+      {/* Proximas Reservas */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <Calendar className="w-4 h-4 text-emerald-500" />
+          <h3 className="text-lg font-bold tracking-tight">Proximas Clases</h3>
+          <span className="text-xs text-muted-foreground font-medium ml-auto">{upcomingReservations.length} reservas activas</span>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {upcomingReservations.map((res) => (
+            <div key={res.id} className="rounded-2xl border border-border bg-card p-4 flex flex-col gap-3 shadow-sm">
+              <div className="flex justify-between items-start gap-2">
+                <div>
+                  <Badge variant="outline" className="text-[10px] font-bold text-emerald-500 border-emerald-500/30 bg-emerald-500/10 mb-1.5">{res.gymName}</Badge>
+                  <h4 className="text-sm font-bold text-foreground">{res.name}</h4>
+                  <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1"><User className="w-3.5 h-3.5" /> {res.instructor}</p>
+                </div>
+                <Badge variant="secondary" className="text-[11px] flex items-center gap-1 shrink-0">
+                  <Clock className="w-3 h-3 text-amber-500" /> {res.timeLabel}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between pt-2 border-t border-border/60">
+                <span className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {res.location}</span>
+                <Button size="sm" onClick={onOpenQr} className="rounded-full text-xs font-semibold gap-1.5 h-8 px-3.5 bg-foreground text-background hover:opacity-90">
+                  <QrCode className="w-3.5 h-3.5" /> Check-in QR
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Horario de Hoy */}
+      <div className="space-y-4 pt-2">
+        <div className="border-t border-border pt-6">
+          <h3 className="text-lg font-bold tracking-tight">Horario de Hoy</h3>
+          <p className="text-xs text-muted-foreground">Todas tus clases disponibles para reservar hoy.</p>
+        </div>
+        <div className="rounded-2xl border border-border overflow-hidden bg-card">
+          <ul className="divide-y divide-border">
+            {allClasses.map((c) => (
+              <li key={c.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-3 hover:bg-muted/30 transition">
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-semibold text-foreground">{c.name}</span>
+                    <Badge variant="outline" className="text-[10px] text-muted-foreground">{c.gymName}</Badge>
+                  </div>
+                  <div className="text-xs text-muted-foreground">Prof. {c.instructor} · {c.time}</div>
+                </div>
+                <div className="flex items-center gap-3 justify-between sm:justify-start shrink-0">
+                  <span className={`text-xs font-medium ${c.status === "urgent" ? "text-amber-500 font-semibold" : c.status === "booked" ? "text-emerald-500 font-semibold" : "text-muted-foreground"}`}>
+                    {c.status === "booked" && <Check className="w-3.5 h-3.5 inline mr-0.5" />}{c.slots}
+                  </span>
+                  <Button
+                    size="sm"
+                    variant={c.status === "booked" || c.status === "full" ? "outline" : "default"}
+                    disabled={c.status === "full"}
+                    onClick={() => setSelectedClassDetail({ ...c, location: "CABA" })}
+                    className="rounded-full min-w-[90px]"
+                  >
+                    {c.status === "booked" ? "Ver Detalles" : c.status === "full" ? "Completo" : "Reservar"}
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <UserClassDetailModal classData={selectedClassDetail} isOpen={!!selectedClassDetail} onClose={() => setSelectedClassDetail(null)} onOpenQr={onOpenQr} />
     </div>
   );
 }
@@ -1875,7 +774,7 @@ function ProgresoTab() {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold tracking-tight">Mi Progreso</h2>
-        <p className="text-sm text-muted-foreground">Tu historial de constancia física.</p>
+        <p className="text-sm text-muted-foreground">Tu historial de constancia fÃ­sica.</p>
       </div>
 
       {/* Metrics Cards */}
@@ -1898,7 +797,7 @@ function ProgresoTab() {
       </div>
 
       <div className="rounded-2xl border border-border bg-card p-6 ">
-        <h3 className="text-sm font-bold text-muted-foreground mb-6 uppercase tracking-wider">Asistencias Conversión</h3>
+        <h3 className="text-sm font-bold text-muted-foreground mb-6 uppercase tracking-wider">Asistencias ConversiÃ³n</h3>
         <div className="flex items-end justify-between h-48 px-4">
           {chartData.map((d) => {
             const heightPercentage = `${(d.visits / 25) * 100}%`;
@@ -1930,8 +829,8 @@ function PagosTab() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Suscripción y Pagos</h2>
-        <p className="text-sm text-muted-foreground">Tus recibos e información financiera.</p>
+        <h2 className="text-2xl font-bold tracking-tight">SuscripciÃ³n y Pagos</h2>
+        <p className="text-sm text-muted-foreground">Tus recibos e informaciÃ³n financiera.</p>
       </div>
 
       <div className="rounded-2xl border border-border bg-secondary/50 p-6">
@@ -1939,7 +838,7 @@ function PagosTab() {
         <div className="flex justify-between items-end mt-2">
           <div>
             <h4 className="text-lg font-bold">Pase Libre Mensual</h4>
-            <p className="text-sm text-muted-foreground mt-0.5">Acceso a todas las clases y sala de musculación.</p>
+            <p className="text-sm text-muted-foreground mt-0.5">Acceso a todas las clases y sala de musculaciÃ³n.</p>
           </div>
           <div className="text-right">
             <span className="text-2xl font-extrabold text-foreground">$18.900</span>
@@ -1987,7 +886,7 @@ function ConfigTab() {
   return (
     <div className="space-y-6 max-w-xl">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Configuración</h2>
+        <h2 className="text-2xl font-bold tracking-tight">ConfiguraciÃ³n</h2>
         <p className="text-sm text-muted-foreground">Preferencias y datos personales.</p>
       </div>
 
@@ -2001,7 +900,7 @@ function ConfigTab() {
 
         <div className="grid gap-4 sm:grid-cols-2 mt-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-muted-foreground">Teléfono</label>
+            <label className="text-xs font-semibold text-muted-foreground">TelÃ©fono</label>
             <input type="text" className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" defaultValue="+54 9 11 3242-1241" />
           </div>
           <div className="space-y-1.5">
@@ -2019,7 +918,7 @@ function ConfigTab() {
           <div className="flex items-center justify-between">
             <div>
               <div className="text-sm font-semibold">Recordatorios por WhatsApp</div>
-              <div className="text-xs text-muted-foreground">Recibe avisos automáticos 2 horas antes de tu clase.</div>
+              <div className="text-xs text-muted-foreground">Recibe avisos automÃ¡ticos 2 horas antes de tu clase.</div>
             </div>
             <input 
               type="checkbox" 
@@ -2030,7 +929,7 @@ function ConfigTab() {
           </div>
           <div className="flex items-center justify-between border-t border-border/60 pt-3">
             <div>
-              <div className="text-sm font-semibold">Emails de Confirmación</div>
+              <div className="text-sm font-semibold">Emails de ConfirmaciÃ³n</div>
               <div className="text-xs text-muted-foreground">Confirmaciones de reservas y facturas digitales en tu casilla de correo.</div>
             </div>
             <input 
@@ -2052,13 +951,13 @@ const muscleImages = [
   { id: "espalda", name: "Espalda", img: "/atras (4).png" },
   { id: "espalda-baja", name: "Espalda Baja", img: "/atras (3).png" },
   { id: "hombros", name: "Hombros", img: "/hombro (2).png" },
-  { id: "biceps", name: "Bíceps", img: "/biceps.png" },
-  { id: "triceps", name: "Tríceps", img: "/musculos (4).png" },
+  { id: "biceps", name: "BÃ­ceps", img: "/biceps.png" },
+  { id: "triceps", name: "TrÃ­ceps", img: "/musculos (4).png" },
   { id: "abdominales", name: "Abdominales", img: "/culturismo.png" },
-  { id: "cuadriceps", name: "Cuádriceps", img: "/capacitacion.png" },
+  { id: "cuadriceps", name: "CuÃ¡driceps", img: "/capacitacion.png" },
   { id: "isquiotibiales", name: "Isquiotibiales", img: "/atras (1).png" },
-  { id: "gluteos", name: "Glúteos", img: "/atras (5).png" },
-  { id: "gemelos", name: "Gemelos", img: "/atras (6).png" } // Añadí gemelos para completar la pierna
+  { id: "gluteos", name: "GlÃºteos", img: "/atras (5).png" },
+  { id: "gemelos", name: "Gemelos", img: "/atras (6).png" } // AÃ±adÃ­ gemelos para completar la pierna
 ];
 
 function WorkoutGeneratorModal({ 
@@ -2203,10 +1102,10 @@ function WorkoutGeneratorModal({
           )}
           <div>
             <h2 className="text-xl font-black text-foreground tracking-tight">
-              {view === "main" ? "Generar Workout" : view === "muscles" ? "Músculos Objetivo" : "Equipamiento"}
+              {view === "main" ? "Generar Workout" : view === "muscles" ? "MÃºsculos Objetivo" : "Equipamiento"}
             </h2>
             <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-0.5">
-              {view === "main" ? "Configuración de IA" : "Selección Múltiple"}
+              {view === "main" ? "ConfiguraciÃ³n de IA" : "SelecciÃ³n MÃºltiple"}
             </p>
           </div>
         </div>
@@ -2221,11 +1120,11 @@ function WorkoutGeneratorModal({
           
           {view === "main" && (
             <>
-              {/* Ubicación */}
+              {/* UbicaciÃ³n */}
               <section className="space-y-3.5">
                 <div>
                   <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-muted-foreground" /> Ubicación
+                    <MapPin className="w-4 h-4 text-muted-foreground" /> UbicaciÃ³n
                   </h3>
                   {renderChips(["Casa", "Gimnasio"], location, setLocation, false)}
                 </div>
@@ -2233,7 +1132,7 @@ function WorkoutGeneratorModal({
                 {location === "Gimnasio" && (
                   <div className="pl-4 border-l-2 border-border/80 mt-2 space-y-1.5 animate-in slide-in-from-left-2 duration-300">
                     <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
-                      Seleccionar Club (Membresía Activa)
+                      Seleccionar Club (MembresÃ­a Activa)
                     </label>
                     {renderChips(["Kraft Strength Club"], selectedGym, setSelectedGym, false)}
                   </div>
@@ -2248,11 +1147,11 @@ function WorkoutGeneratorModal({
                 {renderChips(["20 min", "30 min", "40 min", "50 min", "60 min", "80 min"], time, setTime, false)}
               </section>
 
-              {/* Músculos objetivo (Summary) */}
+              {/* MÃºsculos objetivo (Summary) */}
               <section>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                    <Dumbbell className="w-4 h-4 text-muted-foreground" /> Músculos objetivo
+                    <Dumbbell className="w-4 h-4 text-muted-foreground" /> MÃºsculos objetivo
                   </h3>
                 </div>
                 <button 
@@ -2261,7 +1160,7 @@ function WorkoutGeneratorModal({
                 >
                   <div className="text-left">
                     <span className="block text-sm font-bold text-foreground">
-                      Músculos objetivo
+                      MÃºsculos objetivo
                     </span>
                     <span className="block text-xs text-muted-foreground mt-0.5">
                       {(() => {
@@ -2385,15 +1284,15 @@ function WorkoutGeneratorModal({
                   <div className="bg-rose-500/5 border border-rose-500/10 rounded-xl p-3 flex gap-2.5 items-start text-[11px] text-muted-foreground leading-snug">
                     <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
                     <span>
-                      Algunos grupos musculares se han desactivado porque su nivel de recuperación actual es menor al 70%.
+                      Algunos grupos musculares se han desactivado porque su nivel de recuperaciÃ³n actual es menor al 70%.
                     </span>
                   </div>
                 )}
 
-                {/* Accesos Rápidos Presets */}
+                {/* Accesos RÃ¡pidos Presets */}
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
-                    Accesos Rápidos
+                    Accesos RÃ¡pidos
                   </label>
                   <div className="flex flex-wrap gap-1.5">
                     <button
@@ -2432,7 +1331,7 @@ function WorkoutGeneratorModal({
                   </div>
                 </div>
 
-                {/* Grid de Músculos */}
+                {/* Grid de MÃºsculos */}
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
                   {muscleImages.map(m => {
                     const isActive = muscles.includes(m.id);
@@ -2479,7 +1378,7 @@ function WorkoutGeneratorModal({
                     <Activity className="w-4 h-4 text-muted-foreground" /> Entrenamiento Cardiovascular
                   </h3>
                 </div>
-                {renderEquipmentGrid(["Bicicleta de asalto", "Bicicleta estática", "Cinta de correr", "Elíptica", "Escalador", "Máquina de remo"], cardio, setCardio)}
+                {renderEquipmentGrid(["Bicicleta de asalto", "Bicicleta estÃ¡tica", "Cinta de correr", "ElÃ­ptica", "Escalador", "MÃ¡quina de remo"], cardio, setCardio)}
               </section>
 
               <section>
@@ -2496,13 +1395,13 @@ function WorkoutGeneratorModal({
                   </div>
                   
                   <div>
-                    <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Máquinas de Cable</h4>
-                    {renderEquipmentGrid(["Máquina de cable cruzado", "Máquina de jalón dorsal", "Máquina de poleas"], equipment, setEquipment)}
+                    <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-1">MÃ¡quinas de Cable</h4>
+                    {renderEquipmentGrid(["MÃ¡quina de cable cruzado", "MÃ¡quina de jalÃ³n dorsal", "MÃ¡quina de poleas"], equipment, setEquipment)}
                   </div>
 
                   <div>
-                    <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Máquina de Pesas</h4>
-                    {renderEquipmentGrid(["Curl de piernas", "Curl de piernas sentado", "Extensión de pierna", "Máquina smith", "Máquina de abducción de cadera", "Máquina de aducción de cadera", "Máquina de aperturas", "Máquina de bíceps", "Máquina de crunch abdominal", "Máquina de deltoides", "Máquina de fondos para tríceps", "Máquina de press de hombros", "Máquina de remo sentado", "Prensa de pecho", "Prensa de piernas", "Prensa de piernas 45°", "Remo T"], equipment, setEquipment)}
+                    <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-1">MÃ¡quina de Pesas</h4>
+                    {renderEquipmentGrid(["Curl de piernas", "Curl de piernas sentado", "ExtensiÃ³n de pierna", "MÃ¡quina smith", "MÃ¡quina de abducciÃ³n de cadera", "MÃ¡quina de aducciÃ³n de cadera", "MÃ¡quina de aperturas", "MÃ¡quina de bÃ­ceps", "MÃ¡quina de crunch abdominal", "MÃ¡quina de deltoides", "MÃ¡quina de fondos para trÃ­ceps", "MÃ¡quina de press de hombros", "MÃ¡quina de remo sentado", "Prensa de pecho", "Prensa de piernas", "Prensa de piernas 45Â°", "Remo T"], equipment, setEquipment)}
                   </div>
 
                   <div>
@@ -2512,7 +1411,7 @@ function WorkoutGeneratorModal({
 
                   <div>
                     <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Bandas y Otros</h4>
-                    {renderEquipmentGrid(["Banda de resistencia", "Banda elástica", "Esfera", "Esfera de estabilidad", "Caja pliométrica", "Colchoneta de yoga", "Cuerda para saltar", "Rodillo", "Rueda abdominal"], equipment, setEquipment)}
+                    {renderEquipmentGrid(["Banda de resistencia", "Banda elÃ¡stica", "Esfera", "Esfera de estabilidad", "Caja pliomÃ©trica", "Colchoneta de yoga", "Cuerda para saltar", "Rodillo", "Rueda abdominal"], equipment, setEquipment)}
                   </div>
                 </div>
               </section>
@@ -2547,7 +1446,7 @@ function WorkoutGeneratorModal({
               onClick={() => setView("main")} 
               className="h-12 w-full rounded-xl bg-foreground text-background font-bold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
             >
-              Confirmar Selección
+              Confirmar SelecciÃ³n
             </Button>
           )}
         </div>
@@ -2564,7 +1463,7 @@ function ExerciseDetailModal({ exercise, onClose }: { exercise: any, onClose: ()
         {/* Header */}
         <div className="px-6 pt-8 pb-4 flex justify-between items-start bg-card">
           <div>
-            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest block mb-0.5">Ejecución del Ejercicio</span>
+            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest block mb-0.5">EjecuciÃ³n del Ejercicio</span>
             <h2 className="text-xl font-black text-foreground tracking-tight">{exercise.name}</h2>
           </div>
           <button 
@@ -2603,15 +1502,15 @@ function ExerciseDetailModal({ exercise, onClose }: { exercise: any, onClose: ()
             </>
           )}
           <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-md text-[10px] font-bold text-background uppercase tracking-wider">
-            Demostración de Video
+            DemostraciÃ³n de Video
           </div>
         </div>
 
         {/* Details Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {/* Músculos Involucrados */}
+          {/* MÃºsculos Involucrados */}
           <div>
-            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1.5">Músculos Principales</h4>
+            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1.5">MÃºsculos Principales</h4>
             <p className="text-xs font-bold text-foreground bg-secondary px-3 py-1.5 rounded-lg border border-border inline-block uppercase tracking-wide">
               {exercise.muscles}
             </p>
@@ -2671,14 +1570,14 @@ function WorkoutFeedbackModal({
       rest: 90, 
       img: "/pull-up.png", 
       video: "/chinupreversewidegrip_x264(2).mp4", 
-      muscles: "Dorsal Ancho, Bíceps, Redondo Mayor, Trapecio",
+      muscles: "Dorsal Ancho, BÃ­ceps, Redondo Mayor, Trapecio",
       instructions: [
-        "Sujeta la barra con las palmas hacia el frente (pronación) a un ancho ligeramente mayor al de los hombros.",
-        "Mantén el core activo y los hombros hacia abajo y atrás antes de empezar.",
-        "Tira de tu cuerpo hacia arriba concentrándote en llevar los codos hacia abajo, hasta que tu barbilla pase la barra.",
+        "Sujeta la barra con las palmas hacia el frente (pronaciÃ³n) a un ancho ligeramente mayor al de los hombros.",
+        "MantÃ©n el core activo y los hombros hacia abajo y atrÃ¡s antes de empezar.",
+        "Tira de tu cuerpo hacia arriba concentrÃ¡ndote en llevar los codos hacia abajo, hasta que tu barbilla pase la barra.",
         "Controla la bajada lentamente hasta estirar completamente los brazos de forma segura."
       ],
-      tips: "Evita balancear el cuerpo. Si te cuesta subir, usa una banda elástica de resistencia para asistir el movimiento.",
+      tips: "Evita balancear el cuerpo. Si te cuesta subir, usa una banda elÃ¡stica de resistencia para asistir el movimiento.",
       superset: "Superserie A"
     },
     { 
@@ -2691,30 +1590,30 @@ function WorkoutFeedbackModal({
       video: "/cable-crossover.png",
       muscles: "Pectoral Mayor, Deltoides Anterior",
       instructions: [
-        "Coloca las poleas en una posición alta y sujeta las manijas.",
-        "Da un paso al frente para crear tensión en los cables e inclina ligeramente el torso hacia adelante.",
+        "Coloca las poleas en una posiciÃ³n alta y sujeta las manijas.",
+        "Da un paso al frente para crear tensiÃ³n en los cables e inclina ligeramente el torso hacia adelante.",
         "Con los codos levemente flexionados, junta las manos al frente y abajo simulando dar un abrazo.",
         "Regresa lentamente sintiendo el estiramiento en el pecho."
       ],
-      tips: "No uses el impulso del cuerpo. Mantén una velocidad constante durante todo el recorrido.",
+      tips: "No uses el impulso del cuerpo. MantÃ©n una velocidad constante durante todo el recorrido.",
       superset: "Superserie A"
     },
     { 
       id: 3, 
-      name: "Jalón Dorsal (Lat Pulldown)", 
+      name: "JalÃ³n Dorsal (Lat Pulldown)", 
       reps: "15x", 
       weight: "45kg", 
       rest: 60, 
       img: "/lat-pulldown.png", 
       video: "/lat-pulldown.png",
-      muscles: "Dorsal Ancho, Bíceps, Redondo Mayor",
+      muscles: "Dorsal Ancho, BÃ­ceps, Redondo Mayor",
       instructions: [
-        "Siéntate en la máquina de jalón dorsal y ajusta las almohadillas sobre tus muslos.",
-        "Sujeta la barra con un agarre amplio y mantén la espalda recta.",
+        "SiÃ©ntate en la mÃ¡quina de jalÃ³n dorsal y ajusta las almohadillas sobre tus muslos.",
+        "Sujeta la barra con un agarre amplio y mantÃ©n la espalda recta.",
         "Tira de la barra hacia abajo hacia la parte superior de tu pecho, llevando los codos hacia tus costados.",
         "Sube de manera controlada controlando el peso de regreso."
       ],
-      tips: "Mantén el pecho erguido y no te reclines excesivamente hacia atrás.",
+      tips: "MantÃ©n el pecho erguido y no te reclines excesivamente hacia atrÃ¡s.",
       superset: null
     },
     { 
@@ -2727,17 +1626,17 @@ function WorkoutFeedbackModal({
       video: "/prone-leg-curl.png",
       muscles: "Isquiotibiales, Gastrocnemio",
       instructions: [
-        "Acuéstate boca abajo en la máquina, alineando las rodillas con el eje de rotación.",
+        "AcuÃ©state boca abajo en la mÃ¡quina, alineando las rodillas con el eje de rotaciÃ³n.",
         "Coloca el rodillo de tobillo justo encima de los talones.",
-        "Sujeta los agarres y flexiona las piernas llevando los talones hacia los glúteos de forma controlada.",
-        "Regresa lentamente a la posición inicial."
+        "Sujeta los agarres y flexiona las piernas llevando los talones hacia los glÃºteos de forma controlada.",
+        "Regresa lentamente a la posiciÃ³n inicial."
       ],
-      tips: "Mantén las caderas pegadas al banco durante todo el movimiento para aislar bien el femoral.",
+      tips: "MantÃ©n las caderas pegadas al banco durante todo el movimiento para aislar bien el femoral.",
       superset: "Superserie B"
     },
     { 
       id: 5, 
-      name: "Sillón de Flexión de Piernas Sentado", 
+      name: "SillÃ³n de FlexiÃ³n de Piernas Sentado", 
       reps: "12x", 
       weight: "35kg", 
       rest: 60, 
@@ -2745,12 +1644,12 @@ function WorkoutFeedbackModal({
       video: "/seated-leg-curl.png",
       muscles: "Isquiotibiales, Gastrocnemio",
       instructions: [
-        "Siéntate y ajusta el respaldo para alinear la articulación de la rodilla con la máquina.",
+        "SiÃ©ntate y ajusta el respaldo para alinear la articulaciÃ³n de la rodilla con la mÃ¡quina.",
         "Asegura el rodillo superior sobre los muslos y coloca las piernas extendidas sobre el rodillo inferior.",
-        "Flexiona las rodillas llevando los talones hacia atrás y abajo.",
+        "Flexiona las rodillas llevando los talones hacia atrÃ¡s y abajo.",
         "Regresa controlando el peso lentamente."
       ],
-      tips: "Aprieta por un segundo en la parte final de la contracción.",
+      tips: "Aprieta por un segundo en la parte final de la contracciÃ³n.",
       superset: "Superserie B"
     },
     { 
@@ -2761,9 +1660,9 @@ function WorkoutFeedbackModal({
       rest: 60, 
       img: "/seated-hamstring-curl.png", 
       video: "/seated-hamstring-curl.png",
-      muscles: "Isquiotibiales, Glúteo Mayor",
+      muscles: "Isquiotibiales, GlÃºteo Mayor",
       instructions: [
-        "Ajusta los soportes de la máquina y adopta una postura erguida.",
+        "Ajusta los soportes de la mÃ¡quina y adopta una postura erguida.",
         "Empuja el rodillo hacia abajo utilizando la fuerza de tus femorales.",
         "Extiende las piernas lentamente controlando la carga."
       ],
@@ -2866,24 +1765,24 @@ function WorkoutFeedbackModal({
 
   const getResponse = (f: string) => {
     switch (f) {
-      case "Muy fácil": return "Aumentaremos mucho la intensidad.";
-      case "Fácil": return "Aumentaremos un poco la intensidad.";
+      case "Muy fÃ¡cil": return "Aumentaremos mucho la intensidad.";
+      case "FÃ¡cil": return "Aumentaremos un poco la intensidad.";
       case "Bien": return "Mantendremos esta intensidad.";
-      case "Difícil": return "Reduciremos un poco la intensidad.";
-      case "Muy difícil": return "Reduciremos mucho la intensidad.";
+      case "DifÃ­cil": return "Reduciremos un poco la intensidad.";
+      case "Muy difÃ­cil": return "Reduciremos mucho la intensidad.";
       default: return "";
     }
   };
 
-  const options = ["Muy fácil", "Fácil", "Bien", "Difícil", "Muy difícil"];
+  const options = ["Muy fÃ¡cil", "FÃ¡cil", "Bien", "DifÃ­cil", "Muy difÃ­cil"];
   const techniqueOptions = ["No muy buena", "Buena", "Muy buena", "Excelente"];
 
   const getTechniqueResponse = (t: string) => {
     switch (t) {
       case "No muy buena": return "Nos enfocaremos en mejorar la postura y reducir el peso.";
       case "Buena": return "Buen control, seguiremos perfeccionando el rango de movimiento.";
-      case "Muy buena": return "Excelente ejecución, mantén ese ritmo y control.";
-      case "Excelente": return "No necesité pausas adicionales y pude completar todas las repeticiones con una técnica perfecta.";
+      case "Muy buena": return "Excelente ejecuciÃ³n, mantÃ©n ese ritmo y control.";
+      case "Excelente": return "No necesitÃ© pausas adicionales y pude completar todas las repeticiones con una tÃ©cnica perfecta.";
       default: return "";
     }
   };
@@ -2925,15 +1824,15 @@ function WorkoutFeedbackModal({
               <div className="w-16 h-16 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center justify-center mx-auto mb-2">
                 <Check className="w-8 h-8 stroke-[3]" />
               </div>
-              <h2 className="text-2xl font-black text-foreground tracking-tight">¡Entrenamiento Finalizado!</h2>
+              <h2 className="text-2xl font-black text-foreground tracking-tight">Â¡Entrenamiento Finalizado!</h2>
               <p className="text-xs text-muted-foreground font-medium">
-                Has registrado una sesión de <span className="font-bold text-foreground">{formatTime(seconds)}</span>. ¡Gran esfuerzo hoy!
+                Has registrado una sesiÃ³n de <span className="font-bold text-foreground">{formatTime(seconds)}</span>. Â¡Gran esfuerzo hoy!
               </p>
             </div>
 
             {/* Star Rating */}
             <div className="space-y-3">
-              <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest block text-center">¿Cómo calificarías este entrenamiento?</span>
+              <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest block text-center">Â¿CÃ³mo calificarÃ­as este entrenamiento?</span>
               <div className="flex items-center justify-center gap-2">
                 {[1, 2, 3, 4, 5].map((star) => {
                   const isActive = star <= generalRating;
@@ -2957,14 +1856,14 @@ function WorkoutFeedbackModal({
 
             {/* Energy Emojis */}
             <div className="space-y-3">
-              <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest block text-center">¿Cómo te sientes de energía al terminar?</span>
+              <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest block text-center">Â¿CÃ³mo te sientes de energÃ­a al terminar?</span>
               <div className="flex items-center justify-center gap-3">
                 {[
-                  { emoji: "😫", label: "Agotado" },
-                  { emoji: "🥱", label: "Cansado" },
-                  { emoji: "😐", label: "Normal" },
-                  { emoji: "🙂", label: "Bien" },
-                  { emoji: "⚡", label: "Con energía" }
+                  { emoji: "ðŸ˜«", label: "Agotado" },
+                  { emoji: "ðŸ¥±", label: "Cansado" },
+                  { emoji: "ðŸ˜", label: "Normal" },
+                  { emoji: "ðŸ™‚", label: "Bien" },
+                  { emoji: "âš¡", label: "Con energÃ­a" }
                 ].map((item) => {
                   const isActive = finalEnergy === item.emoji;
                   return (
@@ -2992,7 +1891,7 @@ function WorkoutFeedbackModal({
               <Textarea 
                 value={generalComments}
                 onChange={(e) => setGeneralComments(e.target.value)}
-                placeholder="¿Qué tal estuvo la rutina? Cuéntale a tu Coach IA para personalizar y adaptar tu próxima sesión..."
+                placeholder="Â¿QuÃ© tal estuvo la rutina? CuÃ©ntale a tu Coach IA para personalizar y adaptar tu prÃ³xima sesiÃ³n..."
                 className="w-full min-h-[90px] px-4 py-3 rounded-2xl bg-secondary border border-border text-sm font-semibold text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground/30 transition-colors resize-none"
               />
             </div>
@@ -3025,7 +1924,7 @@ function WorkoutFeedbackModal({
                 {workoutTitle || "Fuerza Funcional & Core"}
               </h1>
               <p className="text-sm text-muted-foreground font-medium">
-                Enfoque: Cuerpo Completo • Equipamiento: Mancuernas y Pesas Libres • Estimado: 40 min
+                Enfoque: Cuerpo Completo â€¢ Equipamiento: Mancuernas y Pesas Libres â€¢ Estimado: 40 min
               </p>
             </div>
             <button onClick={onClose} className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-foreground hover:bg-border transition-colors shrink-0">
@@ -3077,8 +1976,8 @@ function WorkoutFeedbackModal({
                                     <img src={ex.img} alt={ex.name} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
                                   </div>
                                   <div className="min-w-0">
-                                    <p className="text-sm font-bold text-foreground group-hover:underline leading-snug truncate">{ex.reps} {ex.name} • {ex.weight}</p>
-                                    <p className="text-[11px] text-muted-foreground mt-0.5">Ver detalles →</p>
+                                    <p className="text-sm font-bold text-foreground group-hover:underline leading-snug truncate">{ex.reps} {ex.name} â€¢ {ex.weight}</p>
+                                    <p className="text-[11px] text-muted-foreground mt-0.5">Ver detalles â†’</p>
                                   </div>
                                 </div>
                               </div>
@@ -3111,7 +2010,7 @@ function WorkoutFeedbackModal({
                                 </div>
 
                                 <div>
-                                  <span className="text-[9px] text-muted-foreground font-black uppercase tracking-wider block mb-1">¿Qué tal estuvo tu técnica?</span>
+                                  <span className="text-[9px] text-muted-foreground font-black uppercase tracking-wider block mb-1">Â¿QuÃ© tal estuvo tu tÃ©cnica?</span>
                                   <div className="flex rounded-xl overflow-hidden border border-border bg-secondary shadow-sm">
                                     {techniqueOptions.map((opt) => {
                                       const isActive = currentFeedback?.technique === opt;
@@ -3138,7 +2037,7 @@ function WorkoutFeedbackModal({
                                     <p className="leading-relaxed">Esfuerzo: <span className="font-bold text-muted-foreground">{getResponse(currentFeedback.intensity)}</span></p>
                                   )}
                                   {currentFeedback?.technique && (
-                                    <p className="leading-relaxed">Técnica: <span className="font-bold text-muted-foreground">{getTechniqueResponse(currentFeedback.technique)}</span></p>
+                                    <p className="leading-relaxed">TÃ©cnica: <span className="font-bold text-muted-foreground">{getTechniqueResponse(currentFeedback.technique)}</span></p>
                                   )}
                                 </div>
                               </div>
@@ -3173,8 +2072,8 @@ function WorkoutFeedbackModal({
                             <img src={ex.img} alt={ex.name} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
                           </div>
                           <div className="min-w-0">
-                            <p className="text-sm font-bold text-foreground group-hover:underline leading-snug truncate">{ex.reps} {ex.name} • {ex.weight}</p>
-                            <p className="text-[11px] text-muted-foreground mt-0.5">Descanso: {ex.rest}s • Ver detalles →</p>
+                            <p className="text-sm font-bold text-foreground group-hover:underline leading-snug truncate">{ex.reps} {ex.name} â€¢ {ex.weight}</p>
+                            <p className="text-[11px] text-muted-foreground mt-0.5">Descanso: {ex.rest}s â€¢ Ver detalles â†’</p>
                           </div>
                         </div>
                       </div>
@@ -3207,7 +2106,7 @@ function WorkoutFeedbackModal({
                         </div>
 
                         <div>
-                          <span className="text-[9px] text-muted-foreground font-black uppercase tracking-wider block mb-1">¿Qué tal estuvo tu técnica?</span>
+                          <span className="text-[9px] text-muted-foreground font-black uppercase tracking-wider block mb-1">Â¿QuÃ© tal estuvo tu tÃ©cnica?</span>
                           <div className="flex rounded-xl overflow-hidden border border-border bg-secondary shadow-sm">
                             {techniqueOptions.map((opt) => {
                               const isActive = currentFeedback?.technique === opt;
@@ -3234,7 +2133,7 @@ function WorkoutFeedbackModal({
                             <p className="leading-relaxed">Esfuerzo: <span className="font-bold text-muted-foreground">{getResponse(currentFeedback.intensity)}</span></p>
                           )}
                           {currentFeedback?.technique && (
-                            <p className="leading-relaxed">Técnica: <span className="font-bold text-muted-foreground">{getTechniqueResponse(currentFeedback.technique)}</span></p>
+                            <p className="leading-relaxed">TÃ©cnica: <span className="font-bold text-muted-foreground">{getTechniqueResponse(currentFeedback.technique)}</span></p>
                           )}
                         </div>
                       </div>
@@ -3368,10 +2267,10 @@ function WorkoutFeedbackModal({
           <AlertDialogHeader>
             <AlertDialogTitle className="text-lg font-black text-foreground flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-amber-500" />
-              ¿Registrar incompleto?
+              Â¿Registrar incompleto?
             </AlertDialogTitle>
             <AlertDialogDescription className="text-xs text-muted-foreground leading-relaxed mt-2">
-              Aún tienes ejercicios pendientes en tu rutina. ¿Quieres finalizar y registrar tu progreso actual de todas formas?
+              AÃºn tienes ejercicios pendientes en tu rutina. Â¿Quieres finalizar y registrar tu progreso actual de todas formas?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex flex-col-reverse sm:flex-row gap-2 mt-4">
@@ -3386,7 +2285,7 @@ function WorkoutFeedbackModal({
               }}
               className="w-full sm:w-auto h-11 rounded-xl bg-rose-500 text-background hover:bg-rose-600 font-bold text-xs uppercase tracking-wider"
             >
-              Sí, registrar
+              SÃ­, registrar
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -3437,9 +2336,9 @@ const formatDateLabel = (dateStr: string) => {
     const capitalized = formatted.charAt(0).toUpperCase() + formatted.slice(1);
     
     if (isToday) {
-      return `Hoy — ${capitalized}`;
+      return `Hoy â€” ${capitalized}`;
     } else if (isYesterday) {
-      return `Ayer — ${capitalized}`;
+      return `Ayer â€” ${capitalized}`;
     } else {
       return capitalized;
     }
@@ -3450,8 +2349,8 @@ const formatDateLabel = (dateStr: string) => {
 
 // Helper component to render dynamic glassmorphism badges for meals & recipes
 interface MealOrganizerBadgesProps {
-  category: string; // Momento del día (Desayuno, Almuerzo, Cena, Snack)
-  tags?: string[]; // Badges nutricionales (Alta en Proteínas, Baja en Carbohidratos, etc.)
+  category: string; // Momento del dÃ­a (Desayuno, Almuerzo, Cena, Snack)
+  tags?: string[]; // Badges nutricionales (Alta en ProteÃ­nas, Baja en Carbohidratos, etc.)
   className?: string;
 }
 
@@ -3462,14 +2361,14 @@ function MealOrganizerBadges({
 }: MealOrganizerBadgesProps) {
   return (
     <div className={`flex flex-wrap gap-1.5 items-center ${className}`}>
-      {/* 1. Momento del Día */}
+      {/* 1. Momento del DÃ­a */}
       {category && (
         <span className="inline-flex items-center backdrop-blur-md bg-secondary text-foreground text-[10px] font-bold tracking-wide px-2.5 py-0.5 rounded-full shadow-xs">
           <span>{category}</span>
         </span>
       )}
 
-      {/* 2. Badges Nutricionales & Características */}
+      {/* 2. Badges Nutricionales & CaracterÃ­sticas */}
       {tags.map((tag, idx) => (
         <span 
           key={idx} 
@@ -3485,35 +2384,35 @@ function MealOrganizerBadges({
 const RECIPES_POOL = [
   {
     id: "receta-1",
-    title: "Smoothie Bowl de Proteína y Berries",
+    title: "Smoothie Bowl de ProteÃ­na y Berries",
     category: "Desayuno",
-    tags: ["Alta en Proteínas", "Sin Gluten", "Alta en Antioxidantes"],
+    tags: ["Alta en ProteÃ­nas", "Sin Gluten", "Alta en Antioxidantes"],
     img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?auto=format&fit=crop&w=600&q=80",
     kcal: 340,
     protein: "22g",
     carbs: "45g",
     fat: "6g",
     prepTime: "10 min",
-    difficulty: "Fácil",
-    tag: "Alta en Proteínas",
-    coachFeedback: "Excelente para reponer glucógeno post-entreno y aportar antioxidantes para combatir el estrés oxidativo celular.",
+    difficulty: "FÃ¡cil",
+    tag: "Alta en ProteÃ­nas",
+    coachFeedback: "Excelente para reponer glucÃ³geno post-entreno y aportar antioxidantes para combatir el estrÃ©s oxidativo celular.",
     ingredients: [
-      "1 taza de frutos rojos congelados (arándanos, frambuesas)",
-      "1 scoop de proteína de vainilla (suero o vegetal)",
-      "1/2 taza de leche de almendras sin azúcar",
-      "1 cda de granola integral sin azúcar",
-      "1 cdta de semillas de chía"
+      "1 taza de frutos rojos congelados (arÃ¡ndanos, frambuesas)",
+      "1 scoop de proteÃ­na de vainilla (suero o vegetal)",
+      "1/2 taza de leche de almendras sin azÃºcar",
+      "1 cda de granola integral sin azÃºcar",
+      "1 cdta de semillas de chÃ­a"
     ],
     instructions: [
-      "Licúa los frutos rojos, la proteína y la leche de almendras hasta obtener una consistencia cremosa y espesa.",
+      "LicÃºa los frutos rojos, la proteÃ­na y la leche de almendras hasta obtener una consistencia cremosa y espesa.",
       "Vierte la mezcla en un bowl profundo.",
-      "Decora por encima con la granola, las semillas de chía y algunos frutos rojos frescos.",
+      "Decora por encima con la granola, las semillas de chÃ­a y algunos frutos rojos frescos.",
       "Consumir de inmediato con cuchara."
     ]
   },
   {
     id: "receta-2",
-    title: "Bowl de Quinoa, Salmón y Aguacate",
+    title: "Bowl de Quinoa, SalmÃ³n y Aguacate",
     category: "Almuerzo",
     tags: ["Grasas Saludables", "Omega 3", "Sin Lactosa"],
     img: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80",
@@ -3522,51 +2421,51 @@ const RECIPES_POOL = [
     carbs: "45g",
     fat: "24g",
     prepTime: "20 min",
-    difficulty: "Fácil",
+    difficulty: "FÃ¡cil",
     tag: "Grasas Saludables",
-    coachFeedback: "Excelente combinación de grasas saludables omega-3 y carbohidratos complejos. Ideal para tu ventana metabólica post-entrenamiento.",
+    coachFeedback: "Excelente combinaciÃ³n de grasas saludables omega-3 y carbohidratos complejos. Ideal para tu ventana metabÃ³lica post-entrenamiento.",
     ingredients: [
-      "150g de filete de salmón fresco",
+      "150g de filete de salmÃ³n fresco",
       "1/2 taza de quinoa cocida",
       "1/2 aguacate mediano en rebanadas",
       "1 taza de espinacas baby limpias",
       "1/2 taza de tomates cherry cortados al medio",
-      "1 cda de aderezo de limón y aceite de oliva"
+      "1 cda de aderezo de limÃ³n y aceite de oliva"
     ],
     instructions: [
-      "Sazona el salmón con sal, y pimienta al gusto. Cocínalo a la plancha por 4 minutos de cada lado.",
+      "Sazona el salmÃ³n con sal, y pimienta al gusto. CocÃ­nalo a la plancha por 4 minutos de cada lado.",
       "Coloca la quinoa cocida como base en un bowl.",
       "Acomoda las hojas de espinaca baby, los tomates cherry y las rebanadas de aguacate.",
-      "Añade el salmón desmenuzado por encima y vierte el aderezo de limón."
+      "AÃ±ade el salmÃ³n desmenuzado por encima y vierte el aderezo de limÃ³n."
     ]
   },
   {
     id: "receta-3",
-    title: "Pechuga de Pollo con Camote y Brócoli",
+    title: "Pechuga de Pollo con Camote y BrÃ³coli",
     category: "Cena",
-    tags: ["Alta en Proteínas", "Baja en Carbohidratos", "Sin Gluten"],
+    tags: ["Alta en ProteÃ­nas", "Baja en Carbohidratos", "Sin Gluten"],
     img: "https://images.unsplash.com/photo-1532550907401-a500c9a57435?auto=format&fit=crop&w=600&q=80",
     kcal: 460,
     protein: "42g",
     carbs: "35g",
     fat: "12g",
     prepTime: "25 min",
-    difficulty: "Fácil",
-    tag: "Alta en Proteínas",
-    coachFeedback: "Una cena ligera pero rica en aminoácidos para optimizar la síntesis proteica nocturna y favorecer la recuperación muscular.",
+    difficulty: "FÃ¡cil",
+    tag: "Alta en ProteÃ­nas",
+    coachFeedback: "Una cena ligera pero rica en aminoÃ¡cidos para optimizar la sÃ­ntesis proteica nocturna y favorecer la recuperaciÃ³n muscular.",
     ingredients: [
       "150g de pechuga de pollo cortada en filetes",
       "1 camote (batata) mediano",
-      "1 taza de floretes de brócoli fresco",
+      "1 taza de floretes de brÃ³coli fresco",
       "1 diente de ajo picado fino",
-      "Jugo de 1/2 limón fresco",
+      "Jugo de 1/2 limÃ³n fresco",
       "1 cdta de aceite de coco para cocinar"
     ],
     instructions: [
-      "Corta el camote en rodajas y hornéalo con un toque de sal a 200°C durante 20 minutos hasta que esté suave.",
-      "Saltea el ajo y el pollo en una sartén con aceite de coco hasta dorar.",
-      "Agrega el jugo de limón al pollo y cocina a fuego lento por 5 minutos más.",
-      "Cocina el brócoli al vapor durante 5 minutos para que quede al dente.",
+      "Corta el camote en rodajas y hornÃ©alo con un toque de sal a 200Â°C durante 20 minutos hasta que estÃ© suave.",
+      "Saltea el ajo y el pollo en una sartÃ©n con aceite de coco hasta dorar.",
+      "Agrega el jugo de limÃ³n al pollo y cocina a fuego lento por 5 minutos mÃ¡s.",
+      "Cocina el brÃ³coli al vapor durante 5 minutos para que quede al dente.",
       "Sirve todo en un plato y disfruta."
     ]
   },
@@ -3574,28 +2473,28 @@ const RECIPES_POOL = [
     id: "receta-4",
     title: "Pancakes Fit de Avena y Banano",
     category: "Desayuno",
-    tags: ["Energía Sostenible", "Alta en Fibra", "Vegetariana"],
+    tags: ["EnergÃ­a Sostenible", "Alta en Fibra", "Vegetariana"],
     img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=600&q=80",
     kcal: 320,
     protein: "18g",
     carbs: "42g",
     fat: "6g",
     prepTime: "15 min",
-    difficulty: "Muy Fácil",
-    tag: "Energía Sostenible",
-    coachFeedback: "Aporte rápido de carbohidratos de absorción lenta y potasio, perfecto para energía pre-entreno sin pesadez.",
+    difficulty: "Muy FÃ¡cil",
+    tag: "EnergÃ­a Sostenible",
+    coachFeedback: "Aporte rÃ¡pido de carbohidratos de absorciÃ³n lenta y potasio, perfecto para energÃ­a pre-entreno sin pesadez.",
     ingredients: [
       "1 banano mediano maduro",
       "1 huevo entero",
       "1/3 taza de harina de avena",
-      "1/2 scoop de proteína de vainilla",
+      "1/2 scoop de proteÃ­na de vainilla",
       "Pizca de polvo de hornear",
       "1/4 taza de leche descremada o de almendras"
     ],
     instructions: [
-      "En una licuadora, mezcla el banano, el huevo, la harina de avena, la proteína, el polvo de hornear y la leche hasta lograr una pasta homogénea.",
-      "Calienta una sartén antiadherente a fuego medio y pincela con una gota de aceite.",
-      "Vierte porciones pequeñas para formar los pancakes.",
+      "En una licuadora, mezcla el banano, el huevo, la harina de avena, la proteÃ­na, el polvo de hornear y la leche hasta lograr una pasta homogÃ©nea.",
+      "Calienta una sartÃ©n antiadherente a fuego medio y pincela con una gota de aceite.",
+      "Vierte porciones pequeÃ±as para formar los pancakes.",
       "Cocina hasta que aparezcan burbujas en la superficie, voltea y cocina 1 minuto del otro lado.",
       "Sirve opcionalmente con frutos secos picados."
     ]
@@ -3611,9 +2510,9 @@ const RECIPES_POOL = [
     carbs: "38g",
     fat: "8g",
     prepTime: "10 min",
-    difficulty: "Muy Fácil",
+    difficulty: "Muy FÃ¡cil",
     tag: "Microbiota Amigable",
-    coachFeedback: "El pan de masa madre es excelente para la digestión y la ricotta ofrece una liberación sustained de aminoácidos.",
+    coachFeedback: "El pan de masa madre es excelente para la digestiÃ³n y la ricotta ofrece una liberaciÃ³n sustained de aminoÃ¡cidos.",
     ingredients: [
       "1 rebanada gruesa de pan de masa madre tostado",
       "3 cdas de queso ricotta descremado o cottage",
@@ -3625,16 +2524,66 @@ const RECIPES_POOL = [
       "Tuesta la rebanada de pan de masa madre al nivel deseado.",
       "Esparce uniformemente el queso ricotta sobre la tostada caliente.",
       "Acomoda las rebanadas de higo fresco encima.",
-      "Rocía con el hilo de miel y decora con la albahaca fresca antes de servir."
+      "RocÃ­a con el hilo de miel y decora con la albahaca fresca antes de servir."
     ]
   }
 ];
 
+function CircularProgress({
+  percent,
+  color,
+  size = 64,
+  strokeWidth = 6,
+  trackClass = "stroke-zinc-200 dark:stroke-zinc-800",
+  children,
+}: {
+  percent: number;
+  color: string;
+  size?: number;
+  strokeWidth?: number;
+  trackClass?: string;
+  children?: React.ReactNode;
+}) {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (Math.min(100, Math.max(0, percent)) / 100) * circumference;
+
+  return (
+    <div className="relative flex items-center justify-center shrink-0" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="transform -rotate-90">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          strokeWidth={strokeWidth}
+          className={`${trackClass} fill-none`}
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke={color}
+          strokeWidth={strokeWidth}
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+          fill="transparent"
+          className="transition-all duration-700 ease-out"
+        />
+      </svg>
+      {children && <div className="absolute inset-0 flex items-center justify-center">{children}</div>}
+    </div>
+  );
+}
+
 // Subcomponent: AI Coach Diario (Wellfooder Timeline)
 function DiarioTab() {
   const [subTab, setSubTab] = useState<"diario" | "analisis" | "recuperacion" | "recetas">("diario");
+  const [nutritionMode, setNutritionMode] = useState<"qualitative" | "quantitative">("quantitative");
   const [insightPeriod, setInsightPeriod] = useState<"day" | "week" | "month" | "quarter" | "all">("week");
   const [sunTimes, setSunTimes] = useState({ sunrise: "06:30", sunset: "20:15" });
+  const [cardSlideIndex, setCardSlideIndex] = useState(0);
+  const carouselRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const getSolarTimes = (lat: number, lng: number) => {
@@ -3668,7 +2617,7 @@ function DiarioTab() {
           getSolarTimes(position.coords.latitude, position.coords.longitude);
         },
         (error) => {
-          console.warn("Error de geolocalización, usando Buenos Aires:", error);
+          console.warn("Error de geolocalizaciÃ³n, usando Buenos Aires:", error);
           getSolarTimes(defaultLat, defaultLng);
         },
         { enableHighAccuracy: false, timeout: 5000 }
@@ -3686,10 +2635,10 @@ function DiarioTab() {
   const [activityData, setActivityData] = useState([
     { day: "Lun", puntos: 180 },
     { day: "Mar", puntos: 160 },
-    { day: "Mié", puntos: 175 },
+    { day: "MiÃ©", puntos: 175 },
     { day: "Jue", puntos: 140 },
     { day: "Vie", puntos: 155 },
-    { day: "Sáb", puntos: 190 },
+    { day: "SÃ¡b", puntos: 190 },
     { day: "Dom", puntos: 168 }
   ]);
 
@@ -3719,27 +2668,27 @@ function DiarioTab() {
 
   // States and data for page 2 (Racha de Actividad & MET Calculator)
   const MET_ACTIVITIES = [
-    { name: "Aeróbica", low: 3.5, med: 5.0, high: 7.3 },
+    { name: "AerÃ³bica", low: 3.5, med: 5.0, high: 7.3 },
     { name: "Artes marciales", low: 5.3, med: 7.0, high: 10.3 },
     { name: "Artes marciales combinadas", low: 6.0, med: 9.0, high: 12.0 },
-    { name: "Bádminton", low: 4.5, med: 5.5, high: 7.0 },
+    { name: "BÃ¡dminton", low: 4.5, med: 5.5, high: 7.0 },
     { name: "Baile", low: 3.3, med: 5.0, high: 7.0 },
     { name: "Baile floss", low: 3.0, med: 4.5, high: 6.0 },
-    { name: "Básquetbol", low: 4.5, med: 6.0, high: 8.0 },
-    { name: "Béisbol", low: 3.0, med: 4.0, high: 5.0 },
-    { name: "Biatlón", low: 7.0, med: 10.5, high: 13.5 },
+    { name: "BÃ¡squetbol", low: 4.5, med: 6.0, high: 8.0 },
+    { name: "BÃ©isbol", low: 3.0, med: 4.0, high: 5.0 },
+    { name: "BiatlÃ³n", low: 7.0, med: 10.5, high: 13.5 },
     { name: "Bicicleta", low: 4.0, med: 8.0, high: 10.0 },
     { name: "Bicicleta fija", low: 3.5, med: 6.0, high: 8.5 },
     { name: "Boxeo", low: 5.5, med: 7.0, high: 12.8 },
     { name: "Buceo", low: 4.0, med: 7.0, high: 10.0 },
     { name: "Calistenia", low: 3.5, med: 5.0, high: 8.0 },
     { name: "Caminata", low: 2.5, med: 3.5, high: 4.5 },
-    { name: "Caminata a ritmo rápido", low: 3.8, med: 5.0, high: 6.5 },
-    { name: "Caminata con un carrito para niños", low: 3.0, med: 4.0, high: 5.0 },
+    { name: "Caminata a ritmo rÃ¡pido", low: 3.8, med: 5.0, high: 6.5 },
+    { name: "Caminata con un carrito para niÃ±os", low: 3.0, med: 4.0, high: 5.0 },
     { name: "Caminata en la cinta", low: 2.5, med: 3.8, high: 5.0 },
-    { name: "Caminata nórdica", low: 3.0, med: 4.8, high: 6.0 },
-    { name: "Caminata rápida", low: 3.8, med: 5.0, high: 6.5 },
-    { name: "Ciclismo de montaña", low: 5.5, med: 8.5, high: 14.0 },
+    { name: "Caminata nÃ³rdica", low: 3.0, med: 4.8, high: 6.0 },
+    { name: "Caminata rÃ¡pida", low: 3.8, med: 5.0, high: 6.5 },
+    { name: "Ciclismo de montaÃ±a", low: 5.5, med: 8.5, high: 14.0 },
     { name: "Ciclismo de ruta", low: 6.0, med: 9.0, high: 12.0 },
     { name: "Ciclismo manual", low: 3.0, med: 5.0, high: 7.5 },
     { name: "Ciclismo urbano", low: 4.0, med: 6.8, high: 10.0 },
@@ -3748,57 +2697,57 @@ function DiarioTab() {
     { name: "Correr", low: 7.0, med: 10.0, high: 15.0 },
     { name: "Correr en cinta", low: 7.0, med: 9.8, high: 14.0 },
     { name: "Correr en la arena", low: 8.0, med: 11.5, high: 16.0 },
-    { name: "Críquet", low: 3.0, med: 4.8, high: 6.0 },
+    { name: "CrÃ­quet", low: 3.0, med: 4.8, high: 6.0 },
     { name: "Crossfit", low: 5.0, med: 8.0, high: 12.0 },
     { name: "Curling", low: 2.5, med: 3.5, high: 4.5 },
-    { name: "Elíptico", low: 4.5, med: 7.0, high: 10.0 },
+    { name: "ElÃ­ptico", low: 4.5, med: 7.0, high: 10.0 },
     { name: "Entrenamiento de fuerza", low: 3.0, med: 5.0, high: 6.0 },
     { name: "Entrenamiento por intervalos", low: 4.5, med: 7.0, high: 10.0 },
     { name: "Entrenamiento por intervalos intenso", low: 6.0, med: 9.5, high: 13.0 },
-    { name: "Equitación", low: 3.0, med: 5.5, high: 8.0 },
+    { name: "EquitaciÃ³n", low: 3.0, med: 5.5, high: 8.0 },
     { name: "Escalada", low: 5.0, med: 8.0, high: 11.0 },
     { name: "Escalador", low: 4.5, med: 7.5, high: 10.0 },
     { name: "Esgrima", low: 4.0, med: 6.0, high: 8.0 },
-    { name: "Esquí", low: 4.5, med: 7.0, high: 9.5 },
-    { name: "Esquí con raquetas de nieve", low: 5.0, med: 8.0, high: 11.0 },
-    { name: "Esquí cuesta abajo", low: 4.0, med: 6.0, high: 8.0 },
-    { name: "Esquí de fondo", low: 5.5, med: 9.0, high: 12.5 },
+    { name: "EsquÃ­", low: 4.5, med: 7.0, high: 9.5 },
+    { name: "EsquÃ­ con raquetas de nieve", low: 5.0, med: 8.0, high: 11.0 },
+    { name: "EsquÃ­ cuesta abajo", low: 4.0, med: 6.0, high: 8.0 },
+    { name: "EsquÃ­ de fondo", low: 5.5, med: 9.0, high: 12.5 },
     { name: "Freeride", low: 5.0, med: 7.5, high: 10.0 },
     { name: "Frisbee", low: 3.0, med: 4.0, high: 5.0 },
-    { name: "Fútbol", low: 5.0, med: 7.0, high: 10.0 },
-    { name: "Fútbol americano", low: 4.5, med: 7.0, high: 9.0 },
-    { name: "Fútbol australiano", low: 5.0, med: 7.5, high: 10.5 },
+    { name: "FÃºtbol", low: 5.0, med: 7.0, high: 10.0 },
+    { name: "FÃºtbol americano", low: 4.5, med: 7.0, high: 9.0 },
+    { name: "FÃºtbol australiano", low: 5.0, med: 7.5, high: 10.5 },
     { name: "Gimnasia", low: 3.0, med: 4.0, high: 6.0 },
     { name: "Golf", low: 2.5, med: 3.5, high: 4.5 },
     { name: "Handball", low: 5.0, med: 8.0, high: 11.0 },
     { name: "Hockey", low: 5.0, med: 7.8, high: 10.0 },
     { name: "Hyrox", low: 6.0, med: 9.0, high: 13.0 },
-    { name: "Jardinería", low: 2.5, med: 3.8, high: 5.0 },
+    { name: "JardinerÃ­a", low: 2.5, med: 3.8, high: 5.0 },
     { name: "Kayakismo", low: 3.0, med: 5.0, high: 8.0 },
     { name: "Kickboxing", low: 5.5, med: 8.0, high: 11.5 },
-    { name: "Kite esquí", low: 5.0, med: 7.5, high: 10.0 },
+    { name: "Kite esquÃ­", low: 5.0, med: 7.5, high: 10.0 },
     { name: "Kitesurf", low: 5.0, med: 7.8, high: 11.0 },
     { name: "Levantamiento de pesas", low: 3.0, med: 5.0, high: 6.0 },
-    { name: "Máquina de ejercicios", low: 3.0, med: 4.5, high: 6.0 },
-    { name: "Máquina de remo", low: 3.5, med: 6.0, high: 8.5 },
-    { name: "Meditación", low: 1.0, med: 1.2, high: 1.5 },
-    { name: "Monopatín", low: 3.0, med: 5.0, high: 6.5 },
-    { name: "Natación", low: 5.3, med: 8.0, high: 10.0 },
-    { name: "Natación en aguas abiertas", low: 6.0, med: 8.5, high: 11.0 },
-    { name: "Natación en piscinas", low: 5.0, med: 7.5, high: 9.5 },
+    { name: "MÃ¡quina de ejercicios", low: 3.0, med: 4.5, high: 6.0 },
+    { name: "MÃ¡quina de remo", low: 3.5, med: 6.0, high: 8.5 },
+    { name: "MeditaciÃ³n", low: 1.0, med: 1.2, high: 1.5 },
+    { name: "MonopatÃ­n", low: 3.0, med: 5.0, high: 6.5 },
+    { name: "NataciÃ³n", low: 5.3, med: 8.0, high: 10.0 },
+    { name: "NataciÃ³n en aguas abiertas", low: 6.0, med: 8.5, high: 11.0 },
+    { name: "NataciÃ³n en piscinas", low: 5.0, med: 7.5, high: 9.5 },
     { name: "Otro", low: 3.0, med: 5.0, high: 7.0 },
     { name: "P90x", low: 5.5, med: 7.8, high: 10.5 },
     { name: "Parapente", low: 2.0, med: 2.8, high: 3.5 },
     { name: "Patinaje", low: 4.0, med: 6.0, high: 8.0 },
-    { name: "Patinaje en línea", low: 4.5, med: 7.0, high: 9.8 },
+    { name: "Patinaje en lÃ­nea", low: 4.5, med: 7.0, high: 9.8 },
     { name: "Patinaje en pista cubierta", low: 4.0, med: 6.5, high: 8.5 },
-    { name: "Patinaje nórdico", low: 5.0, med: 7.5, high: 10.5 },
+    { name: "Patinaje nÃ³rdico", low: 5.0, med: 7.5, high: 10.5 },
     { name: "Patinaje sobre hielo", low: 3.5, med: 5.5, high: 7.5 },
     { name: "Pesas rusas", low: 4.0, med: 7.0, high: 9.5 },
     { name: "Pilates", low: 2.5, med: 3.5, high: 5.0 },
     { name: "Polo", low: 4.0, med: 6.0, high: 8.0 },
-    { name: "Polo acústico", low: 3.0, med: 4.5, high: 6.0 },
-    { name: "Ráquetbol", low: 5.0, med: 7.5, high: 10.0 },
+    { name: "Polo acÃºstico", low: 3.0, med: 4.5, high: 6.0 },
+    { name: "RÃ¡quetbol", low: 5.0, med: 7.5, high: 10.0 },
     { name: "Remo", low: 3.5, med: 6.0, high: 8.5 },
     { name: "Rugby", low: 5.0, med: 8.0, high: 11.0 },
     { name: "Saltar la cuerda", low: 8.0, med: 11.0, high: 14.0 },
@@ -3829,20 +2778,20 @@ function DiarioTab() {
 
   const STREAK_FAQ = [
     {
-      q: "¿Qué es la racha y cómo se mide?",
-      a: "La Racha de Actividad ayuda a mantener tu constancia física a largo plazo. En lugar de evaluar día a día, la app calcula un promedio ponderado de 7 días de tu actividad física (caminar, correr, gimnasio, etc.), donde las actividades más recientes tienen mayor peso."
+      q: "Â¿QuÃ© es la racha y cÃ³mo se mide?",
+      a: "La Racha de Actividad ayuda a mantener tu constancia fÃ­sica a largo plazo. En lugar de evaluar dÃ­a a dÃ­a, la app calcula un promedio ponderado de 7 dÃ­as de tu actividad fÃ­sica (caminar, correr, gimnasio, etc.), donde las actividades mÃ¡s recientes tienen mayor peso."
     },
     {
-      q: "¿Cómo se mantiene y cuándo se pierde?",
-      a: "Para mantener tu racha, tu promedio de 7 días debe estar en el nivel Saludable (150 Puntos o más). Si cae por debajo de este límite, tu racha vuelve a cero. No obstante, ¡se permite descansar! Si te saltas un día pero tu promedio sigue arriba de 150, tu racha no se romperá."
+      q: "Â¿CÃ³mo se mantiene y cuÃ¡ndo se pierde?",
+      a: "Para mantener tu racha, tu promedio de 7 dÃ­as debe estar en el nivel Saludable (150 Puntos o mÃ¡s). Si cae por debajo de este lÃ­mite, tu racha vuelve a cero. No obstante, Â¡se permite descansar! Si te saltas un dÃ­a pero tu promedio sigue arriba de 150, tu racha no se romperÃ¡."
     },
     {
-      q: "¿Qué es la Curva de Actividad y la Línea Base?",
-      a: "La Curva de Actividad grafica tu promedio de Puntos de Actividad de los últimos 7 días. La Línea Base Saludable (150 puntos) combina las pautas de actividad física diaria de la Organización Mundial de la Salud (OMS) con el MET."
+      q: "Â¿QuÃ© es la Curva de Actividad y la LÃ­nea Base?",
+      a: "La Curva de Actividad grafica tu promedio de Puntos de Actividad de los Ãºltimos 7 dÃ­as. La LÃ­nea Base Saludable (150 puntos) combina las pautas de actividad fÃ­sica diaria de la OrganizaciÃ³n Mundial de la Salud (OMS) con el MET."
     },
     {
-      q: "¿Cómo se calculan los Puntos de Actividad?",
-      a: "Los puntos diarios son el promedio ponderado de los minutos MET. El MET (Equivalente Metabólico) mide la energía que consume una actividad comparada con el reposo. Los minutos MET de cada ejercicio se calculan multiplicando el valor MET de la actividad (según su intensidad) por los minutos entrenados."
+      q: "Â¿CÃ³mo se calculan los Puntos de Actividad?",
+      a: "Los puntos diarios son el promedio ponderado de los minutos MET. El MET (Equivalente MetabÃ³lico) mide la energÃ­a que consume una actividad comparada con el reposo. Los minutos MET de cada ejercicio se calculan multiplicando el valor MET de la actividad (segÃºn su intensidad) por los minutos entrenados."
     }
   ];
 
@@ -3909,25 +2858,25 @@ function DiarioTab() {
         fat: "18g",
         tags: ["Alta en Fibra", "Grasas Saludables"],
         tag: "Alta en Fibra",
-        coachFeedback: "Excelente balance de grasas saludables. Considerá agregar una fuente de proteína la próxima vez para prolongar la saciedad.",
+        coachFeedback: "Excelente balance de grasas saludables. ConsiderÃ¡ agregar una fuente de proteÃ­na la prÃ³xima vez para prolongar la saciedad.",
       },
       {
         id: "2",
         date: "2026-07-15",
         time: "02:00 PM",
-        title: "Registro de Hidratación",
+        title: "Registro de HidrataciÃ³n",
         subtitle: "Control de Rutina",
         type: "hydration",
         img: null,
         kcal: 0,
         tag: "Armstrong 5",
-        coachFeedback: "Nivel 5 indica deshidratación leve. Toma 500ml de agua ahora mismo para compensar el entrenamiento o la actividad.",
+        coachFeedback: "Nivel 5 indica deshidrataciÃ³n leve. Toma 500ml de agua ahora mismo para compensar el entrenamiento o la actividad.",
       },
       {
         id: "3",
         date: "2026-07-15",
         time: "08:15 AM",
-        title: "Café Negro",
+        title: "CafÃ© Negro",
         subtitle: "Desayuno",
         type: "coffee",
         img: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=150&q=80",
@@ -3935,8 +2884,8 @@ function DiarioTab() {
         protein: "0g",
         carbs: "0g",
         fat: "0g",
-        tags: ["Sin Azúcar", "Cero Calorías"],
-        tag: "Sin Azúcar",
+        tags: ["Sin AzÃºcar", "Cero CalorÃ­as"],
+        tag: "Sin AzÃºcar",
         coachFeedback: null,
       },
       {
@@ -3951,9 +2900,9 @@ function DiarioTab() {
         protein: "24g",
         carbs: "4g",
         fat: "22g",
-        tags: ["Alta en Proteínas", "Baja en Carbohidratos"],
-        tag: "Alta en Proteínas",
-        coachFeedback: "Muy buena elección proteica por la mañana. Mantener un desayuno con bajo índice glucémico estabiliza tu energía por horas.",
+        tags: ["Alta en ProteÃ­nas", "Baja en Carbohidratos"],
+        tag: "Alta en ProteÃ­nas",
+        coachFeedback: "Muy buena elecciÃ³n proteica por la maÃ±ana. Mantener un desayuno con bajo Ã­ndice glucÃ©mico estabiliza tu energÃ­a por horas.",
       },
       {
         id: "5",
@@ -3969,13 +2918,13 @@ function DiarioTab() {
         fat: "15g",
         tags: ["Grasas Saludables", "Baja en Carbohidratos"],
         tag: "Grasas Saludables",
-        coachFeedback: "El snack de frutos secos aporta ácidos grasos esenciales y saciedad antes de tu cena.",
+        coachFeedback: "El snack de frutos secos aporta Ã¡cidos grasos esenciales y saciedad antes de tu cena.",
       },
       {
         id: "6",
         date: "2026-07-13",
         time: "08:30 AM",
-        title: "Café con Leche y Tostadas de Masa Madre",
+        title: "CafÃ© con Leche y Tostadas de Masa Madre",
         subtitle: "Desayuno",
         type: "food",
         img: null,
@@ -3983,15 +2932,15 @@ function DiarioTab() {
         protein: "10g",
         carbs: "40g",
         fat: "8g",
-        tags: ["Energía Compleja", "Microbiota Amigable"],
-        tag: "Energía Compleja",
-        coachFeedback: "La masa madre es excelente para tu microbiota digestiva. Buena combinación energética para arrancar el día.",
+        tags: ["EnergÃ­a Compleja", "Microbiota Amigable"],
+        tag: "EnergÃ­a Compleja",
+        coachFeedback: "La masa madre es excelente para tu microbiota digestiva. Buena combinaciÃ³n energÃ©tica para arrancar el dÃ­a.",
       },
       {
         id: "7",
         date: "2026-07-13",
         time: "08:30 PM",
-        title: "Salmón Grillado con Espárragos",
+        title: "SalmÃ³n Grillado con EspÃ¡rragos",
         subtitle: "Cena",
         type: "food",
         img: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=600&q=80",
@@ -3999,9 +2948,9 @@ function DiarioTab() {
         protein: "44g",
         carbs: "6g",
         fat: "36g",
-        tags: ["Alta en Proteínas", "Baja en Carbohidratos", "Omega 3"],
-        tag: "Alta en Proteínas",
-        coachFeedback: "Excelente cena ligera y rica en grasas saludables que promueven la recuperación celular durante el sueño profundo.",
+        tags: ["Alta en ProteÃ­nas", "Baja en Carbohidratos", "Omega 3"],
+        tag: "Alta en ProteÃ­nas",
+        coachFeedback: "Excelente cena ligera y rica en grasas saludables que promueven la recuperaciÃ³n celular durante el sueÃ±o profundo.",
       }
     ];
   });
@@ -4030,16 +2979,16 @@ function DiarioTab() {
       exercisesTrained.forEach(ex => {
         if (!ex.muscles) return;
         const text = ex.muscles.toLowerCase();
-        if (text.includes("biceps") || text.includes("bíceps")) next["biceps"] = Math.max(0, next["biceps"] - 35);
-        if (text.includes("triceps") || text.includes("tríceps")) next["triceps"] = Math.max(0, next["triceps"] - 35);
+        if (text.includes("biceps") || text.includes("bÃ­ceps")) next["biceps"] = Math.max(0, next["biceps"] - 35);
+        if (text.includes("triceps") || text.includes("trÃ­ceps")) next["triceps"] = Math.max(0, next["triceps"] - 35);
         if (text.includes("pectoral") || text.includes("pecho")) next["pecho"] = Math.max(0, next["pecho"] - 35);
         if (text.includes("dorsal") || text.includes("espalda")) next["espalda"] = Math.max(0, next["espalda"] - 35);
         if (text.includes("lumbar") || text.includes("baja")) next["espalda-baja"] = Math.max(0, next["espalda-baja"] - 35);
         if (text.includes("deltoides") || text.includes("hombro")) next["hombros"] = Math.max(0, next["hombros"] - 35);
         if (text.includes("abdominal") || text.includes("abs")) next["abdominales"] = Math.max(0, next["abdominales"] - 35);
-        if (text.includes("cuadriceps") || text.includes("cuádriceps")) next["cuadriceps"] = Math.max(0, next["cuadriceps"] - 35);
+        if (text.includes("cuadriceps") || text.includes("cuÃ¡driceps")) next["cuadriceps"] = Math.max(0, next["cuadriceps"] - 35);
         if (text.includes("femoral") || text.includes("isquiotibiales")) next["isquiotibiales"] = Math.max(0, next["isquiotibiales"] - 35);
-        if (text.includes("gluteo") || text.includes("glúteo")) next["gluteos"] = Math.max(0, next["gluteos"] - 35);
+        if (text.includes("gluteo") || text.includes("glÃºteo")) next["gluteos"] = Math.max(0, next["gluteos"] - 35);
         if (text.includes("gemelo")) next["gemelos"] = Math.max(0, next["gemelos"] - 35);
       });
       return next;
@@ -4070,7 +3019,7 @@ function DiarioTab() {
     return () => clearTimeout(timer);
   }, [activeModal, foodAnalysisStep]);
 
-  // Motor de respiración guiada a 60 FPS sincronizado con reloj de tiempo real (Date.now())
+  // Motor de respiraciÃ³n guiada a 60 FPS sincronizado con reloj de tiempo real (Date.now())
   useEffect(() => {
     let animationFrameId: number;
     let isCompleted = false;
@@ -4089,24 +3038,24 @@ function DiarioTab() {
         const phaseMs = totalElapsed % 16000;
 
         if (phaseMs < 4000) {
-          // 1. Inhala (0s - 4s): Expansión fluida desde 0.60 hasta 1.00
+          // 1. Inhala (0s - 4s): ExpansiÃ³n fluida desde 0.60 hasta 1.00
           const progress = phaseMs / 4000;
           setBreathingPhase("inhale");
           setBreathingSeconds(Math.ceil((4000 - phaseMs) / 1000) || 1);
           setBreathingOrbScale(0.60 + progress * 0.40);
         } else if (phaseMs < 8000) {
-          // 2. Pausa Lleno (4s - 8s): Retención estática en 1.00
+          // 2. Pausa Lleno (4s - 8s): RetenciÃ³n estÃ¡tica en 1.00
           setBreathingPhase("hold1");
           setBreathingSeconds(Math.ceil((8000 - phaseMs) / 1000) || 1);
           setBreathingOrbScale(1.00);
         } else if (phaseMs < 12000) {
-          // 3. Exhala (8s - 12s): Contracción fluida desde 1.00 hasta 0.60
+          // 3. Exhala (8s - 12s): ContracciÃ³n fluida desde 1.00 hasta 0.60
           const progress = (phaseMs - 8000) / 4000;
           setBreathingPhase("exhale");
           setBreathingSeconds(Math.ceil((12000 - phaseMs) / 1000) || 1);
           setBreathingOrbScale(1.00 - progress * 0.40);
         } else {
-          // 4. Pausa Vacío (12s - 16s): Retención estática en 0.60
+          // 4. Pausa VacÃ­o (12s - 16s): RetenciÃ³n estÃ¡tica en 0.60
           setBreathingPhase("hold2");
           setBreathingSeconds(Math.ceil((16000 - phaseMs) / 1000) || 1);
           setBreathingOrbScale(0.60);
@@ -4148,7 +3097,7 @@ function DiarioTab() {
       id: `food-${Date.now()}`,
       date: new Date().toISOString().split("T")[0],
       time: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
-      title: "Chicken Phở con Vegetales",
+      title: "Chicken Phá»Ÿ con Vegetales",
       subtitle: "Comida Registrada",
       type: "food",
       img: "https://images.unsplash.com/photo-1541532713592-79a0317b6b77?auto=format&fit=crop&w=600&q=80",
@@ -4156,9 +3105,9 @@ function DiarioTab() {
       protein: "32g",
       carbs: "54g",
       fat: "12g",
-      tags: ["Mínimamente Procesado", "Score NRF 9.3"],
+      tags: ["MÃ­nimamente Procesado", "Score NRF 9.3"],
       tag: "Score NRF 9.3 (88/100)",
-      coachFeedback: "Excelente balance de proteínas y fibra en la sopa. Considerá controlar el aporte de sodio del caldo para optimizar tu perfil diario.",
+      coachFeedback: "Excelente balance de proteÃ­nas y fibra en la sopa. ConsiderÃ¡ controlar el aporte de sodio del caldo para optimizar tu perfil diario.",
     };
     setUserTimelineItems(prev => [newFood, ...prev]);
 
@@ -4171,22 +3120,22 @@ function DiarioTab() {
       if (level <= 2) {
         return {
           tag: `Armstrong ${level}`,
-          feedback: `Nivel ${level} indica hidratación óptima. ¡Excelente trabajo manteniendo tu cuerpo equilibrado!`
+          feedback: `Nivel ${level} indica hidrataciÃ³n Ã³ptima. Â¡Excelente trabajo manteniendo tu cuerpo equilibrado!`
         };
       } else if (level <= 4) {
         return {
           tag: `Armstrong ${level}`,
-          feedback: `Nivel ${level} indica hidratación normal tirando a levemente baja. Bebe un vaso de agua (250ml) ahora para mantener el estado óptimo.`
+          feedback: `Nivel ${level} indica hidrataciÃ³n normal tirando a levemente baja. Bebe un vaso de agua (250ml) ahora para mantener el estado Ã³ptimo.`
         };
       } else if (level <= 6) {
         return {
           tag: `Armstrong ${level}`,
-          feedback: `Nivel ${level} indica deshidratación leve. Toma 500ml de agua ahora mismo para compensar el entrenamiento o la actividad.`
+          feedback: `Nivel ${level} indica deshidrataciÃ³n leve. Toma 500ml de agua ahora mismo para compensar el entrenamiento o la actividad.`
         };
       } else {
         return {
           tag: `Armstrong ${level}`,
-          feedback: `¡Atención! Nivel ${level} indica deshidratación severa. Consume de 750ml a 1L de agua, preferiblemente con electrolitos, y modera el esfuerzo físico.`
+          feedback: `Â¡AtenciÃ³n! Nivel ${level} indica deshidrataciÃ³n severa. Consume de 750ml a 1L de agua, preferiblemente con electrolitos, y modera el esfuerzo fÃ­sico.`
         };
       }
     };
@@ -4255,7 +3204,7 @@ function DiarioTab() {
           img: null,
           kcal: 0,
           tag: "Inicio de Fase de Luz",
-          coachFeedback: "Amanecer biológico. Tu cuerpo frena la melatonina e inicia la secreción de cortisol. Momento ideal para exponerte a la luz natural y activar tu metabolismo.",
+          coachFeedback: "Amanecer biolÃ³gico. Tu cuerpo frena la melatonina e inicia la secreciÃ³n de cortisol. Momento ideal para exponerte a la luz natural y activar tu metabolismo.",
         });
       }
 
@@ -4264,13 +3213,13 @@ function DiarioTab() {
           id: `circadian-peak-${d}`,
           date: d,
           time: peakTime,
-          title: "Pico Metabólico",
+          title: "Pico MetabÃ³lico",
           subtitle: "Eficiencia Digestiva",
           type: "peak",
           img: null,
           kcal: 0,
-          tag: "Máxima Sensibilidad",
-          coachFeedback: "Pico de sensibilidad a la insulina y temperatura corporal. Tu capacidad de asimilación de nutrientes es óptima. Excelente momento para tu comida principal.",
+          tag: "MÃ¡xima Sensibilidad",
+          coachFeedback: "Pico de sensibilidad a la insulina y temperatura corporal. Tu capacidad de asimilaciÃ³n de nutrientes es Ã³ptima. Excelente momento para tu comida principal.",
         });
       }
 
@@ -4285,7 +3234,7 @@ function DiarioTab() {
           img: null,
           kcal: 0,
           tag: "Inicio de Fase Oscura",
-          coachFeedback: "Atardecer biológico. Comienza la transición hacia la producción de melatonina. Se recomienda cenar ligero y evitar pantallas de luz azul intensa.",
+          coachFeedback: "Atardecer biolÃ³gico. Comienza la transiciÃ³n hacia la producciÃ³n de melatonina. Se recomienda cenar ligero y evitar pantallas de luz azul intensa.",
         });
       }
     });
@@ -4353,7 +3302,7 @@ function DiarioTab() {
       <html lang="es">
       <head>
         <meta charset="utf-8">
-        <title>Reporte de Bienestar y Alimentación — Shakerfy</title>
+        <title>Reporte de Bienestar y AlimentaciÃ³n â€” Shakerfy</title>
         <style>
           body {
             font-family: system-ui, -apple-system, sans-serif;
@@ -4481,12 +3430,12 @@ function DiarioTab() {
         <div class="header">
           <div>
             <div class="logo">Shakerfy</div>
-            <div style="font-size: 12px; color: #64748b; margin-top: 4px;">Pulse Smart — Wellness Lab</div>
+            <div style="font-size: 12px; color: #64748b; margin-top: 4px;">Pulse Smart â€” Wellness Lab</div>
           </div>
           <div class="date" style="text-align: right;">
-            <div><strong>Usuario:</strong> Agustín</div>
-            <div style="margin-top: 4px;"><strong>Rango:</strong> ${insightPeriod === "day" ? "Hoy" : insightPeriod === "week" ? "Últimos 7 días" : insightPeriod === "month" ? "Último mes" : "Último trimestre"}</div>
-            <div style="margin-top: 4px;"><strong>Fecha Emisión:</strong> ${new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+            <div><strong>Usuario:</strong> AgustÃ­n</div>
+            <div style="margin-top: 4px;"><strong>Rango:</strong> ${insightPeriod === "day" ? "Hoy" : insightPeriod === "week" ? "Ãšltimos 7 dÃ­as" : insightPeriod === "month" ? "Ãšltimo mes" : "Ãšltimo trimestre"}</div>
+            <div style="margin-top: 4px;"><strong>Fecha EmisiÃ³n:</strong> ${new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
           </div>
         </div>
 
@@ -4499,7 +3448,7 @@ function DiarioTab() {
           <div class="card">
             <div class="card-title">Estabilidad de Horarios</div>
             <div class="card-value">95%</div>
-            <p style="font-size: 11px; color: #64748b; margin-top: 5px;">Alineación de tus ingestas con tus ventanas biológicas óptimas.</p>
+            <p style="font-size: 11px; color: #64748b; margin-top: 5px;">AlineaciÃ³n de tus ingestas con tus ventanas biolÃ³gicas Ã³ptimas.</p>
           </div>
         </div>
 
@@ -4520,7 +3469,7 @@ function DiarioTab() {
           </div>
 
           <div class="card" style="background: white;">
-            <div class="card-title" style="border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 12px;">Síntomas Físicos Reportados</div>
+            <div class="card-title" style="border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 12px;">SÃ­ntomas FÃ­sicos Reportados</div>
             ${SYMPTOMS_DATA.map(d => {
               const maxCount = Math.max(...SYMPTOMS_DATA.map(x => x.count));
               const pct = Math.round((d.count / maxCount) * 100);
@@ -4547,7 +3496,7 @@ function DiarioTab() {
             <tr>
               <th>Fecha</th>
               <th>Hora</th>
-              <th>Categoría</th>
+              <th>CategorÃ­a</th>
               <th>Detalle / Registro</th>
               <th>Impacto / Feedback Nutricional</th>
             </tr>
@@ -4559,7 +3508,7 @@ function DiarioTab() {
                 <td style="font-weight: 600;">${item.time}</td>
                 <td>
                   <span class="badge badge-${item.type === 'food' ? 'food' : item.type === 'hydration' ? 'hydration' : item.type === 'coffee' ? 'coffee' : item.type === 'activity' ? 'activity' : 'circadian'}">
-                    ${item.type === 'food' ? 'Comida' : item.type === 'hydration' ? 'Hidratación' : item.type === 'coffee' ? 'Café' : item.type === 'activity' ? 'Actividad' : 'Hito Solar'}
+                    ${item.type === 'food' ? 'Comida' : item.type === 'hydration' ? 'HidrataciÃ³n' : item.type === 'coffee' ? 'CafÃ©' : item.type === 'activity' ? 'Actividad' : 'Hito Solar'}
                   </span>
                 </td>
                 <td><strong>${item.title}</strong>${item.kcal > 0 ? ` (${item.kcal} kcal)` : ''}</td>
@@ -4570,7 +3519,7 @@ function DiarioTab() {
         </table>
 
         <div class="disclaimer">
-          <strong>Aviso Médico & Disclaimer:</strong> Este documento es un resumen de registros de hábitos y estimaciones circadianas con fines informativos de autoconocimiento. No constituye un diagnóstico médico, prescripción clínica ni asesoramiento nutricional formal. Por favor, consulte con su médico, nutricionista o profesional de la salud matriculado antes de realizar cambios significativos en su dieta, rutina de ayuno o hábitos biológicos.
+          <strong>Aviso MÃ©dico & Disclaimer:</strong> Este documento es un resumen de registros de hÃ¡bitos y estimaciones circadianas con fines informativos de autoconocimiento. No constituye un diagnÃ³stico mÃ©dico, prescripciÃ³n clÃ­nica ni asesoramiento nutricional formal. Por favor, consulte con su mÃ©dico, nutricionista o profesional de la salud matriculado antes de realizar cambios significativos en su dieta, rutina de ayuno o hÃ¡bitos biolÃ³gicos.
         </div>
 
         <script>
@@ -4618,28 +3567,14 @@ function DiarioTab() {
   };
 
   return (
-    <div className="mx-auto w-full space-y-8 pb-16 max-w-2xl">
+    <div className="mx-auto w-full space-y-5 sm:space-y-8 pb-20 max-w-2xl">
       {/* Header Section */}
-      <header className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2.5">
-          <span className="text-2xl sm:text-3xl font-bebas tracking-wider text-foreground uppercase select-none">
-            Shakerfy
-          </span>
-          <button 
-            type="button"
-            onClick={() => setActiveModal("racha-actividad")}
-            className="inline-flex items-center gap-1.5 text-[11px] font-black px-2.5 py-1 rounded-full bg-orange-500/10 text-orange-500 border border-orange-500/20 hover:bg-orange-500/20 active:scale-95 transition-all cursor-pointer shadow-sm"
-            title="Ver racha de actividad"
-          >
-            <Flame className="w-3.5 h-3.5 fill-orange-500 animate-pulse text-orange-500" />
-            12 días
-          </button>
-        </div>
-        <div className="flex p-1 bg-secondary/35 rounded-xl border border-border self-start">
+      <header className="flex items-center justify-start">
+        <div className="flex p-1 bg-secondary/35 rounded-xl border border-border overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           <button 
             type="button"
             onClick={() => setSubTab("diario")}
-            className={`px-4 py-2 text-xs font-bold rounded-lg transition ${
+            className={`shrink-0 px-3 sm:px-4 py-2 text-[11px] sm:text-xs font-bold rounded-lg transition ${
               subTab === "diario" 
                 ? "bg-foreground text-background" 
                 : "text-muted-foreground hover:text-foreground"
@@ -4650,29 +3585,29 @@ function DiarioTab() {
           <button 
             type="button"
             onClick={() => setSubTab("recuperacion")}
-            className={`px-4 py-2 text-xs font-bold rounded-lg transition ${
+            className={`shrink-0 px-3 sm:px-4 py-2 text-[11px] sm:text-xs font-bold rounded-lg transition ${
               subTab === "recuperacion" 
                 ? "bg-foreground text-background" 
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            Recuperación
+            RecuperaciÃ³n
           </button>
           <button 
             type="button"
             onClick={() => setSubTab("analisis")}
-            className={`px-4 py-2 text-xs font-bold rounded-lg transition ${
+            className={`shrink-0 px-3 sm:px-4 py-2 text-[11px] sm:text-xs font-bold rounded-lg transition ${
               subTab === "analisis" 
                 ? "bg-foreground text-background" 
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            Alimentación
+            AlimentaciÃ³n
           </button>
           <button 
             type="button"
             onClick={() => setSubTab("recetas")}
-            className={`px-4 py-2 text-xs font-bold rounded-lg transition ${
+            className={`shrink-0 px-3 sm:px-4 py-2 text-[11px] sm:text-xs font-bold rounded-lg transition ${
               subTab === "recetas" 
                 ? "bg-foreground text-background" 
                 : "text-muted-foreground hover:text-foreground"
@@ -4685,29 +3620,297 @@ function DiarioTab() {
 
       {subTab === "diario" && (
         <>
-          {/* Timeline */}
-          <div className="relative pl-6 md:pl-0">
-            {/* Animated Pastel Orbs Background behind Timeline */}
+          {/* Header Horizontal Swipeable Cards Container */}
+          <div className="mb-6 space-y-2">
+            {/* Horizontal Swipe Scroll Container (Scrollbar oculto) */}
             <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-60 dark:opacity-40"
+              ref={carouselRef}
+              onScroll={(e) => {
+                const width = e.currentTarget.clientWidth;
+                if (width > 0) {
+                  const idx = Math.round(e.currentTarget.scrollLeft / width);
+                  if (idx !== cardSlideIndex) setCardSlideIndex(idx);
+                }
+              }}
+              className="flex overflow-x-auto snap-x snap-mandatory transition-all rounded-3xl [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+              style={{ scrollSnapType: "x mandatory" }}
             >
-              <div
-                className="absolute -right-[60px] top-[2%] h-[260px] w-[260px] rounded-full bg-[#ff7b7c]/65 blur-[65px] md:-right-[120px] md:h-[380px] md:w-[380px] md:blur-[85px]"
-                style={{ animation: "orb1 25s infinite ease-in-out" }}
-              />
-              <div
-                className="absolute -left-[70px] top-[32%] h-[280px] w-[280px] rounded-full bg-[#aafc75]/65 blur-[65px] md:-left-[140px] md:h-[420px] md:w-[420px] md:blur-[85px]"
-                style={{ animation: "orb2 28s infinite ease-in-out 1s" }}
-              />
-              <div
-                className="absolute -right-[60px] top-[65%] h-[260px] w-[260px] rounded-full bg-[#60f2fc]/65 blur-[65px] md:-right-[120px] md:h-[380px] md:w-[380px] md:blur-[85px]"
-                style={{ animation: "orb3 30s infinite ease-in-out 3s" }}
-              />
+              {/* SLIDE 1: NutriciÃ³n & CalorÃ­as (Cal AI) */}
+              <div className="w-full shrink-0 snap-center min-w-full">
+                <div className="bg-card border border-border/80 rounded-3xl p-5 sm:p-6 space-y-4 text-card-foreground shadow-xs hover:shadow-md transition-all">
+                  {/* Top Calories Card */}
+                  <div className="bg-secondary/40 dark:bg-secondary/20 border border-border/60 rounded-2xl p-5 sm:p-6 flex items-center justify-between hover:border-foreground/20 transition-all">
+                    <div className="space-y-1">
+                      <div className="text-4xl sm:text-5xl font-bold tracking-tight text-foreground font-sans">
+                        2500
+                      </div>
+                      <div className="text-xs text-muted-foreground font-medium">Calories left</div>
+                      <div className="text-[10px] text-muted-foreground/70 font-mono mt-0.5">
+                        1,900 - 2,150 kcal
+                      </div>
+                    </div>
+
+                    {/* Big Circular Ring */}
+                    <div className="shrink-0">
+                      <CircularProgress percent={75} color="#f97316" size={84} strokeWidth={8} trackClass="stroke-zinc-200 dark:stroke-zinc-800">
+                        <div className="w-9 h-9 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center shadow-xs">
+                          <Flame className="w-4 h-4 text-orange-500 fill-orange-500" />
+                        </div>
+                      </CircularProgress>
+                    </div>
+                  </div>
+
+                  {/* 3 Macro Cards Row */}
+                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                    {/* Protein Card */}
+                    <div className="bg-secondary/40 dark:bg-secondary/20 border border-border/60 rounded-2xl p-3 sm:p-4 flex flex-col justify-between h-[140px] sm:h-[155px] hover:border-foreground/20 hover:-translate-y-0.5 transition-all">
+                      <div>
+                        <div className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground font-sans tracking-tight">
+                          45g
+                        </div>
+                        <div className="text-[10px] sm:text-[11px] text-muted-foreground font-medium leading-tight mt-0.5">
+                          Protein over
+                        </div>
+                        <div className="text-[9px] sm:text-[10px] text-muted-foreground/70 font-mono mt-0.5">80-120g</div>
+                      </div>
+                      <div className="flex justify-center">
+                        <CircularProgress percent={85} color="#ff4d6d" size={48} strokeWidth={5} trackClass="stroke-zinc-200 dark:stroke-zinc-800">
+                          <div className="w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center shadow-xs">
+                            <Zap className="w-3 h-3 text-[#ff4d6d] fill-[#ff4d6d]" />
+                          </div>
+                        </CircularProgress>
+                      </div>
+                    </div>
+
+                    {/* Carbs Card */}
+                    <div className="bg-secondary/40 dark:bg-secondary/20 border border-border/60 rounded-2xl p-3 sm:p-4 flex flex-col justify-between h-[140px] sm:h-[155px] hover:border-foreground/20 hover:-translate-y-0.5 transition-all">
+                      <div>
+                        <div className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground font-sans tracking-tight">
+                          89g
+                        </div>
+                        <div className="text-[10px] sm:text-[11px] text-muted-foreground font-medium leading-tight mt-0.5">
+                          Carbs left
+                        </div>
+                        <div className="text-[9px] sm:text-[10px] text-muted-foreground/70 font-mono mt-0.5">200-240g</div>
+                      </div>
+                      <div className="flex justify-center">
+                        <CircularProgress percent={65} color="#ffaa00" size={48} strokeWidth={5} trackClass="stroke-zinc-200 dark:stroke-zinc-800">
+                          <div className="w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center shadow-xs">
+                            <Wheat className="w-3 h-3 text-[#ffaa00]" />
+                          </div>
+                        </CircularProgress>
+                      </div>
+                    </div>
+
+                    {/* Fats Card */}
+                    <div className="bg-secondary/40 dark:bg-secondary/20 border border-border/60 rounded-2xl p-3 sm:p-4 flex flex-col justify-between h-[140px] sm:h-[155px] hover:border-foreground/20 hover:-translate-y-0.5 transition-all">
+                      <div>
+                        <div className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground font-sans tracking-tight">
+                          48g
+                        </div>
+                        <div className="text-[10px] sm:text-[11px] text-muted-foreground font-medium leading-tight mt-0.5">
+                          Fats left
+                        </div>
+                        <div className="text-[9px] sm:text-[10px] text-muted-foreground/70 font-mono mt-0.5">55-70g</div>
+                      </div>
+                      <div className="flex justify-center">
+                        <CircularProgress percent={55} color="#4d9fff" size={48} strokeWidth={5} trackClass="stroke-zinc-200 dark:stroke-zinc-800">
+                          <div className="w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center shadow-xs">
+                            <Droplet className="w-3 h-3 text-[#4d9fff] fill-[#4d9fff]" />
+                          </div>
+                        </CircularProgress>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* SLIDE 2: Control de Bienestar (Estado Actual con Sliders y Orbs) */}
+              <div className="w-full shrink-0 snap-center min-w-full">
+                <div className="bg-card border border-border/80 rounded-3xl p-5 sm:p-6 space-y-4 text-card-foreground shadow-xs hover:shadow-md transition-all relative overflow-hidden h-full flex flex-col justify-between">
+                  {/* Animated Hero Pastel Orbs Background */}
+                  <div aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-30 dark:opacity-20">
+                    <div
+                      className="absolute -right-[30px] -top-[30px] h-[180px] w-[180px] rounded-full bg-[#ff7b7c]/60 blur-[45px]"
+                      style={{ animation: "orb1 22s infinite ease-in-out" }}
+                    />
+                    <div
+                      className="absolute -left-[40px] top-[20%] h-[180px] w-[180px] rounded-full bg-[#aafc75]/60 blur-[50px]"
+                      style={{ animation: "orb2 25s infinite ease-in-out 1s" }}
+                    />
+                    <div
+                      className="absolute -bottom-[30px] -right-[30px] h-[180px] w-[180px] rounded-full bg-[#60f2fc]/60 blur-[50px]"
+                      style={{ animation: "orb3 28s infinite ease-in-out 3s" }}
+                    />
+                  </div>
+
+                  {/* Card Header */}
+                  <div className="relative z-10 flex items-center justify-between border-b border-border/40 pb-3">
+                    <div>
+                      <span className="text-[10px] text-muted-foreground/80 font-bold uppercase tracking-wider block mb-0.5">
+                        Control de Bienestar
+                      </span>
+                      <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                        <span>Estado Actual de Hoy</span>
+                        <div className="p-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-500">
+                          <Heart className="w-3.5 h-3.5 fill-rose-500" />
+                        </div>
+                      </h3>
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        toast.success("âœ“ Registro de estado actual guardado correctamente");
+                      }}
+                      className="rounded-xl h-8 text-xs font-bold bg-foreground text-background hover:opacity-90 transition-all cursor-pointer shadow-xs"
+                    >
+                      Guardar Registro
+                    </Button>
+                  </div>
+
+                  {/* Sliders Body (Ãnimo, Apetito, EnergÃ­a) */}
+                  <div className="relative z-10 space-y-4 pt-1 flex-1 flex flex-col justify-center">
+                    <CustomSlider
+                      value={mood}
+                      onChange={setMood}
+                      labelLeft="Ansioso"
+                      labelRight="Calmo"
+                      colorClass="from-[#46e8f5]/30 via-[#46e8f5]/70 to-[#46e8f5]"
+                    />
+                    <CustomSlider
+                      value={hunger}
+                      onChange={setHunger}
+                      labelLeft="Hambriento"
+                      labelRight="Saciado"
+                      colorClass="from-[#8ee853]/30 via-[#8ee853]/70 to-[#8ee853]"
+                    />
+                    <CustomSlider
+                      value={energy}
+                      onChange={setEnergy}
+                      labelLeft="Cansado"
+                      labelRight="EnÃ©rgico"
+                      colorClass="from-[#ff7b7c]/30 via-[#ff7b7c]/70 to-[#ff7b7c]"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* SLIDE 3: Racha de Actividad (Curva 7 DÃ­as) */}
+              <div className="w-full shrink-0 snap-center min-w-full">
+                <div className="bg-card border border-border/80 rounded-3xl p-5 sm:p-6 space-y-4 text-card-foreground shadow-xs hover:shadow-md transition-all h-full flex flex-col justify-between">
+                  {/* Card Header */}
+                  <div className="flex items-center justify-between border-b border-border/40 pb-3">
+                    <div className="flex items-center gap-2">
+                      <div>
+                        <span className="text-[10px] text-muted-foreground/80 font-bold uppercase tracking-wider block mb-0.5">
+                          HÃ¡bitos & Movimiento
+                        </span>
+                        <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                          <span>Racha de Actividad</span>
+                          <span className="inline-flex items-center gap-1 text-[11px] font-black px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                            <Zap className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+                            12 dÃ­as
+                          </span>
+                        </h3>
+                      </div>
+                    </div>
+                    <span className="text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold border border-emerald-500/20">
+                      BASE: 150 PTOS
+                    </span>
+                  </div>
+
+                  {/* Chart Body */}
+                  <div className="pt-1 flex-1 flex flex-col justify-center">
+                    <div className="flex justify-between items-center text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground mb-2 px-0.5">
+                      <span>Curva de Actividad (7 dÃ­as)</span>
+                      <span className="text-emerald-500 font-bold">MÃ­nimo Saludable (150)</span>
+                    </div>
+
+                    <ChartContainer config={chartConfig} className="h-44 w-full aspect-auto select-none">
+                      <AreaChart
+                        data={activityData}
+                        margin={{ top: 5, right: 5, left: -25, bottom: 0 }}
+                      >
+                        <defs>
+                          <linearGradient id="recharts-activity-grad-card" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.25} />
+                            <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border/40" />
+                        <XAxis 
+                          dataKey="day" 
+                          tickLine={false} 
+                          axisLine={false} 
+                          tickMargin={6}
+                          className="text-[10px] font-bold fill-muted-foreground"
+                        />
+                        <YAxis 
+                          tickLine={false} 
+                          axisLine={false} 
+                          tickMargin={4}
+                          domain={[100, 200]}
+                          className="text-[9px] font-semibold fill-muted-foreground"
+                        />
+                        <ReferenceLine 
+                          y={150} 
+                          stroke="#10b981" 
+                          strokeDasharray="4 4" 
+                          strokeWidth={2}
+                          label={{ 
+                            value: "MÃ­nimo Saludable (150)", 
+                            position: "insideBottomRight", 
+                            offset: 8,
+                            fill: "#10b981",
+                            fontSize: 9,
+                            fontWeight: "bold"
+                          }} 
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="puntos"
+                          stroke="hsl(var(--primary))"
+                          strokeWidth={2.5}
+                          fillOpacity={1}
+                          fill="url(#recharts-activity-grad-card)"
+                        />
+                      </AreaChart>
+                    </ChartContainer>
+                  </div>
+                </div>
+              </div>
             </div>
 
+            {/* Bottom Indicator Dots Only (â— â—‹ â—‹ | â—‹ â— â—‹ | â—‹ â—‹ â—) */}
+            <div className="flex items-center justify-center gap-2 pt-1">
+              {[0, 1, 2].map((idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => {
+                    setCardSlideIndex(idx);
+                    if (carouselRef.current) {
+                      carouselRef.current.scrollTo({
+                        left: idx * carouselRef.current.clientWidth,
+                        behavior: "smooth",
+                      });
+                    }
+                  }}
+                  className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                    cardSlideIndex === idx
+                      ? "bg-foreground w-6"
+                      : "bg-muted-foreground/30 hover:bg-muted-foreground/50 w-2"
+                  }`}
+                  aria-label={`Ir a tarjeta ${idx + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Timeline */}
+          <div className="relative pl-6 md:pl-0">
             {/* Vertical Line */}
-            <div className="absolute left-6 md:left-[50%] top-0 bottom-0 w-[2px] bg-border transform -translate-x-1/2 md:-translate-x-[1px] z-0"></div>
+            <div className="absolute left-6 md:left-[50%] top-0 bottom-0 w-[2px] bg-border transform -translate-x-1/2 md:-translate-x-[1px]"></div>
 
             {/* Recipe Swipe Stack timeline item */}
             {showSwipeStack && (
@@ -4819,7 +4022,7 @@ function DiarioTab() {
                                     type="button"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      if (confirm(`¿Deseas eliminar "${item.title}" de tu diario?`)) {
+                                      if (confirm(`Â¿Deseas eliminar "${item.title}" de tu diario?`)) {
                                         handleDeleteTimelineItem(item.id);
                                       }
                                     }}
@@ -4845,14 +4048,14 @@ function DiarioTab() {
                                           <button
                                             type="button"
                                             className="p-0.5 text-muted-foreground hover:text-emerald-500 transition-colors rounded-full hover:bg-secondary/60 cursor-pointer"
-                                            aria-label="Información sobre ritmos circadianos"
+                                            aria-label="InformaciÃ³n sobre ritmos circadianos"
                                           >
                                             <Info className="w-3.5 h-3.5 text-emerald-500" />
                                           </button>
                                         </TooltipTrigger>
                                         <TooltipContent className="max-w-[280px] p-3 text-xs leading-relaxed space-y-2 bg-popover text-popover-foreground border border-border shadow-xl">
                                           <p className="font-medium">
-                                            Tu cuerpo funciona en ciclos de 24 hs. Estas tarjetas te indican los momentos óptimos del día para comer, activar tu metabolismo y descansar.
+                                            Tu cuerpo funciona en ciclos de 24 hs. Estas tarjetas te indican los momentos Ã³ptimos del dÃ­a para comer, activar tu metabolismo y descansar.
                                           </p>
                                           <div className="pt-1.5 border-t border-border/60 flex justify-end">
                                             <Link
@@ -4860,7 +4063,7 @@ function DiarioTab() {
                                               params={{ slug: "ritmos-circadianos-y-bienestar" }}
                                               className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 hover:underline text-[11px]"
                                             >
-                                              <span>Leer más</span>
+                                              <span>Leer mÃ¡s</span>
                                               <ArrowUpRight className="w-3.5 h-3.5" />
                                             </Link>
                                           </div>
@@ -4891,7 +4094,7 @@ function DiarioTab() {
                                       type="button"
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        if (confirm(`¿Deseas eliminar "${item.title}" de tu diario?`)) {
+                                        if (confirm(`Â¿Deseas eliminar "${item.title}" de tu diario?`)) {
                                           handleDeleteTimelineItem(item.id);
                                         }
                                       }}
@@ -4973,7 +4176,7 @@ function DiarioTab() {
                                   ))}
                                 </div>
                                 <div className="flex justify-between text-[9px] uppercase font-bold text-muted-foreground/80 tracking-wider">
-                                  <span>Óptimo</span>
+                                  <span>Ã“ptimo</span>
                                   <span>Deshidratado</span>
                                 </div>
                               </div>
@@ -5018,17 +4221,17 @@ function DiarioTab() {
       {subTab === "analisis" && (
         <div className="space-y-6 animate-in fade-in duration-300">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <p className="text-sm text-muted-foreground">Perspectivas detalladas de tu alimentación y bienestar.</p>
+            <p className="text-sm text-muted-foreground">Perspectivas detalladas de tu alimentaciÃ³n y bienestar.</p>
             
             <Select 
               value={insightPeriod} 
               onValueChange={(val: any) => setInsightPeriod(val)}
             >
               <SelectTrigger className="w-full sm:w-48 bg-card border border-border text-xs font-bold h-9">
-                <SelectValue placeholder="Seleccionar período" />
+                <SelectValue placeholder="Seleccionar perÃ­odo" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem className="text-xs font-bold" value="day">Día</SelectItem>
+                <SelectItem className="text-xs font-bold" value="day">DÃ­a</SelectItem>
                 <SelectItem className="text-xs font-bold" value="week">Semana</SelectItem>
                 <SelectItem className="text-xs font-bold" value="month">Mes</SelectItem>
                 <SelectItem className="text-xs font-bold" value="quarter">Trimestre</SelectItem>
@@ -5038,16 +4241,16 @@ function DiarioTab() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Alimentación Consciente */}
+            {/* AlimentaciÃ³n Consciente */}
             <Card className="col-span-1 flex flex-col justify-between">
               <CardHeader className="pb-0 flex flex-row items-start justify-between space-y-0">
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <CardTitle className="text-lg font-bold text-foreground tracking-tight leading-none">Alimentación consciente</CardTitle>
+                    <CardTitle className="text-lg font-bold text-foreground tracking-tight leading-none">AlimentaciÃ³n consciente</CardTitle>
                     <TooltipProvider>
                       <ShadcnTooltip>
                         <TooltipTrigger asChild>
-                          <button type="button" className="text-muted-foreground hover:text-emerald-500 transition-colors cursor-pointer" aria-label="Información de alimentación consciente">
+                          <button type="button" className="text-muted-foreground hover:text-emerald-500 transition-colors cursor-pointer" aria-label="InformaciÃ³n de alimentaciÃ³n consciente">
                             <Info className="w-3.5 h-3.5 text-emerald-500" />
                           </button>
                         </TooltipTrigger>
@@ -5061,7 +4264,7 @@ function DiarioTab() {
                               params={{ slug: "alimentacion-consciente-y-adherencia" }}
                               className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 hover:underline text-[11px]"
                             >
-                              <span>Leer más</span>
+                              <span>Leer mÃ¡s</span>
                               <ArrowUpRight className="w-3.5 h-3.5" />
                             </Link>
                           </div>
@@ -5154,22 +4357,22 @@ function DiarioTab() {
               </CardFooter>
             </Card>
 
-            {/* ¿Por qué comiste? */}
+            {/* Â¿Por quÃ© comiste? */}
             <Card className="col-span-1 flex flex-col justify-between">
               <CardHeader className="pb-0 flex flex-row items-start justify-between space-y-0">
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <CardTitle className="text-lg font-bold text-foreground tracking-tight leading-none">¿Por qué comiste?</CardTitle>
+                    <CardTitle className="text-lg font-bold text-foreground tracking-tight leading-none">Â¿Por quÃ© comiste?</CardTitle>
                     <TooltipProvider>
                       <ShadcnTooltip>
                         <TooltipTrigger asChild>
-                          <button type="button" className="text-muted-foreground hover:text-emerald-500 transition-colors cursor-pointer" aria-label="Información de causas de ingesta">
+                          <button type="button" className="text-muted-foreground hover:text-emerald-500 transition-colors cursor-pointer" aria-label="InformaciÃ³n de causas de ingesta">
                             <Info className="w-3.5 h-3.5 text-emerald-500" />
                           </button>
                         </TooltipTrigger>
                         <TooltipContent className="max-w-[280px] p-3 text-xs leading-relaxed space-y-2 bg-popover text-popover-foreground border border-border shadow-xl">
                           <p className="font-medium">
-                            Clasificar tus ingestas te ayuda a distinguir el hambre fisiológica real de los desencadenantes de hambre emocional (como aburrimiento, estrés o hábitos sociales).
+                            Clasificar tus ingestas te ayuda a distinguir el hambre fisiolÃ³gica real de los desencadenantes de hambre emocional (como aburrimiento, estrÃ©s o hÃ¡bitos sociales).
                           </p>
                           <div className="pt-1.5 border-t border-border/60 flex justify-end">
                             <Link
@@ -5177,7 +4380,7 @@ function DiarioTab() {
                               params={{ slug: "hambre-emocional-vs-fisiologica" }}
                               className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 hover:underline text-[11px]"
                             >
-                              <span>Leer más</span>
+                              <span>Leer mÃ¡s</span>
                               <ArrowUpRight className="w-3.5 h-3.5" />
                             </Link>
                           </div>
@@ -5216,22 +4419,22 @@ function DiarioTab() {
               </CardContent>
             </Card>
 
-            {/* Síntomas Físicos */}
+            {/* SÃ­ntomas FÃ­sicos */}
             <Card className="col-span-1 flex flex-col justify-between">
               <CardHeader className="pb-2 flex flex-row items-start justify-between space-y-0">
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <CardTitle className="text-lg font-bold text-foreground tracking-tight leading-none">Síntomas Físicos</CardTitle>
+                    <CardTitle className="text-lg font-bold text-foreground tracking-tight leading-none">SÃ­ntomas FÃ­sicos</CardTitle>
                     <TooltipProvider>
                       <ShadcnTooltip>
                         <TooltipTrigger asChild>
-                          <button type="button" className="text-muted-foreground hover:text-emerald-500 transition-colors cursor-pointer" aria-label="Información de síntomas físicos">
+                          <button type="button" className="text-muted-foreground hover:text-emerald-500 transition-colors cursor-pointer" aria-label="InformaciÃ³n de sÃ­ntomas fÃ­sicos">
                             <Info className="w-3.5 h-3.5 text-emerald-500" />
                           </button>
                         </TooltipTrigger>
                         <TooltipContent className="max-w-[280px] p-3 text-xs leading-relaxed space-y-2 bg-popover text-popover-foreground border border-border shadow-xl">
                           <p className="font-medium">
-                            Registrar molestias corporales post-ingesta ayuda a identificar intolerancias alimentarias ocultas y a comprender cómo reacciona tu digestión ante diferentes tipos de nutrientes.
+                            Registrar molestias corporales post-ingesta ayuda a identificar intolerancias alimentarias ocultas y a comprender cÃ³mo reacciona tu digestiÃ³n ante diferentes tipos de nutrientes.
                           </p>
                           <div className="pt-1.5 border-t border-border/60 flex justify-end">
                             <Link
@@ -5239,7 +4442,7 @@ function DiarioTab() {
                               params={{ slug: "sintomas-fisicos-salud-digestiva" }}
                               className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 hover:underline text-[11px]"
                             >
-                              <span>Leer más</span>
+                              <span>Leer mÃ¡s</span>
                               <ArrowUpRight className="w-3.5 h-3.5" />
                             </Link>
                           </div>
@@ -5247,7 +4450,7 @@ function DiarioTab() {
                       </ShadcnTooltip>
                     </TooltipProvider>
                   </div>
-                  <CardDescription className="text-xs text-muted-foreground mt-1">Frecuencia de síntomas reportados</CardDescription>
+                  <CardDescription className="text-xs text-muted-foreground mt-1">Frecuencia de sÃ­ntomas reportados</CardDescription>
                 </div>
               </CardHeader>
               
@@ -5293,13 +4496,13 @@ function DiarioTab() {
                     <TooltipProvider>
                       <ShadcnTooltip>
                         <TooltipTrigger asChild>
-                          <button type="button" className="text-muted-foreground hover:text-emerald-500 transition-colors cursor-pointer" aria-label="Información de estabilidad conductual">
+                          <button type="button" className="text-muted-foreground hover:text-emerald-500 transition-colors cursor-pointer" aria-label="InformaciÃ³n de estabilidad conductual">
                             <Info className="w-3.5 h-3.5 text-emerald-500" />
                           </button>
                         </TooltipTrigger>
                         <TooltipContent className="max-w-[280px] p-3 text-xs leading-relaxed space-y-2 bg-popover text-popover-foreground border border-border shadow-xl">
                           <p className="font-medium">
-                            Este gráfico de radar evalúa tu regularidad en 5 pilares clave del bienestar: horarios, nutrición, humor, hidratación y consistencia. Es fundamental mantener un equilibrio entre todos ellos.
+                            Este grÃ¡fico de radar evalÃºa tu regularidad en 5 pilares clave del bienestar: horarios, nutriciÃ³n, humor, hidrataciÃ³n y consistencia. Es fundamental mantener un equilibrio entre todos ellos.
                           </p>
                           <div className="pt-1.5 border-t border-border/60 flex justify-end">
                             <Link
@@ -5307,7 +4510,7 @@ function DiarioTab() {
                               params={{ slug: "estabilidad-conductual-pilares-salud" }}
                               className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 hover:underline text-[11px]"
                             >
-                              <span>Leer más</span>
+                              <span>Leer mÃ¡s</span>
                               <ArrowUpRight className="w-3.5 h-3.5" />
                             </Link>
                           </div>
@@ -5315,7 +4518,7 @@ function DiarioTab() {
                       </ShadcnTooltip>
                     </TooltipProvider>
                   </div>
-                  <CardDescription className="text-xs text-muted-foreground mt-1">Sincronización de hábitos y ritmos</CardDescription>
+                  <CardDescription className="text-xs text-muted-foreground mt-1">SincronizaciÃ³n de hÃ¡bitos y ritmos</CardDescription>
                 </div>
                 <div className="flex items-baseline gap-1 bg-secondary/30 px-2 py-1 rounded-lg border border-border/40">
                   <span className="text-sm font-black text-foreground">85</span>
@@ -5360,13 +4563,13 @@ function DiarioTab() {
                     <TooltipProvider>
                       <ShadcnTooltip>
                         <TooltipTrigger asChild>
-                          <button type="button" className="text-muted-foreground hover:text-emerald-500 transition-colors cursor-pointer" aria-label="Información de tendencia del plato colorido">
+                          <button type="button" className="text-muted-foreground hover:text-emerald-500 transition-colors cursor-pointer" aria-label="InformaciÃ³n de tendencia del plato colorido">
                             <Info className="w-3.5 h-3.5 text-emerald-500" />
                           </button>
                         </TooltipTrigger>
                         <TooltipContent className="max-w-[280px] p-3 text-xs leading-relaxed space-y-2 bg-popover text-popover-foreground border border-border shadow-xl">
                           <p className="font-medium">
-                            Este gráfico categoriza tus comidas según su color dominante, reflejando el aporte de fitonutrientes y antioxidantes en tu dieta para asegurar un plato balanceado.
+                            Este grÃ¡fico categoriza tus comidas segÃºn su color dominante, reflejando el aporte de fitonutrientes y antioxidantes en tu dieta para asegurar un plato balanceado.
                           </p>
                           <div className="pt-1.5 border-t border-border/60 flex justify-end">
                             <Link
@@ -5374,7 +4577,7 @@ function DiarioTab() {
                               params={{ slug: "platodelbienestar-fitonutrientes-colores" }}
                               className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 hover:underline text-[11px]"
                             >
-                              <span>Leer más</span>
+                              <span>Leer mÃ¡s</span>
                               <ArrowUpRight className="w-3.5 h-3.5" />
                             </Link>
                           </div>
@@ -5413,22 +4616,22 @@ function DiarioTab() {
               </CardContent>
             </Card>
 
-            {/* Alineación Circadiana Card */}
+            {/* AlineaciÃ³n Circadiana Card */}
             <Card className="col-span-1 flex flex-col justify-between">
               <CardHeader className="pb-0 flex flex-row items-start justify-between space-y-0">
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <CardTitle className="text-lg font-bold text-foreground tracking-tight leading-none">Alineación Circadiana</CardTitle>
+                    <CardTitle className="text-lg font-bold text-foreground tracking-tight leading-none">AlineaciÃ³n Circadiana</CardTitle>
                     <TooltipProvider>
                       <ShadcnTooltip>
                         <TooltipTrigger asChild>
-                          <button type="button" className="text-muted-foreground hover:text-emerald-500 transition-colors cursor-pointer" aria-label="Información de alineación circadiana">
+                          <button type="button" className="text-muted-foreground hover:text-emerald-500 transition-colors cursor-pointer" aria-label="InformaciÃ³n de alineaciÃ³n circadiana">
                             <Info className="w-3.5 h-3.5 text-emerald-500" />
                           </button>
                         </TooltipTrigger>
                         <TooltipContent className="max-w-[280px] p-3 text-xs leading-relaxed space-y-2 bg-popover text-popover-foreground border border-border shadow-xl">
                           <p className="font-medium">
-                            Mantener tu ventana de alimentación sincronizada con tu ritmo circadiano optimiza la sensibilidad a la insulina y favorece la digestión antes de tu descanso.
+                            Mantener tu ventana de alimentaciÃ³n sincronizada con tu ritmo circadiano optimiza la sensibilidad a la insulina y favorece la digestiÃ³n antes de tu descanso.
                           </p>
                           <div className="pt-1.5 border-t border-border/60 flex justify-end">
                             <Link
@@ -5436,7 +4639,7 @@ function DiarioTab() {
                               params={{ slug: "ritmos-circadianos-y-bienestar" }}
                               className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 hover:underline text-[11px]"
                             >
-                              <span>Leer más</span>
+                              <span>Leer mÃ¡s</span>
                               <ArrowUpRight className="w-3.5 h-3.5" />
                             </Link>
                           </div>
@@ -5444,7 +4647,7 @@ function DiarioTab() {
                       </ShadcnTooltip>
                     </TooltipProvider>
                   </div>
-                  <CardDescription className="text-xs text-muted-foreground mt-1">Reloj biológico vs. Ingestas</CardDescription>
+                  <CardDescription className="text-xs text-muted-foreground mt-1">Reloj biolÃ³gico vs. Ingestas</CardDescription>
                 </div>
               </CardHeader>
               
@@ -5530,23 +4733,23 @@ function DiarioTab() {
                     <div className="flex gap-2.5 pb-2.5 border-b border-border/50">
                       <ShieldAlert className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
                       <div>
-                        <span className="block font-bold text-foreground mb-0.5">Exclusión de Músculos por Fatiga</span>
+                        <span className="block font-bold text-foreground mb-0.5">ExclusiÃ³n de MÃºsculos por Fatiga</span>
                         <span className="text-muted-foreground text-[11px] leading-relaxed">
-                          Músculos con recuperación inferior al 70% se excluirán automáticamente del Generador de Workouts con IA para prevenir lesiones.
+                          MÃºsculos con recuperaciÃ³n inferior al 70% se excluirÃ¡n automÃ¡ticamente del Generador de Workouts con IA para prevenir lesiones.
                         </span>
                       </div>
                     </div>
                     
                     <div className="space-y-2">
-                      <span className="block font-bold text-foreground text-[11px]">¿Cómo estimar tu porcentaje?</span>
+                      <span className="block font-bold text-foreground text-[11px]">Â¿CÃ³mo estimar tu porcentaje?</span>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px]">
                         <div className="p-2.5 bg-secondary/30 rounded-xl space-y-0.5">
                           <span className="font-bold text-emerald-500 block">90% - 100% (Sano)</span>
-                          <p className="text-muted-foreground leading-snug">Sin agujetas ni dolor. Fuerza máxima.</p>
+                          <p className="text-muted-foreground leading-snug">Sin agujetas ni dolor. Fuerza mÃ¡xima.</p>
                         </div>
                         <div className="p-2.5 bg-secondary/30 rounded-xl space-y-0.5">
                           <span className="font-bold text-teal-500 block">70% - 80% (Cansancio leve)</span>
-                          <p className="text-muted-foreground leading-snug">Agujetas mínimas que pasan al calentar.</p>
+                          <p className="text-muted-foreground leading-snug">Agujetas mÃ­nimas que pasan al calentar.</p>
                         </div>
                         <div className="p-2.5 bg-secondary/30 rounded-xl space-y-0.5">
                           <span className="font-bold text-amber-500 block">50% - 60% (Fatiga moderada)</span>
@@ -5565,7 +4768,7 @@ function DiarioTab() {
                         params={{ slug: "fisiologia-de-la-recuperacion-muscular-y-fatiga" }}
                         className="text-emerald-500 font-bold hover:underline flex items-center justify-between gap-1 group"
                       >
-                        <span>🔬 Leer artículo completo sobre evidencia y fatiga (6 min)</span>
+                        <span>ðŸ”¬ Leer artÃ­culo completo sobre evidencia y fatiga (6 min)</span>
                         <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                       </Link>
                     </div>
@@ -5658,7 +4861,7 @@ function DiarioTab() {
             <div className="space-y-1">
               <h5 className="text-xs font-bold text-foreground">Aviso de Uso de Datos</h5>
               <p className="text-[11px] leading-relaxed text-muted-foreground font-medium">
-                Este reporte es un resumen de registros de hábitos y estimaciones circadianas con fines meramente informativos y de autoconocimiento. No constituye un diagnóstico médico, prescripción clínica ni asesoramiento nutricional profesional. Consulta con un profesional de la salud matriculado antes de realizar cambios significativos en tu alimentación o estilo de vida.
+                Este reporte es un resumen de registros de hÃ¡bitos y estimaciones circadianas con fines meramente informativos y de autoconocimiento. No constituye un diagnÃ³stico mÃ©dico, prescripciÃ³n clÃ­nica ni asesoramiento nutricional profesional. Consulta con un profesional de la salud matriculado antes de realizar cambios significativos en tu alimentaciÃ³n o estilo de vida.
               </p>
             </div>
           </div>
@@ -5667,7 +4870,7 @@ function DiarioTab() {
             <div className="space-y-0.5 text-center sm:text-left">
               <h4 className="text-sm font-bold text-foreground">Compartir con tu Profesional</h4>
               <p className="text-xs text-muted-foreground font-medium">
-                Exporta un reporte clínico en PDF {insightPeriod === "day" ? "de hoy" : insightPeriod === "week" ? "de los últimos 7 días" : insightPeriod === "month" ? "del último mes" : "del último trimestre"} con tu adherencia, estabilidad conductual y registros circadianos.
+                Exporta un reporte clÃ­nico en PDF {insightPeriod === "day" ? "de hoy" : insightPeriod === "week" ? "de los Ãºltimos 7 dÃ­as" : insightPeriod === "month" ? "del Ãºltimo mes" : "del Ãºltimo trimestre"} con tu adherencia, estabilidad conductual y registros circadianos.
               </p>
             </div>
             <Button 
@@ -5719,7 +4922,7 @@ function DiarioTab() {
             setUserTimelineItems(prev => [newMeal, ...prev]);
             setActiveRecipeDetail(null);
             setSubTab("diario");
-            alert(`¡Registrado! Se añadió "${recipe.title}" a tu diario de hoy.`);
+            alert(`Â¡Registrado! Se aÃ±adiÃ³ "${recipe.title}" a tu diario de hoy.`);
           }}
           onRemove={(recipeId) => {
             setSavedRecipes(prev => prev.filter(id => id !== recipeId));
@@ -5782,7 +4985,7 @@ function DiarioTab() {
                 setActiveModal("registrar-hidratacion");
               }}
             >
-              <span className="bg-card text-foreground text-xs font-bold px-3 py-2 rounded-lg border border-border shadow-sm group-hover:scale-105 transition-transform">Registrar hidratación</span>
+              <span className="bg-card text-foreground text-xs font-bold px-3 py-2 rounded-lg border border-border shadow-sm group-hover:scale-105 transition-transform">Registrar hidrataciÃ³n</span>
               <div className="w-12 h-12 rounded-full bg-card border border-border shadow-sm flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
                 <Droplet className="w-5 h-5" />
               </div>
@@ -5861,7 +5064,7 @@ function DiarioTab() {
                   onClick={() => setFoodAnalysisStep("analyzing")} 
                   className="w-full rounded-xl h-12 text-base font-bold bg-foreground text-background hover:opacity-90 mt-4"
                 >
-                  Tomar Fotografía
+                  Tomar FotografÃ­a
                 </Button>
               </div>
             )}
@@ -5877,8 +5080,8 @@ function DiarioTab() {
               <div className="px-6 pb-8 overflow-y-auto animate-in slide-in-from-bottom-4 fade-in duration-300">
                 {/* Encabezado Principal de la Comida */}
                 <div className="mb-4">
-                  <h2 className="text-lg font-black text-foreground tracking-tight leading-snug">Chicken Phở con Vegetales</h2>
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">ANÁLISIS DE CALIDAD NUTRICIONAL</p>
+                  <h2 className="text-lg font-black text-foreground tracking-tight leading-snug">Chicken Phá»Ÿ con Vegetales</h2>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">ANÃLISIS DE CALIDAD NUTRICIONAL</p>
                 </div>
 
                 {/* Score de Calidad Nutricional basado en evidencia */}
@@ -5893,7 +5096,7 @@ function DiarioTab() {
                               to="/blog/$slug"
                               params={{ slug: "score-calidad-nutricional-evidencia" }}
                               className="w-5 h-5 rounded-full bg-secondary border border-border/60 text-muted-foreground hover:text-foreground hover:bg-secondary/80 flex items-center justify-center transition-colors cursor-pointer"
-                              aria-label="Información del Score Nutricional"
+                              aria-label="InformaciÃ³n del Score Nutricional"
                             >
                               <Info className="w-3.5 h-3.5" />
                             </Link>
@@ -5908,7 +5111,7 @@ function DiarioTab() {
                                 params={{ slug: "score-calidad-nutricional-evidencia" }}
                                 className="inline-flex items-center gap-1 font-bold text-foreground hover:underline text-[11px]"
                               >
-                                <span>Leer más</span>
+                                <span>Leer mÃ¡s</span>
                                 <ArrowUpRight className="w-3.5 h-3.5" />
                               </Link>
                             </div>
@@ -5945,7 +5148,7 @@ function DiarioTab() {
                     <div className="flex items-center justify-between py-1">
                       <span className="text-xs font-bold text-foreground">Grado de Procesamiento</span>
                       <span className="bg-secondary text-foreground text-xs font-bold px-3 py-1 rounded-full">
-                        Mínimamente Procesado
+                        MÃ­nimamente Procesado
                       </span>
                     </div>
                   </div>
@@ -5955,8 +5158,8 @@ function DiarioTab() {
                     <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">NUTRIENTES A PROMOVER (NR9)</h4>
                     <div className="space-y-2.5">
                       {[
-                        { label: "Proteína Magra", value: "Alta Calidad", isPrimary: true },
-                        { label: "Fibra Dietética", value: "Buena Fuente", isPrimary: true },
+                        { label: "ProteÃ­na Magra", value: "Alta Calidad", isPrimary: true },
+                        { label: "Fibra DietÃ©tica", value: "Buena Fuente", isPrimary: true },
                         { label: "Hierro", value: "Buena Fuente", isPrimary: true },
                         { label: "Magnesio", value: "Buena Fuente", isPrimary: true },
                         { label: "Calcio", value: "Aporte Moderado", isPrimary: false },
@@ -5980,7 +5183,7 @@ function DiarioTab() {
                     <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">COMPONENTES A LIMITAR (LIM3)</h4>
                     <div className="space-y-2.5">
                       {[
-                        { label: "Azúcares Añadidos", value: "Sin Añadidos", isPrimary: true },
+                        { label: "AzÃºcares AÃ±adidos", value: "Sin AÃ±adidos", isPrimary: true },
                         { label: "Grasas Saturadas / Trans", value: "Bajo", isPrimary: true },
                         { label: "Sodio", value: "Elevado", isPrimary: false },
                       ].map((item, i) => (
@@ -6002,32 +5205,32 @@ function DiarioTab() {
                   Continuar a Registro
                 </Button>
 
-                {/* Caja de Insight del AI Coach (Copiado idéntico al pie de card de timeline de la imagen) */}
+                {/* Caja de Insight del AI Coach (Copiado idÃ©ntico al pie de card de timeline de la imagen) */}
                 <div className="mt-6 pt-4 border-t border-border/60 flex items-start gap-3">
                   <Sparkles className="w-4 h-4 text-foreground/80 shrink-0 mt-0.5" />
                   <p className="text-xs font-medium text-foreground/80 leading-relaxed">
-                    Excelente balance de proteínas y fibra en la sopa. Considerá controlar el aporte de sodio del caldo para optimizar tu perfil diario.
+                    Excelente balance de proteÃ­nas y fibra en la sopa. ConsiderÃ¡ controlar el aporte de sodio del caldo para optimizar tu perfil diario.
                   </p>
                 </div>
               </div>
             )}
 
-            {/* Paso 4: ¿Por qué comiste? */}
+            {/* Paso 4: Â¿Por quÃ© comiste? */}
             {foodAnalysisStep === "reason" && (
               <div className="px-6 pb-8 overflow-y-auto animate-in slide-in-from-right-4 fade-in duration-300">
-                <h3 className="text-lg font-black text-foreground tracking-tight mb-1">¿Por qué comiste?</h3>
-                <p className="text-xs text-muted-foreground font-medium mb-5">Selecciona el motivo o desencadenante principal de esta ingesta para tu diario de alimentación.</p>
+                <h3 className="text-lg font-black text-foreground tracking-tight mb-1">Â¿Por quÃ© comiste?</h3>
+                <p className="text-xs text-muted-foreground font-medium mb-5">Selecciona el motivo o desencadenante principal de esta ingesta para tu diario de alimentaciÃ³n.</p>
                 
                 <div className="grid grid-cols-2 gap-2.5 mb-6">
                   {[
-                    { id: "hambre", label: "Hambre", icon: "🌿", color: "hover:border-emerald-500/50 hover:bg-emerald-500/5" },
-                    { id: "estres", label: "Estrés", icon: "⚡", color: "hover:border-rose-500/50 hover:bg-rose-500/5" },
-                    { id: "sabor", label: "Sabor", icon: "🍰", color: "hover:border-amber-500/50 hover:bg-amber-500/5" },
-                    { id: "social", label: "Social", icon: "👥", color: "hover:border-sky-500/50 hover:bg-sky-500/5" },
-                    { id: "habito", label: "Hábito", icon: "🔄", color: "hover:border-indigo-500/50 hover:bg-indigo-500/5" },
-                    { id: "emocional", label: "Emocional", icon: "💖", color: "hover:border-pink-500/50 hover:bg-pink-500/5" },
-                    { id: "aburrimiento", label: "Aburrimiento", icon: "🥱", color: "hover:border-purple-500/50 hover:bg-purple-500/5" },
-                    { id: "otro", label: "Otro", icon: "❓", color: "hover:border-slate-500/50 hover:bg-slate-500/5" },
+                    { id: "hambre", label: "Hambre", icon: "ðŸŒ¿", color: "hover:border-emerald-500/50 hover:bg-emerald-500/5" },
+                    { id: "estres", label: "EstrÃ©s", icon: "âš¡", color: "hover:border-rose-500/50 hover:bg-rose-500/5" },
+                    { id: "sabor", label: "Sabor", icon: "ðŸ°", color: "hover:border-amber-500/50 hover:bg-amber-500/5" },
+                    { id: "social", label: "Social", icon: "ðŸ‘¥", color: "hover:border-sky-500/50 hover:bg-sky-500/5" },
+                    { id: "habito", label: "HÃ¡bito", icon: "ðŸ”„", color: "hover:border-indigo-500/50 hover:bg-indigo-500/5" },
+                    { id: "emocional", label: "Emocional", icon: "ðŸ’–", color: "hover:border-pink-500/50 hover:bg-pink-500/5" },
+                    { id: "aburrimiento", label: "Aburrimiento", icon: "ðŸ¥±", color: "hover:border-purple-500/50 hover:bg-purple-500/5" },
+                    { id: "otro", label: "Otro", icon: "â“", color: "hover:border-slate-500/50 hover:bg-slate-500/5" },
                   ].map((item) => (
                     <button
                       key={item.id}
@@ -6052,7 +5255,7 @@ function DiarioTab() {
                     onClick={() => setFoodAnalysisStep("report")}
                     className="rounded-xl h-11 text-xs font-bold border-border"
                   >
-                    Atrás
+                    AtrÃ¡s
                   </Button>
                   <Button
                     type="button"
@@ -6072,7 +5275,7 @@ function DiarioTab() {
               </div>
             )}
 
-            {/* Paso 5: Sugerencia de Respiración Guiada para emociones negativas */}
+            {/* Paso 5: Sugerencia de RespiraciÃ³n Guiada para emociones negativas */}
             {foodAnalysisStep === "breathing_prompt" && (
               <div className="px-6 pb-8 flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-300">
                 <div className="w-14 h-14 rounded-full bg-secondary border border-border/80 text-foreground flex items-center justify-center mb-4 mt-4 shadow-xs">
@@ -6080,7 +5283,7 @@ function DiarioTab() {
                 </div>
                 <h3 className="text-lg font-black text-foreground mb-2 tracking-tight">Pausa Reguladora</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed mb-6 max-w-[280px] font-medium">
-                  Detectamos que el motivo de tu comida fue <strong>{WHY_EAT_CHART_CONFIG[selectedEatReason as keyof typeof WHY_EAT_CHART_CONFIG]?.label || selectedEatReason}</strong>. ¿Te gustaría hacer 1 minuto de respiración guiada para autorregular tu sistema nervioso?
+                  Detectamos que el motivo de tu comida fue <strong>{WHY_EAT_CHART_CONFIG[selectedEatReason as keyof typeof WHY_EAT_CHART_CONFIG]?.label || selectedEatReason}</strong>. Â¿Te gustarÃ­a hacer 1 minuto de respiraciÃ³n guiada para autorregular tu sistema nervioso?
                 </p>
                 
                 <div className="w-full space-y-2.5">
@@ -6096,7 +5299,7 @@ function DiarioTab() {
                     }}
                     className="w-full rounded-xl h-12 text-sm font-bold bg-foreground text-background hover:opacity-90 shadow-md"
                   >
-                    Iniciar Respiración Guiada
+                    Iniciar RespiraciÃ³n Guiada
                   </Button>
                   <Button
                     type="button"
@@ -6110,17 +5313,17 @@ function DiarioTab() {
               </div>
             )}
 
-            {/* Paso 6: Ejercicio Interactivo de Respiración Guiada */}
+            {/* Paso 6: Ejercicio Interactivo de RespiraciÃ³n Guiada */}
             {foodAnalysisStep === "breathing_exercise" && (
               <div className="px-6 pb-8 flex flex-col items-center text-center animate-in fade-in duration-300">
                 <div className="flex justify-between items-center w-full mb-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">RESPIRACIÓN CUADRADA</span>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">RESPIRACIÃ“N CUADRADA</span>
                   <span className="bg-secondary text-foreground text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-border/60">
                     Ciclos completados: {breathingCyclesCompleted}
                   </span>
                 </div>
                 
-                {/* Círculo animado interactivo: Expansión y contracción continua a 60 FPS sincronizado en tiempo real */}
+                {/* CÃ­rculo animado interactivo: ExpansiÃ³n y contracciÃ³n continua a 60 FPS sincronizado en tiempo real */}
                 <div className="relative w-44 h-44 my-6 flex items-center justify-center">
                   <div 
                     style={{ 
@@ -6133,7 +5336,7 @@ function DiarioTab() {
                       {breathingPhase === "inhale" && "Inhala"}
                       {breathingPhase === "hold1" && "Pausa (Lleno)"}
                       {breathingPhase === "exhale" && "Exhala"}
-                      {breathingPhase === "hold2" && "Pausa (Vacío)"}
+                      {breathingPhase === "hold2" && "Pausa (VacÃ­o)"}
                     </span>
                     <span className="text-3xl font-black text-foreground tracking-tight mt-1">{breathingSeconds}s</span>
                   </div>
@@ -6141,9 +5344,9 @@ function DiarioTab() {
 
                 <p className="text-xs text-muted-foreground mb-6 font-medium max-w-[260px] h-8 flex items-center justify-center">
                   {breathingPhase === "inhale" && "Inhala profundamente por la nariz expandiendo el abdomen."}
-                  {breathingPhase === "hold1" && "Sostén el aire con serenidad en la caja torácica."}
-                  {breathingPhase === "exhale" && "Exhala lentamente por la boca liberando toda la tensión."}
-                  {breathingPhase === "hold2" && "Mantén los pulmones vacíos en profunda calma."}
+                  {breathingPhase === "hold1" && "SostÃ©n el aire con serenidad en la caja torÃ¡cica."}
+                  {breathingPhase === "exhale" && "Exhala lentamente por la boca liberando toda la tensiÃ³n."}
+                  {breathingPhase === "hold2" && "MantÃ©n los pulmones vacÃ­os en profunda calma."}
                 </p>
 
                 <Button
@@ -6173,9 +5376,9 @@ function DiarioTab() {
         <WorkoutFeedbackModal 
           onClose={() => setActiveModal("none")} 
           onComplete={() => {
-            // For AI workout, we can simulate training some muscles (e.g. Espalda and Bíceps)
+            // For AI workout, we can simulate training some muscles (e.g. Espalda and BÃ­ceps)
             handleWorkoutComplete([
-              { muscles: "Dorsal Ancho, Bíceps" },
+              { muscles: "Dorsal Ancho, BÃ­ceps" },
               { muscles: "Deltoides Anterior" }
             ]);
           }}
@@ -6184,129 +5387,7 @@ function DiarioTab() {
 
 
 
-      {/* Racha de Actividad Modal */}
-      {activeModal === "racha-actividad" && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-md bg-card border border-border rounded-[2rem] shadow-2xl flex flex-col overflow-hidden max-h-[90vh]">
-            {/* Header */}
-            <div className="px-6 pt-8 pb-4 flex justify-between items-center bg-card">
-              <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold text-foreground">Racha de Actividad</h3>
-                <span className="inline-flex items-center gap-1 text-[11px] font-black px-2.5 py-0.5 rounded-full bg-orange-500/10 text-orange-500 border border-orange-500/20">
-                  <Flame className="w-3.5 h-3.5 fill-orange-500 animate-pulse text-orange-500" />
-                  12 días
-                </span>
-                <TooltipProvider>
-                  <ShadcnTooltip>
-                    <TooltipTrigger asChild>
-                      <button 
-                        type="button"
-                        className="text-muted-foreground hover:text-primary transition-colors p-1 rounded-full hover:bg-secondary/40 focus:outline-none cursor-pointer border-0 bg-transparent flex items-center justify-center"
-                      >
-                        <Info className="w-3.5 h-3.5" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" align="start" className="max-w-xs sm:max-w-sm p-4 bg-card border border-border shadow-2xl rounded-2xl text-xs space-y-3 text-left">
-                      <div className="flex items-center gap-2 font-bold text-foreground border-b border-border/50 pb-2">
-                        <Flame className="w-4 h-4 text-orange-500 fill-orange-500" />
-                        <span>Metodología de Racha de Actividad</span>
-                      </div>
-                      
-                      <div className="space-y-2 text-[11px] leading-relaxed text-muted-foreground">
-                        <p>
-                          <strong className="text-foreground">Promedio Ponderado 7 Días:</strong> Se calcula el promedio de tus minutos METs de los últimos 7 días. Los días recientes tienen mayor peso, permitiéndote tomar 1-2 días de descanso sin perder la racha.
-                        </p>
-                        <p>
-                          <strong className="text-foreground">Línea Base OMS (150 pts):</strong> Combina las directrices globales de la OMS con gasto energético MET para asegurar un hábito de salud constante.
-                        </p>
-                      </div>
 
-                      <div className="pt-2 border-t border-border/60 text-[10px]">
-                        <Link 
-                          to="/blog/$slug"
-                          params={{ slug: "ciencia-de-la-racha-de-actividad-y-mets" }}
-                          className="text-emerald-500 font-bold hover:underline flex items-center justify-between gap-1 group"
-                        >
-                          <span>🔬 Leer artículo completo sobre la ciencia de la racha y METs</span>
-                          <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                        </Link>
-                      </div>
-                    </TooltipContent>
-                  </ShadcnTooltip>
-                </TooltipProvider>
-              </div>
-              <button 
-                onClick={() => setActiveModal("none")} 
-                className="p-2 rounded-full bg-secondary/50 hover:bg-secondary transition-colors"
-              >
-                <X className="w-5 h-5 text-muted-foreground" />
-              </button>
-            </div>
-
-            {/* Body */}
-            <div className="p-6 pt-0 overflow-y-auto">
-              <div className="w-full">
-                <div className="flex justify-between items-center text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-3 px-0.5">
-                  <span>Curva de Actividad (7 días)</span>
-                  <span className="text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Base: 150 ptos</span>
-                </div>
-
-                <ChartContainer config={chartConfig} className="h-44 w-full aspect-auto select-none">
-                  <AreaChart
-                    data={activityData}
-                    margin={{ top: 5, right: 5, left: -25, bottom: 0 }}
-                  >
-                    <defs>
-                      <linearGradient id="recharts-activity-grad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.25} />
-                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border/40" />
-                    <XAxis 
-                      dataKey="day" 
-                      tickLine={false} 
-                      axisLine={false} 
-                      tickMargin={6}
-                      className="text-[10px] font-bold fill-muted-foreground"
-                    />
-                    <YAxis 
-                      tickLine={false} 
-                      axisLine={false} 
-                      tickMargin={4}
-                      domain={[100, 200]}
-                      className="text-[9px] font-semibold fill-muted-foreground"
-                    />
-                    <ReferenceLine 
-                      y={150} 
-                      stroke="#10b981" 
-                      strokeDasharray="4 4" 
-                      strokeWidth={2}
-                      label={{ 
-                        value: "Mínimo Saludable (150)", 
-                        position: "insideBottomRight", 
-                        offset: 8,
-                        fill: "#10b981",
-                        fontSize: 9,
-                        fontWeight: "bold"
-                      }} 
-                    />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Area 
-                      type="monotone" 
-                      dataKey="puntos" 
-                      stroke="hsl(var(--primary))" 
-                      strokeWidth={2.5} 
-                      fillOpacity={1} 
-                      fill="url(#recharts-activity-grad)" 
-                    />
-                  </AreaChart>
-                </ChartContainer>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
 
       {/* Estado Actual Modal */}
@@ -6350,7 +5431,7 @@ function DiarioTab() {
                 onChange={setMood} 
                 labelLeft="Ansioso" 
                 labelRight="Calmo" 
-                colorClass="from-[#ff7b7c]/30 via-[#ff7b7c]/70 to-[#ff7b7c]"
+                colorClass="from-[#46e8f5]/30 via-[#46e8f5]/70 to-[#46e8f5]"
               />
               <CustomSlider 
                 value={hunger} 
@@ -6363,8 +5444,8 @@ function DiarioTab() {
                 value={energy} 
                 onChange={setEnergy} 
                 labelLeft="Cansado" 
-                labelRight="Enérgico" 
-                colorClass="from-[#46e8f5]/30 via-[#46e8f5]/70 to-[#46e8f5]"
+                labelRight="EnÃ©rgico" 
+                colorClass="from-[#ff7b7c]/30 via-[#ff7b7c]/70 to-[#ff7b7c]"
               />
               
               <Button 
@@ -6378,7 +5459,7 @@ function DiarioTab() {
         </div>
       )}
 
-      {/* Registrar Hidratación Modal */}
+      {/* Registrar HidrataciÃ³n Modal */}
       {activeModal === "registrar-hidratacion" && (
         <HydrationLogModal 
           onClose={() => setActiveModal("none")} 
@@ -6392,7 +5473,7 @@ function DiarioTab() {
         <ActivityLogModal 
           onClose={() => setActiveModal("none")} 
           onSave={(activityName, duration, intensity, metPoints) => {
-            const dayLabels = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+            const dayLabels = ["Dom", "Lun", "Mar", "MiÃ©", "Jue", "Vie", "SÃ¡b"];
             const todayLabel = dayLabels[new Date().getDay()];
             
             // 1. Update activityData points
@@ -6411,7 +5492,7 @@ function DiarioTab() {
               img: null,
               kcal: 0,
               tag: `${metPoints} Pts MET`,
-              coachFeedback: `Registraste ${duration} min de ${activityName} (intensidad ${intensity === "low" ? "Baja" : intensity === "med" ? "Media" : "Alta"}). Sumaste ${metPoints} puntos MET a tu curva de actividad diaria. ¡Gran trabajo!`
+              coachFeedback: `Registraste ${duration} min de ${activityName} (intensidad ${intensity === "low" ? "Baja" : intensity === "med" ? "Media" : "Alta"}). Sumaste ${metPoints} puntos MET a tu curva de actividad diaria. Â¡Gran trabajo!`
             };
             setUserTimelineItems(prev => [newAct, ...prev]);
           }}
@@ -6463,12 +5544,12 @@ function EditTimelineItemModal({
         <DialogHeader className="mb-4">
           <DialogTitle className="text-lg font-bold text-foreground">Editar Registro del Diario</DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            Modifica la información de tu tarjeta registrada en la línea de tiempo.
+            Modifica la informaciÃ³n de tu tarjeta registrada en la lÃ­nea de tiempo.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-muted-foreground">Título</label>
+            <label className="text-xs font-semibold text-muted-foreground">TÃ­tulo</label>
             <input
               type="text"
               required
@@ -6480,7 +5561,7 @@ function EditTimelineItemModal({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">Categoría / Momento</label>
+              <label className="text-xs font-semibold text-muted-foreground">CategorÃ­a / Momento</label>
               <input
                 type="text"
                 required
@@ -6490,7 +5571,7 @@ function EditTimelineItemModal({
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">Calorías (kcal)</label>
+              <label className="text-xs font-semibold text-muted-foreground">CalorÃ­as (kcal)</label>
               <input
                 type="number"
                 min="0"
@@ -6548,13 +5629,13 @@ function HydrationLogModal({ onClose, currentLevel, onSave }: HydrationLogModalP
 
   const getHydrationAdvice = (level: number) => {
     if (level <= 2) {
-      return `Nivel ${level} indica hidratación óptima. ¡Excelente trabajo manteniendo tu cuerpo equilibrado!`;
+      return `Nivel ${level} indica hidrataciÃ³n Ã³ptima. Â¡Excelente trabajo manteniendo tu cuerpo equilibrado!`;
     } else if (level <= 4) {
-      return `Nivel ${level} indica hidratación normal tirando a levemente baja. Bebe un vaso de agua (250ml) ahora para mantener el estado óptimo.`;
+      return `Nivel ${level} indica hidrataciÃ³n normal tirando a levemente baja. Bebe un vaso de agua (250ml) ahora para mantener el estado Ã³ptimo.`;
     } else if (level <= 6) {
-      return `Nivel ${level} indica deshidratación leve. Toma 500ml de agua ahora mismo para compensar el entrenamiento de la mañana.`;
+      return `Nivel ${level} indica deshidrataciÃ³n leve. Toma 500ml de agua ahora mismo para compensar el entrenamiento de la maÃ±ana.`;
     } else {
-      return `¡Atención! Nivel ${level} indica deshidratación severa. Consume de 750ml a 1L de agua, preferiblemente con electrolitos, y modera el esfuerzo físico.`;
+      return `Â¡AtenciÃ³n! Nivel ${level} indica deshidrataciÃ³n severa. Consume de 750ml a 1L de agua, preferiblemente con electrolitos, y modera el esfuerzo fÃ­sico.`;
     }
   };
 
@@ -6565,7 +5646,7 @@ function HydrationLogModal({ onClose, currentLevel, onSave }: HydrationLogModalP
         <div className="px-6 pt-8 pb-4 flex justify-between items-start bg-card">
           <div className="space-y-1">
             <span className="text-[10px] uppercase font-black tracking-widest text-muted-foreground text-left block">Control de Rutina</span>
-            <h3 className="text-xl font-black text-foreground text-left">Registro de Hidratación</h3>
+            <h3 className="text-xl font-black text-foreground text-left">Registro de HidrataciÃ³n</h3>
           </div>
           <button 
             onClick={onClose} 
@@ -6594,12 +5675,12 @@ function HydrationLogModal({ onClose, currentLevel, onSave }: HydrationLogModalP
                   <TooltipContent side="bottom" align="start" className="max-w-xs sm:max-w-sm p-4 bg-card border border-border shadow-2xl rounded-2xl text-xs space-y-3 text-left">
                     <div className="flex items-center gap-2 font-bold text-foreground border-b border-border/50 pb-2">
                       <Droplet className="w-4 h-4 text-blue-500 fill-blue-500" />
-                      <span>Evaluación de Hidratación (Armstrong)</span>
+                      <span>EvaluaciÃ³n de HidrataciÃ³n (Armstrong)</span>
                     </div>
                     
                     <div className="space-y-2 text-[11px] leading-relaxed text-muted-foreground">
                       <p>
-                        <strong className="text-foreground">Estándar Clínico (Ucol):</strong> Desarrollado por el Dr. Lawrence Armstrong (UCONN) para medir la osmolalidad urinaria sin requerir laboratorios.
+                        <strong className="text-foreground">EstÃ¡ndar ClÃ­nico (Ucol):</strong> Desarrollado por el Dr. Lawrence Armstrong (UCONN) para medir la osmolalidad urinaria sin requerir laboratorios.
                       </p>
                       <p>
                         <strong className="text-foreground">Rango Objetivo:</strong> Mantenerse en Niveles 1, 2 y 3. Perder un 2% de agua corporal reduce la fuerza y resistencia hasta un 15%.
@@ -6612,7 +5693,7 @@ function HydrationLogModal({ onClose, currentLevel, onSave }: HydrationLogModalP
                         params={{ slug: "escala-de-armstrong-y-fisiologia-de-la-hidratacion" }}
                         className="text-emerald-500 font-bold hover:underline flex items-center justify-between gap-1 group"
                       >
-                        <span>🔬 Leer artículo completo sobre la Escala de Armstrong y la Hidratación</span>
+                        <span>ðŸ”¬ Leer artÃ­culo completo sobre la Escala de Armstrong y la HidrataciÃ³n</span>
                         <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                       </Link>
                     </div>
@@ -6650,7 +5731,7 @@ function HydrationLogModal({ onClose, currentLevel, onSave }: HydrationLogModalP
               })}
             </div>
             <div className="flex justify-between text-[9px] uppercase font-black text-muted-foreground/80 tracking-widest px-1">
-              <span>Óptimo</span>
+              <span>Ã“ptimo</span>
               <span>Deshidratado</span>
             </div>
           </div>
@@ -6666,7 +5747,7 @@ function HydrationLogModal({ onClose, currentLevel, onSave }: HydrationLogModalP
           {/* Symptoms of Dehydration grid */}
           <div className="space-y-2.5">
             <span className="text-[9px] text-muted-foreground font-black uppercase tracking-widest block text-left">
-              Síntomas de Deshidratación a vigilar
+              SÃ­ntomas de DeshidrataciÃ³n a vigilar
             </span>
             <div className="grid grid-cols-2 gap-2.5">
               <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-secondary/20 border border-border/20">
@@ -6694,7 +5775,7 @@ function HydrationLogModal({ onClose, currentLevel, onSave }: HydrationLogModalP
                 <AlertCircle className="w-4.5 h-4.5 text-rose-400 shrink-0" />
                 <div className="min-w-0 text-left">
                   <p className="text-xs font-bold text-foreground leading-tight">Mareos</p>
-                  <p className="text-[10px] text-muted-foreground leading-none">Pérdida de balance</p>
+                  <p className="text-[10px] text-muted-foreground leading-none">PÃ©rdida de balance</p>
                 </div>
               </div>
             </div>
@@ -6704,7 +5785,7 @@ function HydrationLogModal({ onClose, currentLevel, onSave }: HydrationLogModalP
           <div className="text-[10px] text-muted-foreground leading-relaxed flex items-start gap-2 bg-secondary/10 p-3 rounded-2xl border border-border/10">
             <Info className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
             <p className="text-left">
-              <span className="font-bold text-foreground">Aviso sobre coloración:</span> Ciertos suplementos (como el complejo de vitamina B) y alimentos (como la remolacha) pueden intensificar temporalmente el color de la orina, sin representar deshidratación real.
+              <span className="font-bold text-foreground">Aviso sobre coloraciÃ³n:</span> Ciertos suplementos (como el complejo de vitamina B) y alimentos (como la remolacha) pueden intensificar temporalmente el color de la orina, sin representar deshidrataciÃ³n real.
             </p>
           </div>
         </div>
@@ -6823,7 +5904,7 @@ function ActivityLogModal({ onClose, onSave, activities }: ActivityLogModalProps
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              Cronómetro
+              CronÃ³metro
             </button>
           </div>
         </div>
@@ -6858,7 +5939,7 @@ function ActivityLogModal({ onClose, onSave, activities }: ActivityLogModalProps
                 { 
                   id: "low", 
                   label: "Baja", 
-                  desc: "Respiración normal que permite conversar o cantar.", 
+                  desc: "RespiraciÃ³n normal que permite conversar o cantar.", 
                   border: "border-emerald-500/20 dark:border-emerald-500/10",
                   bg: "bg-emerald-500/5", 
                   activeBorder: "border-emerald-500 ring-1 ring-emerald-500" 
@@ -6866,7 +5947,7 @@ function ActivityLogModal({ onClose, onSave, activities }: ActivityLogModalProps
                 { 
                   id: "med", 
                   label: "Media", 
-                  desc: "Respiración agitada que permite conversar brevemente, pero no cantar.", 
+                  desc: "RespiraciÃ³n agitada que permite conversar brevemente, pero no cantar.", 
                   border: "border-amber-500/20 dark:border-amber-500/10",
                   bg: "bg-amber-500/5", 
                   activeBorder: "border-amber-500 ring-1 ring-amber-500" 
@@ -6874,7 +5955,7 @@ function ActivityLogModal({ onClose, onSave, activities }: ActivityLogModalProps
                 { 
                   id: "high", 
                   label: "Alta", 
-                  desc: "Respiración muy agitada que solo permite hablar con oraciones breves.", 
+                  desc: "RespiraciÃ³n muy agitada que solo permite hablar con oraciones breves.", 
                   border: "border-rose-500/20 dark:border-rose-500/10",
                   bg: "bg-rose-500/5", 
                   activeBorder: "border-rose-500 ring-1 ring-rose-500" 
@@ -6910,7 +5991,7 @@ function ActivityLogModal({ onClose, onSave, activities }: ActivityLogModalProps
               <div className="space-y-1.5 text-left">
                 <div className="flex justify-between items-center">
                   <label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">
-                    Duración (minutos)
+                    DuraciÃ³n (minutos)
                   </label>
                   <span className="text-xs font-extrabold text-foreground bg-secondary/50 px-2.5 py-0.5 rounded-md">
                     {duration} min
@@ -7008,7 +6089,7 @@ function ActivityLogModal({ onClose, onSave, activities }: ActivityLogModalProps
           <div className="p-4 bg-primary/5 border border-primary/10 rounded-2xl flex items-start gap-2.5 text-left">
             <Sparkles className="w-4.5 h-4.5 text-primary shrink-0 mt-0.5" />
             <p className="text-[10px] text-muted-foreground leading-relaxed font-semibold">
-              <span className="text-foreground">¿Qué son los Puntos MET?</span> El Equivalente Metabólico (MET) mide la intensidad de tu ejercicio. La OMS recomienda sumar al menos <span className="text-foreground">150 Puntos de Actividad</span> diarios para mantener un estilo de vida saludable y conservar tu racha.
+              <span className="text-foreground">Â¿QuÃ© son los Puntos MET?</span> El Equivalente MetabÃ³lico (MET) mide la intensidad de tu ejercicio. La OMS recomienda sumar al menos <span className="text-foreground">150 Puntos de Actividad</span> diarios para mantener un estilo de vida saludable y conservar tu racha.
             </p>
           </div>
         </div>
@@ -7183,12 +6264,12 @@ function RecipeSwipeStack({
                 {/* Status Badges */}
                 {dragOffset.x > 40 && (
                   <div className="absolute top-4 left-4 border border-foreground text-white font-black text-[10px] uppercase tracking-widest px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md pointer-events-none">
-                    GUARDAR ❤️
+                    GUARDAR â¤ï¸
                   </div>
                 )}
                 {dragOffset.x < -40 && (
                   <div className="absolute top-4 right-4 border border-rose-500 text-rose-400 font-black text-[10px] uppercase tracking-widest px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md pointer-events-none">
-                    PASAR ❌
+                    PASAR âŒ
                   </div>
                 )}
 
@@ -7240,7 +6321,7 @@ function RecipeSwipeStack({
                         ))}
                         {currentRecipe.ingredients.length > 5 && (
                           <li className="text-[9px] text-muted-foreground/70 italic font-bold">
-                            + {currentRecipe.ingredients.length - 5} ingredientes más
+                            + {currentRecipe.ingredients.length - 5} ingredientes mÃ¡s
                           </li>
                         )}
                       </ul>
@@ -7298,7 +6379,7 @@ function RecipeSwipeStack({
               <Check className="w-5 h-5 stroke-[3]" />
             </div>
             <div>
-              <h4 className="text-xs font-bold text-foreground">¡Todo explorado!</h4>
+              <h4 className="text-xs font-bold text-foreground">Â¡Todo explorado!</h4>
               <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">
                 Revisa tus platos guardados en <strong>Mis recetas</strong> o inicia una nueva ronda.
               </p>
@@ -7308,7 +6389,7 @@ function RecipeSwipeStack({
                 onClick={() => setCurrentSwipeIndex(0)} 
                 className="w-full text-[10px] h-8 font-bold rounded-xl bg-foreground text-background"
               >
-                Reiniciar exploración
+                Reiniciar exploraciÃ³n
               </Button>
             </div>
           </div>
@@ -7360,7 +6441,7 @@ function RecipesGridTab({
           <div>
             <h2 className="text-[22px] font-black text-foreground leading-tight tracking-tight">Mis Recetas Guardadas</h2>
             <p className="text-xs text-muted-foreground mt-1 font-medium">
-              Platos recomendados por tu Coach IA que has guardado durante la exploración.
+              Platos recomendados por tu Coach IA que has guardado durante la exploraciÃ³n.
             </p>
           </div>
 
@@ -7415,7 +6496,7 @@ function RecipesGridTab({
             <Heart className="w-7 h-7 fill-emerald-500/20" />
           </div>
           <div>
-            <h4 className="text-sm font-bold text-foreground">Aún no tienes recetas guardadas</h4>
+            <h4 className="text-sm font-bold text-foreground">AÃºn no tienes recetas guardadas</h4>
             <p className="text-xs text-muted-foreground mt-1.5 max-w-xs mx-auto leading-relaxed font-medium">
               Descubre platos saludables recomendados por tu Coach IA en la herramienta "Explorar ideas".
             </p>
@@ -7429,7 +6510,7 @@ function RecipesGridTab({
         </div>
       ) : filteredList.length === 0 ? (
         <div className="p-12 text-center text-xs text-muted-foreground font-semibold">
-          No se encontraron recetas que coincidan con tu búsqueda.
+          No se encontraron recetas que coincidan con tu bÃºsqueda.
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -7466,7 +6547,7 @@ function RecipesGridTab({
                         ? "bg-foreground text-background border-foreground shadow-md scale-105"
                         : "bg-black/50 hover:bg-black/70 text-white/80 hover:text-white border-white/20"
                     }`}
-                    title={isInCart ? "Quitar de lista de compras" : "Añadir a lista de compras"}
+                    title={isInCart ? "Quitar de lista de compras" : "AÃ±adir a lista de compras"}
                   >
                     <ShoppingCart className="w-3.5 h-3.5" />
                   </button>
@@ -7485,7 +6566,7 @@ function RecipesGridTab({
                 {/* Header */}
                 <CardHeader className="p-4 pb-2 text-left">
                   <CardDescription className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
-                    Receta IA • {recipe.category}
+                    Receta IA â€¢ {recipe.category}
                   </CardDescription>
                   <CardTitle className="text-sm font-extrabold leading-snug text-foreground group-hover:text-emerald-500 transition-colors line-clamp-2">
                     {recipe.title}
@@ -7505,7 +6586,7 @@ function RecipesGridTab({
                 {/* Footer */}
                 <CardFooter className="px-4 py-3 bg-secondary/20 border-t border-border flex items-center justify-between shrink-0">
                   <span className="text-[11px] font-bold text-muted-foreground group-hover:text-foreground transition-colors">
-                    Ver preparación
+                    Ver preparaciÃ³n
                   </span>
                   <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-muted-foreground group-hover:text-foreground group-hover:bg-foreground group-hover:text-background transition-colors">
                     <ChevronRight className="w-3.5 h-3.5" />
@@ -7581,11 +6662,11 @@ function RecipeDetailModal({
           {/* Quick info row */}
           <div className="grid grid-cols-4 gap-2 text-center bg-secondary/35 rounded-2xl p-3 border border-border/50">
             <div>
-              <span className="block text-[9px] uppercase font-black text-muted-foreground tracking-wider">Calorías</span>
+              <span className="block text-[9px] uppercase font-black text-muted-foreground tracking-wider">CalorÃ­as</span>
               <span className="text-xs font-extrabold text-foreground">{recipe.kcal} kcal</span>
             </div>
             <div>
-              <span className="block text-[9px] uppercase font-black text-muted-foreground tracking-wider">Proteínas</span>
+              <span className="block text-[9px] uppercase font-black text-muted-foreground tracking-wider">ProteÃ­nas</span>
               <span className="text-xs font-extrabold text-foreground">{recipe.protein}</span>
             </div>
             <div>
@@ -7598,11 +6679,11 @@ function RecipeDetailModal({
             </div>
           </div>
 
-          {/* Características Nutricionales Badges */}
+          {/* CaracterÃ­sticas Nutricionales Badges */}
           <div className="bg-secondary/20 rounded-2xl p-3.5 border border-border/60 space-y-2">
             <h5 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
-              Características Nutricionales
+              CaracterÃ­sticas Nutricionales
             </h5>
             <MealOrganizerBadges
               category={recipe.category}
@@ -7654,7 +6735,7 @@ function RecipeDetailModal({
           {/* Steps */}
           <div className="space-y-3">
             <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground border-b border-border pb-1.5">
-              Preparación
+              PreparaciÃ³n
             </h4>
             <ol className="space-y-3">
               {recipe.instructions.map((step: string, i: number) => (
@@ -7691,7 +6772,7 @@ function RecipeDetailModal({
               }`}
             >
               <ShoppingCart className="w-3.5 h-3.5" />
-              {isInCart ? "En Compras" : "Añadir a Compras"}
+              {isInCart ? "En Compras" : "AÃ±adir a Compras"}
             </Button>
 
             <Button 
@@ -7743,11 +6824,11 @@ function ShoppingCartModal({
   };
 
   const getFormattedList = () => {
-    return `🛒 LISTA DE COMPRAS (Shakerfy)\n\n` +
+    return `ðŸ›’ LISTA DE COMPRAS (Shakerfy)\n\n` +
       `Recetas (${selectedRecipes.length}):\n` +
       selectedRecipes.map(r => `- ${r.title}`).join('\n') +
       `\n\nIngredientes:\n` +
-      uniqueIngredients.map(ing => `${checkedItems[ing] ? '✓' : '☐'} ${ing}`).join('\n');
+      uniqueIngredients.map(ing => `${checkedItems[ing] ? 'âœ“' : 'â˜'} ${ing}`).join('\n');
   };
 
   const handleCopy = () => {
@@ -7803,9 +6884,9 @@ function ShoppingCartModal({
               <div className="w-12 h-12 rounded-full bg-secondary/50 flex items-center justify-center mx-auto text-muted-foreground">
                 <ShoppingCart className="w-6 h-6" />
               </div>
-              <p className="text-xs font-bold text-foreground">Tu lista de compras está vacía</p>
+              <p className="text-xs font-bold text-foreground">Tu lista de compras estÃ¡ vacÃ­a</p>
               <p className="text-[11px] text-muted-foreground max-w-xs mx-auto leading-relaxed font-medium">
-                Presiona el icono de carrito en tus recetas guardadas para generar la lista de compras automáticamente.
+                Presiona el icono de carrito en tus recetas guardadas para generar la lista de compras automÃ¡ticamente.
               </p>
             </div>
           ) : (
@@ -7896,7 +6977,7 @@ function ShoppingCartModal({
                 className="text-xs font-bold rounded-xl gap-1.5"
               >
                 {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-                {copied ? "¡Copiado!" : "Copiar"}
+                {copied ? "Â¡Copiado!" : "Copiar"}
               </Button>
               <Button
                 onClick={onClose}

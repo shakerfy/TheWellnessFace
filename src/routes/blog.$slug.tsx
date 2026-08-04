@@ -247,7 +247,7 @@ function BlogDetailPage() {
       <main className="flex-1 pb-24 pt-28">
         {/* Breadcrumb Navigation */}
         <div className="mx-auto max-w-5xl px-6">
-          <nav className="flex items-center gap-2 text-xs text-muted-foreground">
+          <nav className="flex items-center gap-2 text-xs text-muted-foreground overflow-x-auto whitespace-nowrap [scrollbar-width:none]">
             <Link to="/" className="hover:text-foreground transition-colors">
               Inicio
             </Link>
@@ -291,7 +291,7 @@ function BlogDetailPage() {
             </p>
 
             {/* Author bar & Share buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-6 border-y border-border/60 py-4 my-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 border-y border-border/60 py-4 my-6">
               <div className="flex items-center gap-3">
                 <img
                   src={post.author.avatar}

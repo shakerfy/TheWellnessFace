@@ -317,7 +317,7 @@ function GymPage() {
             </div>
 
             {/* Branch / Sede selector */}
-            <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+            <div className="mt-4 flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
               <span className="inline-flex items-center gap-1.5">
                 <Star className="h-3.5 w-3.5 fill-foreground text-foreground" />{" "}
                 {gym.rating.toFixed(1)}{" "}
@@ -1132,7 +1132,7 @@ function GymPage() {
                 <FileText className="h-5 w-5 text-primary" /> Diplomas y Certificaciones
               </h3>
 
-              <div className="grid gap-3 grid-cols-2 overflow-y-auto max-h-[400px]">
+              <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 overflow-y-auto max-h-[400px]">
                 {activeCertificationsViewer.map((url, index) => (
                   <div
                     key={index}
@@ -1178,7 +1178,7 @@ function GymPage() {
             <div className="flex-1 flex items-center justify-between w-full max-w-7xl mx-auto relative my-4">
               <button
                 onClick={() => setActive((v) => (v - 1 + gym.images.length) % gym.images.length)}
-                className="p-3.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 text-white transition shrink-0  border border-zinc-800 mr-2"
+                className="p-2 sm:p-3.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 text-white transition shrink-0  border border-zinc-800 mr-2"
               >
                 <ChevronLeft className="h-6 w-6" />
               </button>
@@ -1193,7 +1193,7 @@ function GymPage() {
 
               <button
                 onClick={() => setActive((v) => (v + 1) % gym.images.length)}
-                className="p-3.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 text-white transition shrink-0  border border-zinc-800 ml-2"
+                className="p-2 sm:p-3.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 text-white transition shrink-0  border border-zinc-800 ml-2"
               >
                 <ChevronRight className="h-6 w-6" />
               </button>

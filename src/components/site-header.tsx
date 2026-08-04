@@ -228,7 +228,7 @@ export function SiteFooter() {
         ))}
       </div>
       <div className="border-t border-border/60">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 text-xs text-muted-foreground">
+        <div className="mx-auto flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between px-6 py-5 text-xs text-muted-foreground text-center sm:text-left">
           <span>© {new Date().getFullYear()} Shakerfy. Todos los derechos reservados.</span>
           <span>Hecho con precisión.</span>
         </div>
