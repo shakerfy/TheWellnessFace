@@ -3395,8 +3395,6 @@ function ReportesTab({
   membersList = [],
   classesList = [],
   membershipsList = [],
-  staffList = [],
-  salasList = [],
   cashTransactions = [],
 }: {
   membersList?: any[];
@@ -3406,32 +3404,27 @@ function ReportesTab({
   salasList?: any[];
   cashTransactions?: any[];
 }) {
-  const [timeRange, setTimeRange] = useState<"today" | "week" | "month" | "prev_month" | "quarter">("month");
-  const [selectedDiscipline, setSelectedDiscipline] = useState<string>("all");
-  const [reportSubTab, setReportSubTab] = useState<"finanzas" | "asistencia" | "socios" | "staff">("finanzas");
+  const [timeRange, setTimeRange] = useState<"today" | "week" | "month" | "quarter">("month");
 
-  // Dynamic calculations based on state
+  // Executive KPI 1: Active Members
   const totalActiveMembers = useMemo(() => {
     return membersList.filter((m) => m.status === "activo" || !m.status).length || 240;
   }, [membersList]);
 
+  // Executive KPI 2: Total Revenue
   const calculatedRevenue = useMemo(() => {
+    const incomeFromCash = cashTransactions
+      .filter((t) => t.type === "income")
+      .reduce((sum, t) => sum + (t.amount || 0), 0);
+    if (incomeFromCash > 0) return incomeFromCash;
     if (!membersList.length) return 4320000;
     return membersList.reduce((sum, m) => {
       const plan = membershipsList.find((p) => p.name === m.plan);
       return sum + (plan?.price || 18000);
     }, 0);
-  }, [membersList, membershipsList]);
+  }, [membersList, membershipsList, cashTransactions]);
 
-  const avgTicket = useMemo(() => {
-    return totalActiveMembers > 0 ? Math.round(calculatedRevenue / totalActiveMembers) : 18000;
-  }, [calculatedRevenue, totalActiveMembers]);
-
-  const totalClassesCount = useMemo(() => {
-    if (selectedDiscipline === "all") return classesList.length || 42;
-    return classesList.filter((c) => (c.name || "").toLowerCase().includes(selectedDiscipline.toLowerCase())).length || 12;
-  }, [classesList, selectedDiscipline]);
-
+  // Executive KPI 3: Occupancy Rate
   const totalBookedSpots = useMemo(() => {
     return classesList.reduce((sum, c) => sum + (c.booked || 0), 0) || 842;
   }, [classesList]);
@@ -3444,714 +3437,146 @@ function ReportesTab({
     return totalCapacity > 0 ? ((totalBookedSpots / totalCapacity) * 100).toFixed(1) : "78.4";
   }, [totalBookedSpots, totalCapacity]);
 
-  // Payment methods breakdown calculated dynamically from cashTransactions
-  const paymentStats = useMemo(() => {
-    const incomeTx = cashTransactions.filter((t) => t.type === "income");
-    const totalIncome = incomeTx.reduce((sum, t) => sum + (t.amount || 0), 0);
-
-    if (totalIncome === 0) {
-      return {
-        mpAmount: Math.round(calculatedRevenue * 0.62),
-        mpPercent: 62,
-        transfAmount: Math.round(calculatedRevenue * 0.24),
-        transfPercent: 24,
-        cashAmount: Math.round(calculatedRevenue * 0.14),
-        cashPercent: 14,
-        total: calculatedRevenue,
-      };
-    }
-
-    const mpTotal = incomeTx.filter((t) => t.channel === "app").reduce((sum, t) => sum + t.amount, 0);
-    const transfTotal = incomeTx.filter((t) => t.channel === "transfer").reduce((sum, t) => sum + t.amount, 0);
-    const cashTotal = incomeTx.filter((t) => t.channel === "cash").reduce((sum, t) => sum + t.amount, 0);
-
-    const mpP = Math.round((mpTotal / totalIncome) * 100) || 0;
-    const transfP = Math.round((transfTotal / totalIncome) * 100) || 0;
-    const cashP = Math.round((cashTotal / totalIncome) * 100) || 0;
-
-    return {
-      mpAmount: mpTotal,
-      mpPercent: mpP,
-      transfAmount: transfTotal,
-      transfPercent: transfP,
-      cashAmount: cashTotal,
-      cashPercent: cashP,
-      total: totalIncome,
-    };
-  }, [cashTransactions, calculatedRevenue]);
-
-  // WhatsApp Re-engagement Action
-  const handleSendWhatsAppReminder = (memberName: string, phone?: string) => {
-    const cleanPhone = phone || "5491155550000";
-    const msg = `¡Hola ${memberName}! 👋 Te extrañamos en el studio. Tenés clases disponibles en tu plan. ¿Te anotamos para la sesión de mañana? 💪`;
-    window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, "_blank");
-    toast.success(`📱 Abriendo WhatsApp con plantilla de re-engagement para ${memberName}...`);
-  };
-
   // CSV Export Handler
   const handleExportCSV = () => {
-    let headers: string[] = [];
-    let rows: string[][] = [];
-    let filename = `reporte_${reportSubTab}_${timeRange}.csv`;
-
-    if (reportSubTab === "finanzas") {
-      headers = ["Periodo", "Facturacion Total ($)", "Socios Activos", "Ticket Promedio ($)", "Cobros MercadoPago ($)", "Cobros Transf ($)", "Cobros Efectivo ($)"];
-      rows = [
-        [timeRange, calculatedRevenue.toString(), totalActiveMembers.toString(), avgTicket.toString(), `$${paymentStats.mpAmount}`, `$${paymentStats.transfAmount}`, `$${paymentStats.cashAmount}`],
-      ];
-    } else if (reportSubTab === "asistencia") {
-      headers = ["Clase", "Disciplina", "Profesor", "Capacidad", "Inscritos", "% Ocupacion"];
-      rows = classesList.length > 0
-        ? classesList.map((c) => [c.name, c.discipline || "General", c.staffId, c.capacity.toString(), c.booked.toString(), `${Math.round((c.booked / c.capacity) * 100)}%`])
-        : [["CrossFit WOD", "CrossFit", "Mateo Rossi", "20", "18", "90%"], ["Spinning Pro", "Spinning", "Lucía Fernández", "25", "24", "96%"]];
-    } else if (reportSubTab === "socios") {
-      headers = ["Nombre", "Plan", "Estado", "Vencimiento", "Asistencias Mes"];
-      rows = membersList.length > 0
-        ? membersList.map((m) => [m.name, m.plan, m.status || "Activo", m.expirationDate || "Al día", "8"])
-        : [["Agustín Gómez", "Pase Libre", "Activo", "15/08/2026", "12"]];
-    } else if (reportSubTab === "staff") {
-      headers = ["Profesor/Coach", "Especialidad", "Clases Dictadas", "Asistencia Promedio", "Calificacion"];
-      rows = staffList.length > 0
-        ? staffList.map((s) => [s.name, s.specialty, "18", "16 alumnos", "4.9 ⭐"])
-        : [["Mateo Rossi", "CrossFit", "24", "18 alumnos", "4.9 ⭐"], ["Valeria Soto", "Yoga & Pilates", "16", "14 alumnos", "5.0 ⭐"]];
-    }
+    const headers = ["Indicador", "Valor Actual", "Período"];
+    const rows = [
+      ["Facturación Total ($)", calculatedRevenue.toString(), timeRange],
+      ["Alumnos Activos", totalActiveMembers.toString(), timeRange],
+      ["Tasa Ocupación Clases (%)", `${occupancyRate}%`, timeRange],
+    ];
 
     const csvContent = [headers.join(","), ...rows.map((r) => r.map((val) => `"${val}"`).join(","))].join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", filename);
+    link.setAttribute("download", `reporte_ejecutivo_${timeRange}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    toast.success(`✓ Reporte ${reportSubTab.toUpperCase()} exportado a CSV exitosamente.`);
-  };
-
-  const handlePrint = () => {
-    toast.info("Generando vista de impresión / PDF...");
-    window.print();
+    toast.success("✓ Reporte ejecutivo exportado a CSV con éxito.");
   };
 
   return (
     <div className="space-y-6 animate-fade-in text-foreground">
-      {/* Header & Controls Toolbar */}
+      {/* Header & Main Control Bar */}
       <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-4 shadow-xs">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-xl font-bold tracking-tight">Reportes & Analítica de Negocio</h2>
+              <h2 className="text-xl font-bold tracking-tight">Resumen Ejecutivo de Negocio</h2>
               <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-xs font-semibold">
-                Estadísticas en Tiempo Real
+                3 KPIs Clave
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Indicadores ejecutivos de facturación, tasa de retención, ocupación de salones y rendimiento de staff.
+              Vista general consolidada de ingresos, clientes activos y nivel de ocupación.
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportCSV}
-              className="rounded-xl text-xs font-bold gap-2 border-border text-foreground hover:bg-secondary"
-            >
-              <Download className="h-4 w-4 text-primary" />
-              Exportar CSV
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handlePrint}
-              className="rounded-xl text-xs font-bold gap-2 border-border text-foreground hover:bg-secondary"
-            >
-              <Printer className="h-4 w-4 text-muted-foreground" />
-              Imprimir / PDF
-            </Button>
-          </div>
-        </div>
-
-        {/* Filters Controls Row */}
-        <div className="pt-3 border-t border-border/60 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          {/* Sub-Tab Category Selector */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-            <button
-              onClick={() => setReportSubTab("finanzas")}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                reportSubTab === "finanzas"
-                  ? "bg-primary text-primary-foreground shadow-2xs"
-                  : "bg-secondary/40 text-muted-foreground hover:bg-secondary hover:text-foreground"
-              }`}
-            >
-              <DollarSign className="w-3.5 h-3.5" /> Finanzas e Ingresos
-            </button>
-
-            <button
-              onClick={() => setReportSubTab("asistencia")}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                reportSubTab === "asistencia"
-                  ? "bg-primary text-primary-foreground shadow-2xs"
-                  : "bg-secondary/40 text-muted-foreground hover:bg-secondary hover:text-foreground"
-              }`}
-            >
-              <Activity className="w-3.5 h-3.5" /> Asistencia y Ocupación
-            </button>
-
-            <button
-              onClick={() => setReportSubTab("socios")}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                reportSubTab === "socios"
-                  ? "bg-primary text-primary-foreground shadow-2xs"
-                  : "bg-secondary/40 text-muted-foreground hover:bg-secondary hover:text-foreground"
-              }`}
-            >
-              <Users className="w-3.5 h-3.5" /> Retención y Alumnos
-            </button>
-
-            <button
-              onClick={() => setReportSubTab("staff")}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                reportSubTab === "staff"
-                  ? "bg-primary text-primary-foreground shadow-2xs"
-                  : "bg-secondary/40 text-muted-foreground hover:bg-secondary hover:text-foreground"
-              }`}
-            >
-              <Star className="w-3.5 h-3.5" /> Staff & Coaches
-            </button>
-          </div>
-
-          {/* Time & Discipline Selectors (Shadcn/ui Select) */}
           <div className="flex items-center gap-2">
             <Select value={timeRange} onValueChange={(val) => setTimeRange(val as any)}>
-              <SelectTrigger className="w-[180px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
+              <SelectTrigger className="w-[160px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
                 <SelectValue placeholder="Período" />
               </SelectTrigger>
               <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
                 <SelectItem value="today">📅 Hoy</SelectItem>
-                <SelectItem value="week">📅 Últimos 7 días</SelectItem>
+                <SelectItem value="week">📅 Esta Semana</SelectItem>
                 <SelectItem value="month">📅 Este Mes</SelectItem>
-                <SelectItem value="prev_month">📅 Mes Anterior</SelectItem>
-                <SelectItem value="quarter">📅 Trimestre Actual</SelectItem>
+                <SelectItem value="quarter">📅 Trimestre</SelectItem>
               </SelectContent>
             </Select>
 
-            <Select value={selectedDiscipline} onValueChange={(val) => setSelectedDiscipline(val)}>
-              <SelectTrigger className="w-[185px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
-                <SelectValue placeholder="Disciplina" />
-              </SelectTrigger>
-              <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
-                <SelectItem value="all">🏋️ Todas las Clases</SelectItem>
-                <SelectItem value="CrossFit">🔥 CrossFit</SelectItem>
-                <SelectItem value="Spinning">🚴 Spinning</SelectItem>
-                <SelectItem value="Yoga">🧘 Yoga</SelectItem>
-                <SelectItem value="Pilates">🤸 Pilates</SelectItem>
-                <SelectItem value="Funcional">⚡ Funcional</SelectItem>
-              </SelectContent>
-            </Select>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportCSV}
+              className="h-9 rounded-xl text-xs font-bold gap-1.5 border-border text-foreground hover:bg-secondary"
+            >
+              <Download className="h-4 w-4 text-primary" /> Exportar CSV
+            </Button>
           </div>
         </div>
       </div>
 
-      {/* SUBTAB 1: FINANZAS E INGRESOS */}
-      {reportSubTab === "finanzas" && (
-        <div className="space-y-6 animate-fade-in">
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-5">
-            <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-                Facturación Estimada ({timeRange})
-              </span>
-              <div className="text-2xl font-black text-foreground">${calculatedRevenue.toLocaleString("es-AR")}</div>
-              <p className="text-[10.5px] text-emerald-600 font-semibold flex items-center gap-1">
-                <TrendingUp className="w-3 h-3" /> +14.2% vs. periodo anterior
-              </p>
-            </div>
-
-            <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-                Ticket Promedio por Socio
-              </span>
-              <div className="text-2xl font-black text-primary">${avgTicket.toLocaleString("es-AR")}</div>
-              <p className="text-[10.5px] text-muted-foreground">Planes mensuales + cuotas</p>
-            </div>
-
-            <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-                Ingresos Recurrentes (Pases)
-              </span>
-              <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">86.5%</div>
-              <p className="text-[10.5px] text-muted-foreground">Suscripciones automáticas</p>
-            </div>
-
-            <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-                Plan Más Vendido
-              </span>
-              <div className="text-xl font-black text-foreground truncate">Pase Libre Total</div>
-              <p className="text-[10.5px] text-muted-foreground">48% de la recaudación</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-4 shadow-xs">
-              <h3 className="font-bold text-sm text-foreground uppercase tracking-wider text-muted-foreground/80 border-b border-border/40 pb-2">
-                Distribución por Métodos de Pago
-              </h3>
-              <div className="space-y-3 pt-1">
-                <div>
-                  <div className="flex justify-between text-xs font-bold mb-1">
-                    <span className="flex items-center gap-1.5">
-                      <span className="h-2.5 w-2.5 rounded-full bg-sky-500 inline-block" />
-                      MercadoPago / Tarjetas de Crédito y Débito
-                    </span>
-                    <span className="text-sky-600 dark:text-sky-400 font-black">{paymentStats.mpPercent}% (${paymentStats.mpAmount.toLocaleString("es-AR")})</span>
-                  </div>
-                  <div className="h-3 w-full bg-secondary rounded-full overflow-hidden">
-                    <div className="h-full bg-sky-500 rounded-full transition-all duration-500" style={{ width: `${paymentStats.mpPercent}%` }} />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-xs font-bold mb-1">
-                    <span className="flex items-center gap-1.5">
-                      <span className="h-2.5 w-2.5 rounded-full bg-indigo-500 inline-block" />
-                      Transferencias Bancarias (CBU / CVU)
-                    </span>
-                    <span className="text-indigo-600 dark:text-indigo-400 font-black">{paymentStats.transfPercent}% (${paymentStats.transfAmount.toLocaleString("es-AR")})</span>
-                  </div>
-                  <div className="h-3 w-full bg-secondary rounded-full overflow-hidden">
-                    <div className="h-full bg-indigo-500 rounded-full transition-all duration-500" style={{ width: `${paymentStats.transfPercent}%` }} />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-xs font-bold mb-1">
-                    <span className="flex items-center gap-1.5">
-                      <span className="h-2.5 w-2.5 rounded-full bg-amber-500 inline-block" />
-                      Efectivo en Recepción
-                    </span>
-                    <span className="text-amber-600 dark:text-amber-400 font-black">{paymentStats.cashPercent}% (${paymentStats.cashAmount.toLocaleString("es-AR")})</span>
-                  </div>
-                  <div className="h-3 w-full bg-secondary rounded-full overflow-hidden">
-                    <div className="h-full bg-amber-500 rounded-full transition-all duration-500" style={{ width: `${paymentStats.cashPercent}%` }} />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-4 shadow-xs">
-              <h3 className="font-bold text-sm text-foreground uppercase tracking-wider text-muted-foreground/80 border-b border-border/40 pb-2">
-                Resumen de Planes de Membresía
-              </h3>
-              <div className="space-y-3 pt-1">
-                {membershipsList.length > 0 ? (
-                  membershipsList.map((plan) => (
-                    <div
-                      key={plan.id}
-                      className={`p-3 rounded-2xl flex items-center justify-between transition-all ${
-                        plan.isFeatured
-                          ? "bg-primary/10 border-2 border-primary/40 shadow-xs"
-                          : "bg-secondary/30 border border-border/60"
-                      }`}
-                    >
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-xs block">{plan.name}</span>
-                          {plan.isFeatured && (
-                            <span className="text-[9.5px] font-black bg-amber-500/20 text-amber-600 border border-amber-500/30 px-1.5 py-0.2 rounded-md">
-                              ★ Más Elegido
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-[11px] text-muted-foreground">{plan.duration} · ${plan.price.toLocaleString("es-AR")}</span>
-                      </div>
-                      <Badge variant="outline" className="text-xs font-bold border-primary/20 text-primary">
-                        {plan.passType || "Pase Activo"}
-                      </Badge>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-xs text-muted-foreground">No hay planes registrados.</p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Executive Revenue Trend Chart */}
-          <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-4 shadow-xs">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border/40 pb-3 gap-2">
-              <div>
-                <h3 className="font-bold text-sm text-foreground uppercase tracking-wider text-muted-foreground/80">
-                  Evolución Mensual de Facturación Bruta (Últimos 6 Meses)
-                </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Comparativa semestral de recaudación bruta e inscripciones totales.
-                </p>
-              </div>
-              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-xs font-bold w-fit">
-                +14.2% Crecimiento
-              </Badge>
-            </div>
-
-            <div className="pt-2">
-              <div className="grid grid-cols-6 gap-2 sm:gap-4 items-end h-44 pt-6 pb-2 border-b border-border/60">
-                {[
-                  { month: "Ene", amount: "$3.1M", height: "45%", count: "620 al." },
-                  { month: "Feb", amount: "$3.4M", height: "55%", count: "690 al." },
-                  { month: "Mar", amount: "$3.8M", height: "68%", count: "740 al." },
-                  { month: "Abr", amount: "$3.9M", height: "72%", count: "780 al." },
-                  { month: "May", amount: "$4.1M", height: "85%", count: "810 al." },
-                  { month: "Jun", amount: `$${(calculatedRevenue / 1000000).toFixed(2)}M`, height: "98%", count: `${totalBookedSpots} al.`, current: true },
-                ].map((item, idx) => (
-                  <div key={idx} className="flex flex-col items-center gap-1.5 h-full justify-end group">
-                    <span className="text-[10px] font-black text-muted-foreground group-hover:text-primary transition-colors opacity-0 group-hover:opacity-100 sm:opacity-100">
-                      {item.amount}
-                    </span>
-                    <div className="w-full max-w-[40px] bg-secondary/60 rounded-t-xl overflow-hidden h-full flex items-end p-0.5">
-                      <div
-                        className={`w-full rounded-t-lg transition-all duration-500 ${
-                          item.current
-                            ? "bg-primary shadow-xs"
-                            : "bg-primary/40 group-hover:bg-primary/70"
-                        }`}
-                        style={{ height: item.height }}
-                      />
-                    </div>
-                    <span className={`text-[11px] font-bold ${item.current ? "text-primary font-extrabold" : "text-muted-foreground"}`}>
-                      {item.month}
-                    </span>
-                  </div>
-                ))}
-              </div>
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center text-[11px] text-muted-foreground pt-2.5 gap-1">
-                <span>* Datos actualizados al cierre de {timeRange === "month" ? "Junio 2026" : "período seleccionado"}.</span>
-                <span className="font-bold text-foreground">Promedio Semestral: $3.77M / mes</span>
-              </div>
-            </div>
-          </div>
+      {/* The 3 Core KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-2 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+            1. Facturación del Período
+          </span>
+          <div className="text-3xl font-black text-foreground">${calculatedRevenue.toLocaleString("es-AR")}</div>
+          <p className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
+            <TrendingUp className="w-3.5 h-3.5" /> +14.2% respecto al período anterior
+          </p>
         </div>
-      )}
 
-      {/* SUBTAB 2: ASISTENCIA Y OCUPACION */}
-      {reportSubTab === "asistencia" && (
-        <div className="space-y-6 animate-fade-in">
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-5">
-            <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-                Asistencias Confirmadas
-              </span>
-              <div className="text-2xl font-black text-foreground">{totalBookedSpots}</div>
-              <p className="text-[10.5px] text-emerald-600 font-semibold">+8.4% vs. mes anterior</p>
-            </div>
-
-            <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-                Ocupación Promedio de Salones
-              </span>
-              <div className="text-2xl font-black text-primary">{occupancyRate}%</div>
-              <p className="text-[10.5px] text-muted-foreground">Capacidad en horas pico</p>
-            </div>
-
-            <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-                Tasa de Ausentismo (No-shows)
-              </span>
-              <div className="text-2xl font-black text-amber-500">5.8%</div>
-              <p className="text-[10.5px] text-muted-foreground">Reservas sin check-in</p>
-            </div>
-
-            <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-                Lista de Espera Convertida
-              </span>
-              <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">38</div>
-              <p className="text-[10.5px] text-muted-foreground">Cupos liberados asignados</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-4 shadow-xs">
-              <h3 className="font-bold text-sm text-foreground uppercase tracking-wider text-muted-foreground/80 border-b border-border/40 pb-2">
-                Ocupación por Franja Horaria (Lunes a Viernes)
-              </h3>
-              <div className="space-y-3 pt-1">
-                <div>
-                  <div className="flex justify-between text-xs font-bold mb-1">
-                    <span>Mañana (08:00 - 11:00 hs)</span>
-                    <span className="text-primary font-black">82% Ocupación</span>
-                  </div>
-                  <div className="h-3 w-full bg-secondary rounded-full overflow-hidden">
-                    <div className="h-full bg-primary rounded-full w-[82%]" />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-xs font-bold mb-1">
-                    <span>Mediodía (12:00 - 15:00 hs)</span>
-                    <span className="text-muted-foreground font-black">54% Ocupación</span>
-                  </div>
-                  <div className="h-3 w-full bg-secondary rounded-full overflow-hidden">
-                    <div className="h-full bg-secondary-foreground/40 rounded-full w-[54%]" />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-xs font-bold mb-1">
-                    <span>Tarde / Noche (18:00 - 21:00 hs) - Hora Pico</span>
-                    <span className="text-emerald-600 dark:text-emerald-400 font-black">94% Ocupación</span>
-                  </div>
-                  <div className="h-3 w-full bg-secondary rounded-full overflow-hidden">
-                    <div className="h-full bg-emerald-500 rounded-full w-[94%]" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-4 shadow-xs">
-              <h3 className="font-bold text-sm text-foreground uppercase tracking-wider text-muted-foreground/80 border-b border-border/40 pb-2">
-                Rendimiento por Salón / Espacio
-              </h3>
-              <div className="space-y-3 pt-1">
-                {salasList.length > 0 ? (
-                  salasList.map((sala) => (
-                    <div key={sala.id} className="p-3.5 bg-secondary/30 border border-border/60 rounded-2xl flex items-center justify-between">
-                      <div>
-                        <span className="font-bold text-sm block">{sala.name}</span>
-                        <span className="text-xs text-muted-foreground">Capacidad: {sala.capacity || 20} lugares</span>
-                      </div>
-                      <span className="text-xs font-black bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-3 py-1 rounded-full border border-emerald-500/20">
-                        84% Ocupación
-                      </span>
-                    </div>
-                  ))
-                ) : (
-                  <>
-                    <div className="p-3.5 bg-secondary/30 border border-border/60 rounded-2xl flex items-center justify-between">
-                      <div>
-                        <span className="font-bold text-sm block">Sala 1 - WOD & CrossFit</span>
-                        <span className="text-xs text-muted-foreground">Capacidad: 25 lugares · 420 inscripciones/mes</span>
-                      </div>
-                      <span className="text-xs font-black bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-3 py-1 rounded-full border border-emerald-500/20">
-                        84% Ocupación
-                      </span>
-                    </div>
-                    <div className="p-3.5 bg-secondary/30 border border-border/60 rounded-2xl flex items-center justify-between">
-                      <div>
-                        <span className="font-bold text-sm block">Sala 2 - Studio & Pilates</span>
-                        <span className="text-xs text-muted-foreground">Capacidad: 18 lugares · 580 inscripciones/mes</span>
-                      </div>
-                      <span className="text-xs font-black bg-primary/10 text-primary px-3 py-1 rounded-full border border-primary/20">
-                        76% Ocupación
-                      </span>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
+        <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-2 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+            2. Alumnos Activos
+          </span>
+          <div className="text-3xl font-black text-primary">{totalActiveMembers} socios</div>
+          <p className="text-[11px] text-muted-foreground">Con plan o pase vigente</p>
         </div>
-      )}
 
-      {/* SUBTAB 3: RETENCION Y SOCIOS */}
-      {reportSubTab === "socios" && (
-        <div className="space-y-6 animate-fade-in">
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-5">
-            <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-                Socios Activos Totales
-              </span>
-              <div className="text-2xl font-black text-foreground">{totalActiveMembers}</div>
-              <p className="text-[10.5px] text-emerald-600 font-semibold">+18 este mes</p>
-            </div>
-
-            <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-                Tasa de Retención
-              </span>
-              <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">92.4%</div>
-              <p className="text-[10.5px] text-muted-foreground">Renovaciones mensuales</p>
-            </div>
-
-            <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-                Tasa de Cancelación (Churn)
-              </span>
-              <div className="text-2xl font-black text-amber-500">2.6%</div>
-              <p className="text-[10.5px] text-muted-foreground">Bajas registradas</p>
-            </div>
-
-            <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-                En Riesgo de Abandono
-              </span>
-              <div className="text-2xl font-black text-destructive">6</div>
-              <p className="text-[10.5px] text-muted-foreground">14+ días sin check-in</p>
-            </div>
-          </div>
-
-          <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-4 shadow-xs">
-            <div className="flex items-center justify-between border-b border-border/40 pb-2">
-              <h3 className="font-bold text-sm text-foreground uppercase tracking-wider text-muted-foreground/80">
-                ⚠️ Alumnos en Riesgo de Abandono (Sin Asistencias Recientes)
-              </h3>
-              <Badge variant="outline" className="text-xs font-bold border-destructive/30 text-destructive bg-destructive/10">
-                Requiere Seguimiento
-              </Badge>
-            </div>
-
-            <div className="space-y-2.5 pt-1">
-              <div className="p-3.5 bg-secondary/30 border border-border/60 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-destructive/10 text-destructive flex items-center justify-center font-bold text-xs border border-destructive/20 shrink-0">
-                    AG
-                  </div>
-                  <div>
-                    <span className="font-bold text-xs block text-foreground">Agustín Gómez</span>
-                    <span className="text-[11px] text-muted-foreground">Plan Pase 8 Clases · Última asistencia hace 16 días</span>
-                  </div>
-                </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleSendWhatsAppReminder("Agustín Gómez", "5491155551234")}
-                  className="rounded-xl text-xs font-bold border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 gap-1.5 shrink-0"
-                >
-                  <MessageCircle className="h-3.5 w-3.5" /> Contactar por WhatsApp
-                </Button>
-              </div>
-
-              <div className="p-3.5 bg-secondary/30 border border-border/60 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center font-bold text-xs border border-amber-500/20 shrink-0">
-                    CD
-                  </div>
-                  <div>
-                    <span className="font-bold text-xs block text-foreground">Camila Díaz</span>
-                    <span className="text-[11px] text-muted-foreground">Plan CrossFit 12 · Última asistencia hace 14 días</span>
-                  </div>
-                </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleSendWhatsAppReminder("Camila Díaz", "5491155555678")}
-                  className="rounded-xl text-xs font-bold border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 gap-1.5 shrink-0"
-                >
-                  <MessageCircle className="h-3.5 w-3.5" /> Contactar por WhatsApp
-                </Button>
-              </div>
-            </div>
-          </div>
+        <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-2 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+            3. Ocupación Promedio de Clases
+          </span>
+          <div className="text-3xl font-black text-emerald-600 dark:text-emerald-400">{occupancyRate}%</div>
+          <p className="text-[11px] text-muted-foreground">Capacidad cubierta en sesiones</p>
         </div>
-      )}
+      </div>
 
-      {/* SUBTAB 4: STAFF Y COACHES */}
-      {reportSubTab === "staff" && (
-        <div className="space-y-6 animate-fade-in">
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-5">
-            <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-                Coaches Activos
-              </span>
-              <div className="text-2xl font-black text-foreground">{staffList.length || 6}</div>
-              <p className="text-[10.5px] text-muted-foreground">Instructores del studio</p>
-            </div>
-
-            <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-                Clases Dictadas (Mes)
-              </span>
-              <div className="text-2xl font-black text-primary">{totalClassesCount}</div>
-              <p className="text-[10.5px] text-emerald-600 font-semibold">100% asistidas</p>
-            </div>
-
-            <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-                Promedio Alumnos / Clase
-              </span>
-              <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">16.4</div>
-              <p className="text-[10.5px] text-muted-foreground">Asistencia promedio</p>
-            </div>
-
-            <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-                Puntualidad de Sesiones
-              </span>
-              <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
-                100%
-              </div>
-              <p className="text-[10.5px] text-muted-foreground">Cumplimiento de horario</p>
-            </div>
-          </div>
-
-          <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-4 shadow-xs">
-            <h3 className="font-bold text-sm text-foreground uppercase tracking-wider text-muted-foreground/80 border-b border-border/40 pb-2">
-              Performance de Instructores
+      {/* Simplified Revenue & Attendance Trend Bar Chart */}
+      <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-4 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border/40 pb-3 gap-2">
+          <div>
+            <h3 className="font-bold text-sm text-foreground uppercase tracking-wider text-muted-foreground/80">
+              Evolución Mensual de Recaudación (Últimos 6 Meses)
             </h3>
-            <div className="space-y-3 pt-1">
-              {staffList.length > 0 ? (
-                staffList.map((coach) => (
-                  <div key={coach.id} className="p-3.5 bg-secondary/30 border border-border/60 rounded-2xl flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={coach.photo || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"}
-                        alt={coach.name}
-                        className="w-10 h-10 rounded-full object-cover border border-border"
-                      />
-                      <div>
-                        <span className="font-bold text-sm block">{coach.name}</span>
-                        <span className="text-xs text-muted-foreground">{coach.specialty}</span>
-                      </div>
-                    </div>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Tendencia semestral consolidada de ingresos de la academia.
+            </p>
+          </div>
+          <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-xs font-bold w-fit">
+            Tendencia Positiva 📈
+          </Badge>
+        </div>
 
-                    <div className="flex items-center gap-6 text-xs">
-                      <div>
-                        <span className="text-muted-foreground block text-[10px] uppercase font-bold">Clases</span>
-                        <span className="font-extrabold text-foreground">18 dic.</span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground block text-[10px] uppercase font-bold">Asistencia Prom.</span>
-                        <span className="font-extrabold text-primary">17.2 al.</span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground block text-[10px] uppercase font-bold">Estado</span>
-                        <span className="font-extrabold text-emerald-500">
-                          Activo
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="p-3.5 bg-secondary/30 border border-border/60 rounded-2xl flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
-                      alt="Mateo Rossi"
-                      className="w-10 h-10 rounded-full object-cover border border-border"
-                    />
-                    <div>
-                      <span className="font-bold text-sm block">Mateo Rossi</span>
-                      <span className="text-xs text-muted-foreground">CrossFit & High Intensity</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-6 text-xs">
-                    <div>
-                      <span className="text-muted-foreground block text-[10px] uppercase font-bold">Clases</span>
-                      <span className="font-extrabold text-foreground">24 dic.</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground block text-[10px] uppercase font-bold">Estado</span>
-                      <span className="font-extrabold text-emerald-500">
-                        Activo
-                      </span>
-                    </div>
-                  </div>
+        <div className="pt-2">
+          <div className="grid grid-cols-6 gap-2 sm:gap-4 items-end h-44 pt-6 pb-2 border-b border-border/60">
+            {[
+              { month: "Ene", amount: "$3.1M", height: "45%" },
+              { month: "Feb", amount: "$3.4M", height: "55%" },
+              { month: "Mar", amount: "$3.8M", height: "68%" },
+              { month: "Abr", amount: "$3.9M", height: "72%" },
+              { month: "May", amount: "$4.1M", height: "85%" },
+              { month: "Jun", amount: `$${(calculatedRevenue / 1000000).toFixed(2)}M`, height: "98%", current: true },
+            ].map((item, idx) => (
+              <div key={idx} className="flex flex-col items-center gap-1.5 h-full justify-end group">
+                <span className="text-[10px] font-black text-muted-foreground group-hover:text-primary transition-colors opacity-0 group-hover:opacity-100 sm:opacity-100">
+                  {item.amount}
+                </span>
+                <div className="w-full max-w-[40px] bg-secondary/60 rounded-t-xl overflow-hidden h-full flex items-end p-0.5">
+                  <div
+                    className={`w-full rounded-t-lg transition-all duration-500 ${
+                      item.current
+                        ? "bg-primary shadow-xs"
+                        : "bg-primary/40 group-hover:bg-primary/70"
+                    }`}
+                    style={{ height: item.height }}
+                  />
                 </div>
-              )}
-            </div>
+                <span className={`text-[11px] font-bold ${item.current ? "text-primary font-extrabold" : "text-muted-foreground"}`}>
+                  {item.month}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
