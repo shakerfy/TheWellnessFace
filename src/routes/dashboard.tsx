@@ -3416,6 +3416,8 @@ function ReportesTab({
   classesList?: any[];
   membershipsList?: any[];
   cashTransactions?: any[];
+  staffList?: any[];
+  salasList?: any[];
 }) {
   const [timeRange, setTimeRange] = useState<"today" | "week" | "month" | "quarter">("month");
 
@@ -13547,6 +13549,10 @@ interface ConfigTabProps {
       }[]
     >
   >;
+  penaltySettings?: any;
+  setPenaltySettings?: any;
+  protocols?: any;
+  setProtocols?: any;
 }
 
 
