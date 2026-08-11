@@ -174,12 +174,8 @@ const TABS = [
   { id: "asistencia", label: "Asistencias", icon: Activity },
   { id: "clases", label: "Clases", icon: Calendar },
   { id: "miembros", label: "Miembros", icon: Users },
-  { id: "caja", label: "Caja / POS", icon: DollarSign },
-  { id: "finanzas", label: "Finanzas", icon: TrendingUp },
-  { id: "reportes", label: "Reportes", icon: BarChart2 },
-  { id: "inventario", label: "Inventario", icon: Package },
-  { id: "reseñas", label: "Reseñas", icon: MessageCircle },
   { id: "membresias", label: "Membresías", icon: CreditCard },
+  { id: "reseñas", label: "Reseñas", icon: MessageCircle },
   { id: "config", label: "Configuración", icon: Settings },
   { id: "ayuda", label: "Ayuda", icon: HelpCircle },
 ];
@@ -213,7 +209,7 @@ function GymDashboard() {
       certificationImages?: string[];
       role?: string;
       branchId?: string;
-      linkingCode: string | null;
+      linkingCode?: string | null;
       status: "pending" | "linked";
       availability?: any[];
       // Payroll config
@@ -237,7 +233,6 @@ function GymDashboard() {
       ],
       role: "coach",
       branchId: undefined,
-      linkingCode: null,
       status: "linked",
       availability: [
         { day: "Lunes", intervals: [{ from: "08:00", to: "12:00" }] },
@@ -261,8 +256,7 @@ function GymDashboard() {
       ],
       role: "coach",
       branchId: undefined,
-      linkingCode: "7821",
-      status: "pending",
+      status: "linked",
       availability: [
         { day: "Martes", intervals: [{ from: "09:00", to: "15:00" }] },
         { day: "Jueves", intervals: [{ from: "09:00", to: "15:00" }] },
@@ -281,8 +275,7 @@ function GymDashboard() {
       certificationImages: [],
       role: "manager",
       branchId: "1",
-      linkingCode: "4310",
-      status: "pending",
+      status: "linked",
       availability: [
         { day: "Lunes", intervals: [{ from: "14:00", to: "20:00" }] },
         { day: "Viernes", intervals: [{ from: "14:00", to: "20:00" }] },
@@ -747,7 +740,6 @@ function GymDashboard() {
       releasedSpots?: { [spotIndex: number]: { originalStudent: string; creditsCost: number } };
       status?: "activa" | "cancelada";
       weekOffset?: number;
-      ratings?: { [studentName: string]: { stars: number; comment?: string } };
       blocks?: any[];
     }[]
   >([
@@ -964,12 +956,6 @@ function GymDashboard() {
         8: "ausente",
         10: "presente",
       },
-      ratings: {
-        "Agustín Gómez": { stars: 5, comment: "Clase increíble, excelente ritmo" },
-        "Camila Díaz": { stars: 4, comment: "Muy buena, me gustó el calentamiento" },
-        "Marcos López": { stars: 3 },
-        "Paula Cáceres": { stars: 5, comment: "Lo mejor de la semana 🔥" },
-      },
       waitlist: ["Sofía Martínez", "Pedro Giménez", "María del Mar"],
     },
     {
@@ -988,7 +974,6 @@ function GymDashboard() {
         .fill(false)
         .map((_, i) => i < 15),
       attendance: { 0: "presente", 1: "presente" },
-      ratings: { "Pedro Giménez": { stars: 4, comment: "Muy completo" } },
     },
     {
       id: "3b",
@@ -1478,123 +1463,7 @@ function GymDashboard() {
     },
   ]);
 
-  // Financial: Payroll liquidation records
-  const [payrollRecords, setPayrollRecords] = useState<
-    {
-      id: string;
-      staffId: string;
-      period: string;
-      classesGiven: number;
-      studentsAttended: number;
-      totalAmount: number;
-      status: "pending" | "paid";
-      paidAt?: string;
-    }[]
-  >([
-    {
-      id: "pay-1",
-      staffId: "1",
-      period: "Junio 2026",
-      classesGiven: 18,
-      studentsAttended: 210,
-      totalAmount: 159000,
-      status: "paid",
-      paidAt: "15/06/2026",
-    },
-  ]);
 
-  const [inventoryItems, setInventoryItems] = useState([
-    {
-      id: "inv-1",
-      name: "Bebida Isotónica Gatorade 500ml",
-      category: "Bebidas",
-      supplierId: "sup-2",
-      price: 2500,
-      cost: 1200,
-      stock: 48,
-      minStock: 15,
-      unit: "bot",
-      barcode: "7791234567890",
-      image: "https://images.unsplash.com/photo-1622543925917-763c34d1a86e?w=150&auto=format&fit=crop&q=80",
-      variants: [
-        { id: "v1-1", name: "Sabor Manzana", stock: 24 },
-        { id: "v1-2", name: "Sabor Naranja", stock: 24 },
-      ],
-    },
-    {
-      id: "inv-2",
-      name: "Proteína Whey Protein Isolate 1kg",
-      category: "Suplementos",
-      supplierId: "sup-1",
-      price: 38000,
-      cost: 24000,
-      stock: 8,
-      minStock: 10,
-      unit: "porc",
-      barcode: "7798765432109",
-      image: "https://images.unsplash.com/photo-1579722821273-0f6c7d44362f?w=150&auto=format&fit=crop&q=80",
-      variants: [
-        { id: "v2-1", name: "Vainilla Cream", stock: 5 },
-        { id: "v2-2", name: "Chocolate Double", stock: 3 },
-      ],
-    },
-    {
-      id: "inv-3",
-      name: "Barra Proteica ENA Choco Crunch",
-      category: "Snacks",
-      supplierId: "sup-1",
-      price: 3200,
-      cost: 1600,
-      stock: 65,
-      minStock: 20,
-      unit: "unid",
-      barcode: "7795555444333",
-      image: "https://images.unsplash.com/photo-1622484210800-88554284814e?w=150&auto=format&fit=crop&q=80",
-    },
-    {
-      id: "inv-4",
-      name: "Toalla Secado Rápido Shakerfy",
-      category: "Indumentaria",
-      supplierId: "sup-3",
-      price: 14500,
-      cost: 7000,
-      stock: 14,
-      minStock: 5,
-      unit: "unid",
-      barcode: "7790001000200",
-      image: "https://images.unsplash.com/photo-1616627547584-bf28cee262db?w=150&auto=format&fit=crop&q=80",
-      variants: [
-        { id: "v4-1", name: "Negro Matte", stock: 8 },
-        { id: "v4-2", name: "Azul Cyan", stock: 6 },
-      ],
-    },
-    {
-      id: "inv-5",
-      name: "Botella Shakerfy Pro 750ml",
-      category: "Accesorios",
-      supplierId: "sup-3",
-      price: 9800,
-      cost: 4500,
-      stock: 22,
-      minStock: 8,
-      unit: "unid",
-      barcode: "7799999888777",
-      image: "https://images.unsplash.com/photo-1544816155-12df9643f363?w=150&auto=format&fit=crop&q=80",
-    },
-    {
-      id: "inv-6",
-      name: "Cintas de Suspensión Pro-Gym",
-      category: "Accesorios",
-      supplierId: "sup-3",
-      price: 45000,
-      cost: 28000,
-      stock: 2,
-      minStock: 4,
-      unit: "unid",
-      barcode: "7793333222111",
-      image: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=150&auto=format&fit=crop&q=80",
-    },
-  ]);
 
   const visibleClasses = classesList;
   const visibleTabs = TABS;
@@ -1706,45 +1575,6 @@ function GymDashboard() {
         {activeTab === "reseñas" && (
           <ReseñasTab membersList={membersList} />
         )}
-        {activeTab === "caja" && (
-          <CajaTab
-            cashTransactions={cashTransactions}
-            setCashTransactions={setCashTransactions}
-            currentUser={currentUser}
-            inventoryItems={inventoryItems}
-            setInventoryItems={setInventoryItems}
-            membersList={membersList}
-            setMembersList={setMembersList}
-          />
-        )}
-        {activeTab === "finanzas" && (
-          <FinanzasTab
-            payrollRecords={payrollRecords}
-            setPayrollRecords={setPayrollRecords}
-            staffList={staffList}
-            cashTransactions={cashTransactions}
-            setCashTransactions={setCashTransactions}
-            classesList={classesList}
-          />
-        )}
-        {activeTab === "reportes" && (
-          <ReportesTab
-            membersList={membersList}
-            classesList={classesList}
-            membershipsList={membershipsList}
-            staffList={staffList}
-            salasList={salasList}
-            cashTransactions={cashTransactions}
-          />
-        )}
-        {activeTab === "inventario" && (
-          <InventarioTab
-            inventoryItems={inventoryItems}
-            setInventoryItems={setInventoryItems}
-          />
-        )}
-
-
         {activeTab === "config" && (
           <ConfigTab
             staffList={staffList as any}
@@ -1774,7 +1604,7 @@ function GymDashboard() {
           />
         )}
         {activeTab === "ayuda" && (
-          <AyudaTab onNavigateTab={(tabId) => setActiveTab(tabId)} />
+          <AyudaTab />
         )}
       </main>
 
@@ -1814,3914 +1644,6 @@ interface GymFacilityReview {
   reported?: boolean;
   reportReason?: string;
 }
-
-function CajaTab({
-  cashTransactions,
-  setCashTransactions,
-  currentUser,
-  inventoryItems,
-  setInventoryItems,
-  membersList,
-  setMembersList,
-}: {
-  cashTransactions: any[];
-  setCashTransactions: React.Dispatch<React.SetStateAction<any[]>>;
-  currentUser: CurrentUser;
-  inventoryItems: any[];
-  setInventoryItems: React.Dispatch<React.SetStateAction<any[]>>;
-  membersList: any[];
-  setMembersList?: React.Dispatch<React.SetStateAction<any[]>>;
-}) {
-  const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
-  const [showAddTx, setShowAddTx] = useState(false);
-  const [showArqueo, setShowArqueo] = useState(false);
-  const [countedCash, setCountedCash] = useState("");
-  
-  const [posMode, setPosMode] = useState<"custom" | "store">("custom");
-  const [selectedProdId, setSelectedProdId] = useState("");
-  const [selectedMemberId, setSelectedMemberId] = useState("");
-  const [prodQuantity, setProdQuantity] = useState<number>(1);
-
-  const [txType, setTxType] = useState<"income" | "expense">("income");
-  const [txChannel, setTxChannel] = useState<"cash" | "transfer" | "app" | "split">("cash");
-  const [splitCashAmount, setSplitCashAmount] = useState("");
-  const [splitDigitalAmount, setSplitDigitalAmount] = useState("");
-  const [splitDigitalChannel, setSplitDigitalChannel] = useState<"app" | "transfer">("app");
-  const [txDesc, setTxDesc] = useState("");
-  const [txAmount, setTxAmount] = useState("");
-
-  const [cancelTxConfirm, setCancelTxConfirm] = useState<any | null>(null);
-
-  const handleCancelTransaction = () => {
-    if (!cancelTxConfirm) return;
-
-    const memberNameInTx =
-      cancelTxConfirm.memberName ||
-      (cancelTxConfirm.description?.includes("- ")
-        ? cancelTxConfirm.description.split("- ").pop()?.trim()
-        : null);
-
-    setCashTransactions((prev) =>
-      prev.map((t) =>
-        t.id === cancelTxConfirm.id
-          ? {
-              ...t,
-              isCancelled: true,
-              cancelledBy: currentUser?.name || "Recepción",
-              cancelledAt: new Date().toISOString().split("T")[0],
-            }
-          : t,
-      ),
-    );
-
-    if (memberNameInTx && setMembersList) {
-      setMembersList((prev: any) =>
-        prev.map((m: any) => {
-          if (m.name === memberNameInTx) {
-            return {
-              ...m,
-              status: "pendiente",
-              color: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20",
-              payments: (m.payments || []).map((p: any) =>
-                p.amount === cancelTxConfirm.amount && !p.isCancelled
-                  ? { ...p, isCancelled: true, cancelledAt: new Date().toISOString().split("T")[0] }
-                  : p,
-              ),
-            };
-          }
-          return m;
-        }),
-      );
-      toast.info(`Movimiento ANULADO. El estado de ${memberNameInTx} pasó a "Pago Pendiente".`);
-    } else {
-      toast.info(`Movimiento "${cancelTxConfirm.description}" ANULADO correctamente.`);
-    }
-    setCancelTxConfirm(null);
-  };
-
-  // Cash in register calculations (excluding cancelled transactions)
-  const totalIncome = cashTransactions
-    .filter((t) => t.type === "income" && !t.isCancelled)
-    .reduce((sum, t) => sum + t.amount, 0);
-
-  const totalExpense = cashTransactions
-    .filter((t) => t.type === "expense" && !t.isCancelled)
-    .reduce((sum, t) => sum + t.amount, 0);
-
-  const totalCashIncome = cashTransactions
-    .filter((t) => t.type === "income" && t.channel === "cash" && !t.isCancelled)
-    .reduce((sum, t) => sum + t.amount, 0);
-
-  const totalCashExpense = cashTransactions
-    .filter((t) => t.type === "expense" && t.channel === "cash" && !t.isCancelled)
-    .reduce((sum, t) => sum + t.amount, 0);
-
-  const expectedCashInDrawer = totalCashIncome - totalCashExpense;
-
-  const [dateFilter, setDateFilter] = useState<"all" | "today" | "week" | "month">("all");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [channelFilter, setChannelFilter] = useState<"all" | "cash" | "app" | "transfer">("all");
-
-  const todayStr = new Date().toISOString().split("T")[0];
-
-  const filteredTx = cashTransactions.filter((t) => {
-    // 1. Tipo (Ingreso / Egreso)
-    if (filterType !== "all" && t.type !== filterType) return false;
-
-    // 2. Canal de Pago
-    if (channelFilter !== "all" && t.channel !== channelFilter) return false;
-
-    // 3. Buscador por texto
-    if (searchQuery.trim() !== "") {
-      const q = searchQuery.toLowerCase().trim();
-      const matchDesc = t.description.toLowerCase().includes(q);
-      const matchUser = t.registeredBy.toLowerCase().includes(q);
-      if (!matchDesc && !matchUser) return false;
-    }
-
-    // 4. Rango de Fechas
-    if (dateFilter === "today") {
-      return t.date === todayStr;
-    } else if (dateFilter === "week") {
-      const now = new Date();
-      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
-      return t.date >= weekAgo;
-    } else if (dateFilter === "month") {
-      const monthPrefix = todayStr.substring(0, 7);
-      return t.date.startsWith(monthPrefix);
-    }
-
-    return true;
-  });
-
-  const handleProductSelect = (prodId: string, qty: number = prodQuantity) => {
-    setSelectedProdId(prodId);
-    const prod = inventoryItems.find((i) => i.id === prodId);
-    if (prod) {
-      const validQty = Math.max(1, Math.min(qty, prod.stock > 0 ? prod.stock : 1));
-      setProdQuantity(validQty);
-      setTxDesc(`Venta Tienda: ${prod.name}${validQty > 1 ? ` x${validQty}` : ""}`);
-      setTxAmount((prod.price * validQty).toString());
-    } else {
-      setTxDesc("");
-      setTxAmount("");
-    }
-  };
-
-  const exportTransactionsCSV = () => {
-    if (filteredTx.length === 0) {
-      toast.warning("No hay transacciones para exportar.");
-      return;
-    }
-    const headers = ["ID", "Fecha", "Tipo", "Canal", "Concepto", "Monto", "Registrado Por"];
-    const rows = filteredTx.map((t) => [
-      t.id,
-      t.date,
-      t.type === "income" ? "Ingreso" : "Egreso",
-      t.channel,
-      `"${t.description.replace(/"/g, '""')}"`,
-      t.amount,
-      `"${t.registeredBy.replace(/"/g, '""')}"`,
-    ]);
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `movimientos_caja_${new Date().toISOString().split("T")[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Header Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-            Ingresos en Caja (Turno)
-          </span>
-          <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-            <ArrowUpRight className="h-5 w-5" /> ${totalIncome.toLocaleString()}
-          </div>
-          <p className="text-[10.5px] text-muted-foreground">Efectivo, MercadoPago y Transferencias</p>
-        </div>
-
-        <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-            Egresos & Gastos Menores
-          </span>
-          <div className="text-2xl font-black text-rose-600 dark:text-rose-400 flex items-center gap-1">
-            <ArrowDownRight className="h-5 w-5" /> ${totalExpense.toLocaleString()}
-          </div>
-          <p className="text-[10.5px] text-muted-foreground">Insumos de limpieza, suplementos y gastos</p>
-        </div>
-
-        <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-            Efectivo Esperado en Cajón
-          </span>
-          <div className="text-2xl font-black text-primary flex items-center gap-1">
-            <Wallet className="h-5 w-5" /> ${expectedCashInDrawer.toLocaleString()}
-          </div>
-          <p className="text-[10.5px] text-muted-foreground">Efectivo para Arqueo de Turno</p>
-        </div>
-      </div>
-
-      {/* Control Bar & POS Action Form */}
-      <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-4 shadow-xs">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border/40">
-          <div>
-            <h3 className="font-bold text-sm text-foreground">Registro de Movimientos de Caja & POS</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Registra cobros de pases diarios en mostrador, ventas de suplementos o gastos operativos.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 shrink-0">
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={exportTransactionsCSV}
-              className="rounded-xl font-bold text-xs gap-1.5 border-border text-foreground hover:bg-secondary"
-            >
-              <Download className="h-4 w-4" /> Exportar CSV
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => setShowArqueo(true)}
-              className="rounded-xl font-bold text-xs gap-1.5 border-primary/30 text-primary hover:bg-primary/10"
-            >
-              <Receipt className="h-4 w-4" /> Arqueo & Cierre
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => setShowAddTx(!showAddTx)}
-              className="rounded-xl font-bold text-xs gap-1.5 shadow-xs"
-            >
-              <PlusCircle className="h-4 w-4" /> {showAddTx ? "Cerrar POS" : "Nuevo Movimiento"}
-            </Button>
-          </div>
-        </div>
-
-        {showAddTx && (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              const member = membersList.find((m) => m.id === selectedMemberId);
-              const baseDesc = txDesc.trim() || (posMode === "store" ? "Venta Tienda" : "Movimiento POS");
-              const finalDesc = member ? `${baseDesc} (Alumno: ${member.name})` : baseDesc;
-
-              if (txChannel === "split") {
-                const cashVal = parseFloat(splitCashAmount);
-                const digVal = parseFloat(splitDigitalAmount);
-                if (isNaN(cashVal) || cashVal <= 0 || isNaN(digVal) || digVal <= 0) {
-                  toast.error("Ingresa montos válidos para ambas partes del pago mixto (Efectivo y Digital).");
-                  return;
-                }
-                const tx1 = {
-                  id: `tx-${Date.now()}-1`,
-                  date: new Date().toISOString().split("T")[0],
-                  type: txType,
-                  channel: "cash" as const,
-                  description: `${finalDesc} [Pago Mixto - Efectivo]`,
-                  amount: cashVal,
-                  registeredBy: currentUser.name || "Recepción",
-                };
-                const tx2 = {
-                  id: `tx-${Date.now()}-2`,
-                  date: new Date().toISOString().split("T")[0],
-                  type: txType,
-                  channel: splitDigitalChannel,
-                  description: `${finalDesc} [Pago Mixto - ${splitDigitalChannel === "app" ? "MercadoPago" : "Transferencia"}]`,
-                  amount: digVal,
-                  registeredBy: currentUser.name || "Recepción",
-                };
-                setCashTransactions((prev) => [tx1, tx2, ...prev]);
-              } else {
-                if (!txAmount || parseFloat(txAmount) <= 0) {
-                  toast.error("Ingresa un monto válido y una descripción.");
-                  return;
-                }
-                const newTx = {
-                  id: `tx-${Date.now()}`,
-                  date: new Date().toISOString().split("T")[0],
-                  type: txType,
-                  channel: txChannel,
-                  description: finalDesc,
-                  amount: parseFloat(txAmount),
-                  registeredBy: currentUser.name || "Recepción",
-                };
-                setCashTransactions((prev) => [newTx, ...prev]);
-              }
-
-              // If selling inventory product, decrement stock by prodQuantity
-              if (posMode === "store" && selectedProdId) {
-                setInventoryItems((prev) =>
-                  prev.map((item) =>
-                    item.id === selectedProdId
-                      ? { ...item, stock: Math.max(0, item.stock - prodQuantity) }
-                      : item,
-                  ),
-                );
-              }
-
-              setTxDesc("");
-              setTxAmount("");
-              setSelectedProdId("");
-              setSelectedMemberId("");
-              setProdQuantity(1);
-              setSplitCashAmount("");
-              setSplitDigitalAmount("");
-              setShowAddTx(false);
-              toast.success("✓ Movimiento POS registrado y stock actualizado con éxito.");
-            }}
-            className="p-4 bg-secondary/20 border border-border/60 rounded-2xl space-y-4 animate-fade-in"
-          >
-            {/* Mode Switch: Venta de Tienda vs Concepto Libre */}
-            <div className="flex items-center gap-2 pb-2 border-b border-border/40">
-              <span className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground">
-                Modo POS:
-              </span>
-              <button
-                type="button"
-                onClick={() => {
-                  setPosMode("custom");
-                  setSelectedProdId("");
-                  setTxDesc("");
-                  setTxAmount("");
-                  setProdQuantity(1);
-                }}
-                className={`text-xs font-bold px-3 py-1 rounded-xl transition ${
-                  posMode === "custom"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-background border border-border text-muted-foreground"
-                }`}
-              >
-                Cobro / Movimiento Libre
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setPosMode("store");
-                  setTxType("income");
-                }}
-                className={`text-xs font-bold px-3 py-1 rounded-xl transition ${
-                  posMode === "store"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-background border border-border text-muted-foreground"
-                }`}
-              >
-                🛍️ Venta de Producto (Tienda / Inventario)
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-              {posMode === "store" ? (
-                <>
-                  <div className="sm:col-span-2">
-                    <Label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
-                      Seleccionar Producto del Inventario:
-                    </Label>
-                    <Select
-                      value={selectedProdId}
-                      onValueChange={(val) => handleProductSelect(val, prodQuantity)}
-                    >
-                      <SelectTrigger className="w-full h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
-                        <SelectValue placeholder="-- Seleccionar Artículo --" />
-                      </SelectTrigger>
-                      <SelectContent className="rounded-xl">
-                        {inventoryItems.map((prod) => (
-                          <SelectItem key={prod.id} value={prod.id} disabled={prod.stock <= 0}>
-                            {prod.name} (${prod.price.toLocaleString()}) - Stock: {prod.stock} {prod.unit}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
-                      Cantidad:
-                    </Label>
-                    <Input
-                      type="number"
-                      min={1}
-                      value={prodQuantity}
-                      onChange={(e) => {
-                        const qty = parseInt(e.target.value) || 1;
-                        if (selectedProdId) {
-                          handleProductSelect(selectedProdId, qty);
-                        } else {
-                          setProdQuantity(qty);
-                        }
-                      }}
-                      className="h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground"
-                    />
-                  </div>
-                </>
-              ) : (
-                <div>
-                  <Label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
-                    Tipo de Movimiento:
-                  </Label>
-                  <Select
-                    value={txType}
-                    onValueChange={(val: "income" | "expense") => setTxType(val)}
-                  >
-                    <SelectTrigger className="w-full h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
-                      <SelectValue placeholder="Tipo de Movimiento" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl">
-                      <SelectItem value="income">🟢 Ingreso (Cobro / Venta)</SelectItem>
-                      <SelectItem value="expense">🔴 Egreso (Gasto Operativo)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              <div>
-                <Label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
-                  Canal de Pago:
-                </Label>
-                <Select
-                  value={txChannel}
-                  onValueChange={(val: "cash" | "app" | "transfer" | "split") => setTxChannel(val)}
-                >
-                  <SelectTrigger className="w-full h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
-                    <SelectValue placeholder="Canal de Pago" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl">
-                    <SelectItem value="cash">💵 Efectivo (Caja Chica)</SelectItem>
-                    <SelectItem value="app">📱 MercadoPago / QR</SelectItem>
-                    <SelectItem value="transfer">🏦 Transferencia Bancaria</SelectItem>
-                    <SelectItem value="split">⚡ Pago Mixto (Efectivo + Digital)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {txChannel !== "split" && (
-                <div>
-                  <Label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
-                    Monto Total ($):
-                  </Label>
-                  <Input
-                    type="number"
-                    placeholder="Ej: 3500"
-                    value={txAmount}
-                    onChange={(e) => setTxAmount(e.target.value)}
-                    className="h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground"
-                  />
-                </div>
-              )}
-
-              <div>
-                <Label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
-                  Asociar Alumno (Opcional):
-                </Label>
-                <Select
-                  value={selectedMemberId || "general"}
-                  onValueChange={(val) => setSelectedMemberId(val === "general" ? "" : val)}
-                >
-                  <SelectTrigger className="w-full h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
-                    <SelectValue placeholder="-- Cliente General / Venta Mostrador --" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl">
-                    <SelectItem value="general">-- Cliente General / Venta Mostrador --</SelectItem>
-                    {membersList.map((m) => (
-                      <SelectItem key={m.id} value={m.id}>
-                        {m.name} ({m.plan})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Split Payment Fields */}
-            {txChannel === "split" && (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 bg-secondary/40 border border-border/70 rounded-xl">
-                <div>
-                  <Label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
-                    Monto en Efectivo ($):
-                  </Label>
-                  <Input
-                    type="number"
-                    placeholder="Ej: 2000"
-                    value={splitCashAmount}
-                    onChange={(e) => setSplitCashAmount(e.target.value)}
-                    className="h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground"
-                  />
-                </div>
-                <div>
-                  <Label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
-                    Monto Digital ($):
-                  </Label>
-                  <Input
-                    type="number"
-                    placeholder="Ej: 3000"
-                    value={splitDigitalAmount}
-                    onChange={(e) => setSplitDigitalAmount(e.target.value)}
-                    className="h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground"
-                  />
-                </div>
-                <div>
-                  <Label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
-                    Canal Pago Digital:
-                  </Label>
-                  <Select
-                    value={splitDigitalChannel}
-                    onValueChange={(val: "app" | "transfer") => setSplitDigitalChannel(val)}
-                  >
-                    <SelectTrigger className="w-full h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
-                      <SelectValue placeholder="Canal Pago Digital" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl">
-                      <SelectItem value="app">📱 MercadoPago / QR</SelectItem>
-                      <SelectItem value="transfer">🏦 Transferencia Bancaria</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            )}
-
-            <div className="space-y-1">
-              <Label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
-                Descripción / Detalle de la Venta:
-              </Label>
-              <Input
-                type="text"
-                placeholder="Ej: Pase Diario Musculación o Venta suplemento"
-                value={txDesc}
-                onChange={(e) => setTxDesc(e.target.value)}
-                className="h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground"
-              />
-            </div>
-
-            <div className="flex justify-end gap-2 pt-2">
-              <Button type="submit" size="sm" className="rounded-xl font-bold text-xs px-5">
-                Registrar Transacción POS
-              </Button>
-            </div>
-          </form>
-        )}
-
-        {/* Transactions Table with Structured Filters */}
-        <div className="space-y-4 pt-2">
-          {/* Row 1: Section Header & Search/Channel Controls */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
-                Historial de Transacciones
-              </span>
-              <span className="px-2 py-0.5 rounded-full bg-secondary text-[10px] font-extrabold text-foreground border border-border/60">
-                {filteredTx.length}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2.5 w-full sm:w-auto">
-              {/* Search Bar */}
-              <div className="relative flex-1 sm:w-60">
-                <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                <Input
-                  type="text"
-                  placeholder="Buscar por concepto o usuario..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-9 w-full pl-8 pr-3 rounded-xl border border-border bg-background text-xs font-bold text-foreground placeholder:font-normal placeholder:text-muted-foreground"
-                />
-              </div>
-
-              {/* Channel Selector (Shadcn/ui Select) */}
-              <Select value={channelFilter} onValueChange={(val) => setChannelFilter(val as any)}>
-                <SelectTrigger className="w-[190px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
-                  <SelectValue placeholder="Canal de Pago" />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
-                  <SelectItem value="all">💳 Todos los Canales</SelectItem>
-                  <SelectItem value="cash">💵 Efectivo</SelectItem>
-                  <SelectItem value="app">📱 MercadoPago / QR</SelectItem>
-                  <SelectItem value="transfer">🏦 Transferencia</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Row 2: Secondary Filter Bar (Types & Date Ranges) */}
-          <div className="flex flex-wrap items-center justify-between gap-3 p-2 bg-secondary/20 border border-border/50 rounded-2xl">
-            {/* Type Filter Tabs */}
-            <div className="flex items-center gap-1 bg-background p-1 rounded-xl border border-border/60 shadow-xs">
-              <button
-                type="button"
-                onClick={() => setFilterType("all")}
-                className={`text-[11px] font-bold px-3 py-1 rounded-lg transition ${
-                  filterType === "all"
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Todos
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilterType("income")}
-                className={`text-[11px] font-bold px-3 py-1 rounded-lg transition ${
-                  filterType === "income"
-                    ? "bg-emerald-600 text-white shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Ingresos
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilterType("expense")}
-                className={`text-[11px] font-bold px-3 py-1 rounded-lg transition ${
-                  filterType === "expense"
-                    ? "bg-rose-600 text-white shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Egresos
-              </button>
-            </div>
-
-            {/* Date Filter Pills */}
-            <div className="flex items-center gap-1 bg-background p-1 rounded-xl border border-border/60 shadow-xs">
-              <button
-                type="button"
-                onClick={() => setDateFilter("all")}
-                className={`text-[11px] font-bold px-2.5 py-1 rounded-lg transition ${
-                  dateFilter === "all"
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Todo
-              </button>
-              <button
-                type="button"
-                onClick={() => setDateFilter("today")}
-                className={`text-[11px] font-bold px-2.5 py-1 rounded-lg transition ${
-                  dateFilter === "today"
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Hoy
-              </button>
-              <button
-                type="button"
-                onClick={() => setDateFilter("week")}
-                className={`text-[11px] font-bold px-2.5 py-1 rounded-lg transition ${
-                  dateFilter === "week"
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                7 Días
-              </button>
-              <button
-                type="button"
-                onClick={() => setDateFilter("month")}
-                className={`text-[11px] font-bold px-2.5 py-1 rounded-lg transition ${
-                  dateFilter === "month"
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Este Mes
-              </button>
-            </div>
-          </div>
-
-          <div className="overflow-x-auto custom-scrollbar border border-border/60 rounded-2xl bg-background">
-            <table className="w-full text-left text-xs min-w-[500px] border-collapse">
-              <thead>
-                <tr className="border-b border-border/60 bg-secondary/40 text-muted-foreground font-bold text-[10px] uppercase">
-                  <th className="p-3">Fecha</th>
-                  <th className="p-3">Concepto</th>
-                  <th className="p-3">Canal</th>
-                  <th className="p-3">Registrado por</th>
-                  <th className="p-3 text-right">Monto</th>
-                  <th className="p-3 text-right">Acción</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/30">
-                {filteredTx.map((tx) => (
-                  <tr
-                    key={tx.id}
-                    className={`hover:bg-secondary/20 transition-colors ${
-                      tx.isCancelled ? "opacity-50 bg-destructive/5" : ""
-                    }`}
-                  >
-                    <td className="p-3 text-muted-foreground font-mono text-[11px]">{tx.date}</td>
-                    <td className="p-3 font-bold text-foreground">
-                      <span className={tx.isCancelled ? "line-through text-muted-foreground" : ""}>
-                        {tx.description}
-                      </span>
-                      {tx.isCancelled && (
-                        <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[9.5px] font-bold bg-destructive/10 text-destructive border border-destructive/20">
-                          🚫 ANULADO ({tx.cancelledBy})
-                        </span>
-                      )}
-                    </td>
-                    <td className="p-3">
-                      <span className="text-[9.5px] font-bold px-2 py-0.5 rounded-full border bg-secondary text-foreground uppercase">
-                        {tx.channel}
-                      </span>
-                    </td>
-                    <td className="p-3 text-muted-foreground text-xs">{tx.registeredBy}</td>
-                    <td
-                      className={`p-3 text-right font-black text-sm ${
-                        tx.isCancelled
-                          ? "line-through text-muted-foreground"
-                          : tx.type === "income"
-                            ? "text-emerald-600 dark:text-emerald-400"
-                            : "text-rose-600 dark:text-rose-400"
-                      }`}
-                    >
-                      {tx.type === "income" ? "+" : "-"}${tx.amount.toLocaleString()}
-                    </td>
-                    <td className="p-3 text-right">
-                      {!tx.isCancelled ? (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="h-7 text-[10.5px] font-bold text-rose-600 border-rose-500/30 hover:bg-rose-500/10 rounded-lg px-2.5"
-                          onClick={() => setCancelTxConfirm(tx)}
-                        >
-                          <Ban className="h-3 w-3 mr-1" /> Anular
-                        </Button>
-                      ) : (
-                        <span className="text-[10px] text-muted-foreground italic font-semibold">Anulado</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      {/* Arqueo / Cierre de Caja Modal */}
-      {showArqueo && (
-        <Dialog open={showArqueo} onOpenChange={setShowArqueo}>
-          <DialogContent className="sm:max-w-lg rounded-3xl border border-border bg-card p-6 shadow-2xl space-y-4">
-            <DialogHeader>
-              <DialogTitle className="text-base font-bold flex items-center gap-2">
-                <Receipt className="h-5 w-5 text-primary" /> Arqueo & Cierre de Caja del Turno
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="space-y-4 text-xs">
-              <div className="p-4 bg-secondary/30 border border-border/60 rounded-2xl space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground font-semibold">Efectivo Ingresado:</span>
-                  <span className="font-bold text-emerald-600 dark:text-emerald-400">+${totalCashIncome.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground font-semibold">Efectivo Retirado / Gastos:</span>
-                  <span className="font-bold text-rose-600 dark:text-rose-400">-${totalCashExpense.toLocaleString()}</span>
-                </div>
-                <div className="border-t border-border/60 pt-2 flex justify-between items-center font-bold text-sm">
-                  <span className="text-foreground">Efectivo Calculado por Sistema:</span>
-                  <span className="text-primary">${expectedCashInDrawer.toLocaleString()}</span>
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-muted-foreground uppercase block">
-                  Efectivo Físico Contado en Cajón ($):
-                </Label>
-                <Input
-                  type="number"
-                  placeholder={`Ej: ${expectedCashInDrawer}`}
-                  value={countedCash}
-                  onChange={(e) => setCountedCash(e.target.value)}
-                  className="w-full h-10 rounded-xl border border-border bg-background text-sm font-bold text-foreground"
-                />
-              </div>
-
-              {countedCash !== "" && (
-                <div className="p-3.5 rounded-2xl border text-xs font-bold flex justify-between items-center bg-secondary/20 border-border/60">
-                  <span>Diferencia de Caja:</span>
-                  {parseFloat(countedCash) === expectedCashInDrawer ? (
-                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">🟢 $0 (Caja Cuadrada OK)</span>
-                  ) : parseFloat(countedCash) < expectedCashInDrawer ? (
-                    <span className="text-rose-600 dark:text-rose-400 font-bold">
-                      ⚠️ Faltante: -${(expectedCashInDrawer - parseFloat(countedCash)).toLocaleString()}
-                    </span>
-                  ) : (
-                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">
-                      🟢 Sobrante: +${(parseFloat(countedCash) - expectedCashInDrawer).toLocaleString()}
-                    </span>
-                  )}
-                </div>
-              )}
-
-              <DialogFooter className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2 pt-3 border-t border-border/40">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowArqueo(false)}
-                  className="rounded-xl text-xs font-bold"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    const countedNum = parseFloat(countedCash) || expectedCashInDrawer;
-                    const diff = countedNum - expectedCashInDrawer;
-                    const diffText =
-                      diff === 0
-                        ? "Cuadrada OK"
-                        : diff < 0
-                          ? `Faltante -$${Math.abs(diff)}`
-                          : `Sobrante +$${diff}`;
-                    const csvLines = [
-                      "Reporte de Arqueo y Cierre de Caja del Turno",
-                      `Fecha,${new Date().toLocaleDateString()}`,
-                      `Responsable,"${currentUser.name}"`,
-                      `Efectivo Ingresado,$${totalCashIncome}`,
-                      `Efectivo Retirado/Gastos,$${totalCashExpense}`,
-                      `Efectivo Esperado,$${expectedCashInDrawer}`,
-                      `Efectivo Contado,$${countedNum}`,
-                      `Diferencia,${diffText}`,
-                    ];
-                    const csvContent = "data:text/csv;charset=utf-8," + csvLines.join("\n");
-                    const encodedUri = encodeURI(csvContent);
-                    const link = document.createElement("a");
-                    link.setAttribute("href", encodedUri);
-                    link.setAttribute(
-                      "download",
-                      `arqueo_caja_${new Date().toISOString().split("T")[0]}.csv`,
-                    );
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                  }}
-                  className="rounded-xl text-xs font-bold gap-1.5 border-border text-foreground hover:bg-secondary"
-                >
-                  <Download className="h-3.5 w-3.5" /> Exportar Reporte
-                </Button>
-                <Button
-                  type="button"
-                  onClick={() => {
-                    const countedNum = parseFloat(countedCash);
-                    if (isNaN(countedNum)) {
-                      toast.error("Ingresa un monto en efectivo contado válido.");
-                      return;
-                    }
-                    const diff = countedNum - expectedCashInDrawer;
-                    const diffText =
-                      diff === 0
-                        ? "Cuadrada OK"
-                        : diff < 0
-                          ? `Faltante -$${Math.abs(diff)}`
-                          : `Sobrante +$${diff}`;
-
-                    const newTx = {
-                      id: `tx-${Date.now()}`,
-                      date: new Date().toISOString().split("T")[0],
-                      type: "expense" as const,
-                      channel: "cash" as const,
-                      description: `🔒 CIERRE DE CAJA TURNO (${currentUser.name}) - ${diffText}`,
-                      amount: 0,
-                      registeredBy: currentUser.name || "Recepción",
-                    };
-
-                    setCashTransactions((prev) => [newTx, ...prev]);
-                    setShowArqueo(false);
-                    setCountedCash("");
-                    toast.success(`✓ Cierre de caja del turno registrado exitosamente (${diffText}).`);
-                  }}
-                  className="rounded-xl text-xs font-bold bg-primary text-primary-foreground"
-                >
-                  Confirmar Cierre de Turno
-                </Button>
-              </DialogFooter>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {/* Modal AlertDialog para Confirmar Anulación de Movimiento */}
-      <AlertDialog open={!!cancelTxConfirm} onOpenChange={(open) => !open && setCancelTxConfirm(null)}>
-        <AlertDialogContent className="rounded-3xl border-border shadow-2xl bg-card max-w-md">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-lg font-black text-foreground flex items-center gap-2">
-              <Ban className="h-5 w-5 text-rose-500" /> Anular Movimiento de Caja
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-xs text-muted-foreground pt-1 space-y-2">
-              <span>
-                ¿Confirmás la anulación del movimiento <strong className="text-foreground">{cancelTxConfirm?.description}</strong> por el monto de <strong className="text-foreground">${cancelTxConfirm?.amount?.toLocaleString()}</strong>?
-              </span>
-              <div className="p-3 bg-secondary/30 border border-border/60 rounded-2xl text-foreground font-medium text-[11px] leading-relaxed mt-2">
-                ℹ️ <strong>Auditoría Contable:</strong> El movimiento quedará marcado como <strong>ANULADO</strong> en el historial y su monto se descontará automáticamente de los totales del turno sin borrar el registro.
-              </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="mt-4 gap-2">
-            <AlertDialogCancel className="rounded-xl font-bold">Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              className="rounded-xl font-bold bg-rose-600 text-white hover:bg-rose-700"
-              onClick={handleCancelTransaction}
-            >
-              Confirmar Anulación
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
-  );
-}
-
-function FinanzasTab({
-  payrollRecords,
-  setPayrollRecords,
-  staffList,
-  cashTransactions,
-  setCashTransactions,
-  classesList,
-}: {
-  payrollRecords: any[];
-  setPayrollRecords: React.Dispatch<React.SetStateAction<any[]>>;
-  staffList: any[];
-  cashTransactions: any[];
-  setCashTransactions: React.Dispatch<React.SetStateAction<any[]>>;
-  classesList: any[];
-}) {
-  const [selectedPeriod, setSelectedPeriod] = useState("Junio 2026");
-  const [activeReceipt, setActiveReceipt] = useState<any | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "paid" | "pending">("all");
-
-  const availablePeriods = useMemo(() => {
-    const monthsEs = [
-      "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-      "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-    ];
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonthIdx = now.getMonth();
-
-    const generated: string[] = [];
-    for (let i = 0; i < 6; i++) {
-      let mIdx = currentMonthIdx - i;
-      let y = currentYear;
-      if (mIdx < 0) {
-        mIdx += 12;
-        y -= 1;
-      }
-      generated.push(`${monthsEs[mIdx]} ${y}`);
-    }
-
-    const set = new Set([...payrollRecords.map((p) => p.period), ...generated]);
-    return Array.from(set);
-  }, [payrollRecords]);
-
-  const [fixedExpenseItems, setFixedExpenseItems] = useState([
-    { id: "fix-1", category: "Alquiler de Sede", amount: 250000 },
-    { id: "fix-2", category: "Luz & Energía Eléctrica", amount: 60000 },
-    { id: "fix-3", category: "Agua & Servicios Sanitarios", amount: 15000 },
-    { id: "fix-4", category: "Internet, Software & Servidores", amount: 25000 },
-    { id: "fix-5", category: "Mantenimiento & Seguridad", amount: 30000 },
-  ]);
-  const [tempItems, setTempItems] = useState([...fixedExpenseItems]);
-  const [newCatName, setNewCatName] = useState("");
-  const [newCatAmount, setNewCatAmount] = useState("");
-  const [showFixedModal, setShowFixedModal] = useState(false);
-
-  const baseFixedExpenses = fixedExpenseItems.reduce((sum, item) => sum + (item.amount || 0), 0);
-  const tempBaseFixedExpenses = tempItems.reduce((sum, item) => sum + (item.amount || 0), 0);
-
-  const filteredPayroll = payrollRecords.filter((p) => {
-    // 1. Period
-    if (selectedPeriod !== "all" && p.period !== selectedPeriod) return false;
-
-    // 2. Status
-    if (statusFilter !== "all" && p.status !== statusFilter) return false;
-
-    // 3. Search query
-    const coach = staffList.find((s) => s.id === p.staffId);
-    if (searchQuery.trim() !== "") {
-      const q = searchQuery.toLowerCase().trim();
-      const matchName = coach?.name?.toLowerCase().includes(q);
-      const matchSpec = coach?.specialty?.toLowerCase().includes(q);
-      if (!matchName && !matchSpec) return false;
-    }
-
-    return true;
-  });
-
-  const totalPayrollPaid = filteredPayroll
-    .filter((p) => p.status === "paid")
-    .reduce((sum, p) => sum + p.totalAmount, 0);
-
-  const totalPayrollPending = filteredPayroll
-    .filter((p) => p.status === "pending")
-    .reduce((sum, p) => sum + p.totalAmount, 0);
-
-  // Dynamic Financial Income & Expenses from Caja & POS
-  const posIncome = cashTransactions
-    .filter((t) => t.type === "income")
-    .reduce((sum, t) => sum + t.amount, 0);
-
-  const posExpenses = cashTransactions
-    .filter((t) => t.type === "expense")
-    .reduce((sum, t) => sum + t.amount, 0);
-
-  // Estimated base memberships + dynamic POS sales
-  const grossMonthlyIncome = 1350000 + posIncome;
-  const totalFixedAndOperatingExpenses = baseFixedExpenses + posExpenses;
-  const netMonthlyMargin = grossMonthlyIncome - totalPayrollPaid - totalFixedAndOperatingExpenses;
-
-  const handleRecalculatePayroll = () => {
-    const newRecords = staffList.map((coach) => {
-      const coachClasses = classesList.filter((c) => c.staffId === coach.id);
-      let totalStudents = 0;
-
-      coachClasses.forEach((c) => {
-        if (c.attendance) {
-          const presentCount = Object.values(c.attendance).filter((st) => st === "presente").length;
-          totalStudents += presentCount;
-        }
-      });
-
-      const classesCount = coachClasses.length || 12;
-      const computedStudents = totalStudents || classesCount * 14;
-      const baseSalary = coach.baseSalary ?? 60000;
-      const payPerClass = coach.payPerClass ?? 5000;
-      const payPerStudent = coach.payPerStudent ?? 300;
-      const computedAmount = baseSalary + classesCount * payPerClass + computedStudents * payPerStudent;
-
-      return {
-        id: `pay-${coach.id}-${Date.now()}`,
-        staffId: coach.id,
-        period: selectedPeriod === "all" ? "Junio 2026" : selectedPeriod,
-        classesGiven: classesCount,
-        studentsAttended: computedStudents,
-        totalAmount: computedAmount,
-        status: "pending" as const,
-      };
-    });
-
-    setPayrollRecords(newRecords);
-    toast.success(`✓ Liquidaciones para el período ${selectedPeriod} recalculadas exitosamente según asistencias.`);
-  };
-
-  const exportPayrollCSV = () => {
-    if (filteredPayroll.length === 0) {
-      toast.warning("No hay registros de liquidación para exportar.");
-      return;
-    }
-    const headers = ["Profesor/Coach", "Especialidad", "Período", "Clases Dictadas", "Alumnos Asistentes", "Monto Total (ARS)", "Estado", "Fecha de Pago"];
-    const rows = filteredPayroll.map((p) => {
-      const coach = staffList.find((s) => s.id === p.staffId);
-      return [
-        `"${(coach?.name || "Staff").replace(/"/g, '""')}"`,
-        `"${(coach?.specialty || "-").replace(/"/g, '""')}"`,
-        p.period,
-        p.classesGiven,
-        p.studentsAttended,
-        p.totalAmount,
-        p.status === "paid" ? "Pagado" : "Pendiente",
-        p.paidAt || "-",
-      ];
-    });
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `liquidaciones_staff_${selectedPeriod.replace(/\s+/g, "_")}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Financial Overview Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-5">
-        <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-            Ingresos Brutos (Mes Actual)
-          </span>
-          <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-            <TrendingUp className="h-5 w-5" /> ${grossMonthlyIncome.toLocaleString()}
-          </div>
-          <p className="text-[10.5px] text-muted-foreground">Membresías + Ventas POS de Mostrador</p>
-        </div>
-
-        <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-            Honorarios Staff Liquidados
-          </span>
-          <div className="text-2xl font-black text-foreground flex items-center gap-1">
-            <Receipt className="h-5 w-5" /> ${totalPayrollPaid.toLocaleString()}
-          </div>
-          <p className="text-[10.5px] text-muted-foreground">Sueldos abonados a entrenadores</p>
-        </div>
-
-        <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-              Gastos Fijos & Operativos
-            </span>
-            <button
-              type="button"
-              onClick={() => {
-                setTempItems([...fixedExpenseItems]);
-                setNewCatName("");
-                setNewCatAmount("");
-                setShowFixedModal(true);
-              }}
-              className="text-[10px] font-bold text-primary hover:underline"
-            >
-              Ajustar Rubros
-            </button>
-          </div>
-          <div className="text-2xl font-black text-rose-600 dark:text-rose-400 flex items-center gap-1">
-            <ArrowDownRight className="h-5 w-5" /> ${totalFixedAndOperatingExpenses.toLocaleString()}
-          </div>
-          <p className="text-[10.5px] text-muted-foreground">Alquiler, servicios + Egresos POS</p>
-        </div>
-
-        <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-            Margen Operativo Neto
-          </span>
-          <div className="text-2xl font-black text-primary flex items-center gap-1">
-            <DollarSign className="h-5 w-5" /> ${netMonthlyMargin.toLocaleString()}
-          </div>
-          <p className="text-[10.5px] text-muted-foreground">Ingresos menos sueldos y costos fijos</p>
-        </div>
-      </div>
-
-      {/* Payroll Liquidation Table with Structured 2-Row Controls */}
-      <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-4 shadow-xs">
-        {/* Row 1: Header Title & Main Action Buttons */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/40">
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-bold text-sm text-foreground">
-                Reporte de Liquidaciones de Staff & Coaches
-              </h3>
-              <span className="px-2 py-0.5 rounded-full bg-secondary text-[10px] font-extrabold text-foreground border border-border/60">
-                {filteredPayroll.length}
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Cálculo mensual de honorarios por clases dictadas y alumnos asistentes.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2.5 shrink-0">
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={exportPayrollCSV}
-              className="h-9 rounded-xl font-bold text-xs gap-1.5 border-border text-foreground hover:bg-secondary"
-            >
-              <Download className="h-4 w-4" /> Exportar CSV
-            </Button>
-
-            <Button
-              type="button"
-              size="sm"
-              onClick={handleRecalculatePayroll}
-              className="h-9 rounded-xl font-bold text-xs gap-1.5 bg-primary text-primary-foreground shadow-xs"
-            >
-              <Zap className="h-4 w-4" /> Recalcular Asistencias
-            </Button>
-          </div>
-        </div>
-
-        {/* Row 2: Secondary Filter Bar (Search + Dropdowns) */}
-        <div className="flex flex-wrap items-center justify-between gap-3 p-2.5 bg-secondary/20 border border-border/50 rounded-2xl">
-          {/* Search Bar */}
-          <div className="relative flex-1 min-w-[200px] sm:max-w-xs">
-            <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Buscar coach por nombre o especialidad..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-9 w-full pl-8 pr-3 rounded-xl border border-border bg-background text-xs font-bold text-foreground placeholder:font-normal placeholder:text-muted-foreground"
-            />
-          </div>
-
-          <div className="flex items-center gap-2.5 w-full sm:w-auto">
-            {/* Status Filter (Shadcn/ui Select) */}
-            <Select value={statusFilter} onValueChange={(val) => setStatusFilter(val as any)}>
-              <SelectTrigger className="w-[200px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
-                <SelectValue placeholder="Estado" />
-              </SelectTrigger>
-              <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
-                <SelectItem value="all">📋 Todos los Estados</SelectItem>
-                <SelectItem value="pending">⏳ Pendientes de Pago</SelectItem>
-                <SelectItem value="paid">✅ Acreditados / Pagados</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Period Selector (Shadcn/ui Select - Dynamic) */}
-            <Select value={selectedPeriod} onValueChange={(val) => setSelectedPeriod(val)}>
-              <SelectTrigger className="w-[185px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
-                <SelectValue placeholder="Período" />
-              </SelectTrigger>
-              <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
-                <SelectItem value="all">📅 Todos los Períodos</SelectItem>
-                {availablePeriods.map((period) => (
-                  <SelectItem key={period} value={period}>
-                    📅 {period}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        <div className="overflow-x-auto custom-scrollbar border border-border/60 rounded-2xl bg-background">
-          <table className="w-full text-left text-xs min-w-[700px] border-collapse">
-            <thead>
-              <tr className="border-b border-border/60 bg-secondary/40 text-muted-foreground font-bold text-[10px] uppercase tracking-wider">
-                <th className="p-3.5">Profesor / Coach</th>
-                <th className="p-3.5 text-center">Período</th>
-                <th className="p-3.5 text-center">Clases Dictadas</th>
-                <th className="p-3.5 text-center">Alumnos Asistentes</th>
-                <th className="p-3.5 text-right">Monto Total</th>
-                <th className="p-3.5 text-center">Estado</th>
-                <th className="p-3.5 text-right">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/30">
-              {filteredPayroll.map((pay) => {
-                const coach = staffList.find((s) => s.id === pay.staffId);
-                return (
-                  <tr key={pay.id} className="hover:bg-secondary/20 transition-colors">
-                    <td className="p-3.5 font-bold text-foreground">
-                      <div className="flex items-center gap-2.5">
-                        <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs border border-primary/20 shrink-0 uppercase">
-                          {coach?.name ? coach.name.split(" ").map((n: string) => n[0]).join("") : "CO"}
-                        </div>
-                        <div className="min-w-0">
-                          <span className="block font-bold text-foreground truncate">{coach?.name || "Coach Inactivo"}</span>
-                          <span className="text-[10px] text-muted-foreground truncate block">{coach?.specialty || "Staff"}</span>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-3.5 text-center text-muted-foreground font-semibold">
-                      <span className="px-2 py-0.5 rounded-lg bg-secondary/50 border border-border/40 text-[11px]">
-                        {pay.period}
-                      </span>
-                    </td>
-                    <td className="p-3.5 text-center">
-                      <span className="font-bold text-foreground block">{pay.classesGiven} clases</span>
-                    </td>
-                    <td className="p-3.5 text-center">
-                      <span className="font-bold text-foreground block">{pay.studentsAttended} alumnos</span>
-                    </td>
-                    <td className="p-3.5 text-right">
-                      <div className="font-black text-sm text-foreground">
-                        ${pay.totalAmount.toLocaleString()}
-                      </div>
-                      <span className="text-[9.5px] font-bold text-muted-foreground/80 block uppercase">
-                        Base + Asistencias
-                      </span>
-                    </td>
-                    <td className="p-3.5 text-center">
-                      <span
-                        className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full border ${
-                          pay.status === "paid"
-                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
-                            : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
-                        }`}
-                      >
-                        {pay.status === "paid" ? "✅ Acreditado" : "⏳ Pendiente"}
-                      </span>
-                    </td>
-                    <td className="p-3.5 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setActiveReceipt(pay)}
-                          className="h-8 text-[11px] font-bold rounded-xl border-border gap-1.5 hover:bg-secondary"
-                        >
-                          <FileText className="h-3.5 w-3.5 text-primary" /> Recibo
-                        </Button>
-
-                        {pay.status === "pending" ? (
-                          <Button
-                            type="button"
-                            size="sm"
-                            onClick={() => {
-                              const today = new Date().toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" });
-                              setPayrollRecords((prev) =>
-                                prev.map((p) =>
-                                  p.id === pay.id ? { ...p, status: "paid", paidAt: today } : p,
-                                ),
-                              );
-
-                              // Post auto-expense to Cash Register
-                              const newExpenseTx = {
-                                id: `tx-pay-${Date.now()}`,
-                                date: new Date().toISOString().split("T")[0],
-                                type: "expense" as const,
-                                channel: "transfer" as const,
-                                description: `Liquidación Honorarios Coach: ${coach?.name || "Staff"} (${pay.period})`,
-                                amount: pay.totalAmount,
-                                registeredBy: "Administración / Finanzas",
-                              };
-                              setCashTransactions((prev) => [newExpenseTx, ...prev]);
-
-                              toast.success(
-                                `✓ Liquidación de $${pay.totalAmount.toLocaleString()} acreditada a ${coach?.name}. Se registró el egreso en Caja/POS.`,
-                              );
-                            }}
-                            className="h-8 text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-3 shadow-xs gap-1"
-                          >
-                            <CheckCircle2 className="h-3.5 w-3.5" /> Acreditar Pago
-                          </Button>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-[10.5px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-xl shrink-0">
-                            <CheckCircle2 className="h-3.5 w-3.5" /> {pay.paidAt ? `Pago: ${pay.paidAt}` : "Acreditado"}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Recibo / Comprobante Modal */}
-      {activeReceipt && (
-        <Dialog open={!!activeReceipt} onOpenChange={(o) => !o && setActiveReceipt(null)}>
-          <DialogContent className="max-w-md border border-border bg-card">
-            <DialogHeader>
-              <DialogTitle className="text-base font-bold flex items-center gap-2">
-                <FileText className="h-5 w-5 text-primary" /> Recibo de Liquidación de Honorarios
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="space-y-4 pt-2 text-xs">
-              {(() => {
-                const coach = staffList.find((s) => s.id === activeReceipt.staffId);
-                const baseVal = coach?.baseSalary ?? 60000;
-                const payPerClassRate = coach?.payPerClass ?? 5000;
-                const payPerStudentRate = coach?.payPerStudent ?? 300;
-                const perClassVal = activeReceipt.classesGiven * payPerClassRate;
-                const perStudentVal = activeReceipt.studentsAttended * payPerStudentRate;
-
-                return (
-                  <div className="space-y-3">
-                    <div className="p-3.5 bg-secondary/30 border border-border/60 rounded-2xl space-y-1">
-                      <div className="font-bold text-sm text-foreground">{coach?.name || "Coach"}</div>
-                      <div className="text-muted-foreground">{coach?.specialty || "Entrenador Staff"}</div>
-                      <div className="text-[10.5px] text-primary font-bold">Período: {activeReceipt.period}</div>
-                    </div>
-
-                    <div className="space-y-2 border-t border-b border-border/60 py-3">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
-                        Desglose de Conceptos Liquidados:
-                      </span>
-
-                      <div className="flex justify-between font-medium">
-                        <span>Base Fija Mensual</span>
-                        <span>${baseVal.toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between font-medium">
-                        <span>{activeReceipt.classesGiven} Clases Dictadas (${payPerClassRate.toLocaleString()} c/u)</span>
-                        <span>${perClassVal.toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between font-medium">
-                        <span>{activeReceipt.studentsAttended} Alumnos Asistentes (${payPerStudentRate.toLocaleString()} c/u)</span>
-                        <span>${perStudentVal.toLocaleString()}</span>
-                      </div>
-                    </div>
-
-                    <div className="p-3 bg-primary/10 border border-primary/20 rounded-xl flex justify-between items-center text-sm font-bold">
-                      <span className="text-foreground">TOTAL A COBRAR:</span>
-                      <span className="text-primary text-base font-black">
-                        ${activeReceipt.totalAmount.toLocaleString()} ARS
-                      </span>
-                    </div>
-                  </div>
-                );
-              })()}
-
-              <DialogFooter className="gap-2 pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setActiveReceipt(null)}
-                  className="rounded-xl text-xs font-bold"
-                >
-                  Cerrar
-                </Button>
-                <Button
-                  type="button"
-                  onClick={() => {
-                    toast.info("Imprimiendo recibo oficial de liquidación...");
-                    window.print();
-                  }}
-                  className="rounded-xl text-xs font-bold bg-primary text-primary-foreground gap-1"
-                >
-                  Imprimir / Descargar Recibo
-                </Button>
-              </DialogFooter>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {/* Ajustar Gastos Fijos Base Modal */}
-      {showFixedModal && (
-        <Dialog open={showFixedModal} onOpenChange={setShowFixedModal}>
-          <DialogContent className="sm:max-w-xl rounded-3xl border border-border bg-card p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
-            <DialogHeader>
-              <DialogTitle className="text-base font-bold flex items-center gap-2">
-                <DollarSign className="h-5 w-5 text-primary" /> Desglose de Gastos Fijos de Sede
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="space-y-4 text-xs">
-              <p className="text-muted-foreground">
-                Configura el presupuesto itemizado de costos fijos mensuales (alquiler, luz, internet, servicios). El sistema calculará la suma automáticamente.
-              </p>
-
-              {/* Form to add new item */}
-              <div className="p-3.5 bg-secondary/30 border border-border/60 rounded-2xl space-y-2">
-                <span className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
-                  Agregar Nuevo Rubro / Gasto Fijo:
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-7 gap-2">
-                  <Input
-                    type="text"
-                    placeholder="Ej: Impuestos Municipales"
-                    value={newCatName}
-                    onChange={(e) => setNewCatName(e.target.value)}
-                    className="sm:col-span-4 h-8.5 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
-                  />
-                  <Input
-                    type="number"
-                    placeholder="Monto ($)"
-                    value={newCatAmount}
-                    onChange={(e) => setNewCatAmount(e.target.value)}
-                    className="sm:col-span-2 h-8.5 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
-                  />
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={() => {
-                      if (!newCatName.trim() || !newCatAmount || parseFloat(newCatAmount) <= 0) {
-                        toast.error("Ingresa un nombre de rubro y un monto válido.");
-                        return;
-                      }
-                      const newItem = {
-                        id: `fix-${Date.now()}`,
-                        category: newCatName.trim(),
-                        amount: parseFloat(newCatAmount),
-                      };
-                      setTempItems((prev) => [...prev, newItem]);
-                      setNewCatName("");
-                      setNewCatAmount("");
-                    }}
-                    className="sm:col-span-1 h-8.5 rounded-xl text-xs font-bold px-2"
-                  >
-                    + Añadir
-                  </Button>
-                </div>
-              </div>
-
-              {/* List of itemized categories */}
-              <div className="space-y-2">
-                <span className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
-                  Rubros Fijos Configurados ({tempItems.length}):
-                </span>
-                <div className="space-y-2 max-h-56 overflow-y-auto custom-scrollbar pr-1">
-                  {tempItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-center justify-between p-2.5 bg-background border border-border/70 rounded-xl gap-2"
-                    >
-                      <Input
-                        type="text"
-                        value={item.category}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setTempItems((prev) =>
-                            prev.map((i) => (i.id === item.id ? { ...i, category: val } : i)),
-                          );
-                        }}
-                        className="flex-1 h-8 rounded-lg border border-transparent hover:border-border bg-transparent px-2 text-xs font-bold text-foreground focus-visible:bg-secondary/30"
-                      />
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-muted-foreground font-bold">$</span>
-                        <Input
-                          type="number"
-                          value={item.amount}
-                          onChange={(e) => {
-                            const val = parseFloat(e.target.value) || 0;
-                            setTempItems((prev) =>
-                              prev.map((i) => (i.id === item.id ? { ...i, amount: val } : i)),
-                            );
-                          }}
-                          className="w-24 h-8 rounded-lg border border-border/80 bg-background px-2 text-xs font-bold text-foreground text-right"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setTempItems((prev) => prev.filter((i) => i.id !== item.id));
-                          }}
-                          className="p-1 text-muted-foreground hover:text-rose-600 transition"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Summary calculations */}
-              <div className="p-3.5 bg-secondary/30 rounded-2xl border border-border/60 text-xs space-y-1.5">
-                <div className="flex justify-between font-medium">
-                  <span className="text-muted-foreground">Sumatoria de Rubros Fijos:</span>
-                  <span className="font-bold text-foreground">${tempBaseFixedExpenses.toLocaleString()} ARS</span>
-                </div>
-                <div className="flex justify-between font-medium">
-                  <span className="text-muted-foreground">+ Egresos Variables POS (Mostrador):</span>
-                  <span className="font-bold text-rose-600 dark:text-rose-400">+${posExpenses.toLocaleString()} ARS</span>
-                </div>
-                <div className="border-t border-border/60 pt-1.5 flex justify-between font-extrabold text-sm">
-                  <span className="text-foreground">Total Gastos Operativos:</span>
-                  <span className="text-rose-600 dark:text-rose-400">${(tempBaseFixedExpenses + posExpenses).toLocaleString()} ARS</span>
-                </div>
-              </div>
-
-              <DialogFooter className="gap-2 pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowFixedModal(false)}
-                  className="rounded-xl text-xs font-bold"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="button"
-                  onClick={() => {
-                    setFixedExpenseItems(tempItems);
-                    setShowFixedModal(false);
-                    toast.success("✓ Presupuesto de gastos fijos itemizado actualizado con éxito.");
-                  }}
-                  className="rounded-xl text-xs font-bold bg-primary text-primary-foreground"
-                >
-                  Guardar Presupuesto Fijo
-                </Button>
-              </DialogFooter>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
-    </div>
-  );
-}
-
-function ReportesTab({
-  membersList = [],
-  classesList = [],
-  membershipsList = [],
-  cashTransactions = [],
-}: {
-  membersList?: any[];
-  classesList?: any[];
-  membershipsList?: any[];
-  cashTransactions?: any[];
-  staffList?: any[];
-  salasList?: any[];
-}) {
-  const [timeRange, setTimeRange] = useState<"today" | "week" | "month" | "quarter">("month");
-
-  // Executive KPI 1: Active Members
-  const totalActiveMembers = useMemo(() => {
-    return membersList.filter((m) => m.status === "activo" || !m.status).length || 240;
-  }, [membersList]);
-
-  // Executive KPI 2: Total Revenue
-  const calculatedRevenue = useMemo(() => {
-    const incomeFromCash = cashTransactions
-      .filter((t) => t.type === "income")
-      .reduce((sum, t) => sum + (t.amount || 0), 0);
-    if (incomeFromCash > 0) return incomeFromCash;
-    if (!membersList.length) return 4320000;
-    return membersList.reduce((sum, m) => {
-      const plan = membershipsList.find((p) => p.name === m.plan);
-      return sum + (plan?.price || 18000);
-    }, 0);
-  }, [membersList, membershipsList, cashTransactions]);
-
-  // Executive KPI 3: Occupancy Rate
-  const totalBookedSpots = useMemo(() => {
-    return classesList.reduce((sum, c) => sum + (c.booked || 0), 0) || 842;
-  }, [classesList]);
-
-  const totalCapacity = useMemo(() => {
-    return classesList.reduce((sum, c) => sum + (c.capacity || 20), 0) || 1080;
-  }, [classesList]);
-
-  const occupancyRate = useMemo(() => {
-    return totalCapacity > 0 ? ((totalBookedSpots / totalCapacity) * 100).toFixed(1) : "78.4";
-  }, [totalBookedSpots, totalCapacity]);
-
-  // CSV Export Handler
-  const handleExportCSV = () => {
-    const headers = ["Indicador", "Valor Actual", "Período"];
-    const rows = [
-      ["Facturación Total ($)", calculatedRevenue.toString(), timeRange],
-      ["Alumnos Activos", totalActiveMembers.toString(), timeRange],
-      ["Tasa Ocupación Clases (%)", `${occupancyRate}%`, timeRange],
-    ];
-
-    const csvContent = [headers.join(","), ...rows.map((r) => r.map((val) => `"${val}"`).join(","))].join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `reporte_ejecutivo_${timeRange}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.success("✓ Reporte ejecutivo exportado a CSV con éxito.");
-  };
-
-  return (
-    <div className="space-y-6 animate-fade-in text-foreground">
-      {/* Header & Main Control Bar */}
-      <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-4 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl font-bold tracking-tight">Resumen Ejecutivo de Negocio</h2>
-              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-xs font-semibold">
-                3 KPIs Clave
-              </Badge>
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Vista general consolidada de ingresos, clientes activos y nivel de ocupación.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Select value={timeRange} onValueChange={(val) => setTimeRange(val as any)}>
-              <SelectTrigger className="w-[160px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
-                <SelectValue placeholder="Período" />
-              </SelectTrigger>
-              <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
-                <SelectItem value="today">📅 Hoy</SelectItem>
-                <SelectItem value="week">📅 Esta Semana</SelectItem>
-                <SelectItem value="month">📅 Este Mes</SelectItem>
-                <SelectItem value="quarter">📅 Trimestre</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportCSV}
-              className="h-9 rounded-xl text-xs font-bold gap-1.5 border-border text-foreground hover:bg-secondary"
-            >
-              <Download className="h-4 w-4 text-primary" /> Exportar CSV
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* The 3 Core KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-2 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-            1. Facturación del Período
-          </span>
-          <div className="text-3xl font-black text-foreground">${calculatedRevenue.toLocaleString("es-AR")}</div>
-          <p className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
-            <TrendingUp className="w-3.5 h-3.5" /> +14.2% respecto al período anterior
-          </p>
-        </div>
-
-        <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-2 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-            2. Alumnos Activos
-          </span>
-          <div className="text-3xl font-black text-primary">{totalActiveMembers} socios</div>
-          <p className="text-[11px] text-muted-foreground">Con plan o pase vigente</p>
-        </div>
-
-        <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-2 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-            3. Ocupación Promedio de Clases
-          </span>
-          <div className="text-3xl font-black text-emerald-600 dark:text-emerald-400">{occupancyRate}%</div>
-          <p className="text-[11px] text-muted-foreground">Capacidad cubierta en sesiones</p>
-        </div>
-      </div>
-
-      {/* Simplified Revenue & Attendance Trend Bar Chart */}
-      <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-4 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border/40 pb-3 gap-2">
-          <div>
-            <h3 className="font-bold text-sm text-foreground uppercase tracking-wider text-muted-foreground/80">
-              Evolución Mensual de Recaudación (Últimos 6 Meses)
-            </h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Tendencia semestral consolidada de ingresos de la academia.
-            </p>
-          </div>
-          <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-xs font-bold w-fit">
-            Tendencia Positiva 📈
-          </Badge>
-        </div>
-
-        <div className="pt-2">
-          <div className="grid grid-cols-6 gap-2 sm:gap-4 items-end h-44 pt-6 pb-2 border-b border-border/60">
-            {[
-              { month: "Ene", amount: "$3.1M", height: "45%" },
-              { month: "Feb", amount: "$3.4M", height: "55%" },
-              { month: "Mar", amount: "$3.8M", height: "68%" },
-              { month: "Abr", amount: "$3.9M", height: "72%" },
-              { month: "May", amount: "$4.1M", height: "85%" },
-              { month: "Jun", amount: `$${(calculatedRevenue / 1000000).toFixed(2)}M`, height: "98%", current: true },
-            ].map((item, idx) => (
-              <div key={idx} className="flex flex-col items-center gap-1.5 h-full justify-end group">
-                <span className="text-[10px] font-black text-muted-foreground group-hover:text-primary transition-colors opacity-0 group-hover:opacity-100 sm:opacity-100">
-                  {item.amount}
-                </span>
-                <div className="w-full max-w-[40px] bg-secondary/60 rounded-t-xl overflow-hidden h-full flex items-end p-0.5">
-                  <div
-                    className={`w-full rounded-t-lg transition-all duration-500 ${
-                      item.current
-                        ? "bg-primary shadow-xs"
-                        : "bg-primary/40 group-hover:bg-primary/70"
-                    }`}
-                    style={{ height: item.height }}
-                  />
-                </div>
-                <span className={`text-[11px] font-bold ${item.current ? "text-primary font-extrabold" : "text-muted-foreground"}`}>
-                  {item.month}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function InventarioTab({
-  inventoryItems,
-  setInventoryItems,
-  stockMovements: externalStockMovements,
-  setStockMovements: externalSetStockMovements,
-}: {
-  inventoryItems: any[];
-  setInventoryItems: React.Dispatch<React.SetStateAction<any[]>>;
-  stockMovements?: any[];
-  setStockMovements?: React.Dispatch<React.SetStateAction<any[]>>;
-}) {
-  const [activeSubTab, setActiveSubTab] = useState<"products" | "kardex">("products");
-
-  // Dynamic Categories State
-  const [categories, setCategories] = useState<string[]>([
-    "Suplementos",
-    "Bebidas",
-    "Accesorios",
-    "Indumentaria",
-    "Snacks",
-  ]);
-  const [showCategoryModal, setShowCategoryModal] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState("");
-
-  // Local fallback state for stock movements (if not provided externally)
-  const [internalMovements, setInternalMovements] = useState<Array<{
-    id: string;
-    date: string;
-    productId: string;
-    productName: string;
-    type: "Entrada" | "Salida / Venta" | "Ajuste Manual" | "Merma / Pérdida";
-    quantity: number;
-    previousStock: number;
-    newStock: number;
-    user: string;
-    reason: string;
-  }>>([
-    {
-      id: "mov-1",
-      date: "30/07/2026 10:15",
-      productId: "inv-1",
-      productName: "Bebida Isotónica Gatorade 500ml",
-      type: "Entrada",
-      quantity: 50,
-      previousStock: 0,
-      newStock: 50,
-      user: "Recepción Admin",
-      reason: "Reabastecimiento de proveedor",
-    },
-    {
-      id: "mov-2",
-      date: "30/07/2026 11:02",
-      productId: "inv-1",
-      productName: "Bebida Isotónica Gatorade 500ml",
-      type: "Salida / Venta",
-      quantity: -2,
-      previousStock: 50,
-      newStock: 48,
-      user: "Caja POS",
-      reason: "Venta directa mostrador #1092",
-    },
-    {
-      id: "mov-3",
-      date: "29/07/2026 16:30",
-      productId: "inv-2",
-      productName: "Proteína Whey Protein Isolate 1kg",
-      type: "Ajuste Manual",
-      quantity: -1,
-      previousStock: 9,
-      newStock: 8,
-      user: "Carlos M. (Entrenador)",
-      reason: "Muestra gratis para degustación",
-    },
-    {
-      id: "mov-4",
-      date: "28/07/2026 09:00",
-      productId: "inv-3",
-      productName: "Barra Proteica ENA Choco Crunch",
-      type: "Entrada",
-      quantity: 65,
-      previousStock: 0,
-      newStock: 65,
-      user: "Recepción Admin",
-      reason: "Alta de inventario inicial",
-    },
-  ]);
-
-  const stockMovements = externalStockMovements || internalMovements;
-  const setStockMovements = externalSetStockMovements || setInternalMovements;
-
-  // Kardex Search & Filters (Pre-load current month range by default)
-  const defaultKardexDates = useMemo(() => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const lastDay = new Date(year, now.getMonth() + 1, 0).getDate();
-    const formattedLastDay = String(lastDay).padStart(2, "0");
-    return {
-      from: `${year}-${month}-01`,
-      to: `${year}-${month}-${formattedLastDay}`,
-    };
-  }, []);
-
-  const [kardexSearch, setKardexSearch] = useState("");
-  const [kardexTypeFilter, setKardexTypeFilter] = useState("all");
-  const [kardexDateFrom, setKardexDateFrom] = useState(defaultKardexDates.from);
-  const [kardexDateTo, setKardexDateTo] = useState(defaultKardexDates.to);
-
-  const [showAdjustModal, setShowAdjustModal] = useState<any | null>(null);
-  const [adjustAmount, setAdjustAmount] = useState("");
-  const [adjustReason, setAdjustReason] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("all");
-  const [supplierFilter, setSupplierFilter] = useState("all");
-  const [stockStatusFilter, setStockStatusFilter] = useState("all");
-  const [previewImageModal, setPreviewImageModal] = useState<{ url: string; title: string } | null>(null);
-  const [deleteConfirmState, setDeleteConfirmState] = useState<{
-    type: "category" | "supplier" | "product";
-    id: string;
-    name: string;
-  } | null>(null);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState<any | null>(null);
-
-  // Form for new product
-  const [newProdName, setNewProdName] = useState("");
-  const [newProdCat, setNewProdCat] = useState("Suplementos");
-  const [newProdCost, setNewProdCost] = useState("");
-  const [newProdPrice, setNewProdPrice] = useState("");
-  const [newProdStock, setNewProdStock] = useState("");
-  const [newProdMinStock, setNewProdMinStock] = useState("5");
-  const [newProdUnit, setNewProdUnit] = useState("unid");
-  const [newProdBarcode, setNewProdBarcode] = useState("");
-  const [newProdImage, setNewProdImage] = useState("");
-
-  // Form for editing product
-  const [editProdName, setEditProdName] = useState("");
-  const [editProdCat, setEditProdCat] = useState("Suplementos");
-  const [editProdCost, setEditProdCost] = useState("");
-  const [editProdPrice, setEditProdPrice] = useState("");
-  const [editProdMinStock, setEditProdMinStock] = useState("5");
-  const [editProdUnit, setEditProdUnit] = useState("unid");
-  const [editProdBarcode, setEditProdBarcode] = useState("");
-  const [editProdImage, setEditProdImage] = useState("");
-
-  // Suppliers State
-  const [suppliersList, setSuppliersList] = useState<Array<{
-    id: string;
-    name: string;
-    contactName: string;
-    phone: string;
-    email: string;
-    category: string;
-  }>>([
-    {
-      id: "sup-1",
-      name: "Nutritech Argentina S.A.",
-      contactName: "Laura Fernández",
-      phone: "+5491155554321",
-      email: "pedidos@nutritech.com.ar",
-      category: "Suplementos & Nutrición",
-    },
-    {
-      id: "sup-2",
-      name: "Distribuidora Bebidas Express",
-      contactName: "Mariano Gómez",
-      phone: "+5491144448888",
-      email: "ventas@bebidasexpress.com",
-      category: "Bebidas & Hidratación",
-    },
-    {
-      id: "sup-3",
-      name: "Shakerfy Merch & Textile Direct",
-      contactName: "Federico Rossi",
-      phone: "+5491133332222",
-      email: "merch@shakerfy.com",
-      category: "Indumentaria & Accesorios",
-    },
-  ]);
-
-  const [showSupplierModal, setShowSupplierModal] = useState(false);
-  const [newSupName, setNewSupName] = useState("");
-  const [newSupContact, setNewSupContact] = useState("");
-  const [newSupPhone, setNewSupPhone] = useState("");
-  const [newSupEmail, setNewSupEmail] = useState("");
-  const [newSupCategory, setNewSupCategory] = useState("Suplementos & Nutrición");
-
-  // Replenishment Order Generator State
-  const [showReplenishModal, setShowReplenishModal] = useState(false);
-  const [replenishOrderItems, setReplenishOrderItems] = useState<Array<{
-    id: string;
-    name: string;
-    category: string;
-    stock: number;
-    minStock: number;
-    orderQty: number;
-    supplierId?: string;
-    cost: number;
-  }>>([]);
-
-  // Product Variants & Supplier Form State
-  const [expandedProductVariants, setExpandedProductVariants] = useState<Record<string, boolean>>({});
-  const [newProdVariantsInput, setNewProdVariantsInput] = useState("");
-  const [newProdSupplierId, setNewProdSupplierId] = useState("sup-1");
-  const [editProdSupplierId, setEditProdSupplierId] = useState("sup-1");
-
-  const openReplenishModal = () => {
-    const lowStockProds = inventoryItems.filter((i) => i.stock <= i.minStock);
-    if (lowStockProds.length === 0) {
-      toast.info("No hay productos actualmente por debajo del stock mínimo.");
-      return;
-    }
-    const orderItems = lowStockProds.map((p) => ({
-      id: p.id,
-      name: p.name,
-      category: p.category,
-      stock: p.stock,
-      minStock: p.minStock,
-      orderQty: Math.max(1, (p.minStock * 2) - p.stock),
-      supplierId: p.supplierId || "sup-1",
-      cost: p.cost || 0,
-    }));
-    setReplenishOrderItems(orderItems);
-    setShowReplenishModal(true);
-  };
-
-  const handleAddSupplier = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newSupName.trim()) return;
-    const newSup = {
-      id: `sup-${Date.now()}`,
-      name: newSupName.trim(),
-      contactName: newSupContact.trim() || "Contacto",
-      phone: newSupPhone.trim(),
-      email: newSupEmail.trim(),
-      category: newSupCategory,
-    };
-    setSuppliersList((prev) => [...prev, newSup]);
-    setNewSupName("");
-    setNewSupContact("");
-    setNewSupPhone("");
-    setNewSupEmail("");
-    toast.success(`✓ Proveedor "${newSup.name}" agregado correctamente.`);
-  };
-
-  const handleDeleteSupplier = (supId: string) => {
-    if (suppliersList.length <= 1) {
-      toast.error("Debe existir al menos un proveedor registrado.");
-      return;
-    }
-    setSuppliersList((prev) => prev.filter((s) => s.id !== supId));
-    toast.info("Proveedor eliminado.");
-  };
-
-  const sendOrderViaWhatsApp = (supplierId?: string) => {
-    const targetSup = suppliersList.find((s) => s.id === supplierId) || suppliersList[0];
-    const itemsForSup = supplierId
-      ? replenishOrderItems.filter((i) => i.supplierId === supplierId)
-      : replenishOrderItems;
-
-    if (itemsForSup.length === 0) {
-      toast.warning("No hay productos asignados a este proveedor en el pedido.");
-      return;
-    }
-
-    const itemLines = itemsForSup
-      .map((i) => `• ${i.name}: ${i.orderQty} unid. (Stock actual: ${i.stock})`)
-      .join("\n");
-
-    const message = `Hola ${targetSup.contactName || targetSup.name}!\nTe envío la Orden de Reabastecimiento para Shakerfy Gym:\n\n${itemLines}\n\nPor favor confirmar recepción y plazo estimado de entrega. ¡Gracias!`;
-
-    const encodedMsg = encodeURIComponent(message);
-    const cleanPhone = (targetSup.phone || "").replace(/[^\d+]/g, "");
-    window.open(`https://wa.me/${cleanPhone}?text=${encodedMsg}`, "_blank");
-    toast.success(`✓ Pedido generado y listo para enviar vía WhatsApp.`);
-  };
-
-  const exportReplenishOrderCSV = () => {
-    if (replenishOrderItems.length === 0) {
-      toast.warning("No hay ítems en la orden.");
-      return;
-    }
-    const headers = ["Producto", "Categoría", "Stock Actual", "Stock Mínimo", "Cantidad a Pedir", "Proveedor", "Costo Unid ($)", "Subtotal Estimado ($)"];
-    const rows = replenishOrderItems.map((i) => {
-      const sup = suppliersList.find((s) => s.id === i.supplierId);
-      return [
-        `"${i.name.replace(/"/g, '""')}"`,
-        `"${i.category.replace(/"/g, '""')}"`,
-        i.stock,
-        i.minStock,
-        i.orderQty,
-        `"${(sup?.name || "Sin Proveedor").replace(/"/g, '""')}"`,
-        i.cost,
-        i.orderQty * i.cost,
-      ];
-    });
-
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `orden_reabastecimiento_${new Date().toISOString().split("T")[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.success("✓ Orden de reabastecimiento exportada a CSV.");
-  };
-
-  const toggleVariantExpand = (productId: string) => {
-    setExpandedProductVariants((prev) => ({ ...prev, [productId]: !prev[productId] }));
-  };
-
-  const handleAdjustVariantStock = (productId: string, variantId: string, delta: number) => {
-    setInventoryItems((prev) =>
-      prev.map((item) => {
-        if (item.id !== productId) return item;
-        const updatedVariants = (item.variants || []).map((v: any) =>
-          v.id === variantId ? { ...v, stock: Math.max(0, v.stock + delta) } : v,
-        );
-        const newTotalStock = updatedVariants.reduce((sum: number, v: any) => sum + v.stock, 0);
-        return {
-          ...item,
-          variants: updatedVariants,
-          stock: newTotalStock,
-        };
-      }),
-    );
-    toast.success("✓ Stock de variante actualizado.");
-  };
-
-  const totalValue = inventoryItems.reduce((sum, item) => sum + item.stock * item.price, 0);
-  const lowStockCount = inventoryItems.filter((item) => item.stock <= item.minStock).length;
-
-  const filteredItems = useMemo(() => {
-    return inventoryItems.filter((item) => {
-      const query = searchQuery.toLowerCase();
-      const matchSearch =
-        item.name.toLowerCase().includes(query) ||
-        item.category.toLowerCase().includes(query) ||
-        (item.barcode && item.barcode.toLowerCase().includes(query));
-      const matchCat = categoryFilter === "all" || item.category.toLowerCase() === categoryFilter.toLowerCase();
-      const matchSupplier = supplierFilter === "all" || item.supplierId === supplierFilter;
-      const matchStatus =
-        stockStatusFilter === "all"
-          ? true
-          : stockStatusFilter === "low"
-          ? item.stock <= item.minStock
-          : item.stock > item.minStock;
-      return matchSearch && matchCat && matchSupplier && matchStatus;
-    });
-  }, [inventoryItems, searchQuery, categoryFilter, supplierFilter, stockStatusFilter]);
-
-  const filteredMovements = useMemo(() => {
-    return stockMovements.filter((m: any) => {
-      const q = kardexSearch.toLowerCase();
-      const matchSearch =
-        m.productName.toLowerCase().includes(q) ||
-        m.reason.toLowerCase().includes(q) ||
-        m.user.toLowerCase().includes(q);
-      const matchType = kardexTypeFilter === "all" || m.type === kardexTypeFilter;
-
-      let matchDate = true;
-      if (kardexDateFrom || kardexDateTo) {
-        const parts = m.date.split(" ");
-        if (parts[0]) {
-          const [d, mo, y] = parts[0].split("/").map(Number);
-          const movTime = new Date(y, mo - 1, d).getTime();
-          if (kardexDateFrom) {
-            const fromTime = new Date(kardexDateFrom).getTime();
-            if (movTime < fromTime) matchDate = false;
-          }
-          if (kardexDateTo) {
-            const toTime = new Date(kardexDateTo).getTime();
-            if (movTime > toTime) matchDate = false;
-          }
-        }
-      }
-
-      return matchSearch && matchType && matchDate;
-    });
-  }, [stockMovements, kardexSearch, kardexTypeFilter, kardexDateFrom, kardexDateTo]);
-
-  const logStockMovement = (
-    productId: string,
-    productName: string,
-    type: "Entrada" | "Salida / Venta" | "Ajuste Manual" | "Merma / Pérdida",
-    quantity: number,
-    previousStock: number,
-    newStock: number,
-    reason: string
-  ) => {
-    const now = new Date();
-    const dateFormatted = `${now.toLocaleDateString("es-AR")} ${now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
-    const newMov = {
-      id: `mov-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-      date: dateFormatted,
-      productId,
-      productName,
-      type,
-      quantity,
-      previousStock,
-      newStock,
-      user: "Recepción Admin",
-      reason,
-    };
-    setStockMovements((prev: any[]) => [newMov, ...prev]);
-  };
-
-  const handleAddCategory = (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = newCategoryName.trim();
-    if (!trimmed) return;
-    if (categories.some((c) => c.toLowerCase() === trimmed.toLowerCase())) {
-      toast.error("Esta categoría ya existe.");
-      return;
-    }
-    setCategories((prev) => [...prev, trimmed]);
-    setNewCategoryName("");
-    toast.success(`✓ Categoría "${trimmed}" agregada exitosamente.`);
-  };
-
-  const handleDeleteCategory = (catToDelete: string) => {
-    if (categories.length <= 1) {
-      toast.error("Debe existir al menos una categoría.");
-      return;
-    }
-    setCategories((prev) => prev.filter((c) => c !== catToDelete));
-    if (categoryFilter === catToDelete) setCategoryFilter("all");
-    toast.info(`Categoría "${catToDelete}" eliminada.`);
-  };
-
-  const handleImageFileUpload = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    setImageFn: (val: string) => void,
-  ) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      toast.error("Por favor selecciona un archivo de imagen válido (PNG, JPG, WEBP).");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const result = event.target?.result as string;
-      if (result) {
-        setImageFn(result);
-        toast.success("Foto cargada exitosamente.");
-      }
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const exportInventoryCSV = () => {
-    if (filteredItems.length === 0) {
-      toast.warning("No hay productos para exportar.");
-      return;
-    }
-    const headers = ["ID", "Código Barras", "Producto", "Categoría", "Precio Costo", "Precio Venta", "Stock Actual", "Stock Mínimo", "Valor Stock ($)", "Estado"];
-    const rows = filteredItems.map((item) => [
-      item.id,
-      `"${(item.barcode || "-").replace(/"/g, '""')}"`,
-      `"${item.name.replace(/"/g, '""')}"`,
-      `"${item.category.replace(/"/g, '""')}"`,
-      item.cost,
-      item.price,
-      item.stock,
-      item.minStock,
-      item.stock * item.price,
-      item.stock <= item.minStock ? "Bajo Stock" : "OK",
-    ]);
-
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `inventario_tienda_${new Date().toISOString().split("T")[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.success("✓ Inventario exportado a CSV correctamente.");
-  };
-
-  const exportKardexCSV = () => {
-    if (filteredMovements.length === 0) {
-      toast.warning("No hay movimientos para exportar.");
-      return;
-    }
-    const headers = ["Fecha / Hora", "ID Producto", "Producto", "Tipo Movimiento", "Cantidad", "Stock Anterior", "Stock Nuevo", "Usuario Responsable", "Motivo / Detalle"];
-    const rows = filteredMovements.map((m: any) => [
-      `"${m.date}"`,
-      `"${m.productId}"`,
-      `"${m.productName.replace(/"/g, '""')}"`,
-      `"${m.type}"`,
-      m.quantity,
-      m.previousStock,
-      m.newStock,
-      `"${m.user.replace(/"/g, '""')}"`,
-      `"${m.reason.replace(/"/g, '""')}"`,
-    ]);
-
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `kardex_movimientos_${new Date().toISOString().split("T")[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.success("✓ Kardex exportado a CSV correctamente.");
-  };
-
-  const handleAddProduct = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newProdName.trim() || !newProdPrice || parseFloat(newProdPrice) <= 0) {
-      toast.error("Ingresa un nombre de producto y un precio de venta válido.");
-      return;
-    }
-
-    const initStock = parseInt(newProdStock) || 0;
-    const rawVariantNames = newProdVariantsInput.split(",").map((v) => v.trim()).filter(Boolean);
-    const parsedVariants = rawVariantNames.length > 0
-      ? rawVariantNames.map((name, idx) => ({
-          id: `v-${Date.now()}-${idx}`,
-          name,
-          stock: Math.floor(initStock / rawVariantNames.length),
-        }))
-      : undefined;
-
-    const newItem = {
-      id: `prod-${Date.now()}`,
-      name: newProdName.trim(),
-      category: newProdCat || categories[0],
-      supplierId: newProdSupplierId,
-      cost: parseFloat(newProdCost) || 0,
-      price: parseFloat(newProdPrice) || 0,
-      stock: initStock,
-      minStock: parseInt(newProdMinStock) || 5,
-      unit: newProdUnit || "unid",
-      barcode: newProdBarcode.trim() || `779${Math.floor(1000000000 + Math.random() * 9000000000)}`,
-      image: newProdImage.trim() || "https://images.unsplash.com/photo-1544816155-12df9643f363?w=150&auto=format&fit=crop&q=80",
-      variants: parsedVariants,
-    };
-
-    setInventoryItems((prev) => [newItem, ...prev]);
-
-    if (initStock > 0) {
-      logStockMovement(newItem.id, newItem.name, "Entrada", initStock, 0, initStock, "Alta inicial de producto");
-    }
-
-    setShowAddModal(false);
-    setNewProdName("");
-    setNewProdCost("");
-    setNewProdPrice("");
-    setNewProdStock("");
-    setNewProdBarcode("");
-    setNewProdImage("");
-    setNewProdVariantsInput("");
-    toast.success(`✓ "${newItem.name}" agregado exitosamente al inventario.`);
-  };
-
-  const handleOpenEditModal = (item: any) => {
-    setShowEditModal(item);
-    setEditProdName(item.name || "");
-    setEditProdCat(item.category || categories[0]);
-    setEditProdSupplierId(item.supplierId || suppliersList[0]?.id || "sup-1");
-    setEditProdCost(item.cost ? item.cost.toString() : "0");
-    setEditProdPrice(item.price ? item.price.toString() : "0");
-    setEditProdMinStock(item.minStock ? item.minStock.toString() : "5");
-    setEditProdUnit(item.unit || "unid");
-    setEditProdBarcode(item.barcode || "");
-    setEditProdImage(item.image || "");
-  };
-
-  const handleSaveEditProduct = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!showEditModal) return;
-    if (!editProdName.trim() || !editProdPrice || parseFloat(editProdPrice) <= 0) {
-      toast.error("Ingresa un nombre y precio de venta válido.");
-      return;
-    }
-
-    setInventoryItems((prev) =>
-      prev.map((item) =>
-        item.id === showEditModal.id
-          ? {
-              ...item,
-              name: editProdName.trim(),
-              category: editProdCat,
-              supplierId: editProdSupplierId,
-              cost: parseFloat(editProdCost) || 0,
-              price: parseFloat(editProdPrice) || 0,
-              minStock: parseInt(editProdMinStock) || 5,
-              unit: editProdUnit || "unid",
-              barcode: editProdBarcode.trim(),
-              image: editProdImage.trim() || item.image,
-            }
-          : item,
-      ),
-    );
-
-    setShowEditModal(null);
-    toast.success(`✓ Producto "${editProdName}" actualizado correctamente.`);
-  };
-
-  const handleConfirmDelete = () => {
-    if (!deleteConfirmState) return;
-    const { type, id, name } = deleteConfirmState;
-
-    if (type === "category") {
-      if (categories.length <= 1) {
-        toast.error("Debe existir al menos una categoría.");
-      } else {
-        setCategories((prev) => prev.filter((c) => c !== id));
-        if (categoryFilter === id) setCategoryFilter("all");
-        toast.info(`Categoría "${name}" eliminada.`);
-      }
-    } else if (type === "supplier") {
-      setSuppliersList((prev) => prev.filter((s) => s.id !== id));
-      toast.info(`Proveedor "${name}" eliminado.`);
-    } else if (type === "product") {
-      setInventoryItems((prev) => prev.filter((i) => i.id !== id));
-      toast.info(`Producto "${name}" eliminado del inventario.`);
-    }
-
-    setDeleteConfirmState(null);
-  };
-
-  return (
-    <div className="space-y-6 animate-fade-in text-foreground">
-      {/* Subtab navigation & Category management bar */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 bg-card border border-border/80 p-3 rounded-3xl shadow-xs">
-        <div className="flex flex-wrap items-center gap-1.5 bg-secondary/50 p-1 rounded-2xl border border-border/50">
-          <button
-            type="button"
-            onClick={() => setActiveSubTab("products")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              activeSubTab === "products"
-                ? "bg-background text-foreground shadow-xs"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Stock de Productos ({inventoryItems.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveSubTab("kardex")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-              activeSubTab === "kardex"
-                ? "bg-background text-foreground shadow-xs"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <History className="h-3.5 w-3.5 text-primary" /> Historial Kardex ({stockMovements.length})
-          </button>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
-          {lowStockCount > 0 && (
-            <Button
-              type="button"
-              size="sm"
-              onClick={openReplenishModal}
-              className="h-9 text-xs font-bold rounded-xl gap-1.5 bg-amber-500 hover:bg-amber-600 text-white shadow-xs"
-            >
-              <Truck className="h-4 w-4" /> Reabastecer ({lowStockCount})
-            </Button>
-          )}
-
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setShowSupplierModal(true)}
-            className="h-9 text-xs font-bold rounded-xl border-border gap-1.5 hover:bg-secondary"
-          >
-            <Building2 className="h-4 w-4 text-primary" /> Proveedores ({suppliersList.length})
-          </Button>
-
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setShowCategoryModal(true)}
-            className="h-9 text-xs font-bold rounded-xl border-border gap-1.5 hover:bg-secondary"
-          >
-            <FolderPlus className="h-4 w-4 text-primary" /> Categorías ({categories.length})
-          </Button>
-        </div>
-      </div>
-
-      {/* Inventory Summary Cards */}
-      {activeSubTab === "products" ? (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-          <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-              Total Productos Registrados
-            </span>
-            <div className="text-2xl font-black text-foreground">{inventoryItems.length} artículos</div>
-            <p className="text-[10.5px] text-muted-foreground">Bebidas, suplementos y merchandising</p>
-          </div>
-
-          <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg flex flex-col justify-between">
-            <div className="space-y-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-                Alertas de Bajo Stock
-              </span>
-              <div className={`text-2xl font-black ${lowStockCount > 0 ? "text-amber-600 dark:text-amber-400" : "text-emerald-600"}`}>
-                {lowStockCount} {lowStockCount === 1 ? "artículo" : "artículos"}
-              </div>
-            </div>
-            {lowStockCount > 0 ? (
-              <button
-                type="button"
-                onClick={openReplenishModal}
-                className="mt-2 text-[10.5px] font-extrabold text-amber-600 dark:text-amber-400 hover:underline inline-flex items-center gap-1"
-              >
-                <Truck className="h-3 w-3" /> Generar Pedido de Reabastecimiento →
-              </button>
-            ) : (
-              <p className="text-[10.5px] text-muted-foreground">Por debajo del stock mínimo</p>
-            )}
-          </div>
-
-          <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-              Valor de Inventario (Precio Venta)
-            </span>
-            <div className="text-2xl font-black text-primary">${totalValue.toLocaleString()}</div>
-            <p className="text-[10.5px] text-muted-foreground">Mercadería en depósito/mostrador</p>
-          </div>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-          <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-              Total Movimientos Registrados
-            </span>
-            <div className="text-2xl font-black text-foreground">{stockMovements.length} eventos</div>
-            <p className="text-[10.5px] text-muted-foreground">Auditoría completa de existencias</p>
-          </div>
-
-          <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-              Ingresos de Stock
-            </span>
-            <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
-              {stockMovements.filter((m: any) => m.type === "Entrada").length} ingresos
-            </div>
-            <p className="text-[10.5px] text-muted-foreground">Reabastecimiento y altas</p>
-          </div>
-
-          <div className="bg-card border border-border/80 p-5 rounded-3xl space-y-1 shadow-xs transition-all hover:-translate-y-1 hover:shadow-lg">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-              Salidas & Ventas POS
-            </span>
-            <div className="text-2xl font-black text-rose-600 dark:text-rose-400">
-              {stockMovements.filter((m: any) => m.type === "Salida / Venta" || m.type === "Merma / Pérdida").length} salidas
-            </div>
-            <p className="text-[10.5px] text-muted-foreground">Ventas mostrador y mermas</p>
-          </div>
-        </div>
-      )}
-
-      {/* Main View: Products Table vs Kardex Audit Table */}
-      {activeSubTab === "products" ? (
-        <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-4 shadow-xs">
-          {/* Row 1: Title and Header Buttons */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/40">
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-bold text-sm text-foreground">Inventario & Stock de Tienda</h3>
-                <span className="px-2 py-0.5 rounded-full bg-secondary text-[10px] font-extrabold text-foreground border border-border/60">
-                  {filteredItems.length}
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Control de existencias, código de barras y fotos de productos para el POS.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2.5 shrink-0">
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={exportInventoryCSV}
-                className="h-9 rounded-xl font-bold text-xs gap-1.5 border-border text-foreground hover:bg-secondary"
-              >
-                <Download className="h-4 w-4" /> Exportar CSV
-              </Button>
-
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => setShowAddModal(true)}
-                className="h-9 rounded-xl font-bold text-xs gap-1.5 bg-primary text-primary-foreground shadow-xs"
-              >
-                <PlusCircle className="h-4 w-4" /> Nuevo Producto
-              </Button>
-            </div>
-          </div>
-
-          {/* Row 2: Advanced Search & Multi-Filters */}
-          <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-secondary/20 border border-border/50 rounded-2xl">
-            <div className="relative flex-1 min-w-[200px] sm:max-w-xs">
-              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Buscar por nombre, categoría o código..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-9 w-full pl-8 pr-3 rounded-xl border border-border bg-background text-xs font-bold text-foreground placeholder:font-normal placeholder:text-muted-foreground"
-              />
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-              <Select value={categoryFilter} onValueChange={(val) => setCategoryFilter(val)}>
-                <SelectTrigger className="w-full sm:w-[170px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
-                  <SelectValue placeholder="Categoría" />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
-                  <SelectItem value="all">Todas las Categorías</SelectItem>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select value={supplierFilter} onValueChange={(val) => setSupplierFilter(val)}>
-                <SelectTrigger className="w-full sm:w-[215px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
-                  <SelectValue placeholder="Proveedor" />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
-                  <SelectItem value="all">Todos los Proveedores</SelectItem>
-                  {suppliersList.map((sup) => (
-                    <SelectItem key={sup.id} value={sup.id}>
-                      {sup.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select value={stockStatusFilter} onValueChange={(val) => setStockStatusFilter(val)}>
-                <SelectTrigger className="w-full sm:w-[160px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
-                  <SelectValue placeholder="Estado Stock" />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
-                  <SelectItem value="all">Todos los Estados</SelectItem>
-                  <SelectItem value="low">⚠️ Bajo Stock</SelectItem>
-                  <SelectItem value="ok">✅ Stock Normal</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {(searchQuery || categoryFilter !== "all" || supplierFilter !== "all" || stockStatusFilter !== "all") && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setSearchQuery("");
-                    setCategoryFilter("all");
-                    setSupplierFilter("all");
-                    setStockStatusFilter("all");
-                  }}
-                  className="h-9 text-[11px] font-bold text-muted-foreground hover:text-rose-600 rounded-xl"
-                >
-                  Limpiar Filtros
-                </Button>
-              )}
-            </div>
-          </div>
-
-          {/* Table list */}
-          <div className="overflow-x-auto custom-scrollbar border border-border/60 rounded-2xl bg-background">
-            <table className="w-full text-left text-xs min-w-[1150px] border-collapse">
-              <thead>
-                <tr className="border-b border-border/60 bg-secondary/40 text-muted-foreground/80 font-bold text-[11px] uppercase tracking-wider">
-                  <th className="p-3.5 w-14 text-center">Imagen</th>
-                  <th className="p-3.5">Producto</th>
-                  <th className="p-3.5">Código de Barras</th>
-                  <th className="p-3.5">Categoría</th>
-                  <th className="p-3.5">Proveedor</th>
-                  <th className="p-3.5 text-right">Precio Costo</th>
-                  <th className="p-3.5 text-right">Precio Venta</th>
-                  <th className="p-3.5 text-center">Stock Actual</th>
-                  <th className="p-3.5 text-center">Stock Mínimo</th>
-                  <th className="p-3.5 text-center">Estado</th>
-                  <th className="p-3.5 text-right">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/30">
-                {filteredItems.map((item) => {
-                  const isLow = item.stock <= item.minStock;
-                  const hasVariants = item.variants && item.variants.length > 0;
-                  const isExpanded = !!expandedProductVariants[item.id];
-                  const supplier = suppliersList.find((s) => s.id === item.supplierId);
-
-                  return (
-                    <Fragment key={item.id}>
-                      <tr className="hover:bg-secondary/20 transition-colors">
-                        <td className="p-3.5 text-center">
-                          {item.image ? (
-                            <button
-                              type="button"
-                              onClick={() => setPreviewImageModal({ url: item.image, title: item.name })}
-                              className="group relative inline-block cursor-pointer focus:outline-none"
-                              title="Clic para ampliar imagen"
-                            >
-                              <img
-                                src={item.image}
-                                alt={item.name}
-                                className="w-10 h-10 rounded-xl object-cover border border-border mx-auto shrink-0 shadow-2xs group-hover:scale-105 group-hover:ring-2 group-hover:ring-primary/50 transition-all"
-                              />
-                              <div className="absolute inset-0 bg-black/20 rounded-xl opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                                <Eye className="w-3.5 h-3.5 text-white" />
-                              </div>
-                            </button>
-                          ) : (
-                            <div className="w-10 h-10 rounded-xl bg-secondary border border-border flex items-center justify-center text-muted-foreground font-bold text-xs mx-auto">
-                              📦
-                            </div>
-                          )}
-                        </td>
-                        <td className="p-3.5 font-bold text-foreground">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-bold text-foreground">{item.name}</span>
-                            {hasVariants && (
-                              <button
-                                type="button"
-                                onClick={() => toggleVariantExpand(item.id)}
-                                className="px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 text-[10px] font-extrabold flex items-center gap-0.5 hover:bg-primary/20 transition shrink-0"
-                              >
-                                {item.variants.length} variantes
-                                {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                        <td className="p-3.5 font-mono text-xs text-muted-foreground">
-                          {item.barcode ? (
-                            <div className="inline-flex items-center gap-1 bg-secondary/40 px-2 py-1 rounded-lg border border-border/50 text-[11px]">
-                              <QrCode className="h-3 w-3 text-muted-foreground/80 shrink-0" />
-                              <span>{item.barcode}</span>
-                            </div>
-                          ) : (
-                            <span className="text-[11px] text-muted-foreground/60 italic">Sin Cód. Barras</span>
-                          )}
-                        </td>
-                        <td className="p-3.5">
-                          <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-lg border bg-secondary/50 border-border/60 text-foreground">
-                            {item.category}
-                          </span>
-                        </td>
-                        <td className="p-3.5 font-medium text-xs text-foreground">
-                          {supplier ? (
-                            <span className="text-[11px] font-semibold text-foreground/90">{supplier.name}</span>
-                          ) : (
-                            <span className="text-[11px] text-muted-foreground/60 italic">No asignado</span>
-                          )}
-                        </td>
-                        <td className="p-3.5 text-right text-muted-foreground font-semibold">${item.cost.toLocaleString()}</td>
-                        <td className="p-3.5 text-right font-black text-sm text-foreground">${item.price.toLocaleString()}</td>
-                        <td className="p-3.5 text-center font-black text-sm">
-                          {item.stock} <span className="text-xs font-normal text-muted-foreground">{item.unit}</span>
-                        </td>
-                        <td className="p-3.5 text-center font-bold text-xs text-muted-foreground">
-                          {item.minStock} <span className="text-[10.5px] font-normal">{item.unit}</span>
-                        </td>
-                        <td className="p-3.5 text-center">
-                          <span
-                            className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full border ${
-                              isLow
-                                ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20"
-                                : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
-                            }`}
-                          >
-                            {isLow ? "Bajo Stock" : "OK"}
-                          </span>
-                        </td>
-                        <td className="p-3.5 text-right">
-                          <div className="flex items-center justify-end gap-1.5">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setShowAdjustModal(item)}
-                              className="h-8 text-[11px] font-bold rounded-xl border-border gap-1 hover:bg-secondary"
-                            >
-                              <PackagePlus className="h-3.5 w-3.5 text-primary" /> Stock
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleOpenEditModal(item)}
-                              className="h-8 text-[11px] font-bold rounded-xl border-border gap-1 hover:bg-secondary"
-                            >
-                              <Edit2 className="h-3.5 w-3.5 text-foreground" /> Editar
-                            </Button>
-                            <button
-                              type="button"
-                              onClick={() => setDeleteConfirmState({ type: "product", id: item.id, name: item.name })}
-                              className="p-1.5 text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 rounded-lg transition ml-0.5"
-                              title="Eliminar producto"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-
-                      {/* Expandable Variant Sub-row */}
-                      {hasVariants && isExpanded && (
-                        <tr className="bg-secondary/15 border-b border-border/40">
-                          <td colSpan={11} className="p-3 pl-14">
-                            <div className="bg-background border border-border/60 rounded-xl p-3 space-y-2 max-w-xl">
-                              <span className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
-                                Desglose de Stock por Variante ({item.name}):
-                              </span>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                {item.variants.map((variant: any) => (
-                                  <div
-                                    key={variant.id}
-                                    className="flex items-center justify-between p-2 rounded-lg bg-secondary/30 border border-border/50 text-xs"
-                                  >
-                                    <span className="font-bold text-foreground">{variant.name}</span>
-                                    <div className="flex items-center gap-1.5">
-                                      <span className="font-mono font-black text-foreground">{variant.stock} {item.unit}</span>
-                                      <button
-                                        type="button"
-                                        onClick={() => handleAdjustVariantStock(item.id, variant.id, -1)}
-                                        className="w-5 h-5 rounded-md bg-secondary border border-border flex items-center justify-center font-bold text-xs hover:bg-rose-500/10 hover:text-rose-600"
-                                        title="Reducir 1"
-                                      >
-                                        -
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() => handleAdjustVariantStock(item.id, variant.id, 1)}
-                                        className="w-5 h-5 rounded-md bg-secondary border border-border flex items-center justify-center font-bold text-xs hover:bg-emerald-500/10 hover:text-emerald-600"
-                                        title="Aumentar 1"
-                                      >
-                                        +
-                                      </button>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </Fragment>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      ) : (
-        <div className="bg-card border border-border/80 p-6 rounded-3xl space-y-4 shadow-xs">
-          {/* Kardex Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/40">
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-bold text-sm text-foreground">Historial Auditado de Movimientos (Kardex)</h3>
-                <span className="px-2 py-0.5 rounded-full bg-secondary text-[10px] font-extrabold text-foreground border border-border/60">
-                  {filteredMovements.length}
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Registro inalterable de entradas, salidas, ventas POS y ajustes de inventario.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2.5 shrink-0">
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={exportKardexCSV}
-                className="h-9 rounded-xl font-bold text-xs gap-1.5 border-border text-foreground hover:bg-secondary"
-              >
-                <Download className="h-4 w-4" /> Exportar Kardex CSV
-              </Button>
-            </div>
-          </div>
-
-          {/* Search, Date Range & Type Filter for Kardex */}
-          <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-secondary/20 border border-border/50 rounded-2xl">
-            <div className="relative flex-1 min-w-[200px] sm:max-w-xs">
-              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Buscar por producto, usuario o motivo..."
-                value={kardexSearch}
-                onChange={(e) => setKardexSearch(e.target.value)}
-                className="h-9 w-full pl-8 pr-3 rounded-xl border border-border bg-background text-xs font-bold text-foreground placeholder:font-normal placeholder:text-muted-foreground"
-              />
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-              {/* Date From */}
-              <div className="flex items-center gap-1.5 bg-background border border-border rounded-xl px-2.5 h-9 hover:border-primary/50 transition-colors">
-                <span className="text-[10px] font-bold uppercase text-muted-foreground">Desde:</span>
-                <Input
-                  type="date"
-                  value={kardexDateFrom}
-                  onChange={(e) => setKardexDateFrom(e.target.value)}
-                  className="bg-transparent text-xs font-bold text-foreground border-none h-auto p-0 shadow-none focus-visible:ring-0 cursor-pointer dark:[&::-webkit-calendar-picker-indicator]:invert opacity-90 hover:opacity-100"
-                />
-              </div>
-
-              {/* Date To */}
-              <div className="flex items-center gap-1.5 bg-background border border-border rounded-xl px-2.5 h-9 hover:border-primary/50 transition-colors">
-                <span className="text-[10px] font-bold uppercase text-muted-foreground">Hasta:</span>
-                <Input
-                  type="date"
-                  value={kardexDateTo}
-                  onChange={(e) => setKardexDateTo(e.target.value)}
-                  className="bg-transparent text-xs font-bold text-foreground border-none h-auto p-0 shadow-none focus-visible:ring-0 cursor-pointer dark:[&::-webkit-calendar-picker-indicator]:invert opacity-90 hover:opacity-100"
-                />
-              </div>
-
-              {/* Movement Type Filter */}
-              <Select value={kardexTypeFilter} onValueChange={(val) => setKardexTypeFilter(val)}>
-                <SelectTrigger className="w-full sm:w-[180px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
-                  <SelectValue placeholder="Tipo de Movimiento" />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
-                  <SelectItem value="all">Todos los Movimientos</SelectItem>
-                  <SelectItem value="Entrada">Entrada / Reabastecimiento</SelectItem>
-                  <SelectItem value="Salida / Venta">Salida / Venta POS</SelectItem>
-                  <SelectItem value="Ajuste Manual">Ajuste Manual</SelectItem>
-                  <SelectItem value="Merma / Pérdida">Merma / Pérdida</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {(kardexSearch || kardexTypeFilter !== "all" || kardexDateFrom || kardexDateTo) && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setKardexSearch("");
-                    setKardexTypeFilter("all");
-                    setKardexDateFrom("");
-                    setKardexDateTo("");
-                  }}
-                  className="h-9 text-[11px] font-bold text-muted-foreground hover:text-rose-600 rounded-xl"
-                >
-                  Limpiar Filtros
-                </Button>
-              )}
-            </div>
-          </div>
-
-          {/* Kardex Table */}
-          <div className="overflow-x-auto border border-border/60 rounded-2xl bg-background">
-            <table className="w-full text-left text-xs min-w-[850px] border-collapse">
-              <thead>
-                <tr className="border-b border-border/60 bg-secondary/40 text-muted-foreground font-bold text-[10px] uppercase tracking-wider">
-                  <th className="p-3.5">Fecha & Hora</th>
-                  <th className="p-3.5">Producto</th>
-                  <th className="p-3.5 text-center">Tipo</th>
-                  <th className="p-3.5 text-center">Cantidad</th>
-                  <th className="p-3.5 text-center">Stock Previo → Nuevo</th>
-                  <th className="p-3.5">Responsable</th>
-                  <th className="p-3.5">Motivo / Detalle</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/30">
-                {filteredMovements.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="p-8 text-center text-muted-foreground italic">
-                      No hay registros de movimientos con el filtro seleccionado.
-                    </td>
-                  </tr>
-                ) : (
-                  filteredMovements.map((m: any) => {
-                    const isPositive = m.quantity > 0;
-                    return (
-                      <tr key={m.id} className="hover:bg-secondary/20 transition-colors">
-                        <td className="p-3.5 font-mono text-muted-foreground text-[11px] font-semibold whitespace-nowrap">
-                          {m.date}
-                        </td>
-                        <td className="p-3.5 font-bold text-foreground">{m.productName}</td>
-                        <td className="p-3.5 text-center">
-                          <span
-                            className={`inline-flex items-center text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
-                              m.type === "Entrada"
-                                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
-                                : m.type === "Salida / Venta"
-                                ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
-                                : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
-                            }`}
-                          >
-                            {m.type}
-                          </span>
-                        </td>
-                        <td className="p-3.5 text-center font-black text-sm">
-                          <span className={isPositive ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}>
-                            {isPositive ? `+${m.quantity}` : m.quantity}
-                          </span>
-                        </td>
-                        <td className="p-3.5 text-center font-mono text-xs">
-                          <span className="text-muted-foreground">{m.previousStock}</span>
-                          <span className="mx-1 text-muted-foreground/60">→</span>
-                          <span className="font-bold text-foreground">{m.newStock}</span>
-                        </td>
-                        <td className="p-3.5 font-bold text-foreground">{m.user}</td>
-                        <td className="p-3.5 text-muted-foreground text-xs">{m.reason}</td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* Modal: Ampliación de Imagen de Producto */}
-      {previewImageModal && (
-        <Dialog open={!!previewImageModal} onOpenChange={(open) => !open && setPreviewImageModal(null)}>
-          <DialogContent className="sm:max-w-md border border-border bg-card p-6 rounded-3xl shadow-2xl space-y-4 text-center">
-            <DialogHeader>
-              <DialogTitle className="text-sm font-bold text-foreground text-center flex items-center justify-center gap-2">
-                <ImageIcon className="h-4 w-4 text-primary" /> {previewImageModal.title}
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="relative rounded-2xl overflow-hidden border border-border/80 bg-background/50 max-h-[65vh] flex items-center justify-center p-3">
-              <img
-                src={previewImageModal.url}
-                alt={previewImageModal.title}
-                className="max-h-[55vh] w-auto max-w-full object-contain rounded-xl shadow-lg transition-transform"
-              />
-            </div>
-
-            <DialogFooter className="justify-center sm:justify-center pt-1">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setPreviewImageModal(null)}
-                className="rounded-xl text-xs font-bold px-6 border-border"
-              >
-                Cerrar
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {/* Confirmation Modal for Deletions (Categorías, Proveedores, Productos) */}
-      {deleteConfirmState && (
-        <AlertDialog open={!!deleteConfirmState} onOpenChange={(open) => !open && setDeleteConfirmState(null)}>
-          <AlertDialogContent className="sm:max-w-md border border-border bg-card p-6 rounded-3xl shadow-2xl">
-            <AlertDialogHeader>
-              <AlertDialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
-                <Trash2 className="h-5 w-5 text-rose-600" /> Confirmar Eliminación
-              </AlertDialogTitle>
-              <AlertDialogDescription className="text-xs text-muted-foreground pt-1">
-                {deleteConfirmState.type === "category" && (
-                  <>¿Estás seguro de que deseas eliminar la categoría <strong>"{deleteConfirmState.name}"</strong>? Esta acción no se puede deshacer.</>
-                )}
-                {deleteConfirmState.type === "supplier" && (
-                  <>¿Estás seguro de que deseas eliminar al proveedor <strong>"{deleteConfirmState.name}"</strong>? El proveedor dejará de figurar en la lista habitual.</>
-                )}
-                {deleteConfirmState.type === "product" && (
-                  <>¿Estás seguro de que deseas eliminar el producto <strong>"{deleteConfirmState.name}"</strong> del inventario?</>
-                )}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter className="gap-2 pt-3">
-              <AlertDialogCancel
-                onClick={() => setDeleteConfirmState(null)}
-                className="rounded-xl text-xs font-bold border-border"
-              >
-                Cancelar
-              </AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleConfirmDelete}
-                className="rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-xs"
-              >
-                Sí, Eliminar
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      )}
-
-      {/* Modal: Gestionar Categorías */}
-      {showCategoryModal && (
-        <Dialog open={showCategoryModal} onOpenChange={setShowCategoryModal}>
-          <DialogContent className="sm:max-w-md border border-border bg-card p-6 rounded-3xl shadow-2xl space-y-4">
-            <DialogHeader>
-              <DialogTitle className="text-base font-bold flex items-center gap-2">
-                <FolderPlus className="h-5 w-5 text-primary" /> Gestionar Categorías de Tienda
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="space-y-4 text-xs">
-              <form onSubmit={handleAddCategory} className="flex gap-2">
-                <Input
-                  type="text"
-                  placeholder="Nueva categoría (ej: Bar Saludable, Toallas...)"
-                  value={newCategoryName}
-                  onChange={(e) => setNewCategoryName(e.target.value)}
-                  className="flex-1 h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
-                  required
-                />
-                <Button type="submit" size="sm" className="h-9 rounded-xl font-bold text-xs bg-primary text-primary-foreground">
-                  <PlusCircle className="h-4 w-4" /> Agregar
-                </Button>
-              </form>
-
-              <div className="space-y-1.5 pt-2">
-                <span className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
-                  Categorías Actuales ({categories.length}):
-                </span>
-                <div className="space-y-1.5 max-h-48 overflow-y-auto custom-scrollbar pr-1">
-                  {categories.map((cat) => (
-                    <div
-                      key={cat}
-                      className="flex items-center justify-between p-2.5 rounded-xl bg-secondary/30 border border-border/50 text-xs font-bold text-foreground"
-                    >
-                      <span>{cat}</span>
-                      <button
-                        type="button"
-                        onClick={() => setDeleteConfirmState({ type: "category", id: cat, name: cat })}
-                        className="text-muted-foreground hover:text-rose-600 p-1 rounded-lg transition"
-                        title="Eliminar categoría"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <DialogFooter className="pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowCategoryModal(false)}
-                  className="rounded-xl text-xs font-bold"
-                >
-                  Cerrar
-                </Button>
-              </DialogFooter>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {/* Modal: Gestionar Proveedores */}
-      {showSupplierModal && (
-        <Dialog open={showSupplierModal} onOpenChange={setShowSupplierModal}>
-          <DialogContent className="sm:max-w-lg border border-border bg-card p-6 rounded-3xl shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto custom-scrollbar">
-            <DialogHeader>
-              <DialogTitle className="text-base font-bold flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-primary" /> Proveedores de Inventario ({suppliersList.length})
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="space-y-4 text-xs">
-              <form onSubmit={handleAddSupplier} className="p-3.5 bg-secondary/30 border border-border/60 rounded-2xl space-y-3">
-                <span className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
-                  Registrar Nuevo Proveedor Habitual
-                </span>
-                <div className="grid grid-cols-2 gap-2">
-                  <Input
-                    type="text"
-                    placeholder="Empresa / Distribuidora *"
-                    value={newSupName}
-                    onChange={(e) => setNewSupName(e.target.value)}
-                    className="h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
-                    required
-                  />
-                  <Input
-                    type="text"
-                    placeholder="Contacto Principal"
-                    value={newSupContact}
-                    onChange={(e) => setNewSupContact(e.target.value)}
-                    className="h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Input
-                    type="text"
-                    placeholder="Teléfono / WhatsApp (ej: +549...)"
-                    value={newSupPhone}
-                    onChange={(e) => setNewSupPhone(e.target.value)}
-                    className="h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
-                  />
-                  <Input
-                    type="email"
-                    placeholder="Email de Pedidos"
-                    value={newSupEmail}
-                    onChange={(e) => setNewSupEmail(e.target.value)}
-                    className="h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
-                  />
-                </div>
-                <Button type="submit" size="sm" className="w-full h-9 rounded-xl font-bold text-xs bg-primary text-primary-foreground">
-                  <PlusCircle className="h-4 w-4" /> Guardar Proveedor
-                </Button>
-              </form>
-
-              <div className="space-y-2 pt-2">
-                <span className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
-                  Proveedores Registrados:
-                </span>
-                <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1">
-                  {suppliersList.map((sup) => (
-                    <div
-                      key={sup.id}
-                      className="flex items-center justify-between p-3 rounded-2xl bg-secondary/20 border border-border/60 text-xs"
-                    >
-                      <div>
-                        <span className="font-bold text-foreground block">{sup.name}</span>
-                        <div className="text-[10.5px] text-muted-foreground flex items-center gap-2 mt-0.5">
-                          <span>👤 {sup.contactName}</span>
-                          <span>•</span>
-                          <span>📞 {sup.phone || "Sin Tel."}</span>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setDeleteConfirmState({ type: "supplier", id: sup.id, name: sup.name })}
-                        className="text-muted-foreground hover:text-rose-600 p-1.5 rounded-lg transition"
-                        title="Eliminar proveedor"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <DialogFooter className="pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowSupplierModal(false)}
-                  className="rounded-xl text-xs font-bold"
-                >
-                  Cerrar
-                </Button>
-              </DialogFooter>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {/* Modal: Orden de Reabastecimiento a Proveedor */}
-      {showReplenishModal && (
-        <Dialog open={showReplenishModal} onOpenChange={setShowReplenishModal}>
-          <DialogContent className="sm:max-w-2xl border border-border bg-card p-6 rounded-3xl shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
-            <DialogHeader>
-              <DialogTitle className="text-base font-bold flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Truck className="h-5 w-5 text-amber-500" /> Generador de Pedidos a Proveedor
-                </div>
-                <span className="text-xs font-extrabold text-amber-600 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">
-                  {replenishOrderItems.length} ítems sugeridos
-                </span>
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="space-y-4 text-xs">
-              <p className="text-xs text-muted-foreground">
-                Cálculo automático de unidades faltantes para alcanzar el stock deseado. Ajusta las cantidades antes de enviar el pedido.
-              </p>
-
-              <div className="overflow-x-auto border border-border/60 rounded-2xl">
-                <table className="w-full text-left text-xs min-w-[550px]">
-                  <thead>
-                    <tr className="bg-secondary/40 border-b border-border/60 text-[10px] font-bold uppercase text-muted-foreground">
-                      <th className="p-2.5">Producto</th>
-                      <th className="p-2.5 text-center">Stock Actual / Min</th>
-                      <th className="p-2.5 text-center w-28">Pedir (Unid)</th>
-                      <th className="p-2.5">Proveedor Asignado</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border/30">
-                    {replenishOrderItems.map((item, idx) => (
-                      <tr key={item.id} className="hover:bg-secondary/20">
-                        <td className="p-2.5 font-bold text-foreground">
-                          {item.name}
-                          <span className="block text-[10px] text-muted-foreground">{item.category}</span>
-                        </td>
-                        <td className="p-2.5 text-center">
-                          <span className="font-extrabold text-rose-600 dark:text-rose-400">{item.stock}</span>
-                          <span className="text-[10px] text-muted-foreground"> / {item.minStock}</span>
-                        </td>
-                        <td className="p-2.5 text-center">
-                          <Input
-                            type="number"
-                            min="1"
-                            value={item.orderQty}
-                            onChange={(e) => {
-                              const val = Math.max(1, parseInt(e.target.value) || 1);
-                              setReplenishOrderItems((prev) =>
-                                prev.map((it, i) => (i === idx ? { ...it, orderQty: val } : it)),
-                              );
-                            }}
-                            className="w-16 h-8 text-center rounded-xl border border-border bg-background font-bold text-foreground"
-                          />
-                        </td>
-                        <td className="p-2.5">
-                          <Select
-                            value={item.supplierId || suppliersList[0]?.id}
-                            onValueChange={(val) => {
-                              setReplenishOrderItems((prev) =>
-                                prev.map((it, i) => (i === idx ? { ...it, supplierId: val } : it)),
-                              );
-                            }}
-                          >
-                            <SelectTrigger className="h-8 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
-                              <SelectValue placeholder="Proveedor" />
-                            </SelectTrigger>
-                            <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
-                              {suppliersList.map((sup) => (
-                                <SelectItem key={sup.id} value={sup.id}>
-                                  {sup.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={exportReplenishOrderCSV}
-                  className="w-full sm:w-auto h-9 text-xs font-bold rounded-xl gap-1.5 border-border"
-                >
-                  <Download className="h-4 w-4" /> Exportar Orden (CSV)
-                </Button>
-
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowReplenishModal(false)}
-                    className="flex-1 sm:flex-initial h-9 text-xs font-bold rounded-xl"
-                  >
-                    Cancelar
-                  </Button>
-
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={() => sendOrderViaWhatsApp()}
-                    className="flex-1 sm:flex-initial h-9 text-xs font-bold rounded-xl gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
-                  >
-                    <Send className="h-4 w-4" /> Enviar por WhatsApp
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {/* Modal: Crear Nuevo Producto */}
-      {showAddModal && (
-        <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
-          <DialogContent className="sm:max-w-md border border-border bg-card p-6 rounded-3xl shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
-            <DialogHeader>
-              <DialogTitle className="text-base font-bold flex items-center gap-2">
-                <PlusCircle className="h-5 w-5 text-primary" /> Registrar Nuevo Producto en Tienda
-              </DialogTitle>
-            </DialogHeader>
-
-            <form onSubmit={handleAddProduct} className="space-y-4 text-xs">
-              <div className="space-y-1">
-                <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
-                  Nombre del Producto:
-                </label>
-                <Input
-                  type="text"
-                  placeholder="Ej: Proteína Whey 1kg Vainilla"
-                  value={newProdName}
-                  onChange={(e) => setNewProdName(e.target.value)}
-                  className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-3 gap-2">
-                <div className="space-y-1">
-                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block flex items-center gap-1">
-                    <QrCode className="h-3 w-3 text-muted-foreground" /> Cód. Barras:
-                  </label>
-                  <Input
-                    type="text"
-                    placeholder="779123..."
-                    value={newProdBarcode}
-                    onChange={(e) => setNewProdBarcode(e.target.value)}
-                    className="w-full h-9 rounded-xl border border-border bg-background px-2.5 text-xs font-mono font-bold text-foreground"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
-                    Categoría:
-                  </label>
-                  <Select value={newProdCat} onValueChange={(val) => setNewProdCat(val)}>
-                    <SelectTrigger className="w-full h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground px-2.5">
-                      <SelectValue placeholder="Categoría" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
-                      {categories.map((cat) => (
-                        <SelectItem key={cat} value={cat}>
-                          {cat}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
-                    Proveedor:
-                  </label>
-                  <Select value={newProdSupplierId} onValueChange={(val) => setNewProdSupplierId(val)}>
-                    <SelectTrigger className="w-full h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground px-2.5">
-                      <SelectValue placeholder="Proveedor" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
-                      {suppliersList.map((sup) => (
-                        <SelectItem key={sup.id} value={sup.id}>
-                          {sup.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
-                  Variantes (Opcional, separadas por coma):
-                </label>
-                <Input
-                  type="text"
-                  placeholder="Ej: Vainilla, Chocolate, Frutilla  ó  S, M, L, XL"
-                  value={newProdVariantsInput}
-                  onChange={(e) => setNewProdVariantsInput(e.target.value)}
-                  className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground placeholder:font-normal"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
-                  Foto del Producto:
-                </label>
-
-                <div className="flex items-center gap-3 bg-secondary/30 border border-border/60 p-2.5 rounded-2xl">
-                  {newProdImage ? (
-                    <div className="relative shrink-0">
-                      <img
-                        src={newProdImage}
-                        alt="Vista previa"
-                        className="w-12 h-12 rounded-xl object-cover border border-border shadow-xs"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setNewProdImage("")}
-                        className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-rose-600 text-white flex items-center justify-center text-xs shadow-xs hover:bg-rose-700"
-                        title="Quitar foto"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="w-12 h-12 rounded-xl bg-secondary border border-border/80 flex items-center justify-center text-muted-foreground shrink-0">
-                      <ImageIcon className="w-5 h-5" />
-                    </div>
-                  )}
-
-                  <div className="flex-1 min-w-0">
-                    <input
-                      type="file"
-                      id="new-prod-file-input"
-                      accept="image/*"
-                      onChange={(e) => handleImageFileUpload(e, setNewProdImage)}
-                      className="hidden"
-                    />
-                    <label
-                      htmlFor="new-prod-file-input"
-                      className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-background border border-border text-xs font-bold text-foreground hover:bg-secondary transition shadow-2xs"
-                    >
-                      <Upload className="h-3.5 w-3.5 text-primary" /> Subir desde PC / Celular
-                    </label>
-                    <p className="text-[10px] text-muted-foreground mt-1 truncate">
-                      JPG, PNG o WEBP de tu galería o computadora.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
-                    Precio Costo ($):
-                  </label>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    value={newProdCost}
-                    onChange={(e) => setNewProdCost(e.target.value)}
-                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
-                    Precio Venta ($):
-                  </label>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    value={newProdPrice}
-                    onChange={(e) => setNewProdPrice(e.target.value)}
-                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
-                    Stock Inicial:
-                  </label>
-                  <Input
-                    type="number"
-                    placeholder="10"
-                    value={newProdStock}
-                    onChange={(e) => setNewProdStock(e.target.value)}
-                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
-                    Stock Mínimo:
-                  </label>
-                  <Input
-                    type="number"
-                    placeholder="5"
-                    value={newProdMinStock}
-                    onChange={(e) => setNewProdMinStock(e.target.value)}
-                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
-                    Unidad:
-                  </label>
-                  <Select value={newProdUnit} onValueChange={(val) => setNewProdUnit(val)}>
-                    <SelectTrigger className="w-full h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
-                      <SelectValue placeholder="Unidad" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
-                      <SelectItem value="unid">Unidades (unid)</SelectItem>
-                      <SelectItem value="bot">Botellas / Latas (bot)</SelectItem>
-                      <SelectItem value="pack">Paquetes / Cajas (pack)</SelectItem>
-                      <SelectItem value="kg">Kilogramos (kg)</SelectItem>
-                      <SelectItem value="g">Gramos (g)</SelectItem>
-                      <SelectItem value="l">Litros (l)</SelectItem>
-                      <SelectItem value="ml">Mililitros (ml)</SelectItem>
-                      <SelectItem value="porc">Porciones / Dosis (porc)</SelectItem>
-                      <SelectItem value="serv">Servicios / Sesiones (serv)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <DialogFooter className="gap-2 pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowAddModal(false)}
-                  className="rounded-xl text-xs font-bold"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  className="rounded-xl text-xs font-bold bg-primary text-primary-foreground"
-                >
-                  Guardar Producto
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {/* Modal: Editar Producto Existente */}
-      {showEditModal && (
-        <Dialog open={!!showEditModal} onOpenChange={(open) => !open && setShowEditModal(null)}>
-          <DialogContent className="sm:max-w-md border border-border bg-card p-6 rounded-3xl shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
-            <DialogHeader>
-              <DialogTitle className="text-base font-bold flex items-center gap-2">
-                <Edit2 className="h-5 w-5 text-primary" /> Editar Detalles de Producto
-              </DialogTitle>
-            </DialogHeader>
-
-            <form onSubmit={handleSaveEditProduct} className="space-y-4 text-xs">
-              <div className="space-y-1">
-                <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
-                  Nombre del Producto:
-                </label>
-                <Input
-                  type="text"
-                  value={editProdName}
-                  onChange={(e) => setEditProdName(e.target.value)}
-                  className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-3 gap-2">
-                <div className="space-y-1">
-                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block flex items-center gap-1">
-                    <QrCode className="h-3 w-3 text-muted-foreground" /> Cód. Barras:
-                  </label>
-                  <Input
-                    type="text"
-                    value={editProdBarcode}
-                    onChange={(e) => setEditProdBarcode(e.target.value)}
-                    className="w-full h-9 rounded-xl border border-border bg-background px-2.5 text-xs font-mono font-bold text-foreground"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
-                    Categoría:
-                  </label>
-                  <Select value={editProdCat} onValueChange={(val) => setEditProdCat(val)}>
-                    <SelectTrigger className="w-full h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground px-2.5">
-                      <SelectValue placeholder="Categoría" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
-                      {categories.map((cat) => (
-                        <SelectItem key={cat} value={cat}>
-                          {cat}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
-                    Proveedor:
-                  </label>
-                  <Select value={editProdSupplierId} onValueChange={(val) => setEditProdSupplierId(val)}>
-                    <SelectTrigger className="w-full h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground px-2.5">
-                      <SelectValue placeholder="Proveedor" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
-                      {suppliersList.map((sup) => (
-                        <SelectItem key={sup.id} value={sup.id}>
-                          {sup.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
-                  Foto del Producto:
-                </label>
-
-                <div className="flex items-center gap-3 bg-secondary/30 border border-border/60 p-2.5 rounded-2xl">
-                  {editProdImage ? (
-                    <div className="relative shrink-0">
-                      <img
-                        src={editProdImage}
-                        alt="Vista previa"
-                        className="w-12 h-12 rounded-xl object-cover border border-border shadow-xs"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setEditProdImage("")}
-                        className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-rose-600 text-white flex items-center justify-center text-xs shadow-xs hover:bg-rose-700"
-                        title="Quitar foto"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="w-12 h-12 rounded-xl bg-secondary border border-border/80 flex items-center justify-center text-muted-foreground shrink-0">
-                      <ImageIcon className="w-5 h-5" />
-                    </div>
-                  )}
-
-                  <div className="flex-1 min-w-0">
-                    <input
-                      type="file"
-                      id="edit-prod-file-input"
-                      accept="image/*"
-                      onChange={(e) => handleImageFileUpload(e, setEditProdImage)}
-                      className="hidden"
-                    />
-                    <label
-                      htmlFor="edit-prod-file-input"
-                      className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-background border border-border text-xs font-bold text-foreground hover:bg-secondary transition shadow-2xs"
-                    >
-                      <Upload className="h-3.5 w-3.5 text-primary" /> Cambiar desde PC / Celular
-                    </label>
-                    <p className="text-[10px] text-muted-foreground mt-1 truncate">
-                      JPG, PNG o WEBP de tu galería o computadora.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
-                    Precio Costo ($):
-                  </label>
-                  <Input
-                    type="number"
-                    value={editProdCost}
-                    onChange={(e) => setEditProdCost(e.target.value)}
-                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
-                    Precio Venta ($):
-                  </label>
-                  <Input
-                    type="number"
-                    value={editProdPrice}
-                    onChange={(e) => setEditProdPrice(e.target.value)}
-                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
-                    Stock Mínimo (Alerta):
-                  </label>
-                  <Input
-                    type="number"
-                    value={editProdMinStock}
-                    onChange={(e) => setEditProdMinStock(e.target.value)}
-                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground block">
-                    Unidad:
-                  </label>
-                  <Select value={editProdUnit} onValueChange={(val) => setEditProdUnit(val)}>
-                    <SelectTrigger className="w-full h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
-                      <SelectValue placeholder="Unidad" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground">
-                      <SelectItem value="unid">Unidades (unid)</SelectItem>
-                      <SelectItem value="bot">Botellas / Latas (bot)</SelectItem>
-                      <SelectItem value="pack">Paquetes / Cajas (pack)</SelectItem>
-                      <SelectItem value="kg">Kilogramos (kg)</SelectItem>
-                      <SelectItem value="g">Gramos (g)</SelectItem>
-                      <SelectItem value="l">Litros (l)</SelectItem>
-                      <SelectItem value="ml">Mililitros (ml)</SelectItem>
-                      <SelectItem value="porc">Porciones / Dosis (porc)</SelectItem>
-                      <SelectItem value="serv">Servicios / Sesiones (serv)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <DialogFooter className="gap-2 pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowEditModal(null)}
-                  className="rounded-xl text-xs font-bold"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  className="rounded-xl text-xs font-bold bg-primary text-primary-foreground"
-                >
-                  Guardar Cambios
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {/* Adjust Stock Modal */}
-      {showAdjustModal && (
-        <Dialog open={!!showAdjustModal} onOpenChange={(open) => !open && setShowAdjustModal(null)}>
-          <DialogContent className="max-w-md border border-border bg-card p-6 rounded-3xl shadow-2xl space-y-4">
-            <DialogHeader>
-              <DialogTitle className="text-base font-bold flex items-center gap-2">
-                <PackagePlus className="h-5 w-5 text-primary" /> Reabastecer / Ajustar Stock
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 pt-2 text-xs">
-              <div className="p-3.5 bg-secondary/30 border border-border/60 rounded-2xl">
-                <span className="font-bold text-sm block text-foreground">{showAdjustModal.name}</span>
-                <span className="text-xs text-muted-foreground">
-                  Stock Actual: <strong>{showAdjustModal.stock} {showAdjustModal.unit}</strong> (Min: {showAdjustModal.minStock})
-                </span>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10.5px] font-bold text-muted-foreground uppercase block">
-                  Cantidad a Ingresar (o restar con signo -):
-                </label>
-                <Input
-                  type="number"
-                  placeholder="Ej: 20 para agregar o -5 para reducir"
-                  value={adjustAmount}
-                  onChange={(e) => setAdjustAmount(e.target.value)}
-                  className="w-full h-9.5 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10.5px] font-bold text-muted-foreground uppercase block">
-                  Motivo / Observación del Movimiento:
-                </label>
-                <Input
-                  type="text"
-                  placeholder="Ej: Reabastecimiento de compra, Merma por vencimiento, Muestra..."
-                  value={adjustReason}
-                  onChange={(e) => setAdjustReason(e.target.value)}
-                  className="w-full h-9.5 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
-                />
-              </div>
-
-              <DialogFooter className="gap-2 pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowAdjustModal(null)}
-                  className="rounded-xl text-xs font-bold"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="button"
-                  onClick={() => {
-                    const parsed = parseInt(adjustAmount);
-                    if (isNaN(parsed)) {
-                      toast.error("Ingresa un número válido para el ajuste.");
-                      return;
-                    }
-                    const prevStk = showAdjustModal.stock;
-                    const newStk = Math.max(0, prevStk + parsed);
-                    
-                    setInventoryItems((prev) =>
-                      prev.map((i) =>
-                        i.id === showAdjustModal.id ? { ...i, stock: newStk } : i,
-                      ),
-                    );
-
-                    const defaultReason = parsed >= 0 ? "Reabastecimiento de stock" : "Ajuste manual de existencias";
-                    logStockMovement(
-                      showAdjustModal.id,
-                      showAdjustModal.name,
-                      parsed >= 0 ? "Entrada" : "Ajuste Manual",
-                      parsed,
-                      prevStk,
-                      newStk,
-                      adjustReason.trim() || defaultReason
-                    );
-
-                    setAdjustAmount("");
-                    setAdjustReason("");
-                    setShowAdjustModal(null);
-                    toast.success(`✓ Stock de ${showAdjustModal.name} actualizado correctamente.`);
-                  }}
-                  className="rounded-xl text-xs font-bold bg-primary text-primary-foreground"
-                >
-                  Guardar Ajuste
-                </Button>
-              </DialogFooter>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
-    </div>
-  );
-}
-
 
 function ReseñasTab({
   membersList = [],
@@ -7640,8 +3562,6 @@ type ClassItem = {
   releasedSpots?: { [spotIndex: number]: { originalStudent: string; creditsCost: number } };
   status?: "activa" | "cancelada";
   weekOffset?: number;
-  ratings?: { [studentName: string]: { stars: number; comment?: string } };
-  seekingBackup?: boolean;
 };
 
 const DAY_NAMES_ES = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
@@ -7665,11 +3585,13 @@ function MiembrosTab({
   const [renewPlan, setRenewPlan] = useState<string>("");
   const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
   const [renewMonths, setRenewMonths] = useState<string>("1");
+  const [renewPaymentMethod, setRenewPaymentMethod] = useState<string>("Efectivo");
 
   const handleStartRenewMember = (m: any) => {
     setRenewMemberId(m.name);
     setRenewPlan(m.plan || membershipsList?.[0]?.name || "Pase Libre");
     setRenewMonths("1");
+    setRenewPaymentMethod(m.paymentMethod || "Efectivo");
   };
 
   // Check-in and Receipt states
@@ -7804,6 +3726,7 @@ function MiembrosTab({
     hasApto: "Pendiente",
     aptoExp: "",
     plan: "",
+    paymentMethod: "Efectivo",
     status: "activo",
     end: "",
     medicalNotes: "",
@@ -7845,6 +3768,7 @@ function MiembrosTab({
       hasApto: "Pendiente",
       aptoExp: "",
       plan: defaultPlan,
+      paymentMethod: "Efectivo",
       status: "activo",
       end: defaultEnd,
       medicalNotes: "",
@@ -7873,6 +3797,7 @@ function MiembrosTab({
       const selectedPlanObj = membershipsList?.find((m: any) => m.name === newMember.plan);
       const planPrice = selectedPlanObj?.price || 18000;
       const planDuration = selectedPlanObj?.duration || "1 Mes";
+      const selectedPaymentMethod = newMember.paymentMethod || "Efectivo";
 
       const initialPayments =
         newMember.status === "activo"
@@ -7881,7 +3806,7 @@ function MiembrosTab({
                 id: "pay_" + Math.random().toString(36).substr(2, 9),
                 date: new Date().toISOString().split("T")[0],
                 amount: planPrice,
-                method: "Efectivo",
+                method: selectedPaymentMethod,
                 duration: planDuration,
               },
             ]
@@ -7889,6 +3814,7 @@ function MiembrosTab({
 
       const memberToAdd = {
         ...newMember,
+        paymentMethod: selectedPaymentMethod,
         color: getStatusBadgeColor(newMember.status),
         photo: "https://api.dicebear.com/7.x/initials/svg?seed=" + newMember.name,
         payments: initialPayments,
@@ -7896,20 +3822,27 @@ function MiembrosTab({
       setMembersList([memberToAdd, ...membersList]);
 
       if (newMember.status === "activo") {
+        const channelType =
+          selectedPaymentMethod === "Efectivo"
+            ? "cash"
+            : selectedPaymentMethod.includes("Mercado Pago")
+              ? "mercadopago"
+              : "transfer";
+
         setCashTransactions((prev: any) => [
           {
             id: `tx-new-${Date.now()}`,
             date: new Date().toISOString().split("T")[0],
             type: "income",
-            channel: "cash",
-            description: `Alta de Alumno (${newMember.plan || "Plan"}) - ${newMember.name}`,
+            channel: channelType,
+            description: `Alta de Alumno (${newMember.plan || "Plan"}) - ${newMember.name} [${selectedPaymentMethod}]`,
             amount: planPrice,
             registeredBy: currentUser?.name || "Recepción",
             memberName: newMember.name,
           },
           ...prev,
         ]);
-        toast.success(`Alumno ${newMember.name} registrado con éxito y cobro de $${planPrice.toLocaleString()} ingresado en caja.`);
+        toast.success(`Alumno ${newMember.name} registrado con éxito (${selectedPaymentMethod}).`);
       } else {
         toast.success(`Alumno ${newMember.name} registrado con éxito.`);
       }
@@ -7929,6 +3862,7 @@ function MiembrosTab({
       hasApto: "Pendiente",
       aptoExp: "",
       plan: "",
+      paymentMethod: "Efectivo",
       status: "activo",
       end: "",
       medicalNotes: "",
@@ -7950,6 +3884,7 @@ function MiembrosTab({
       hasApto: m.hasApto || "Pendiente",
       aptoExp: m.aptoExp || "",
       plan: m.plan || "",
+      paymentMethod: m.paymentMethod || "Efectivo",
       status: m.status || "activo",
       end: m.end || "",
       medicalNotes: m.medicalNotes || "",
@@ -8187,22 +4122,31 @@ function MiembrosTab({
           const selectedPlanObj = membershipsList?.find((p: any) => p.name === planToUse);
           const planPrice = selectedPlanObj?.price || 18000;
           const totalAmount = planPrice * monthsToAdd;
+          const paymentMethodToUse = renewPaymentMethod || m.paymentMethod || "Efectivo";
+
           const newPayment = {
             id: "pay_" + Math.random().toString(36).substr(2, 9),
             date: new Date().toISOString().split("T")[0],
             amount: totalAmount,
-            method: "Efectivo",
+            method: paymentMethodToUse,
             duration: monthsToAdd === 1 ? "1 Mes" : `${monthsToAdd} Meses`,
           };
 
           if (setCashTransactions) {
+            const channelType =
+              paymentMethodToUse === "Efectivo"
+                ? "cash"
+                : paymentMethodToUse.includes("Mercado Pago")
+                  ? "mercadopago"
+                  : "transfer";
+
             setCashTransactions((prevTx: any) => [
               {
                 id: `tx-renew-${Date.now()}`,
                 date: new Date().toISOString().split("T")[0],
                 type: "income",
-                channel: "cash",
-                description: `Renovación Membresía ${planToUse} (${monthsToAdd}m) - ${m.name}`,
+                channel: channelType,
+                description: `Renovación Membresía ${planToUse} (${monthsToAdd}m) - ${m.name} [${paymentMethodToUse}]`,
                 amount: totalAmount,
                 registeredBy: currentUser?.name || "Recepción",
                 memberName: m.name,
@@ -8215,6 +4159,7 @@ function MiembrosTab({
           return {
             ...m,
             plan: planToUse,
+            paymentMethod: paymentMethodToUse,
             status: "activo",
             debtAmount: 0,
             end: nextEndStr,
@@ -8459,26 +4404,47 @@ function MiembrosTab({
               <h3 className="font-semibold text-sm uppercase text-muted-foreground tracking-wider">
                 C. Comercial
               </h3>
-              <div className="space-y-2">
-                <Label>Plan de Membresía</Label>
-                <Select
-                  value={newMember.plan}
-                  onValueChange={(val) => {
-                    const autoEnd = getExpirationDateForPlan(val);
-                    setNewMember((prev) => ({ ...prev, plan: val, end: autoEnd }));
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar Plan" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {membershipsList?.map((m: any) => (
-                      <SelectItem key={m.id} value={m.name}>
-                        {m.name}
-                      </SelectItem>
-                    )) || <SelectItem value="Pase Libre">Pase Libre</SelectItem>}
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Plan de Membresía</Label>
+                  <Select
+                    value={newMember.plan}
+                    onValueChange={(val) => {
+                      const autoEnd = getExpirationDateForPlan(val);
+                      setNewMember((prev) => ({ ...prev, plan: val, end: autoEnd }));
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar Plan" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {membershipsList?.map((m: any) => (
+                        <SelectItem key={m.id} value={m.name}>
+                          {m.name}
+                        </SelectItem>
+                      )) || <SelectItem value="Pase Libre">Pase Libre</SelectItem>}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Método de Pago del Alumno</Label>
+                  <Select
+                    value={newMember.paymentMethod || "Efectivo"}
+                    onValueChange={(val) => setNewMember((prev) => ({ ...prev, paymentMethod: val }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar Método" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Efectivo">Efectivo</SelectItem>
+                      <SelectItem value="Transferencia Bancaria / CBU">Transferencia Bancaria / CBU</SelectItem>
+                      <SelectItem value="Mercado Pago (Marketplace / App)">Mercado Pago (Marketplace / App)</SelectItem>
+                      <SelectItem value="Tarjeta de Débito / Crédito (POS)">Tarjeta Posnet (Débito / Crédito)</SelectItem>
+                      <SelectItem value="Otro">Otro Medio de Pago</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -9266,6 +5232,22 @@ function MiembrosTab({
                       <SelectItem value="3">3 Meses (Trimestre)</SelectItem>
                       <SelectItem value="6">6 Meses (Semestre)</SelectItem>
                       <SelectItem value="12">12 Meses (Año)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold">Método de Pago</Label>
+                  <Select value={renewPaymentMethod} onValueChange={setRenewPaymentMethod}>
+                    <SelectTrigger className="h-9 rounded-xl text-xs bg-secondary/30">
+                      <SelectValue placeholder="Método de pago" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl">
+                      <SelectItem value="Efectivo">Efectivo</SelectItem>
+                      <SelectItem value="Transferencia Bancaria / CBU">Transferencia Bancaria / CBU</SelectItem>
+                      <SelectItem value="Mercado Pago (Marketplace / App)">Mercado Pago (Marketplace / App)</SelectItem>
+                      <SelectItem value="Tarjeta de Débito / Crédito (POS)">Tarjeta Posnet (Débito / Crédito)</SelectItem>
+                      <SelectItem value="Otro">Otro Medio de Pago</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -10788,9 +6770,7 @@ export interface GymClassItem {
   waitlist?: string[];
   releasedSpots?: { [spotIndex: number]: { originalStudent: string; creditsCost: number } };
   status?: "activa" | "cancelada";
-  seekingBackup?: boolean;
   requiresSpotSelection?: boolean;
-  ratings?: any;
   weekOffset?: number;
 }
 
@@ -11470,10 +7450,6 @@ function ClasesTab({
                   {c.status === "cancelada" ? (
                     <span className="text-xs bg-destructive/10 text-destructive font-bold px-2.5 py-0.5 rounded-full border border-destructive/20">
                       Clase Cancelada
-                    </span>
-                  ) : c.seekingBackup ? (
-                    <span className="text-xs bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold px-2.5 py-0.5 rounded-full border border-amber-500/20">
-                      Buscando Suplente
                     </span>
                   ) : (
                     <span className="text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold px-2.5 py-0.5 rounded-full border border-emerald-500/20">
@@ -12603,7 +8579,7 @@ function ClasesTab({
                           setClassesList((prev) =>
                             prev.map((item) =>
                               item.id === substituteCoachModalClass.id
-                                ? { ...item, staffId: s.id, coach: coachName, seekingBackup: false }
+                                ? { ...item, staffId: s.id, coach: coachName }
                                 : item
                             )
                           );
@@ -13449,7 +9425,7 @@ interface ConfigTabProps {
     photo: string;
     certificationImages?: string[];
     role?: string;
-    linkingCode: string | null;
+    linkingCode?: string | null;
     status: "pending" | "linked";
     availability?: { day: string; intervals: { from: string; to: string }[] }[];
   }[];
@@ -13463,7 +9439,7 @@ interface ConfigTabProps {
         photo: string;
         certificationImages?: string[];
         role?: string;
-        linkingCode: string | null;
+        linkingCode?: string | null;
         status: "pending" | "linked";
         availability?: { day: string; intervals: { from: string; to: string }[] }[];
       }[]
@@ -13631,11 +9607,8 @@ function ConfigTab({
   const [staffDiplomas, setStaffDiplomas] = useState<string[]>([]);
   const [newStaffRole, setNewStaffRole] = useState("coach");
   const [newStaffBranchId, setNewStaffBranchId] = useState("matriz");
-  const [staffBaseSalary, setStaffBaseSalary] = useState("60000");
-  const [staffPayPerClass, setStaffPayPerClass] = useState("5000");
-  const [staffPayPerStudent, setStaffPayPerStudent] = useState("300");
 
-  // Staff Edit & Delete States
+  // Staff Edit States
   const [editingStaff, setEditingStaff] = useState<any | null>(null);
   const [editStaffName, setEditStaffName] = useState("");
   const [editStaffSpecialty, setEditStaffSpecialty] = useState("");
@@ -13645,9 +9618,8 @@ function ConfigTab({
   const [editStaffBranchId, setEditStaffBranchId] = useState("matriz");
   const [editStaffAvatarUrl, setEditStaffAvatarUrl] = useState<string | null>(null);
   const [editStaffDiplomas, setEditStaffDiplomas] = useState<string[]>([]);
-  const [editStaffBaseSalary, setEditStaffBaseSalary] = useState("60000");
-  const [editStaffPayPerClass, setEditStaffPayPerClass] = useState("5000");
-  const [editStaffPayPerStudent, setEditStaffPayPerStudent] = useState("300");
+
+
 
   // Universal Delete Confirmation & Edit States (Salas, Cierres, Staff)
   const [deletingItem, setDeletingItem] = useState<{
@@ -13881,10 +9853,9 @@ function ConfigTab({
 
     const finalSpecialties = staffSpecialties.length > 0 ? staffSpecialties : [staffSpecialty || "General"];
     const finalSpecialtyStr = staffSpecialty || finalSpecialties.join(", ");
-    const generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
 
     const newStaff = {
-      id: Math.random().toString(),
+      id: `staff-${Date.now()}`,
       name: staffName,
       specialty: finalSpecialtyStr,
       specialties: finalSpecialties,
@@ -13898,12 +9869,8 @@ function ConfigTab({
       certificationImages: staffDiplomas,
       role: newStaffRole,
       branchId: newStaffBranchId === "matriz" ? undefined : newStaffBranchId,
-      linkingCode: generatedOtp,
-      status: "pending" as const,
+      status: "linked" as const,
       availability: newStaffAvails,
-      baseSalary: parseFloat(staffBaseSalary) || 60000,
-      payPerClass: parseFloat(staffPayPerClass) || 5000,
-      payPerStudent: parseFloat(staffPayPerStudent) || 300,
     };
 
     setStaffList((prev) => [...prev, newStaff]);
@@ -13915,9 +9882,6 @@ function ConfigTab({
     setStaffDiplomas([]);
     setNewStaffRole("coach");
     setNewStaffBranchId("matriz");
-    setStaffBaseSalary("60000");
-    setStaffPayPerClass("5000");
-    setStaffPayPerStudent("300");
     setNewStaffAvails(WEEKDAYS.map((day) => ({ day, intervals: [] })));
     setIsCreateStaffOpen(false);
   };
@@ -13938,9 +9902,6 @@ function ConfigTab({
     setEditStaffBranchId(staff.branchId || "matriz");
     setEditStaffAvatarUrl(staff.photo);
     setEditStaffDiplomas(staff.certificationImages || []);
-    setEditStaffBaseSalary((staff.baseSalary ?? 60000).toString());
-    setEditStaffPayPerClass((staff.payPerClass ?? 5000).toString());
-    setEditStaffPayPerStudent((staff.payPerStudent ?? 300).toString());
 
     if (staff.availability && staff.availability.length > 0) {
       const loaded = WEEKDAYS.map((day) => {
@@ -13982,9 +9943,6 @@ function ConfigTab({
               role: editStaffRole,
               branchId: editStaffBranchId === "matriz" ? undefined : editStaffBranchId,
               availability: editStaffAvails,
-              baseSalary: parseFloat(editStaffBaseSalary) || 60000,
-              payPerClass: parseFloat(editStaffPayPerClass) || 5000,
-              payPerStudent: parseFloat(editStaffPayPerStudent) || 300,
             }
           : s,
       ),
@@ -14038,7 +9996,7 @@ function ConfigTab({
           { id: "amenities", label: "Amenities & Servicios", icon: Sparkles },
           { id: "equipamiento", label: "Equipamiento", icon: Dumbbell },
           { id: "requisitos", label: "Normas de Ingreso", icon: FileCheck },
-          { id: "staff", label: "Equipo (Staff)", icon: Users },
+          { id: "staff", label: "Staff", icon: Users },
           { id: "salas", label: "Salas / Salones", icon: Layers },
           { id: "cierres", label: "Días de Cierre", icon: CalendarX },
           { id: "metodos_pago", label: "Métodos de Cobro", icon: Wallet },
@@ -14487,9 +10445,9 @@ function ConfigTab({
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card border border-border p-6 rounded-3xl">
                 <div>
-                  <h3 className="font-bold text-sm">Equipo y Profesores (Staff)</h3>
+                  <h3 className="font-bold text-sm">Staff</h3>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Administra los entrenadores, coaches y personal administrativo de tu sede.
+                    Administra los entrenadores y coaches de tu sede.
                   </p>
                 </div>
                 <Button
@@ -14594,58 +10552,7 @@ function ConfigTab({
 
 
 
-                    {/* Rate Scheme Inputs */}
-                    <div className="border-t border-border/40 pt-4 space-y-3">
-                      <div>
-                        <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                          Esquema de Tarifas & Honorarios
-                        </h4>
-                        <p className="text-[10.5px] text-muted-foreground mt-0.5">
-                          Configura las tarifas acordadas para el cálculo automático de sueldos en Finanzas.
-                        </p>
-                      </div>
 
-                      <div className="grid gap-3 sm:grid-cols-3">
-                        <div className="space-y-1">
-                          <label className="text-[11px] font-semibold text-muted-foreground">
-                            Base Fija Mensual ($)
-                          </label>
-                          <input
-                            type="number"
-                            placeholder="Ej: 60000"
-                            value={staffBaseSalary}
-                            onChange={(e) => setStaffBaseSalary(e.target.value)}
-                            className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
-                          />
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="text-[11px] font-semibold text-muted-foreground">
-                            Pago por Clase ($)
-                          </label>
-                          <input
-                            type="number"
-                            placeholder="Ej: 5000"
-                            value={staffPayPerClass}
-                            onChange={(e) => setStaffPayPerClass(e.target.value)}
-                            className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
-                          />
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="text-[11px] font-semibold text-muted-foreground">
-                            Comisión / Alumno ($)
-                          </label>
-                          <input
-                            type="number"
-                            placeholder="Ej: 300"
-                            value={staffPayPerStudent}
-                            onChange={(e) => setStaffPayPerStudent(e.target.value)}
-                            className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
-                          />
-                        </div>
-                      </div>
-                    </div>
 
                     <div className="border-t border-border/40 pt-4 space-y-4">
                       <div>
@@ -14838,7 +10745,7 @@ function ConfigTab({
 
               <div className="rounded-3xl border border-border bg-card p-6">
                 <h3 className="text-sm font-bold text-muted-foreground uppercase mb-4">
-                  Equipo Registrado
+                  Staff Registrado
                 </h3>
                 <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
                   {staffList.map((s) => (
@@ -14903,10 +10810,10 @@ function ConfigTab({
                         </div>
                       </div>
 
-                      {/* Availability & OTP Linking details */}
-                      <div className="mt-3.5 border-t border-border/40 pt-2 text-[10px] space-y-1 bg-secondary/5 p-2 rounded-xl">
-                        {s.availability &&
-                          s.availability.some((a) => a.intervals && a.intervals.length > 0) && (
+                      {/* Availability details */}
+                      {s.availability &&
+                        s.availability.some((a) => a.intervals && a.intervals.length > 0) && (
+                          <div className="mt-3.5 border-t border-border/40 pt-2 text-[10px] space-y-1 bg-secondary/5 p-2 rounded-xl">
                             <div
                               className="text-muted-foreground font-medium line-clamp-2"
                               title={s.availability
@@ -14917,7 +10824,7 @@ function ConfigTab({
                                 )
                                 .join("\n")}
                             >
-                              ⏰ <span className="font-bold text-foreground">Disp:</span>{" "}
+                              <span className="font-bold text-foreground">Disponibilidad:</span>{" "}
                               {s.availability
                                 .filter((a) => a.intervals.length > 0)
                                 .map(
@@ -14926,43 +10833,8 @@ function ConfigTab({
                                 )
                                 .join(" | ")}
                             </div>
-                          )}
-
-                        <div className="flex items-center justify-between gap-1.5 mt-1 border-t border-border/20 pt-1">
-                          {s.status === "linked" ? (
-                            <span className="text-[9px] text-primary font-bold flex items-center gap-1">
-                              🟢 Disp. Vinculado
-                            </span>
-                          ) : (
-                            <>
-                              <span
-                                className="text-[9px] text-secondary-foreground font-bold flex items-center gap-1"
-                                title="Dispositivo pendiente de vinculación"
-                              >
-                                🟡 Pendiente OTP:{" "}
-                                <span className="bg-secondary/ px-1 py-0.5 rounded text-secondary-foreground font-mono text-[10px]">
-                                  {s.linkingCode}
-                                </span>
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const newOtp = Math.floor(1000 + Math.random() * 9000).toString();
-                                  setStaffList((prev) =>
-                                    prev.map((item) =>
-                                      item.id === s.id ? { ...item, linkingCode: newOtp } : item,
-                                    ),
-                                  );
-                                  alert(`Nuevo código OTP de un solo uso generado: ${newOtp}`);
-                                }}
-                                className="text-[9px] text-primary font-bold hover:underline"
-                              >
-                                Regenerar
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </div>
+                          </div>
+                        )}
 
                       {s.certificationImages && s.certificationImages.length > 0 && (
                         <button
@@ -15022,25 +10894,15 @@ function ConfigTab({
           )}
 
           {/* Edit Staff Modal */}
-          {editingStaff && (
-            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 z-50 animate-fade-in text-foreground">
-              <form
-                onSubmit={handleSaveEditStaff}
-                className="relative bg-card border border-border w-full max-w-[500px] rounded-3xl p-6 space-y-4 animate-fade-up"
-              >
-                <button
-                  type="button"
-                  onClick={() => setEditingStaff(null)}
-                  className="absolute right-4 top-4 p-2 rounded-full hover:bg-secondary transition"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-
-                <h3 className="text-lg font-bold tracking-tight">Editar Miembro de Staff</h3>
-
-                <div className="space-y-3 overflow-y-auto max-h-[60vh] pr-2">
-                  <div className="space-y-1">
-                    <label className="text-xs font-semibold text-muted-foreground block">
+          <Dialog open={!!editingStaff} onOpenChange={(open) => !open && setEditingStaff(null)}>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto border border-border bg-card">
+              <DialogHeader>
+                <DialogTitle>Editar Profesor / Coach</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSaveEditStaff} className="space-y-4 pt-2">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-muted-foreground">
                       Nombre y Apellido
                     </label>
                     <input
@@ -15052,7 +10914,7 @@ function ConfigTab({
                     />
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-2 sm:col-span-2">
                     <label className="text-xs font-semibold text-muted-foreground block">
                       Actividades / Especialidades que dicta (Selecciona 1 o varias)
                     </label>
@@ -15109,168 +10971,111 @@ function ConfigTab({
                       })}
                     </div>
                   </div>
+                </div>
 
-                  <div className="space-y-1">
-                    <label className="text-xs font-semibold text-muted-foreground block">
-                      Certificaciones (separadas por comas)
-                    </label>
-                    <input
-                      type="text"
-                      value={editStaffCerts}
-                      onChange={(e) => setEditStaffCerts(e.target.value)}
-                      className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
-                    />
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground">
+                    Certificaciones y Títulos (separados por comas)
+                  </label>
+                  <input
+                    type="text"
+                    value={editStaffCerts}
+                    onChange={(e) => setEditStaffCerts(e.target.value)}
+                    className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                  />
+                </div>
+
+                <div className="border-t border-border/40 pt-4 space-y-4">
+                  <div>
+                    <h4 className="text-xs font-bold text-muted-foreground uppercase">
+                      Disponibilidad Horaria Semanal
+                    </h4>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      Define los días y franjas horarias en los que el profesor puede dictar clases.
+                    </p>
                   </div>
 
+                  <div className="space-y-3">
+                    {editStaffAvails.map((dayAvail, dayIdx) => (
+                      <div
+                        key={dayAvail.day}
+                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-2xl bg-secondary/10 border border-border/40 text-xs text-foreground"
+                      >
+                        <span className="font-bold w-20 text-foreground shrink-0">
+                          {dayAvail.day}
+                        </span>
 
-
-                  {/* Rate Scheme Inputs in Edit Staff Dialog */}
-                  <div className="border-t border-border/40 pt-4 space-y-3">
-                    <div>
-                      <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                        Esquema de Tarifas & Honorarios
-                      </h4>
-                      <p className="text-[10.5px] text-muted-foreground mt-0.5">
-                        Configura las tarifas acordadas para el cálculo automático de sueldos en Finanzas.
-                      </p>
-                    </div>
-
-                    <div className="grid gap-3 sm:grid-cols-3">
-                      <div className="space-y-1">
-                        <label className="text-[11px] font-semibold text-muted-foreground">
-                          Base Fija Mensual ($)
-                        </label>
-                        <input
-                          type="number"
-                          placeholder="Ej: 60000"
-                          value={editStaffBaseSalary}
-                          onChange={(e) => setEditStaffBaseSalary(e.target.value)}
-                          className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
-                        />
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="text-[11px] font-semibold text-muted-foreground">
-                          Pago por Clase ($)
-                        </label>
-                        <input
-                          type="number"
-                          placeholder="Ej: 5000"
-                          value={editStaffPayPerClass}
-                          onChange={(e) => setEditStaffPayPerClass(e.target.value)}
-                          className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
-                        />
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="text-[11px] font-semibold text-muted-foreground">
-                          Comisión / Alumno ($)
-                        </label>
-                        <input
-                          type="number"
-                          placeholder="Ej: 300"
-                          value={editStaffPayPerStudent}
-                          onChange={(e) => setEditStaffPayPerStudent(e.target.value)}
-                          className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus-visible:outline-none"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="border-t border-border/40 pt-4 space-y-4">
-                    <div>
-                      <h4 className="text-xs font-bold text-muted-foreground uppercase">
-                        Disponibilidad Horaria Semanal
-                      </h4>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">
-                        Define los días y franjas horarias en los que el profesor puede dictar
-                        clases.
-                      </p>
-                    </div>
-
-                    <div className="space-y-3">
-                      {editStaffAvails.map((dayAvail, dayIdx) => (
-                        <div
-                          key={dayAvail.day}
-                          className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-2xl bg-secondary/10 border border-border/40 text-xs text-foreground"
-                        >
-                          <span className="font-bold w-20 text-foreground shrink-0">
-                            {dayAvail.day}
-                          </span>
-
-                          <div className="flex-1 space-y-2">
-                            {dayAvail.intervals.map((interval, intervalIdx) => (
-                              <div key={intervalIdx} className="flex items-center gap-2">
-                                <input
-                                  type="time"
-                                  value={interval.from}
-                                  onChange={(e) =>
-                                    handleUpdateStaffAvailInterval(
-                                      true,
-                                      dayIdx,
-                                      intervalIdx,
-                                      "from",
-                                      e.target.value,
-                                    )
-                                  }
-                                  className="px-2 py-1 rounded-lg border border-border bg-background text-xs text-foreground focus-visible:outline-none"
-                                />
-                                <span className="text-[10px] text-muted-foreground">a</span>
-                                <input
-                                  type="time"
-                                  value={interval.to}
-                                  onChange={(e) =>
-                                    handleUpdateStaffAvailInterval(
-                                      true,
-                                      dayIdx,
-                                      intervalIdx,
-                                      "to",
-                                      e.target.value,
-                                    )
-                                  }
-                                  className="px-2 py-1 rounded-lg border border-border bg-background text-xs text-foreground focus-visible:outline-none"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    handleRemoveStaffAvailInterval(true, dayIdx, intervalIdx)
-                                  }
-                                  className="p-1 text-destructive hover:bg-destructive/ rounded transition"
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </button>
-                              </div>
-                            ))}
-                            {dayAvail.intervals.length === 0 && (
-                              <span className="text-[10px] text-muted-foreground italic bg-secondary/40 px-2 py-0.5 rounded inline-block">
-                                No disponible
-                              </span>
-                            )}
-                          </div>
-
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="ghost"
-                            className="self-start sm:self-center text-[10px] gap-1 py-1 h-7 rounded-lg"
-                            onClick={() => handleAddStaffAvailInterval(true, dayIdx)}
-                          >
-                            <Plus className="h-3 w-3" /> Turno
-                          </Button>
+                        <div className="flex-1 space-y-2">
+                          {dayAvail.intervals.map((interval, intervalIdx) => (
+                            <div key={intervalIdx} className="flex items-center gap-2">
+                              <input
+                                type="time"
+                                value={interval.from}
+                                onChange={(e) =>
+                                  handleUpdateStaffAvailInterval(
+                                    true,
+                                    dayIdx,
+                                    intervalIdx,
+                                    "from",
+                                    e.target.value,
+                                  )
+                                }
+                                className="px-2 py-1 rounded-lg border border-border bg-background text-xs text-foreground focus-visible:outline-none"
+                              />
+                              <span className="text-[10px] text-muted-foreground">a</span>
+                              <input
+                                type="time"
+                                value={interval.to}
+                                onChange={(e) =>
+                                  handleUpdateStaffAvailInterval(
+                                    true,
+                                    dayIdx,
+                                    intervalIdx,
+                                    "to",
+                                    e.target.value,
+                                  )
+                                }
+                                className="px-2 py-1 rounded-lg border border-border bg-background text-xs text-foreground focus-visible:outline-none"
+                              />
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleRemoveStaffAvailInterval(true, dayIdx, intervalIdx)
+                                }
+                                className="p-1 text-destructive hover:bg-destructive/ rounded transition"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                            </div>
+                          ))}
+                          {dayAvail.intervals.length === 0 && (
+                            <span className="text-[10px] text-muted-foreground italic bg-secondary/40 px-2 py-0.5 rounded inline-block">
+                              No disponible
+                            </span>
+                          )}
                         </div>
-                      ))}
-                    </div>
+
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          className="self-start sm:self-center text-[10px] gap-1 py-1 h-7 rounded-lg"
+                          onClick={() => handleAddStaffAvailInterval(true, dayIdx)}
+                        >
+                          <Plus className="h-3 w-3" /> Turno
+                        </Button>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
-                {/* Photo & Diplomas in Edit Modal */}
-                <div className="grid gap-4 grid-cols-2 border-t border-border/40 pt-3">
-                  <div className="space-y-1">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
                     <label className="text-xs font-semibold text-muted-foreground block">
                       Foto de Perfil
                     </label>
-                    <div className="flex items-center gap-2">
-                      <div className="h-10 w-10 rounded-full overflow-hidden border border-border bg-muted flex items-center justify-center shrink-0">
+                    <div className="flex items-center gap-3">
+                      <div className="h-12 w-12 rounded-full overflow-hidden border border-border bg-muted flex items-center justify-center shrink-0">
                         {editStaffAvatarUrl ? (
                           <img
                             src={editStaffAvatarUrl}
@@ -15285,10 +11090,10 @@ function ConfigTab({
                         type="button"
                         size="sm"
                         variant="outline"
-                        className="rounded-xl text-[10px]"
+                        className="rounded-xl"
                         onClick={() => editCoachAvatarRef.current?.click()}
                       >
-                        Cambiar
+                        Subir Foto
                       </Button>
                       <input
                         type="file"
@@ -15300,50 +11105,50 @@ function ConfigTab({
                     </div>
                   </div>
 
-                  <div className="space-y-1">
+                  <div className="space-y-2">
                     <label className="text-xs font-semibold text-muted-foreground block">
-                      Diplomas / Certificaciones
+                      Adjuntar Diplomas / Certificaciones
                     </label>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      className="rounded-xl text-[10px] gap-1"
-                      onClick={() => editCoachCertsRef.current?.click()}
-                    >
-                      <Plus className="h-3 w-3" /> Añadir
-                    </Button>
-                    <input
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      ref={editCoachCertsRef}
-                      onChange={handleEditCoachDiplomasUpload}
-                      className="hidden"
-                    />
+                    <div className="flex items-center gap-3">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="rounded-xl gap-1.5"
+                        onClick={() => editCoachCertsRef.current?.click()}
+                      >
+                        <Plus className="h-4 w-4" /> Subir Certificados
+                      </Button>
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        ref={editCoachCertsRef}
+                        onChange={handleEditCoachDiplomasUpload}
+                        className="hidden"
+                      />
+                    </div>
                   </div>
                 </div>
 
-                {/* List of editStaffDiplomas */}
                 {editStaffDiplomas.length > 0 && (
-                  <div className="space-y-1 border-t border-border/40 pt-3">
+                  <div className="space-y-1.5 border-t border-border/60 pt-3">
                     <label className="text-xs font-semibold text-muted-foreground block">
-                      Diplomas Guardados ({editStaffDiplomas.length})
+                      Diplomas Adjuntos ({editStaffDiplomas.length})
                     </label>
-                    <div className="flex flex-wrap gap-2 max-h-[100px] overflow-y-auto">
+                    <div className="flex flex-wrap gap-2">
                       {editStaffDiplomas.map((url, index) => (
                         <div
                           key={index}
-                          className="relative h-10 w-14 rounded-lg overflow-hidden border border-border group shrink-0"
+                          className="relative h-12 w-16 rounded-lg overflow-hidden border border-border group shrink-0"
                         >
                           <img src={url} alt="Diploma" className="h-full w-full object-cover" />
                           <button
                             type="button"
                             onClick={() => handleRemoveEditDiploma(index)}
-                            className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition text-destructive hover:text-destructive"
-                            title="Quitar diploma"
+                            className="absolute top-0.5 right-0.5 bg-black/60 text-white p-0.5 rounded-full hover:bg-black transition"
                           >
-                            <X className="h-4 w-4" />
+                            <X className="h-3 w-3" />
                           </button>
                         </div>
                       ))}
@@ -15351,22 +11156,22 @@ function ConfigTab({
                   </div>
                 )}
 
-                <div className="pt-2 flex gap-3">
-                  <Button type="submit" className="rounded-xl flex-1 font-bold text-xs">
-                    Guardar Cambios
-                  </Button>
+                <div className="flex justify-end gap-2 pt-4 border-t border-border">
                   <Button
                     type="button"
                     variant="outline"
-                    className="rounded-xl flex-1 font-bold text-xs"
+                    className="rounded-xl"
                     onClick={() => setEditingStaff(null)}
                   >
                     Cancelar
                   </Button>
+                  <Button type="submit" className="rounded-xl">
+                    Guardar Cambios
+                  </Button>
                 </div>
               </form>
-            </div>
-          )}
+            </DialogContent>
+          </Dialog>
 
           {/* Universal Delete AlertDialog */}
           {deletingItem && (
@@ -16338,3153 +12143,414 @@ function ConfigTab({
   );
 }
 
-// Subcomponent: Ayuda Tab (Centro de Ayuda y Guías del Administrador)
-function AyudaTab({ onNavigateTab }: { onNavigateTab?: (tabId: string) => void }) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("Todas");
-  const [activeGuideId, setActiveGuideId] = useState<string | null>(null);
+function AyudaTab() {
+  const [activeGuide, setActiveGuide] = useState<
+    "asistencias" | "clases" | "miembros" | "membresias" | "reseñas" | "config"
+  >("asistencias");
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const categories = ["Todas", "Asistencias", "Clases", "Miembros", "Caja / POS", "Finanzas", "Reportes", "Inventario", "Reseñas", "Membresías", "Configuración"];
-
-  const guidesList = [
-    {
-      id: "asistencia",
-      title: "Guía Completa: Control de Asistencias y Accesos",
-      category: "Asistencias",
-      status: "Publicada",
-      badgeColor: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
-      description:
-        "Instrucciones detalladas para gestionar check-ins presenciales por QR, GPS y Recepción, monitoreo de aforo en vivo, alertas preventivas, retención por WhatsApp y exportación de reportes en CSV.",
-      modulesCount: 7,
-      lastUpdated: "Hoy",
-    },
-    {
-      id: "clases",
-      title: "Guía Completa: Gestión de Clases, Horarios y Salones",
-      category: "Clases",
-      status: "Publicada",
-      badgeColor: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
-      description:
-        "Manual exhaustivo de administración de clases, salones con mapa de spots, diseñador universal de rutinas por bloques (Yoga, Pilates, Funcional, etc.), inscripciones directas, lista de espera y cancelaciones masivas.",
-      modulesCount: 8,
-      lastUpdated: "Hoy",
-    },
-    {
-      id: "miembros",
-      title: "Guía Completa: Gestión de Miembros y Certificados Médicos",
-      category: "Miembros",
-      status: "Publicada",
-      badgeColor: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
-      description:
-        "Instrucciones detalladas para alta de socios, renovación de cuotas, emisión de comprobantes, control de certificados médicos (apto físico), congelamiento temporal de cuentas y fichas de salud.",
-      modulesCount: 7,
-      lastUpdated: "Hoy",
-    },
-    {
-      id: "caja",
-      title: "Guía Completa: Caja / POS y Cobros Presenciales",
-      category: "Caja / POS",
-      status: "Publicada",
-      badgeColor: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
-      description:
-        "Apertura y arqueo diario de caja, terminal POS para cobros libres y ventas de productos de tienda, soporte de pago mixto, arqueo de turno y exportación de reportes.",
-      modulesCount: 6,
-      lastUpdated: "Hoy",
-    },
-    {
-      id: "finanzas",
-      title: "Guía Completa: Liquidación de Staff y Finanzas",
-      category: "Finanzas",
-      status: "Publicada",
-      badgeColor: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
-      description:
-        "Análisis de salud financiera en tiempo real, cálculo automático de liquidaciones de staff por asistencias, gestor de rubros de gastos fijos y emisión de recibos.",
-      modulesCount: 5,
-      lastUpdated: "Hoy",
-    },
-    {
-      id: "reportes",
-      title: "Guía Completa: Reportes & Analítica de Negocio",
-      category: "Reportes",
-      status: "Publicada",
-      badgeColor: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
-      description:
-        "Indicadores ejecutivos de facturación, desglose por canal de cobro, tasa de retención de alumnos, mapa de ocupación por disciplina y exportación de auditorías a CSV / PDF.",
-      modulesCount: 5,
-      lastUpdated: "Hoy",
-    },
-    {
-      id: "inventario",
-      title: "Guía Completa: Control de Inventario y Kardex",
-      category: "Inventario",
-      status: "Publicada",
-      badgeColor: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
-      description:
-        "Catálogo de productos de tienda, alertas de stock mínimo, variantes de productos, historial de movimientos Kardex, directorio de proveedores y orden de compra automática.",
-      modulesCount: 6,
-      lastUpdated: "Hoy",
-    },
-    {
-      id: "reseñas",
-      title: "Guía Completa: Gestión de Reseñas y Feedback",
-      category: "Reseñas",
-      status: "Publicada",
-      badgeColor: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
-      description:
-        "Moderación de evaluaciones de socios, selección de opiniones destacadas para la landing page, respuestas oficiales del centro, buzón privado de sugerencias y campañas de solicitud por WhatsApp.",
-      modulesCount: 5,
-      lastUpdated: "Hoy",
-    },
-    {
-      id: "membresias",
-      title: "Guía Completa: Gestión de Membresías y Tarifas",
-      category: "Membresías",
-      status: "Publicada",
-      badgeColor: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
-      description:
-        "Configuración de pases libres y bolsas de créditos, tarifas con promociones, franjas Off-Peak (Horario Valle), amenities incluidos, duplicación de planes y destacado en Landing Page.",
-      modulesCount: 6,
-      lastUpdated: "Hoy",
-    },
-    {
-      id: "config",
-      title: "Guía Completa: Configuración de Sede y Políticas",
-      category: "Configuración",
-      status: "Publicada",
-      badgeColor: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
-      description:
-        "Información general del gimnasio y horarios, gestión de salas y aforos, nómina de staff y salarios, integraciones de cobro (Mercado Pago / CBU) y políticas de reserva y cancelación.",
-      modulesCount: 5,
-      lastUpdated: "Hoy",
-    },
+  const modules = [
+    { id: "asistencias", name: "Asistencias", icon: Activity, desc: "Control de acceso, aforo en vivo y prevención de bajas" },
+    { id: "clases", name: "Clases", icon: Calendar, desc: "Programación horaria, cupos y sustitución de coaches" },
+    { id: "miembros", name: "Miembros", icon: Users, desc: "Base de alumnos, cobro de cuotas y legajos de salud" },
+    { id: "membresias", name: "Membresías", icon: CreditCard, desc: "Planes, precios, pases por créditos y promociones" },
+    { id: "reseñas", name: "Reseñas", icon: MessageCircle, desc: "Reputación en el marketplace y buzón de sugerencias" },
+    { id: "config", name: "Configuración", icon: Settings, desc: "Ajustes de la sede, staff, salas y Mercado Pago" },
   ];
 
-  const filteredGuides = useMemo(() => {
-    return guidesList.filter((g) => {
-      const matchesSearch =
-        g.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        g.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        g.category.toLowerCase().includes(searchQuery.toLowerCase());
-
-      if (!matchesSearch) return false;
-
-      if (selectedCategory !== "Todas" && g.category !== selectedCategory) {
-        return false;
-      }
-      return true;
-    });
-  }, [searchQuery, selectedCategory]);
-
-  const handleCopyAsistenciaGuideText = () => {
-    const guideText = `MANUAL OPERATIVO COMPLETO: CONTROL DE ASISTENCIAS, AFORO Y ACCESOS — STUDIO PULSE SMART
-
-1. INDICADORES CLAVE & CONTROL DE AFORO SEDE EN TIEMPO REAL
-🎯 Problema que resuelve & Por qué existe:
-Garantiza la seguridad en sala evitando el hacinamiento y el exceso de capacidad legal de la sede. Permite al personal de recepción evaluar al instante el volumen presencial y saber qué canal de ingreso (QR, GPS o Mostrador) es el más utilizado.
-👣 Paso a Paso Práctico:
-1. Observá la primera tarjeta "Aforo Actual Sede" para verificar la ocupación en tiempo real vs el límite configurado (ej. 42 / 80).
-2. Analizá la barra de porcentaje: si supera el 85%, considerá pausar temporalmente los ingresos generales por musculación.
-3. Revisá los indicadores de Check-ins QR, GPS y Recepción para medir la adopción digital de tu gimnasio.
-
-2. CONTROL DE ACCESO PRESENCIAL EN RECEPCIÓN (BÚSQUEDA & VALIDACIONES)
-🎯 Problema que resuelve & Por qué existe:
-Elimina las demoras en el mostrador durante horas pico. Detecta automáticamente si el socio tiene clase agendada hoy, si su cuota está al día o si debe entregar el certificado médico obligatorio.
-👣 Paso a Paso Práctico:
-1. Hacé clic en el botón principal [Buscar Socio para Check-in].
-2. Tipeá el DNI, Nombre o Teléfono en el buscador desplegado.
-3. Verificá el distintivo de salud: Apto Vigente (verde) o Apto Pendiente (naranja).
-4. Si el socio tiene reserva para hoy, presioná [Confirmar Check-in].
-5. Si es un ingreso libre sin reserva previa (musculación/sala), presioná [Ingreso General].
-
-3. MONITOR DE ENTRADAS RECIENTES & ALERTAS PREVENTIVAS EN VIVO
-🎯 Problema que resuelve & Por qué existe:
-Evita que socios morosos o lesionados ingresen sin ser advertidos. Transmite en vivo cada entrada para que el personal de recepción supervise el flujo constante.
-👣 Paso a Paso Práctico:
-1. Mantené a la vista la columna "Monitor de Entradas Recientes" en la pantalla de recepción.
-2. Si un socio ingresa y figura con la etiqueta "Pago Pendiente", solicitale regularizar su cuota en la caja.
-3. Si figura la etiqueta "Lesión o Condición Médica", notificalo al instructor a cargo de la sala.
-
-4. MÓDULO DE RETENCIÓN: ALUMNOS SIN ASISTENCIA (RIESGO CHURN)
-🎯 Problema que resuelve & Por qué existe:
-Combate la tasa de baja voluntaria (churn) detectando inactividad temprana antes de que el socio pierda la rutina.
-👣 Paso a Paso Práctico:
-1. Ubicá el bloque lateral "Alumnos sin Asistencia" (socios activos con +12 días sin registrar check-in).
-2. Hacé clic en el botón [Contactar] en la fila del alumno.
-3. El sistema abrirá automáticamente WhatsApp con un mensaje empático prediseñado.
-4. Presioná enviar para reactivar la comunicación.
-
-5. HISTORIAL GENERAL DE ASISTENCIAS & EXPORTACIÓN CSV
-🎯 Problema que resuelve & Por qué existe:
-Brinda trazabilidad completa ante reclamos de alumnos o para auditar el cumplimiento de planes y liquidaciones a entrenadores.
-👣 Paso a Paso Práctico:
-1. Ingresá un término en el buscador de la tabla (ej. nombre del alumno o clase).
-2. Usá las pestañas de filtro por fecha (Hoy, Ayer, Esta Semana) o por método (Scan QR, GPS, Recepción).
-3. Presioná el botón [Exportar CSV] para descargar la planilla en formato compatible con Excel.
-
-6. BLOQUEOS POR FERIADOS & DÍAS DE CIERRE (BLACKOUT DAYS)
-🎯 Problema que resuelve & Por qué existe:
-Previene marcas indeseadas de asistencia durante días feriados o jornadas de mantenimiento.
-👣 Paso a Paso Práctico:
-1. Al configurar un feriado en Configuración, Asistencias activará automáticamente un cartel rojo de aviso.
-2. Los accesos presenciales o por GPS quedarán suspendidos hasta el siguiente día laborable.
-
-7. INTEGRACIÓN AUTOMÁTICA CON OTROS MÓDULOS
-🎯 Problema que resuelve & Por qué existe:
-Conecta los accesos con el resto del sistema de forma 100% automatizada, evitando planillas duplicadas.
-👣 Paso a Paso Práctico:
-- Liquidación de Staff (Finanzas): Cada asistencia confirmada suma al haber del entrenador.
-- Control de Ausencias (No-Show): Los ausentes alimentan las estadísticas de penalizaciones.
-- Analítica (Reportes): Alimenta los mapas de calor de días y horarios pico del centro.`;
-
-    navigator.clipboard.writeText(guideText);
-    toast.success("✓ Artículo de Asistencias copiado al portapapeles con éxito.");
+  const guideData = {
+    asistencias: {
+      title: "Guía del Módulo de Asistencias",
+      badge: "Control de Acceso & Aforo",
+      sections: [
+        {
+          heading: "1. PANEL DE KPIS (OCUPACIÓN Y MÉTODOS DE ACCESO)",
+          text: "Métricas en tiempo real de ocupación y forma de ingreso:",
+          bullets: [
+            "Aforo Actual Sede: Muestra los alumnos presentes frente a la capacidad máxima (ej. 42 / 80 - 52% ocupación).",
+            "Check-ins QR: Ingresos validados escaneando el código QR desde la App móvil.",
+            "Check-ins GPS: Ingresos validados por geolocalización a menos de 50m del establecimiento.",
+            "Recepción Manual: Accesos validados en mostrador por el personal.",
+          ],
+        },
+        {
+          heading: "2. CONTROL DE ACCESO (CHECK-IN EN RECEPCIÓN)",
+          text: "Modal interactivo para validación presencial en mostrador:",
+          bullets: [
+            "Búsqueda instantánea por Nombre, DNI o Teléfono.",
+            "Detección de Reservas del Día: Si el socio tiene clase hoy, habilita 'Confirmar Check-in' marcando la asistencia presente en la grilla.",
+            "Ingreso General: Si no tiene reserva próxima, habilita el botón para ingreso a sala libre.",
+            "Alerta de Apto Físico: Badges visuales notificando si el certificado médico está vigente o pendiente.",
+          ],
+        },
+        {
+          heading: "3. MONITOR DE ENTRADAS RECIENTES (LIVE FEED)",
+          text: "Feed en tiempo real con las últimas entradas:",
+          bullets: [
+            "Foto, Nombre, Hora de Ingreso y Método de Acceso (Scan QR, GPS o Recepción).",
+            "Badges de Alertas del Alumno: Notifica sobre observaciones importantes (ej. Lesión Rodilla, Pago Pendiente).",
+          ],
+        },
+        {
+          heading: "4. ALUMNOS SIN ASISTENCIA Y RIESGO CHURN",
+          text: "Detección temprana para prevención de cancelaciones:",
+          bullets: [
+            "Detecta automáticamente alumnos activos con más de 12 días sin registrar check-in.",
+            "Botón Contactar: Abre WhatsApp con un mensaje pre-redactado de fidelización.",
+          ],
+        },
+        {
+          heading: "5. HISTORIAL GENERAL Y EXPORTACIÓN CSV",
+          text: "Registro histórico y reportes:",
+          bullets: [
+            "Filtros avanzados por fecha, método de acceso y buscador por texto.",
+            "Exportar CSV: Descarga el reporte completo de asistencias para análisis en Excel.",
+          ],
+        },
+      ],
+    },
+    clases: {
+      title: "Guía del Módulo de Clases",
+      badge: "Grilla Horaria & Reservas",
+      sections: [
+        {
+          heading: "1. VISTAS Y NAVEGACIÓN DE LA GRILLA",
+          text: "Formatos de visualización de la programación horaria:",
+          bullets: [
+            "Calendario Semanal: Matriz visual de lunes a domingo navegable por semanas.",
+            "Vista Lista: Formato cronológico enfocado exclusivamente en las clases de hoy.",
+            "Filtro por Sala y KPIs de ocupación promedio y clases llenas (Sold Out).",
+          ],
+        },
+        {
+          heading: "2. CREACIÓN DE CLASES CON VALIDACIONES INTELIGENTES",
+          text: "Configuración de sesiones y prevención de conflictos:",
+          bullets: [
+            "Parámetros: Nombre, Coach, Sala, Día, Franja Horaria, Cupo de lugares y Costo en Créditos.",
+            "Recurrencia Automática: Clonación de clases para las próximas 4, 8 o 12 semanas.",
+            "Validación de Disponibilidad: Alerta si el coach no tiene disponibilidad horaria configurada.",
+            "Bloqueo por Conflicto: Evita superposición de horarios del mismo profesor.",
+          ],
+        },
+        {
+          heading: "3. MAPA DE LUGARES Y CONTROL DE INSCRIPTOS",
+          text: "Gestión interactiva de cupos:",
+          bullets: [
+            "Spots Numerados: Grilla gráfica mostrando foto, nombre y plan del alumno.",
+            "Control de Asistencia: Marcación presencial de un clic (Presente / Ausente / Pendiente).",
+          ],
+        },
+        {
+          heading: "4. LISTA DE ESPERA Y CANCELACIONES",
+          text: "Gestión automática de vacantes:",
+          bullets: [
+            "Reasignación Automática: Al cancelar una reserva con lista de espera, el cupo se otorga al siguiente alumno notificándolo por WhatsApp/Push.",
+            "Opciones de Reembolso de Crédito o Re-reserva si no hay lista de espera.",
+          ],
+        },
+        {
+          heading: "5. CONTINGENCIAS Y ACCIONES",
+          text: "Resolución de imprevistos operativos:",
+          bullets: [
+            "Sustituir Coach: Asigna un profesor sustituto recomendando aquellos con la especialidad requerida.",
+            "Cancelar Clase: Suspende la sesión devolviendo créditos automáticamente a todos los inscriptos.",
+          ],
+        },
+      ],
+    },
+    miembros: {
+      title: "Guía del Módulo de Miembros",
+      badge: "Gestión de Alumnos & Cobros",
+      sections: [
+        {
+          heading: "1. PANEL DE KPIS DEL ALUMNADO",
+          text: "Indicadores clave del estado de la base de socios:",
+          bullets: [
+            "Contadores de Alumnos Activos, En Deuda, Apto Vencido y Riesgo de Baja.",
+          ],
+        },
+        {
+          heading: "2. ALTA Y LEGAJO COMPLETO DEL ALUMNO",
+          text: "Carga y edición de la ficha del socio:",
+          bullets: [
+            "Datos personales, contacto de emergencia y cobertura médica/obra social.",
+            "Estado del Apto Físico y adjunto de certificados (PDF/Imagen).",
+            "Asignación de plan con vencimiento auto-calculado y selección del Método de Pago (Efectivo, Transferencia, Mercado Pago, Posnet, Otro).",
+          ],
+        },
+        {
+          heading: "3. FICHA EXPANDIBLE Y SEGUIMIENTO",
+          text: "Información detallada al tocar la fila del alumno:",
+          bullets: [
+            "Historial de clases e inscriptos con porcentaje de asistencia.",
+            "Historial de cobros pasados y emisión de recibos.",
+          ],
+        },
+        {
+          heading: "4. RENOVACIONES Y CONGELAMIENTO",
+          text: "Operatoria comercial de cuotas:",
+          bullets: [
+            "Registrar Pago / Renovar Plan seleccionando plan, meses y método de cobro.",
+            "Congelar Membresía (Freeze) por días específicos y opción de Descongelar al regresar.",
+          ],
+        },
+        {
+          heading: "5. EXPORTACIÓN DE DATOS",
+          text: "Descarga de reportes:",
+          bullets: [
+            "Exportar CSV con la nómina filtrada de alumnos para gestión administrativa.",
+          ],
+        },
+      ],
+    },
+    membresias: {
+      title: "Guía del Módulo de Membresías",
+      badge: "Configuración de Planes & Precios",
+      sections: [
+        {
+          heading: "1. PRECIOS Y PERIODICIDAD",
+          text: "Definición de la oferta comercial:",
+          bullets: [
+            "Precios de lista y precio tachado promocional opcional.",
+            "Periodicidad de cobro: Semanal, Mensual, Trimestral, Semestral o Anual.",
+          ],
+        },
+        {
+          heading: "2. PASE LIBRE VS PLAN POR CRÉDITOS",
+          text: "Modalidades de acceso:",
+          bullets: [
+            "Pase Libre: Acceso ilimitado a las instalaciones.",
+            "Por Créditos: Asigna un cupo mensual de clases descontables al reservar.",
+          ],
+        },
+        {
+          heading: "3. FRANJAS HORARIAS OFF-PEAK",
+          text: "Pases promocionales de baja demanda:",
+          bullets: [
+            "Restricción de horarios (ej. de 12:00 a 16:00 hs) para pases económicos en horas valle.",
+          ],
+        },
+        {
+          heading: "4. REGLAS AVANZADAS Y AMENITIES",
+          text: "Beneficios e instalaciones asociadas:",
+          bullets: [
+            "Costo de matrícula, días de congelamiento al año y límite diario de clases.",
+            "Selección de actividades e instalaciones incluidas (Lockers, Duchas, Toallas, etc.).",
+          ],
+        },
+        {
+          heading: "5. DESTACAR Y DUPLICAR PLANES",
+          text: "Herramientas de venta:",
+          bullets: [
+            "Plan Destacado (⭐): Otorga visibilidad prioritaria en el marketplace/app.",
+            "Duplicar Plan: Clona un plan existente para crear variantes con un clic.",
+          ],
+        },
+      ],
+    },
+    reseñas: {
+      title: "Guía del Módulo de Reseñas",
+      badge: "Reputación & Feedback",
+      sections: [
+        {
+          heading: "1. RESEÑAS PÚBLICAS VS BUZÓN PRIVADO",
+          text: "Canales de feedback:",
+          bullets: [
+            "Reseñas Públicas: Visibles en el marketplace para prueba social.",
+            "Buzón Privado: Feedback confidencial directo para la administración.",
+          ],
+        },
+        {
+          heading: "2. KPIS Y DISTRIBUCIÓN DE ESTRELLAS",
+          text: "Métricas de satisfacción:",
+          bullets: [
+            "Puntuación general sobre 5.0, tasa de respuesta oficial y desglose por categorías (Limpieza, Equipamiento, Staff, Precio).",
+            "Gráfico de distribución porcentual de estrellas (5★ a 1★).",
+          ],
+        },
+        {
+          heading: "3. RESPUESTAS OFICIALES Y DESTACADAS",
+          text: "Gestión de comentarios:",
+          bullets: [
+            "Publicar respuesta oficial visible del centro.",
+            "Fijar los mejores testimonios en el perfil comercial.",
+          ],
+        },
+        {
+          heading: "4. SOLICITUD DE OPINIÓN POR WHATSAPP",
+          text: "Incentivo de reseñas:",
+          bullets: [
+            "Envío directo de mensajes pre-redactados a alumnos para solicitar sus calificaciones.",
+          ],
+        },
+      ],
+    },
+    config: {
+      title: "Guía del Módulo de Configuración",
+      badge: "Ajustes de Sede & Mercado Pago",
+      sections: [
+        {
+          heading: "1. PERFIL, FOTOS Y HORARIOS SEMANALES",
+          text: "Identidad e infraestructura:",
+          bullets: [
+            "Carga de fotos de la sede, redes sociales y definición de horarios de apertura por día (con soporte de turnos cortados).",
+          ],
+        },
+        {
+          heading: "2. POLÍTICAS DE CANCELACIÓN Y NORMAS",
+          text: "Reglas operativas:",
+          bullets: [
+            "Configuración de horas de anticipación para cancelar clases sin penalización y normas de ingreso obligatorias.",
+          ],
+        },
+        {
+          heading: "3. STAFF, SALAS Y DÍAS DE CIERRE",
+          text: "Recursos humanos y físicos:",
+          bullets: [
+            "Legajo de coaches con diplomas y agendas de disponibilidad.",
+            "Creación de salas con su capacidad máxima.",
+            "Registro de días de cierre o feriados que suspenden check-ins.",
+          ],
+        },
+        {
+          heading: "4. MÉTODOS DE COBRO Y MERCADO PAGO",
+          text: "Canales de pago:",
+          bullets: [
+            "Configuración de efectivo, datos bancarios CBU/Alias, Posnet e integración OAuth con Mercado Pago para cobros automáticos.",
+          ],
+        },
+      ],
+    },
   };
 
-  const handleCopyClasesGuideText = () => {
-    const guideText = `MANUAL OPERATIVO COMPLETO: GESTIÓN DE CLASES, HORARIOS Y CUPOS — STUDIO PULSE SMART
-
-1. VISTAS DE GRILLA (CALENDARIO POR SALÓN VS LISTA SEMANAL)
-🎯 Problema que resuelve & Por qué existe:
-Evita solapamientos de profesores y salones, permite organizar visualmente las actividades y facilita la búsqueda rápida de horarios.
-👣 Paso a Paso Práctico:
-1. Usá la pestaña Modo Calendario para ver la grilla semanal completa (Lunes a Domingo) organizada por salones.
-2. Navegá semanas usando los controles [<] [Semana Actual] [>] para planificar la grilla futura.
-3. Cambiá al Modo Lista cuando necesites realizar búsquedas rápidas por disciplina, profesor o sala.
-
-2. CONFIGURACIÓN DE SALAS Y SALONES DE LA SEDE
-🎯 Problema que resuelve & Por qué existe:
-Permite delimitar la capacidad máxima y organizar los espacios físicos de la sede (ej. Sala de Musculación, Estudio de Yoga, Box de CrossFit), evitando la superposición de actividades.
-👣 Paso a Paso Práctico:
-1. Ingresá a Configuración > Salas / Salones.
-2. Hacé clic en [+ Agregar Sala / Salón] e ingresá Nombre, Capacidad Máxima y Descripción.
-3. Al crear o editar una clase, vinculá la Sala correspondiente para limitar automáticamente el cupo máximo.
-
-3. ALTA, EDICIÓN Y DUPLICACIÓN DE CLASES SEMANALES
-🎯 Problema que resuelve & Por qué existe:
-Agiliza la carga periódica de la grilla horaria evitando la tarea repetitiva de crear manualmente las mismas clases semana a semana.
-👣 Paso a Paso Práctico:
-1. Presioná [+ Crear Clase] y completá Nombre, Profesor, Día, Horario, Salón, Capacidad y Créditos.
-2. Para copiar un horario existente a otros días de la semana, usá la función [Duplicar].
-3. Para modificar datos en tiempo real (ej. reemplazo de profesor), hacé clic en [Editar Clase].
-
-4. DISEÑADOR UNIVERSAL DE BLOQUES DE ENTRENAMIENTO (RUTINAS / ESTRUCTURA)
-🎯 Problema que resuelve & Por qué existe:
-Estandariza la planificación técnica pedagógica de los profesores (Yoga, Functional, Pilates, CrossFit, HIIT, etc.) manteniendo un estándar de calidad.
-👣 Paso a Paso Práctico:
-- Calentamiento / Entrada en calor: Fase de acondicionamiento inicial.
-- Fuerza / Técnica / Asanas: Trabajo específico de la disciplina.
-- Metcon / Trabajo Intensivo / Rutina Central: Bloque principal de exigencia física.
-- Vuelta a la Calma / Relajación: Estiramientos finales o respiración guiada.
-- Asigná un Time Cap (duración en minutos) a cada bloque y reordenálos con [▲ Subir] y [▼ Bajar].
-
-5. CONTROL DE CUPOS DE CLASE Y OCUPACIÓN EN TIEMPO REAL
-🎯 Problema que resuelve & Por qué existe:
-Previene el sobrecupo en las salas y garantiza que, una vez alcanzado el límite de capacidad, las solicitudes adicionales pasen a la lista de espera.
-👣 Paso a Paso Práctico:
-1. El sistema contabiliza en tiempo real los inscriptos vs la capacidad máxima (ej. 18 / 20 anotados).
-2. Al alcanzarse el cupo total (20 / 20), la clase se bloquea para reservas directas y activa la Lista de Espera.
-3. El profesor o recepcionista visualiza el listado oficial de inscriptos listo para tomar asistencia.
-
-6. INSCRIPCIÓN PRESENCIAL & MARCACIÓN DE ASISTENCIA EN SALA
-🎯 Problema que resuelve & Por qué existe:
-Otorga al recepcionista y al profesor la flexibilidad de anotar alumnos presenciales o registrar ausencias (No-Show).
-👣 Paso a Paso Práctico:
-1. Desde el mapa de la clase, hacé clic para anotar manualmente a un socio por DNI o Nombre.
-2. Durante o al finalizar la clase, el instructor marca [Presente] (verde) o [Ausente / No-Show] (rojo).
-3. Si se deshace una reserva individual a tiempo, el sistema reembolsa el crédito al plan del alumno.
-
-7. GESTIÓN DE LISTA DE ESPERA INTELIGENTE (WAITLIST)
-🎯 Problema que resuelve & Por qué existe:
-Garantiza el 100% de ocupación en clases de alta demanda promoviendo en forma automática a los socios en espera apenas se libera un cupo.
-👣 Paso a Paso Práctico:
-1. Si la capacidad está al 100%, los alumnos ingresan a la Lista de Espera con turno asignado (Puesto #1, #2).
-2. Si un socio cancela a tiempo, el sistema asciende automáticamente al primer socio en espera y le envía una notificación.
-3. El recepcionista también puede promover o cancelar manualmente turnos desde la pestaña de espera.
-
-8. CANCELACIÓN MASIVA DE CLASE & REEMBOLSO AUTOMÁTICO DE CRÉDITOS
-🎯 Problema que resuelve & Por qué existe:
-Resuelve la gestión ante eventos de fuerza mayor (ausencia imprevista del profesor o feriado) sin tener que desinscribir a cada alumno manualmente.
-👣 Paso a Paso Práctico:
-1. Ingresá a la clase a suspender y hacé clic en el botón rojo [Cancelar Clase].
-2. Confirmá la cancelación en el cuadro de diálogo.
-3. El sistema cancelará la sesión, notificará a los inscriptos y reembolsará masivamente los créditos.`;
-
-    navigator.clipboard.writeText(guideText);
-    toast.success("✓ Artículo de Clases copiado al portapapeles con éxito.");
-  };
-
-  const handleCopyMiembrosGuideText = () => {
-    const guideText = `MANUAL OPERATIVO COMPLETO: GESTIÓN DE MIEMBROS, RENOVACIONES Y SALUD — STUDIO PULSE SMART
-
-1. MÉTRICAS DE PADRÓN & ESTADO DE ALUMNOS
-🎯 Problema que resuelve & Por qué existe:
-Permite monitorear al instante el volumen y la salud de la base de socios (Total Socios, Activos, Morosos con Cuotas Pendientes, Cuentas Congeladas y Aptos Físicos Vencidos).
-👣 Paso a Paso Práctico:
-1. Revisá las 4 tarjetas superiores en el módulo de Miembros.
-2. Aplicá los filtros por estado (Todos, Activos, Vencidos, Congelados, Apto Vencido) para segmentar la lista.
-3. Usá el buscador por texto para localizar inmediatamente a un alumno por DNI, Nombre o Teléfono.
-
-2. ALTA & REGISTRO DE NUEVOS ALUMNOS (CÁLCULO AUTOMÁTICO DE VENCIMIENTO Y COBRO)
-🎯 Problema que resuelve & Por qué existe:
-Elimina el error humano en el cálculo manual de fechas de vencimiento y vincula automáticamente la suscripción con la caja del día.
-👣 Paso a Paso Práctico:
-1. Hacé clic en el botón principal [+ Nuevo Socio].
-2. Ingresá los datos del alumno: Nombre Completo, DNI, Email, Teléfono y Foto de perfil.
-3. Seleccioná el Plan / Membresía inicial (ej. Pase Libre Mensual, Pase 8 Créditos, Plan Trimestral).
-4. Seleccioná la Fecha de Inicio: el sistema calculará automáticamente la Fecha de Vencimiento.
-5. Elegí el Método de Pago inicial (Efectivo, MercadoPago / QR, Transferencia) para registrar la entrada de dinero en Caja.
-
-3. RENOVACIÓN DE MEMBRESÍAS & CAMBIO DE PLAN (UPGRADE/DOWNGRADE)
-🎯 Problema que resuelve & Por qué existe:
-Permite gestionar renovaciones continuas y aplicar cambios de plan ajustando la nueva fecha de expiración y los créditos disponibles.
-👣 Paso a Paso Práctico:
-1. En la fila o ficha del socio, hacé clic en [Renovar Plan].
-2. Si conserva su plan actual, seleccioná la cantidad de meses a renovar (1, 3, 6, 12 meses).
-3. Si el socio desea cambiar de plan, elegí la nueva Membresía del menú desplegable.
-4. Confirmá el cobro para que el sistema genere el comprobante digital e impacte el movimiento en Caja.
-
-4. VERIFICACIÓN Y CARGA DE CERTIFICADO MÉDICO (APTO FÍSICO OBLIGATORIO)
-🎯 Problema que resuelve & Por me existe:
-Protege legalmente a la empresa garantizando que ningún socio entrene sin presentar el certificado médico obligatorio.
-👣 Paso a Paso Práctico:
-1. Verificá los distintivos preventivos en la lista: Apto Vigente (verde) o Apto Pendiente/Vencido (naranja/rojo).
-2. Abrí la Ficha del Socio y hacé clic en [Cargar / Actualizar Apto Físico].
-3. Adjuntá la foto o PDF del certificado médico emitido por el profesional.
-4. Ingresá la Fecha de Vencimiento del Certificado (ej. 1 año desde la emisión).
-
-5. CONGELAMIENTO Y DESCONGELAMIENTO TEMPORAL DE CUENTAS
-🎯 Problema que resuelve & Por qué existe:
-Evita bajas definitivas por razones médicas, lesiones o viajes, congelando el plan temporalmente sin perder días pagados.
-👣 Paso a Paso Práctico:
-1. En la Ficha del Socio, seleccioná la opción [Congelar Plan].
-2. Ingresá la cantidad de días autorizados de suspensión (ej. 14 días) y el motivo de la pausa.
-3. La cuenta cambiará a estado Congelado y el sistema postergará automáticamente la fecha de vencimiento final.
-4. Si el socio retorna antes de lo previsto, hacé clic en [Descongelar Cuenta].
-
-6. FICHA MÉDICA, HISTORIAL Y OBSERVACIONES INTERNAS
-🎯 Problema que resuelve & Por qué existe:
-Facilita que recepcionistas e instructores conozcan alergias, patologías o restricciones físicas del socio en recepción y en sala.
-👣 Paso a Paso Práctico:
-1. En la Ficha del Socio, abrí el bloque Observaciones Médicas / Notas Internas.
-2. Redactá la nota clínica u observación preventiva.
-3. Guardá la nota: la alerta se visualizará automáticamente en la pantalla de recepción al registrar el check-in.
-
-7. ANULACIÓN DE COBROS Y CANCELACIÓN DE SOCIO (PRESERVACIÓN CONTABLE)
-🎯 Problema que resuelve & Por qué existe:
-Garantiza la consistencia entre Finanzas y Miembros. Al anular un pago en Caja, la cuota pasa automáticamente a "Pago Pendiente".
-👣 Paso a Paso Práctico:
-1. Si un cobro se anula desde el módulo Caja / POS, el sistema revierte la membresía a Pago Pendiente.
-2. Si un socio solicita la baja definitiva, usá la opción [Archivar / Cancelar Socio].
-3. Esto preserva la integridad del historial contable y asistencias pasadas sin borrar físicamente los datos.`;
-
-    navigator.clipboard.writeText(guideText);
-    toast.success("✓ Artículo de Miembros copiado al portapapeles con éxito.");
-  };
-
-  const handleCopyCajaGuideText = () => {
-    const guideText = `MANUAL OPERATIVO COMPLETO: CAJA, TERMINAL POS Y COBROS PRESENCIALES — STUDIO PULSE SMART
-
-1. MÉTRICAS DE CAJA & CONTROL DE DINERO EN TIEMPO REAL
-🎯 Problema que resuelve & Por qué existe:
-Permite conocer en todo momento el flujo de dinero del turno (Ingresos en Caja, Egresos/Gastos Menores y Efectivo Esperado en Cajón) sin necesidad de esperar al cierre de jornada.
-👣 Paso a Paso Práctico:
-1. Revisá los 3 indicadores superiores: Ingresos del Turno, Gastos / Egresos y Efectivo Esperado en Cajón.
-2. Verificá que el dinero físico coincida con la diferencia [Ingresos en Efectivo - Egresos en Efectivo].
-
-2. TERMINAL POS: COBRO LIBRE, MEMBRESÍAS Y VENTA DE PRODUCTOS (TIENDA)
-🎯 Problema que resuelve & Por qué existe:
-Centraliza en una sola pantalla rápida cualquier tipo de cobro (pases diarios, cuotas de socios o venta de bebidas/suplementos) descontando stock en tiempo real.
-👣 Paso a Paso Práctico:
-1. Presioná el botón [+ Nuevo Movimiento] para abrir la terminal POS.
-2. Seleccioná el modo: Cobro Libre (concepto personalizado) o Venta de Tienda (artículos del inventario).
-3. Si es de tienda, seleccioná el artículo y la cantidad: el sistema despondrá unidades del inventario y calculará el total.
-4. Vinculá opcionalmente al alumno del padrón para registrar el comprobante a su nombre.
-
-3. CANALES DE PAGO & SOPORTE DE PAGO MIXTO (SPLIT PAYMENT)
-🎯 Problema que resuelve & Por qué existe:
-Resuelve los cobros en los que el alumno paga una parte en efectivo y el resto por transferencia o MercadoPago, evitando desajustes en la contabilidad.
-👣 Paso a Paso Práctico:
-1. Seleccioná el Canal de Pago: Efectivo, MercadoPago / QR o Transferencia Bancaria.
-2. Si el alumno abona con dos medios distintos, elegí Pago Mixto (Split).
-3. Ingresá el monto en Efectivo (ej. $5.000) y el monto Digital (ej. $10.000 en MercadoPago): el sistema acreditará cada parte a su canal correspondiente.
-
-4. ARQUEO DE CAJA & CIERRE DE TURNO (CUADRE DE CAJÓN)
-🎯 Problema que resuelve & Por qué existe:
-Previene faltantes de dinero y audita la honestidad del turno mediante la comparación entre el efectivo contado por el operador y el dinero calculado por el sistema.
-👣 Paso a Paso Práctico:
-1. Al finalizar la jornada o cambio de turno, hacé clic en [Arqueo & Cierre de Caja].
-2. Contá el dinero físico existente en el cajón e ingresá el valor en el campo Efectivo Físico Contado.
-3. El sistema comparará la cifra con el dinero esperado e informará la diferencia: Caja Cuadrada ($0), Sobrante de Caja (+$X) o Faltante (-$X).
-4. Confirmá el cierre para congelar el reporte del turno.
-
-5. HISTORIAL DE TRANSACCIONES, BUSCADOR & FILTROS DE AUDITORÍA
-🎯 Problema que resuelve & Por qué existe:
-Facilita la localización rápida de cualquier movimiento pasado ante reclamos de socios o comprobantes extraviados.
-👣 Paso a Paso Práctico:
-1. Usá el buscador de la tabla para tipear el concepto, nombre del alumno o cajero.
-2. Filtrá por Tipo (Todos, Ingresos, Egresos), Canal de Pago o Fecha (Hoy, Esta Semana, Este Mes).
-3. Presioná [Exportar CSV] para descargar la planilla contable.
-
-6. ANULACIÓN DE MOVIMIENTOS & SINCRONIZACIÓN CON ESTADO DEL SOCIO
-🎯 Problema que resuelve & Por qué existe:
-Permite corregir cobros mal imputados o anulados, garantizando que si correspondía a un pago de cuota, el estado del socio vuelva automáticamente a Pago Pendiente.
-👣 Paso a Paso Práctico:
-1. En la fila del movimiento erróneo, hacé clic en [Anular Movimiento].
-2. Confirmá el motivo de la anulación.
-3. El movimiento cambiará a estado ANULADO (restando el monto de los totales de caja) y, si correspondía al cobro de un socio, revertirá la membresía del alumno a Pago Pendiente.`;
-
-    navigator.clipboard.writeText(guideText);
-    toast.success("✓ Artículo de Caja / POS copiado al portapapeles con éxito.");
-  };
-
-  const handleCopyFinanzasGuideText = () => {
-    const guideText = `MANUAL OPERATIVO COMPLETO: FINANZAS Y LIQUIDACIÓN DE STAFF — STUDIO PULSE SMART
-
-1. SALUD FINANCIERA & MARGEN OPERATIVO NETO
-🎯 Problema que resuelve & Por qué existe:
-Otorga visibilidad completa del estado económico real de la empresa (Ingresos Brutos por Membresías + Tienda POS, Honorarios Liquidados al Staff, Gastos Fijos y Margen Neto de Ganancia).
-👣 Paso a Paso Práctico:
-1. Revisá los 4 indicadores financieros superiores en el panel principal de Finanzas.
-2. Verificá la cifra de Margen Neto Operativo: [Ingresos Totales - (Liquidaciones de Staff + Gastos Fijos)].
-
-2. GESTOR DE GASTOS FIJOS, INSUMOS Y COSTOS ESTRUCTURALES
-🎯 Problema que resuelve & Por qué existe:
-Permite imputar periódicamente los costos recurrentes del centro deportivo (alquiler, energía eléctrica, servicios, internet, insumos de limpieza) para que el balance refleje la ganancia neta real.
-👣 Paso a Paso Práctico:
-1. En la sección de Gastos Fijos, hacé clic en [+ Registrar Gasto] o [Ajustar Rubros].
-2. Ingresá el Rubro (ej. Alquiler Sede, Servicio Eléctrico, Mantenimiento de Equipos), el Monto y el Período imputado.
-3. El valor se restará automáticamente del Ingreso Bruto para actualizar la utilidad neta.
-
-3. MOTOR DE CÁLCULO DE LIQUIDACIONES DE STAFF (PAYROLL ENGINE)
-🎯 Problema que resuelve & Por qué existe:
-Elimina las planillas manuales en Excel calculando automáticamente los salarios y comisiones de los entrenadores en base a su esquema contractual (Sueldo Base, Tarifa por Clase Dictada y Comisiones por Asistencia).
-👣 Paso a Paso Práctico:
-1. Seleccioná el Período de Liquidación (ej. Mes Actual o Mes Anterior).
-2. Presioná [Recalcular Asistencias & Clases]: el sistema cruzará la grilla horaria con los check-ins reales de alumnos.
-3. Verificá el desglose individual de cada profesor: [Sueldo Base + (Clases Dictadas x Honorario por Clase) + (Alumnos Asistidos x Bonificación por Aforo)].
-
-4. ACREDITACIÓN DE PAGOS & EMISIÓN DE RECIBOS DIGITALES DE SUELDO
-🎯 Problema que resuelve & Por qué existe:
-Otorga transparencia al equipo de profesores e impacta automáticamente el egreso financiero en la contabilidad del centro al momento de transferir o abonar los honorarios.
-👣 Paso a Paso Práctico:
-1. En la fila del profesor liquidado, hacé clic en [Acreditar Pago / Liquidador].
-2. Seleccioná el Medio de Pago (Transferencia Bancaria, Efectivo) y confirmá la fecha de acreditación.
-3. El estado cambiará a PAGADO y se generará el Recibo Digital de Sueldo descargable en PDF con el detalle de horas dictadas.
-
-5. ANÁLISIS DE RENTABILIDAD POR HORARIO Y DISCIPLINA
-🎯 Problema que resuelve & Por qué existe:
-Permite a la gerencia deportiva tomar decisiones informadas sobre qué clases o profesores generan mayor rentabilidad y cuáles están operando a pérdida.
-👣 Paso a Paso Práctico:
-1. Revisá la tabla de rendimiento por disciplina y horario.
-2. Compará el costo de la hora del profesor versus los ingresos generados por los pases y asistencias de alumnos anotados.
-3. Identificá los horarios con baja rentabilidad para reestructurar la grilla.`;
-
-    navigator.clipboard.writeText(guideText);
-    toast.success("✓ Artículo de Finanzas copiado al portapapeles con éxito.");
-  };
-
-  const handleCopyReportesGuideText = () => {
-    const guideText = `MANUAL OPERATIVO COMPLETO: REPORTES & ANALÍTICA DE NEGOCIO — STUDIO PULSE SMART
-
-1. TOOLBAR EJECUTIVO & FILTROS MULTIDIMENSIONALES
-🎯 Problema que resuelve & Por qué existe:
-Permite aislar y analizar el desempeño del gimnasio filtrando por rango temporal (Hoy, 7 Días, Mes Actual, Trimestre, Año) y por disciplina deportiva específica (CrossFit, Yoga, Pilates, Functional, Musculación).
-👣 Paso a Paso Práctico:
-1. Usá el selector de Período en la parte superior para definir el rango de tiempo a auditar.
-2. Aplicá el filtro por Disciplina si deseás analizar una actividad deportiva en particular.
-3. Navegá entre las 4 sub-pestañas analíticas: Finanzas, Asistencia y Ocupación, Retención de Socios y Staff & Coaches.
-
-2. ANALÍTICA FINANCIERA & DESGLOSE DE FUENTES DE INGRESO
-🎯 Problema que resuelve & Por qué existe:
-Muestra el origen exacto de los ingresos (Membresías recurrentes vs Ventas presenciales en POS/Tienda) y la evolución del Margen Operativo acumulado.
-👣 Paso a Paso Práctico:
-1. En la sub-pestaña Finanzas, observá el gráfico comparativo de Ingresos vs Egresos.
-2. Analizá el gráfico de dona Desglose de Facturación por Canal (Efectivo, MercadoPago/QR, Transferencia).
-3. Identificá los productos o planes más vendidos en el ranking mensual.
-
-3. ASISTENCIA, AFORO & MAPAS DE CALOR DE DÍAS/HORARIOS PICO
-🎯 Problema que resuelve & Por qué existe:
-Permite detectar las horas pico de concurrencia y los horarios de baja demanda para optimizar la asignación de profesores y salas.
-👣 Paso a Paso Práctico:
-1. Ingresá a la sub-pestaña Asistencia y Ocupación.
-2. Observá la matriz de Mapa de Calor (Heatmap) de Horarios Pico: los bloques oscuros señalan las franjas horarias con más del 85% de aforo ocupado.
-3. Consultá el ranking de Clases con Mayor % de Ocupación para evaluar aperturas de nuevas comisiones.
-
-4. ANALÍTICA DE RETENCIÓN & CÁLCULO AUTOMÁTICO DE CHURN RATE
-🎯 Problema que resuelve & Por qué existe:
-Mide cuántos socios renovaron su cuota versus cuántos se dieron de baja (Tasa de Churn), identificando alumnos en riesgo de inactividad antes de que abandonen.
-👣 Paso a Paso Práctico:
-1. Seleccioná la sub-pestaña Retención de Socios.
-2. Verificá la tasa de Churn Rate % (porcentaje de bajas del período) y el indicador de LTV (Lifetime Value) medio por alumno.
-3. Consultá el listado de alumnos en riesgo (socios que redujeron su frecuencia de check-in en más de un 50%) para lanzar campañas de reactivación.
-
-5. EVALUACIÓN DE RENDIMIENTO DEL STAFF & EXPORTACIÓN EJECUTIVA
-🎯 Problema que resuelve & Por qué existe:
-Permite medir la eficiencia pedagógica de cada profesor (asistencias promedio por clase dictada y puntuación de los socios) y descargar reportes oficiales en CSV/PDF para la junta directiva.
-👣 Paso a Paso Práctico:
-1. En la sub-pestaña Staff & Coaches, revisá el ranking de profesores por volumen de alumnos atendidos y calificación promedio de reseñas.
-2. Presioná el botón [Exportar Reporte Completo] para descargar la planilla descargable consolidada para contadores o socios inversores.`;
-
-    navigator.clipboard.writeText(guideText);
-    toast.success("✓ Artículo de Reportes copiado al portapapeles con éxito.");
-  };
-
-  const handleCopyInventarioGuideText = () => {
-    const guideText = `MANUAL OPERATIVO COMPLETO: INVENTARIO, TIENDA Y KARDEX — STUDIO PULSE SMART
-
-1. CATÁLOGO DE PRODUCTOS & VALORACIÓN DE STOCK EN TIEMPO REAL
-🎯 Problema que resuelve & Por qué existe:
-Otorga visibilidad total del capital invertido en mercadería de la tienda (bebidas, suplementos, indumentaria, accesorios) e informa alertas tempranas de faltantes.
-👣 Paso a Paso Práctico:
-1. Revisá los indicadores superiores en el panel de Inventario: Total de Productos, Valoración de Stock en $, Alertas de Stock Bajo y Categorías.
-2. Usá los botones de filtro rápido por categoría (Suplementos, Bebidas, Accesorios, Indumentaria) o el buscador por nombre/código de barras.
-
-2. ALTA, EDICIÓN & GESTIÓN DE VARIANTES (TALLES / SABORES)
-🎯 Problema que resuelve & Por qué existe:
-Permite administrar artículos complejos que cuentan con múltiples presentaciones (ej. Proteína en polvo con sabores Vainilla/Chocolate o Remeras con talles S/M/L) manteniendo el stock individualizado por variante.
-👣 Paso a Paso Práctico:
-1. Presioná el botón [+ Nuevo Producto].
-2. Ingresá el Nombre, Categoría, Precio de Costo (para cálculo de margen), Precio de Venta al Público, Stock Inicial y Stock Mínimo para alertas.
-3. Si el producto tiene variantes, agregá los atributos (ej. Talle o Sabor) asignando el stock correspondiente a cada SKU.
-
-3. DESCUENTO AUTOMÁTICO POR VENTAS EN TERMINAL POS
-🎯 Problema que resuelve & Por qué existe:
-Conecta automáticamente las ventas presenciales realizadas en la recepción con el libro de inventario, evitando el conteo manual constante.
-👣 Paso a Paso Práctico:
-1. Cada vez que se procesa una venta en el módulo Caja / POS, el sistema descuenta inmediatamente las unidades vendidas del stock actual.
-2. Si un producto alcanza su Stock Mínimo, el sistema activará la insignia naranja de advertencia "Stock Bajo" en el catálogo.
-
-4. MOVIMIENTOS DE AJUSTE DE STOCK & REGISTRO DE KARDEX
-🎯 Problema que resuelve & Por qué existe:
-Brinda auditoría completa de ingresos por compras a proveedores, roturas, vencimientos o consumos internos del personal.
-👣 Paso a Paso Práctico:
-1. En la fila del producto, hacé clic en [Ajustar Stock / Kardex].
-2. Seleccioná el Tipo de Movimiento: Ingreso de Stock (compra a proveedor), Egreso por Vencimiento / Daño o Ajuste de Conteo.
-3. Ingresá las unidades y el motivo: el kardex registrará la fecha, el usuario responsable y el nuevo balance final de stock.
-
-5. ALERTAS DE REPOSICIÓN & UMBRAL MÍNIMO DE SEGURIDAD
-🎯 Problema que resuelve & Por qué existe:
-Evita perder ventas presenciales por quiebres de stock (quedarse sin mercadería disponible durante horarios pico).
-👣 Paso a Paso Práctico:
-1. Definí un Stock Mínimo preventivo para cada artículo (ej. 5 unidades).
-2. El sistema enviará una notificación visual cuando el stock disponible caiga por debajo de dicho umbral, sugiriendo la orden de compra a proveedores.
-
-6. REPORTE DE MARGEN DE GANANCIA & EXPORTACIÓN CSV
-🎯 Problema que resuelve & Por qué existe:
-Muestra el beneficio bruto real por venta de productos (diferencia entre Precio de Venta y Precio de Costo) y permite exportar el inventario para balances contables.
-👣 Paso a Paso Práctico:
-1. Revisá el indicador de Margen de Ganancia Promedio % en la ficha del producto.
-2. Presioná [Exportar CSV] para descargar la planilla descargable con la valoración completa del inventario y las existencias físicas para auditorías.`;
-
-    navigator.clipboard.writeText(guideText);
-    toast.success("✓ Artículo de Inventario copiado al portapapeles con éxito.");
-  };
-
-  const handleCopyResenasGuideText = () => {
-    const guideText = `MANUAL OPERATIVO COMPLETO: RESEÑAS, SATISFACCIÓN Y FEEDBACK — STUDIO PULSE SMART
-
-1. MÉTRICAS DE CALIDAD DE SERVICIO & CSAT (SATISFACCIÓN DEL ALUMNO)
-🎯 Problema que resuelve & Por qué existe:
-Mide de forma cuantitativa la percepción del alumno sobre las instalaciones, los profesores y la atención general del centro deportivo (ej. Calificación Promedio ⭐ 4.9).
-👣 Paso a Paso Práctico:
-1. Observá la tarjeta principal de Puntuación Global (Rating Promedio).
-2. Analizá los 4 pilares de satisfacción: Limpieza y Mantenimiento, Equipamiento y Máquinas, Atención del Staff / Coaches y Relación Precio-Calidad.
-
-2. MODERACIÓN DE RESEÑAS & SELECCIÓN PARA LANDING PAGE PÚBLICA
-🎯 Problema que resuelve & Por qué existe:
-Permite utilizar los mejores testimonios de alumnos satisfechos como prueba social para atraer nuevos clientes en la Landing Page pública de la sede.
-👣 Paso a Paso Práctico:
-1. Revisá el listado de opiniones enviadas por los socios.
-2. En las reseñas de 5 estrellas con comentarios destacados, hacé clic en [Destacar en Landing].
-3. El testimonio se publicará automáticamente en el carrusel de testimonios de la página web pública.
-
-3. RESPUESTAS OFICIALES INSTITUCIONALES DEL CENTRO DEPORTIVO
-🎯 Problema que resuelve & Por qué existe:
-Muestra compromiso y atención al cliente respondiendo a las consultas, agradecimientos o críticas constructivas de los alumnos.
-👣 Paso a Paso Práctico:
-1. En la tarjeta de la reseña, hacé clic en [Responder Oficialmente].
-2. Redactá la respuesta institucional (ej. "¡Gracias por tu reseña! Ya ajustamos la temperatura de la sala").
-3. Guardá la respuesta: quedará visible debajo del comentario del socio en la plataforma.
-
-4. BUZÓN PRIVADO DE SUGERENCIAS & RECLAMOS CONFIDENCIALES
-🎯 Problema que resuelve & Por qué existe:
-Brinda un canal seguro y privado para que los socios expresen disconformidades sin exponer públicamente a la marca antes de que la gerencia pueda resolver el problema.
-👣 Paso a Paso Práctico:
-1. Accedé a la pestaña Buzón de Sugerencias / Reclamos Privados.
-2. Revisá las sugerencias enviadas directamente a la gerencia sin publicación web.
-3. Asigná un estado de resolución: En Revisión, Acción Tomada o Resuelto.
-
-5. CAMPAÑAS AUTOMÁTICAS DE SOLICITUD DE FEEDBACK POR WHATSAPP
-🎯 Problema que resuelve & Por qué existe:
-Incrementa la cantidad de reseñas positivas solicitando automáticamente una valoración a los alumnos que han asistido con frecuencia en los últimos 30 días.
-👣 Paso a Paso Práctico:
-1. Hacé clic en [Enviar Campaña de Reseñas].
-2. Seleccioná el segmento de alumnos a contactar (ej. socios con +10 asistencias en el mes).
-3. El sistema enviará la plantilla de invitación por WhatsApp para que el alumno deje su calificación en un clic.`;
-
-    navigator.clipboard.writeText(guideText);
-    toast.success("✓ Artículo de Reseñas copiado al portapapeles con éxito.");
-  };
-
-  const handleCopyMembresiasGuideText = () => {
-    const guideText = `MANUAL OPERATIVO COMPLETO: MEMBRESÍAS, TARIFAS Y PASES — STUDIO PULSE SMART
-
-1. CATÁLOGO DE PLANES, TARIFAS & MÉTRICAS DE ADHESIÓN
-🎯 Problema que resuelve & Por qué existe:
-Muestra el abanico completo de planes comerciales activos (Pase Libre, Pases de Créditos, Pases Horario Valle/Off-Peak) con sus precios de lista, ofertas promocionales y el total de alumnos suscritos a cada plan.
-👣 Paso a Paso Práctico:
-1. Revisá las tarjetas de membresía en el catálogo del módulo.
-2. Verificá los precios de lista, los precios tachados de oferta, la vigencia del plan (Mensual, Trimestral, Anual) y el total de socios adheridos.
-
-2. ALTA & CONFIGURACIÓN AVANZADA DE PLANES (PASE LIBRE VS CRÉDITOS)
-🎯 Problema que resuelve & Por qué existe:
-Permite estructurar comercialmente la oferta del centro deportivo definiendo si un plan es de acceso ilimitado (Pase Libre) o si consume una bolsa de créditos por clase reservada.
-👣 Paso a Paso Práctico:
-1. Presioná el botón [+ Nueva Membresía].
-2. Definí el Nombre del Plan, Precio de Lista, Precio Promocional (opcional), Matrícula de Inscripción y la Frecuencia de cobro.
-3. Seleccioná la Modalidad de Acceso: Pase Libre (Ilimitado) o Bolsa de Créditos (ej. 12 créditos mensuales para usar en cualquier clase).
-4. Especificá el límite máximo de reservas simultáneas y los días permitidos de congelamiento de pase.
-
-3. FRANJAS HORARIAS VALLE (OFF-PEAK) & DISCIPLINAS HABILITADAS
-🎯 Problema que resuelve & Por qué existe:
-Incentiva la asistencia en horarios de baja demanda (ej. de 12:00 a 16:00 hs) ofreciendo tarifas reducidas y restringiendo qué actividades deportivas están incluidas en el pase.
-👣 Paso a Paso Práctico:
-1. En la configuración del plan, activá la casilla Restringir Horario Valle (Off-Peak).
-2. Definí el rango horario permitido (ej. 12:00 a 16:00 hs de Lunes a Viernes).
-3. Seleccioná las disciplinas deportivas incluidas en esta cuota (ej. Musculación + Functional).
-
-4. BENEFICIOS, AMENITIES INCLUIDOS & PORTADA WEB (LANDING PAGE)
-🎯 Problema que resuelve & Por me existe:
-Destaca los valores agregados de cada membresía (ej. Lockers VIP, Evaluación Nutricional, Toalla, Acceso a Sauna) y permite marcar el plan estelar con la etiqueta "Más Popular" en la portada web oficial.
-👣 Paso a Paso Práctico:
-1. Agregá la lista de Amenities o Beneficios incluidos que el alumno verá en su aplicación móvil.
-2. Marcá la casilla Destacar Plan en Landing Page para que el plan se muestre resaltado en la portada pública del gimnasio.
-
-5. ACTUALIZACIÓN MASIVA DE PRECIOS & CONGELAMIENTOS DE CUOTA
-🎯 Problema que resuelve & Por qué existe:
-Facilita el ajuste inflacionario masivo de cuotas sin necesidad de editar plan por plan individualmente, e inmuta el estado de cobro cuando un alumno solicita un congelamiento autorizado por viaje o salud.
-👣 Paso a Paso Práctico:
-1. Presioná [Actualizar Precios Masivo] para aplicar un incremento porcentual (%) o de monto fijo ($) a todos los planes seleccionados.
-2. Para gestionar pausados de socios, consultá las solicitudes de congelamiento y aprobá el período sin cargos adicionales.`;
-
-    navigator.clipboard.writeText(guideText);
-    toast.success("✓ Artículo de Membresías copiado al portapapeles con éxito.");
-  };
-
-  const handleCopyConfigGuideText = () => {
-    const guideText = `MANUAL OPERATIVO COMPLETO: CONFIGURACIÓN Y POLÍTICAS — STUDIO PULSE SMART
-
-1. PERFIL INSTITUCIONAL, IDENTIDAD DE MARCA & HORARIOS DE APERTURA (7 DÍAS)
-🎯 Problema que resuelve & Por qué existe:
-Mantiene actualizada la identidad visual y datos de contacto del gimnasio (Logotipo, Nombre Comercial, Dirección Física, Teléfono de Recepción, WhatsApp Oficial, Instagram) y su horario semanal de operaciones de 7 días.
-👣 Paso a Paso Práctico:
-1. Ingresá a la pestaña Perfil de la Sede.
-2. Editá los datos institucionales, cargá el logotipo oficial y la galería de fotos.
-3. Definí el esquema horario semanal especificando ventanas de apertura y cierre.
-
-2. GESTIÓN DE SALAS & ESPACIOS DE ENTRENAMIENTO
-🎯 Problema que resuelve & Por qué existe:
-Permite delimitar los salones y espacios físicos de entrenamiento de la sede asignando su aforo y capacidad máxima autorizada de alumnos por clase.
-👣 Paso a Paso Práctico:
-1. En la pestaña Salas de Entrenamiento, agregá o editá un espacio (ej. Sala de CrossFit, Estudio de Pilates, Salón Principal).
-2. Asigná la capacidad física de cupos simultáneos autorizados para proteger el aforo.
-
-3. DIRECTORIO DE STAFF, DISPONIBILIDAD HORARIA & LIQUIDACIONES
-🎯 Problema que resuelve & Por qué existe:
-Centraliza la información de entrenadores y personal de la sede, gestionando sus especialidades, certificados, horarios disponibles y la estructura salarial para la liquidación automática.
-👣 Paso a Paso Práctico:
-1. En la sección Staff & Profesores, registrá la ficha del entrenador con sus diplomas y especialidades.
-2. Configura su disponibilidad semanal de horarios.
-3. Establecé el esquema de liquidación: Sueldo Base Mensual, Tarifa por Clase Dictada y Bonificaciones.
-
-4. MÉTODOS DE PAGO, MERCADOPAGO QR & MÉTODOS HABILITADOS
-🎯 Problema que resuelve & Por qué existe:
-Conecta los canales de cobro digital (MercadoPago API OAuth, QR dinámico, Transferencia Bancaria CBU/CVU) para la cobranza automática en la app de alumnos y en la caja presencial.
-👣 Paso a Paso Práctico:
-1. En Integraciones Financieras, vinculá la cuenta de MercadoPago ingresando las credenciales (Access Token y Public Key).
-2. Configurá los datos de la cuenta bancaria del gimnasio (CBU, CVU, Alias y CUIT) para validaciones de transferencias.
-
-5. POLÍTICAS DE RESERVA, CANCELACIÓN & DÍAS DE CIERRE (BLACKOUT DAYS)
-🎯 Problema que resuelve & Por qué existe:
-Establece reglas automáticas para reservas anticipadas, tiempo límite de cancelación sin sanción y bloqueos automáticos de calendario por feriados o mantenimiento.
-👣 Paso a Paso Práctico:
-1. Accedé a Políticas de Reserva.
-2. Definí el Límite de Cancelación sin Penalización (ej. cancelar hasta 2 horas antes de la clase).
-3. Configurá los Días de Cierre (Blackout Days) para suspender la agenda automática en feriados nacionales.`;
-
-    navigator.clipboard.writeText(guideText);
-    toast.success("✓ Artículo de Configuración copiado al portapapeles con éxito.");
-  };
+  const currentGuideData = guideData[activeGuide];
+
+  const filteredSections = currentGuideData.sections.filter((s) => {
+    if (!searchTerm.trim()) return true;
+    const q = searchTerm.toLowerCase();
+    return (
+      s.heading.toLowerCase().includes(q) ||
+      s.text.toLowerCase().includes(q) ||
+      s.bullets.some((b) => b.toLowerCase().includes(q))
+    );
+  });
 
   return (
-    <div className="space-y-8">
-      {/* Banner de Encabezado */}
-      <div className="rounded-3xl border border-border bg-card p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg transition-all duration-300">
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2.5 rounded-2xl bg-primary/10 text-primary border border-primary/20">
-              <HelpCircle className="w-6 h-6" />
+    <div className="space-y-6 animate-fade-in text-foreground">
+      {/* Header Block */}
+      <div className="rounded-3xl border border-border bg-card shadow-xs p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-2xl bg-primary/10 text-primary border border-primary/20">
+              <HelpCircle className="w-5 h-5" />
             </div>
-            <div>
-              <h2 className="text-xl font-bold tracking-tight text-foreground">
-                Centro de Ayuda y Guías Oficiales
-              </h2>
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block mt-0.5">
-                Studio Pulse Smart · Base de Conocimiento para Administradores
-              </span>
-            </div>
+            <h2 className="text-lg font-bold tracking-tight text-foreground">
+              Centro de Ayuda y Manuales de Uso
+            </h2>
           </div>
-          <p className="text-xs text-muted-foreground leading-relaxed pl-1 pt-1 max-w-2xl">
-            Explora las guías operativas detalladas para dominar la gestión de tu centro deportivo, controlar accesos, configurar clases y optimizar la retención de socios.
+          <p className="text-xs text-muted-foreground leading-relaxed pl-1">
+            Guía explicativa paso a paso para operar eficientemente cada módulo de Studio Pulse Smart.
           </p>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="text-right hidden sm:block">
-            <span className="text-xs font-bold text-foreground block">10 Guías Publicadas</span>
-            <span className="text-[10.5px] text-emerald-600 font-semibold">100% Cobertura</span>
-          </div>
-          <div className="h-10 w-10 rounded-2xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center justify-center font-bold text-xs">
-            10/10
-          </div>
-        </div>
-      </div>
-
-      {/* Toolbar: Buscador y Filtros por Categoría */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-card p-4 rounded-3xl border border-border shadow-xs">
-        {/* Buscador */}
-        <div className="relative shrink-0 w-full sm:w-72">
+        <div className="relative shrink-0 w-full md:w-72">
           <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Buscar por módulo o tema..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 rounded-2xl text-xs bg-secondary/30 border-border/60 h-9"
+            placeholder="Buscar tema o funcionalidad..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 h-9 rounded-xl text-xs bg-background border-border"
           />
-        </div>
-
-        {/* Categories Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-1 lg:pb-0">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-                selectedCategory === cat
-                  ? "bg-primary text-primary-foreground shadow-2xs font-bold"
-                  : "bg-secondary/60 text-muted-foreground hover:bg-secondary hover:text-foreground border border-border/40"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
         </div>
       </div>
 
-      {/* Grid de Guías Operativas */}
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
-            Manuales Operativos Disponibles ({filteredGuides.length})
-          </h3>
+      {/* Navigation Subtabs (6 Modules) */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        {modules.map((m) => {
+          const Icon = m.icon;
+          const isActive = activeGuide === m.id;
+          return (
+            <button
+              key={m.id}
+              onClick={() => setActiveGuide(m.id as any)}
+              className={`p-3.5 rounded-2xl border text-left transition-all duration-300 flex flex-col justify-between h-full ${
+                isActive
+                  ? "border-primary bg-primary/10 shadow-xs translate-y-[-2px]"
+                  : "border-border bg-card hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg"
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div
+                  className={`p-2 rounded-xl ${
+                    isActive
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary text-foreground"
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                </div>
+                {isActive && <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />}
+              </div>
+              <div>
+                <span className="font-bold text-xs text-foreground block">{m.name}</span>
+                <span className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">
+                  {m.desc}
+                </span>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Guide Content Display */}
+      <div className="rounded-3xl border border-border bg-card shadow-xs p-6 space-y-6">
+        <div className="flex items-center justify-between pb-4 border-b border-border/60">
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+              Manual del Módulo
+            </span>
+            <h3 className="text-base font-extrabold text-foreground mt-0.5">
+              {currentGuideData.title}
+            </h3>
+          </div>
+          <span className="text-xs font-bold px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
+            {currentGuideData.badge}
+          </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full items-stretch">
-          {filteredGuides.map((guide) => {
-            const isAsistencias = guide.id === "asistencia";
-            const isClases = guide.id === "clases";
-            const isMiembros = guide.id === "miembros";
-            const isCaja = guide.id === "caja";
-            const isFinanzas = guide.id === "finanzas";
-            const isReportes = guide.id === "reportes";
-            const isInventario = guide.id === "inventario";
-            const isResenas = guide.id === "reseñas";
-            const isMembresias = guide.id === "membresias";
-            const isConfig = guide.id === "config";
-            const isExpanded = activeGuideId === guide.id;
-
-            return (
-              <div
-                key={guide.id}
-                className={cn(
-                  "rounded-3xl border border-border bg-card shadow-xs p-6 flex flex-col justify-between hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg transition-all duration-300",
-                  isExpanded && "border-primary/40 ring-1 ring-primary/20 md:col-span-2"
-                )}
-              >
-                <div>
-                  {/* Badge & Meta */}
-                  <div className="flex items-center justify-between gap-3 mb-3">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80 bg-secondary px-2.5 py-1 rounded-full border border-border/60">
-                      {guide.category}
-                    </span>
-                    <span
-                      className={`text-[10px] font-bold uppercase border px-2.5 py-0.5 rounded-full ${guide.badgeColor}`}
-                    >
-                      {guide.status}
-                    </span>
-                  </div>
-
-                  {/* Title & Subtitle */}
-                  <h4 className="text-base font-bold text-foreground tracking-tight mb-2">
-                    {guide.title}
-                  </h4>
-                  <p className="text-xs text-muted-foreground leading-relaxed mb-4">
-                    {guide.description}
-                  </p>
-                </div>
-
-                {/* Expanded Details for Asistencias Guide - ARTICLE FORMAT */}
-                {isAsistencias && isExpanded && (
-                  <article className="mt-6 pt-6 border-t border-border space-y-8 animate-in fade-in duration-300 bg-background/50 p-6 md:p-8 rounded-3xl border border-border/80 shadow-xs">
-                    {/* Header del Artículo */}
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-border/60">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-extrabold uppercase tracking-wider bg-primary/10 text-primary px-2.5 py-0.5 rounded-full border border-primary/20">
-                            Manual de Operación
-                          </span>
-                          <span className="text-[11px] text-muted-foreground">• Lectura: 4 min</span>
-                        </div>
-                        <h3 className="text-xl font-black text-foreground tracking-tight">
-                          Manual Operativo Completo: Control de Asistencias, Aforo y Accesos
-                        </h3>
-                        <p className="text-xs text-muted-foreground leading-relaxed pt-1">
-                          Instrucciones paso a paso para el personal de recepción y administradores. Aprende a gestionar aforo en tiempo real, validar ingresos presenciales, supervisar check-ins por QR/GPS y automatizar la retención de alumnos.
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="rounded-xl text-xs h-8 gap-1.5 font-semibold border-border hover:bg-secondary"
-                          onClick={handleCopyAsistenciaGuideText}
-                        >
-                          <Copy className="w-3.5 h-3.5" /> Copiar Artículo
-                        </Button>
-                        <Button
-                          size="sm"
-                          className="rounded-xl text-xs h-8 gap-1.5 font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs"
-                          onClick={() => onNavigateTab?.("asistencia")}
-                        >
-                          Ir al Módulo <ArrowRight className="w-3.5 h-3.5" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Cuerpo del Artículo */}
-                    <div className="space-y-8 text-xs leading-relaxed text-foreground">
-                      {/* Sección 1 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            1
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Indicadores Clave & Control de Aforo Sede en Tiempo Real
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Garantiza la seguridad en sala evitando el hacinamiento y el exceso de capacidad legal de la sede. Permite al personal de recepción evaluar al instante el volumen presencial y saber qué canal de ingreso (QR, GPS o Mostrador) es el más utilizado por los socios.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Observá la primera tarjeta <strong className="text-foreground">Aforo Actual Sede</strong> para verificar la ocupación en tiempo real vs el límite configurado (ej. <code className="bg-secondary px-1.5 py-0.5 rounded text-foreground font-mono">42 / 80</code>).</li>
-                            <li>Analizá la barra de porcentaje: si supera el <strong className="text-amber-600 dark:text-amber-400">85%</strong>, considerá pausar temporalmente los ingresos generales libres por musculación para resguardar la seguridad.</li>
-                            <li>Revisá los indicadores de <strong className="text-foreground">Check-ins QR</strong>, <strong className="text-foreground">GPS</strong> y <strong className="text-foreground">Recepción</strong> para medir el nivel de adopción digital de tu gimnasio.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 2 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            2
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Control de Acceso Presencial en Recepción (Búsqueda & Validaciones)
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Elimina las demoras en el mostrador durante horas pico. Detecta automáticamente si el socio tiene clase agendada hoy, si su cuota está al día o si debe entregar el certificado médico obligatorio antes de ingresar a entrenar.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Hacé clic en el botón principal <strong className="text-foreground">[Buscar Socio para Check-in]</strong>.</li>
-                            <li>Tipeá el <strong className="text-foreground">DNI</strong>, <strong className="text-foreground">Nombre</strong> o <strong className="text-foreground">Teléfono</strong> en el buscador desplegado.</li>
-                            <li>Verificá el distintivo de salud: <span className="text-emerald-600 font-bold">Apto Vigente</span> (verde) o <span className="text-amber-600 font-bold">Apto Pendiente</span> (naranja).</li>
-                            <li>Si el socio tiene reserva para hoy, presioná <strong className="text-foreground">[Confirmar Check-in]</strong> (se marcará presente en la plantilla del profesor).</li>
-                            <li>Si es un ingreso libre sin reserva previa (musculación/sala), presioná <strong className="text-foreground">[Ingreso General]</strong>.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 3 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            3
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Monitor de Entradas Recientes & Alertas Preventivas en Vivo
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Evita que socios morosos o lesionados ingresen sin ser advertidos. Transmite en vivo cada entrada para que el personal de recepción supervise el flujo constante sin desatender los cobros de la caja.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Mantené a la vista la columna <strong className="text-foreground">Monitor de Entradas Recientes</strong> en la pantalla de recepción.</li>
-                            <li>Si un socio ingresa y figura con la etiqueta roja <span className="text-destructive font-bold">Pago Pendiente</span>, solicitale regularizar su cuota en la caja.</li>
-                            <li>Si figura la etiqueta <span className="text-amber-600 dark:text-amber-400 font-bold">Lesión o Condición Médica</span>, notificalo al instructor a cargo de la sala.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 4 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            4
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Módulo de Retención: Alumnos sin Asistencia (Riesgo Churn)
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Combate la tasa de baja voluntaria (churn) detectando inactividad temprana. En lugar de esperar a que la membresía venza, permite re-contactar al socio antes de que pierda la rutina de entrenamiento.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Ubicá el bloque lateral <strong className="text-foreground">Alumnos sin Asistencia</strong> (socios activos con +12 días sin registrar check-in).</li>
-                            <li>Hacé clic en el botón <strong className="text-foreground">[Contactar]</strong> en la fila del alumno.</li>
-                            <li>El sistema abrirá automáticamente <strong className="text-emerald-600">WhatsApp</strong> con un mensaje empático prediseñado: <em>"Hola [Nombre], ¡te extrañamos en el gym! 👋..."</em>.</li>
-                            <li>Presioná enviar en WhatsApp para reactivar la comunicación con el alumno.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 5 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            5
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Historial General de Asistencias & Exportación CSV
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Brinda trazabilidad completa ante reclamos de alumnos sobre asistencias o para auditar el cumplimiento de planes por créditos y la liquidaciones a entrenadores.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Ingresá un término en el buscador de la tabla (ej. nombre del alumno o clase).</li>
-                            <li>Usá las pestañas de filtro por fecha (<strong className="text-foreground">Hoy</strong>, <strong className="text-foreground">Ayer</strong>, <strong className="text-foreground">Esta Semana</strong>) o por método (<strong className="text-foreground">Scan QR</strong>, <strong className="text-foreground">GPS</strong>, <strong className="text-foreground">Recepción</strong>).</li>
-                            <li>Presioná el botón <strong className="text-foreground">[Exportar CSV]</strong> para descargar la planilla oficial en formato compatible con Excel.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 6 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            6
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Bloqueos por Feriados & Días de Cierre (Blackout Days)
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Previene marcas indeseadas de asistencia o check-ins erróneos durante días feriados o jornadas de mantenimiento en las que el gimnasio permanece cerrado.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Al configurar un feriado en la sección Configuración, el módulo de Asistencias activará automáticamente un cartel rojo de aviso.</li>
-                            <li>Los intentos de check-in presenciales o por GPS quedarán suspendidos hasta el siguiente día laborable.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 7 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            7
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Integración Automática con otros Módulos (Finanzas, Penalizaciones y Reportes)
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Conecta los accesos con el resto del sistema de forma 100% automatizada, evitando planillas duplicadas y tareas manuales repetitivas.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ul className="list-disc pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li><strong className="text-foreground">Liquidación de Staff (Finanzas):</strong> Cada asistencia confirmada suma al haber mensual del entrenador a cargo.</li>
-                            <li><strong className="text-foreground">Control de Ausencias (No-Show):</strong> Los ausentes no justificados alimentan las estadísticas de penalizaciones.</li>
-                            <li><strong className="text-foreground">Analítica (Reportes):</strong> Alimenta los mapas de calor de días y horarios pico del centro.</li>
-                          </ul>
-                        </div>
-                      </section>
-                    </div>
-                  </article>
-                )}
-
-                {/* Expanded Details for Clases Guide - ARTICLE FORMAT */}
-                {isClases && isExpanded && (
-                  <article className="mt-6 pt-6 border-t border-border space-y-8 animate-in fade-in duration-300 bg-background/50 p-6 md:p-8 rounded-3xl border border-border/80 shadow-xs">
-                    {/* Header del Artículo */}
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-border/60">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-extrabold uppercase tracking-wider bg-primary/10 text-primary px-2.5 py-0.5 rounded-full border border-primary/20">
-                            Manual de Operación
-                          </span>
-                          <span className="text-[11px] text-muted-foreground">• Lectura: 5 min</span>
-                        </div>
-                        <h3 className="text-xl font-black text-foreground tracking-tight">
-                          Manual Operativo Completo: Gestión de Clases, Horarios y Cupos
-                        </h3>
-                        <p className="text-xs text-muted-foreground leading-relaxed pt-1">
-                          Guía detallada para programar la grilla semanal, administrar salones y reservas por ubicaciones físicas (spots), gestionar la lista de espera automática y controlar la asistencia de alumnos.
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="rounded-xl text-xs h-8 gap-1.5 font-semibold border-border hover:bg-secondary"
-                          onClick={handleCopyClasesGuideText}
-                        >
-                          <Copy className="w-3.5 h-3.5" /> Copiar Artículo
-                        </Button>
-                        <Button
-                          size="sm"
-                          className="rounded-xl text-xs h-8 gap-1.5 font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs"
-                          onClick={() => onNavigateTab?.("clases")}
-                        >
-                          Ir al Módulo <ArrowRight className="w-3.5 h-3.5" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Cuerpo del Artículo */}
-                    <div className="space-y-8 text-xs leading-relaxed text-foreground">
-                      {/* Sección 1 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            1
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Vistas de Grilla (Calendario por Salón vs Lista Semanal)
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Evita solapamientos de profesores y salones, permite organizar visualmente las actividades de la semana y facilita la localización rápida de horarios por parte del personal de recepción.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Usá la pestaña <strong className="text-foreground">Modo Calendario</strong> para visualizar la grilla semanal completa (Lunes a Domingo) organizada por salones (ej. Sala Principal, Salón Yoga, Sala Spinning).</li>
-                            <li>Navegá semanas usando los controles <strong className="text-foreground">[&lt;] [Semana Actual] [&gt;]</strong> para planificar la grilla futura.</li>
-                            <li>Cambiá a la vista <strong className="text-foreground">Modo Lista</strong> cuando necesites realizar búsquedas rápidas por nombre de disciplina, profesor o sala.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 2 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            2
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Configuración de Salas y Salones de la Sede
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Permite delimitar la capacidad máxima y organizar los espacios físicos de la sede (ej. <em>Sala de Musculación</em>, <em>Estudio de Yoga</em>, <em>Box de CrossFit</em>), evitando la superposición de actividades en un mismo salón.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Ingresá a <strong className="text-foreground">Configuración &gt; Salas / Salones</strong>.</li>
-                            <li>Hacé clic en el botón <strong className="text-foreground">[+ Agregar Sala / Salón]</strong> e ingresá el Nombre, la Capacidad Máxima de alumnos y una breve descripción.</li>
-                            <li>Al crear o editar una clase en la grilla, vinculá la Sala correspondiente para limitar automáticamente el cupo máximo de reservas.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 3 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            3
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Alta, Edición y Duplicación de Clases Semanales
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Agiliza la carga periódica de la grilla horaria evitando la tarea repetitiva de crear manualmente las mismas clases semana a semana.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Presioná el botón <strong className="text-foreground">[+ Crear Clase]</strong> y completá Nombre, Profesor, Día, Horario, Salón, Capacidad y Costo en Créditos.</li>
-                            <li>Para copiar un horario existente a otros días de la semana, usá la función <strong className="text-foreground">[Duplicar]</strong>.</li>
-                            <li>Para modificar datos en tiempo real (ej. reemplazo de profesor o cambio de horario), hacé clic en <strong className="text-foreground">[Editar Clase]</strong>.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 4 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            4
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Diseñador Universal de Bloques de Entrenamiento (Rutinas / Estructura)
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Estandariza la planificación técnica pedagógica de los profesores (Yoga, Functional, Pilates, CrossFit, HIIT, etc.) permitiendo a la dirección deportiva mantener un estándar de calidad homogéneo.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ul className="list-disc pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>🟡 <strong className="text-foreground">Calentamiento / Entrada en calor / Movilidad:</strong> Fase de acondicionamiento inicial.</li>
-                            <li>🔵 <strong className="text-foreground">Fuerza / Técnica / Asanas:</strong> Trabajo específico de la disciplina.</li>
-                            <li>🔴 <strong className="text-foreground">Metcon / Trabajo Intensivo / Rutina Central:</strong> Bloque principal de exigencia física.</li>
-                            <li>🟢 <strong className="text-foreground">Vuelta a la Calma / Relajación:</strong> Estiramientos finales o respiración guiada.</li>
-                            <li>Asigná un <strong className="text-foreground">Time Cap</strong> (duración en minutos) a cada bloque y reordenálos con los botones <strong className="text-foreground">[▲ Subir]</strong> y <strong className="text-foreground">[▼ Bajar]</strong>.</li>
-                          </ul>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 5 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            5
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Control de Cupos de Clase y Ocupación en Tiempo Real
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Previene el sobrecupo en las salas y garantiza que, una vez alcanzado el límite de capacidad de la clase, las solicitudes adicionales pasen automáticamente a la lista de espera.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>El sistema contabiliza en tiempo real la cantidad de inscriptos vs la capacidad máxima configurada (ej. <code className="bg-secondary px-1.5 py-0.5 rounded text-foreground font-mono">18 / 20 anotados</code>).</li>
-                            <li>Cuando se alcanza el cupo total (<code className="bg-secondary px-1.5 py-0.5 rounded text-foreground font-mono">20 / 20</code>), la clase se bloquea para reservas directas y activa la Lista de Espera.</li>
-                            <li>El profesor o recepcionista visualiza el listado oficial de inscriptos listo para tomar asistencia en sala.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 6 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            6
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Inscripción Presencial & Marcación de Asistencia en Sala
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Otorga al recepcionista y al profesor la flexibilidad de anotar alumnos que llegaron directamente a la sede o registrar penalizaciones por inasistencias (*No-Show*).
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Desde el mapa de la clase, hacé clic en cualquier spot disponible para anotar manualmente a un socio por DNI o Nombre.</li>
-                            <li>Durante o al finalizar la clase, el instructor marca <strong className="text-emerald-600">[Presente]</strong> o <strong className="text-destructive">[Ausente / No-Show]</strong> en la lista de alumnos.</li>
-                            <li>Si se deshace una reserva individual antes del límite configurado, el sistema reembolsa el crédito al plan del alumno en forma automática.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 7 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            7
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Gestión de Lista de Espera Inteligente (Waitlist)
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Garantiza el 100% de ocupación en clases de alta demanda promoviendo en forma automática a los socios en espera apenas se libera un cupo por cancelación.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Si la capacidad de la clase está al 100%, los alumnos que intenten inscribirse ingresarán a la <strong className="text-foreground">Lista de Espera</strong> con turno asignado (ej. <code className="bg-secondary px-1.5 py-0.5 rounded text-foreground font-mono">Puesto #1</code>, <code className="bg-secondary px-1.5 py-0.5 rounded text-foreground font-mono">Puesto #2</code>).</li>
-                            <li>Si un alumno cancela a tiempo, el sistema asciende automáticamente al primer socio en espera y le envía una notificación por App/Push.</li>
-                            <li>El recepcionista también puede promover o cancelar manualmente turnos desde la pestaña de espera de la clase.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 8 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            8
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Cancelación Masiva de Clase & Reembolso Automático de Créditos
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Resuelve la gestión ante eventos de fuerza mayor (ausencia imprevista del profesor, problema edilicio o feriado de último momento) sin tener que desinscribir a cada alumno manualmente.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Ingresá a la clase a suspender y hacé clic en el botón rojo <strong className="text-destructive">[Cancelar Clase]</strong>.</li>
-                            <li>Confirmá la cancelación en el cuadro de diálogo.</li>
-                            <li>El sistema cancelará la sesión, notificará a todos los inscriptos y reembolsará masivamente los créditos consumidos a las cuentas de los alumnos.</li>
-                          </ol>
-                        </div>
-                      </section>
-                    </div>
-                  </article>
-                )}
-
-                {/* Expanded Details for Miembros Guide */}
-                {isMiembros && isExpanded && (
-                  <article className="mt-6 pt-6 border-t border-border/80 space-y-6 animate-in fade-in duration-300 bg-background/50 p-6 md:p-8 rounded-3xl border border-border/60 shadow-xs">
-                    {/* Encabezado del Artículo */}
-                    <header className="space-y-3 pb-5 border-b border-border/60">
-                      <div className="flex items-center justify-between flex-wrap gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="bg-primary/10 text-primary text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg border border-primary/20">
-                            MANUAL DE OPERACIÓN
-                          </span>
-                          <span className="text-xs text-muted-foreground font-medium">
-                            • Lectura: 4 min
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="rounded-xl text-xs h-8 gap-1.5 font-semibold"
-                            onClick={handleCopyMiembrosGuideText}
-                          >
-                            <Copy className="w-3.5 h-3.5" /> Copiar Artículo
-                          </Button>
-                          <Button
-                            size="sm"
-                            className="rounded-xl text-xs h-8 gap-1.5 font-bold bg-primary text-primary-foreground hover:bg-primary/90"
-                            onClick={() => onNavigateTab?.("miembros")}
-                          >
-                            Ir al Módulo <ArrowRight className="w-3.5 h-3.5" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      <h3 className="text-xl md:text-2xl font-black text-foreground tracking-tight">
-                        Manual Operativo Completo: Gestión de Miembros, Renovaciones y Salud
-                      </h3>
-                      <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
-                        Guía detallada para registrar socios, calcular automáticamente fechas de vencimiento, procesar renovaciones y cambios de plan, auditar certificados médicos (Apto Físico), gestionar pausados por congelamiento y sincronizar cobros con la Caja.
-                      </p>
-                    </header>
-
-                    {/* Contenido del Artículo: 7 Secciones Abiertas */}
-                    <div className="space-y-8 text-xs leading-relaxed text-foreground">
-                      {/* Sección 1 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            1
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Métricas de Padrón & Filtrado de Estados de Alumnos
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Otorga visibilidad inmediata sobre la salud de la base de socios (Total Socios, Activos, Morosos con Cuota Vencida, Cuentas Congeladas y Aptos Físicos Vencidos), permitiendo auditar el centro sin cálculos manuales.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Revisá las 4 tarjetas superiores en el módulo de Miembros: <strong className="text-foreground">Total Socios</strong>, <strong className="text-foreground">Socios Activos</strong>, <strong className="text-foreground">Pagos Pendientes</strong> y <strong className="text-foreground">Apto Físico Pendiente/Vencido</strong>.</li>
-                            <li>Usá los botones de filtro rápido (<code className="bg-secondary px-1.5 py-0.5 rounded text-foreground font-mono">Todos</code>, <code className="bg-secondary px-1.5 py-0.5 rounded text-foreground font-mono">Activos</code>, <code className="bg-secondary px-1.5 py-0.5 rounded text-foreground font-mono">Vencidos</code>, <code className="bg-secondary px-1.5 py-0.5 rounded text-foreground font-mono">Congelados</code>, <code className="bg-secondary px-1.5 py-0.5 rounded text-foreground font-mono">Apto Vencido</code>) para segmentar la lista.</li>
-                            <li>Usá la barra de búsqueda para encontrar alumnos por <strong className="text-foreground">DNI</strong>, <strong className="text-foreground">Nombre</strong> o <strong className="text-foreground">Teléfono</strong>.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 2 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            2
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Alta & Registro de Nuevos Alumnos (Cálculo Automático de Vencimiento)
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Elimina el error humano en la asignación manual de fechas de vencimiento y vincula automáticamente la nueva suscripción con el registro de cobro en la Caja registradora.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Presioná el botón principal <strong className="text-primary">[+ Nuevo Socio]</strong>.</li>
-                            <li>Ingresá los datos del alumno: Nombre Completo, DNI, Email, Teléfono y Foto de perfil.</li>
-                            <li>Seleccioná el Plan o Membresía inicial (ej. <em>Pase Libre Mensual</em>, <em>Pase 8 Clases/Mes</em>, <em>Plan Trimestral</em>).</li>
-                            <li>Seleccioná la Fecha de Inicio: el sistema calculará automáticamente la <strong className="text-foreground">Fecha de Vencimiento</strong> (30 días exactos para planes mensuales).</li>
-                            <li>Elegí la Forma de Pago (<strong className="text-foreground">Efectivo</strong>, <strong className="text-foreground">MercadoPago / QR</strong>, <strong className="text-foreground">Transferencia</strong>) para registrar simultáneamente el movimiento en Caja.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 3 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            3
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Renovación de Membresías & Cambio de Plan (Upgrade/Downgrade)
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Permite gestionar renovaciones continuas o cambios de modalidad de plan (Upgrade o Downgrade) cuando el socio desea renovar anticipadamente o modificar su tipo de acceso.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>En la fila del socio o dentro de su Ficha de Detalle, hacé clic en <strong className="text-foreground">[Renovar Plan]</strong>.</li>
-                            <li>Si el alumno conserva su plan actual, seleccioná la cantidad de meses a renovar (1, 3, 6, 12 meses).</li>
-                            <li>Si desea <strong className="text-foreground">cambiar de plan</strong>, seleccioná la nueva Membresía del desplegable. El sistema actualizará los créditos y recalculará la nueva fecha de vencimiento.</li>
-                            <li>Al confirmar, el pago se asocia al alumno y genera automáticamente el movimiento de ingreso en la Caja registradora.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 4 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            4
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Verificación y Carga de Certificado Médico (Apto Físico Obligatorio)
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Protege legalmente al centro deportivo garantizando que ningún socio entrene sin presentar la certificación médica obligatoria requerida por la normativa de salud vigente.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Verificá los distintivos preventivos en la lista: <strong className="text-emerald-600 font-bold">Apto Vigente</strong> (verde) o <strong className="text-amber-600 font-bold">Apto Pendiente/Vencido</strong> (naranja/rojo).</li>
-                            <li>Abrí la Ficha del Socio y hacé clic en <strong className="text-foreground">[Cargar / Actualizar Apto Físico]</strong>.</li>
-                            <li>Adjuntá la foto o archivo PDF del certificado firmado por un profesional de la salud.</li>
-                            <li>Ingresá la <strong className="text-foreground">Fecha de Vencimiento del Certificado</strong> (ej. 1 año desde su emisión). El sistema emitirá alertas automáticas al acercarse la expiración.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 5 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            5
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Congelamiento y Descongelamiento Temporal de Cuentas
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Evita cancelaciones o pérdidas de días abonados por razones de fuerza mayor (lesiones, intervenciones médicas o viajes), pausando el plan temporalmente.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>En la Ficha del Socio, seleccioná la opción <strong className="text-foreground">[Congelar Plan]</strong>.</li>
-                            <li>Ingresá la cantidad de días autorizados de suspensión (ej. 14 días) y el motivo de la pausa.</li>
-                            <li>La cuenta cambiará a estado <strong className="text-foreground">Congelado</strong> y el sistema postergará automáticamente la fecha de vencimiento final sumando los días pausados.</li>
-                            <li>Si el socio retorna antes de lo previsto, hacé clic en <strong className="text-foreground">[Descongelar Cuenta]</strong> para rehabilitar su acceso inmediato.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 6 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            6
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Ficha Médica, Historial y Observaciones Internas
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Permite a recepcionistas e instructores conocer alergias, patologías, lesiones articulares preexistentes o preferencias del socio al momento del check-in o al ingresar a clase.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>En la Ficha del Socio, abrí el bloque <strong className="text-foreground">Observaciones Médicas / Notas Internas</strong>.</li>
-                            <li>Redactá la nota clínica u observación preventiva (ej. <em>"Lesión articular en rodilla derecha"</em>, <em>"Prefiere ser contactado por WhatsApp"</em>).</li>
-                            <li>Guardá la nota: la alerta se visualizará automáticamente en la pantalla de recepción al registrar la entrada del alumno.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 7 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            7
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Anulación de Cobros y Cancelación de Socio (Preservación Contable)
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Garantiza la consistencia entre Finanzas y Miembros. Si un pago se anula en Caja, el sistema revierte el estado de la membresía marcándola como "Pago Pendiente", protegiendo los balances contables.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Si un cobro se anula desde el módulo <strong className="text-foreground">Caja / POS</strong>, el sistema revierte la membresía asociándola automáticamente a estado <strong className="text-foreground">Pago Pendiente</strong>.</li>
-                            <li>Si un socio solicita la baja definitiva, usá la opción <strong className="text-foreground">[Archivar / Cancelar Socio]</strong>.</li>
-                            <li>Esto preserva la integridad del historial contable y asistencias pasadas sin borrar físicamente los datos necesarios para auditorías.</li>
-                          </ol>
-                        </div>
-                      </section>
-                    </div>
-                  </article>
-                )}
-
-                {/* Expanded Details for Caja Guide */}
-                {isCaja && isExpanded && (
-                  <article className="mt-6 pt-6 border-t border-border/80 space-y-6 animate-in fade-in duration-300 bg-background/50 p-6 md:p-8 rounded-3xl border border-border/60 shadow-xs">
-                    {/* Encabezado del Artículo */}
-                    <header className="space-y-3 pb-5 border-b border-border/60">
-                      <div className="flex items-center justify-between flex-wrap gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="bg-primary/10 text-primary text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg border border-primary/20">
-                            MANUAL DE OPERACIÓN
-                          </span>
-                          <span className="text-xs text-muted-foreground font-medium">
-                            • Lectura: 4 min
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="rounded-xl text-xs h-8 gap-1.5 font-semibold"
-                            onClick={handleCopyCajaGuideText}
-                          >
-                            <Copy className="w-3.5 h-3.5" /> Copiar Artículo
-                          </Button>
-                          <Button
-                            size="sm"
-                            className="rounded-xl text-xs h-8 gap-1.5 font-bold bg-primary text-primary-foreground hover:bg-primary/90"
-                            onClick={() => onNavigateTab?.("caja")}
-                          >
-                            Ir al Módulo <ArrowRight className="w-3.5 h-3.5" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      <h3 className="text-xl md:text-2xl font-black text-foreground tracking-tight">
-                        Manual Operativo Completo: Caja, Terminal POS y Cobros Presenciales
-                      </h3>
-                      <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
-                        Guía paso a paso para operar el punto de venta (POS), registrar ingresos y egresos, procesar cobros de cuotas o ventas de productos de tienda, gestionar pagos mixtos (Split), realizar arqueos de caja y anular movimientos con impacto en el estado del alumno.
-                      </p>
-                    </header>
-
-                    {/* Contenido del Artículo: 6 Secciones Abiertas */}
-                    <div className="space-y-8 text-xs leading-relaxed text-foreground">
-                      {/* Sección 1 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            1
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Métricas de Caja & Control de Dinero en Tiempo Real
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Permite conocer en todo momento el flujo de dinero del turno (Ingresos en Caja, Egresos/Gastos Menores y Efectivo Esperado en Cajón) sin necesidad de esperar al cierre de jornada.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Revisá los 3 indicadores superiores: <strong className="text-foreground">Ingresos del Turno</strong>, <strong className="text-foreground">Gastos / Egresos</strong> y <strong className="text-foreground">Efectivo Esperado en Cajón</strong>.</li>
-                            <li>Verificá que el dinero físico en el cajón coincida con la diferencia (<code className="bg-secondary px-1.5 py-0.5 rounded text-foreground font-mono">Ingresos Efectivo - Egresos Efectivo</code>).</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 2 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            2
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Terminal POS: Cobro Libre, Membresías y Venta de Productos (Tienda)
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Centraliza en una sola pantalla rápida cualquier tipo de cobro (pases diarios, cuotas de socios o venta de bebidas y suplementos) descontando stock de inventario en tiempo real.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Presioná el botón <strong className="text-primary">[+ Nuevo Movimiento]</strong> para abrir la terminal POS.</li>
-                            <li>Seleccioná el modo: <strong className="text-foreground">Cobro Libre</strong> (concepto personalizado o cuotas) o <strong className="text-foreground">Venta de Tienda</strong> (artículos del inventario).</li>
-                            <li>Si es de tienda, seleccioná el artículo y la cantidad: el sistema despondrá unidades del inventario y calculará el subtotal.</li>
-                            <li>Vinculá opcionalmente al alumno del padrón para registrar el comprobante a su nombre.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 3 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            3
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Canales de Pago & Soporte de Pago Mixto (Split Payment)
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Resuelve los cobros en los que el alumno paga una parte en efectivo y el resto por transferencia o MercadoPago, evitando asientos contables desajustados.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Seleccioná el Canal de Pago: <strong className="text-foreground">Efectivo</strong>, <strong className="text-foreground">MercadoPago / QR</strong> o <strong className="text-foreground">Transferencia Bancaria</strong>.</li>
-                            <li>Si el alumno abona con dos medios distintos, elegí <strong className="text-foreground">Pago Mixto (Split)</strong>.</li>
-                            <li>Ingresá el monto en Efectivo (ej. $5.000) y el monto Digital (ej. $10.000 en MercadoPago): el sistema acreditará cada parte a su canal correspondiente en el libro de caja.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 4 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            4
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Arqueo de Caja & Cierre de Turno (Cuadre de Cajón)
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Previene faltantes de dinero y audita la honestidad del turno mediante la comparación entre el efectivo contado por el operador y el dinero calculado por el sistema.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Al finalizar la jornada o cambio de turno, hacé clic en <strong className="text-foreground">[Arqueo & Cierre de Caja]</strong>.</li>
-                            <li>Contá el dinero físico existente en el cajón e ingresá el valor en el campo <strong className="text-foreground">Efectivo Físico Contado</strong>.</li>
-                            <li>El sistema comparará la cifra con el dinero esperado e informará la diferencia: <strong className="text-emerald-600">Caja Cuadrada ($0)</strong>, <strong className="text-blue-600">Sobrante (+$X)</strong> o <strong className="text-destructive">Faltante (-$X)</strong>.</li>
-                            <li>Confirmá el cierre para congelar el reporte del turno.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 5 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            5
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Historial de Transacciones, Buscador & Filtros de Auditoría
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Facilita la localización rápida de cualquier movimiento pasado ante reclamos de socios, auditorías internas o comprobantes extraviados.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Usá el buscador de la tabla para tipear el concepto, nombre del alumno o cajero.</li>
-                            <li>Filtrá por Tipo (<code className="bg-secondary px-1.5 py-0.5 rounded text-foreground font-mono">Todos</code>, <code className="bg-secondary px-1.5 py-0.5 rounded text-foreground font-mono">Ingresos</code>, <code className="bg-secondary px-1.5 py-0.5 rounded text-foreground font-mono">Egresos</code>), Canal de Pago o Fecha (Hoy, Esta Semana, Este Mes).</li>
-                            <li>Presioná <strong className="text-foreground">[Exportar CSV]</strong> para descargar la planilla contable.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 6 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            6
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Anulación de Movimientos & Sincronización con Estado del Socio
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Permite corregir cobros mal imputados o anulados a pedido del socio, garantizando que si correspondía a un pago de cuota, el estado del socio vuelva automáticamente a Pago Pendiente.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>En la fila del movimiento erróneo, hacé clic en <strong className="text-destructive">[Anular Movimiento]</strong>.</li>
-                            <li>Confirmá el motivo de la anulación.</li>
-                            <li>El movimiento cambiará a estado <strong className="text-destructive font-bold">ANULADO</strong> (restando el monto de los totales de caja) y, si correspondía al cobro de un socio, revertirá la membresía del alumno a Pago Pendiente.</li>
-                          </ol>
-                        </div>
-                      </section>
-                    </div>
-                  </article>
-                )}
-
-                {/* Expanded Details for Finanzas Guide */}
-                {isFinanzas && isExpanded && (
-                  <article className="mt-6 pt-6 border-t border-border/80 space-y-6 animate-in fade-in duration-300 bg-background/50 p-6 md:p-8 rounded-3xl border border-border/60 shadow-xs">
-                    {/* Encabezado del Artículo */}
-                    <header className="space-y-3 pb-5 border-b border-border/60">
-                      <div className="flex items-center justify-between flex-wrap gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="bg-primary/10 text-primary text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg border border-primary/20">
-                            MANUAL DE OPERACIÓN
-                          </span>
-                          <span className="text-xs text-muted-foreground font-medium">
-                            • Lectura: 4 min
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="rounded-xl text-xs h-8 gap-1.5 font-semibold"
-                            onClick={handleCopyFinanzasGuideText}
-                          >
-                            <Copy className="w-3.5 h-3.5" /> Copiar Artículo
-                          </Button>
-                          <Button
-                            size="sm"
-                            className="rounded-xl text-xs h-8 gap-1.5 font-bold bg-primary text-primary-foreground hover:bg-primary/90"
-                            onClick={() => onNavigateTab?.("finanzas")}
-                          >
-                            Ir al Módulo <ArrowRight className="w-3.5 h-3.5" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      <h3 className="text-xl md:text-2xl font-black text-foreground tracking-tight">
-                        Manual Operativo Completo: Finanzas y Liquidación de Staff
-                      </h3>
-                      <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
-                        Guía detallada para auditar el margen neto operativo, imputar gastos fijos y costos estructurales, calcular liquidaciones automáticas de profesores (Payroll Engine), acreditar pagos de honorarios y emitir recibos digitales de sueldo.
-                      </p>
-                    </header>
-
-                    {/* Contenido del Artículo: 5 Secciones Abiertas */}
-                    <div className="space-y-8 text-xs leading-relaxed text-foreground">
-                      {/* Sección 1 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            1
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Salud Financiera & Margen Operativo Neto
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Otorga visibilidad completa del estado económico real de la empresa (Ingresos Brutos por Membresías + Tienda POS, Honorarios Liquidados al Staff, Gastos Fijos y Margen Neto de Ganancia).
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Revisá los 4 indicadores financieros superiores en el panel principal de Finanzas.</li>
-                            <li>Verificá la cifra de <strong className="text-foreground">Margen Neto Operativo</strong> (<code className="bg-secondary px-1.5 py-0.5 rounded text-foreground font-mono">Ingresos Totales - (Liquidaciones Staff + Gastos Fijos)</code>).</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 2 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            2
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Gestor de Gastos Fijos, Insumos y Costos Estructurales
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Permite imputar periódicamente los costos recurrentes del centro deportivo (alquiler, energía eléctrica, servicios, internet, insumos de limpieza) para que el balance refleje la ganancia neta real.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>En la sección de Gastos Fijos, hacé clic en <strong className="text-primary">[+ Registrar Gasto]</strong> o <strong className="text-foreground">[Ajustar Rubros]</strong>.</li>
-                            <li>Ingresá el Rubro (ej. <em>Alquiler Sede</em>, <em>Servicio Eléctrico</em>, <em>Mantenimiento de Equipos</em>), el Monto y el Período imputado.</li>
-                            <li>El valor se restará automáticamente del Ingreso Bruto para actualizar la utilidad neta.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 3 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            3
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Motor de Cálculo de Liquidaciones de Staff (Payroll Engine)
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Elimina las planillas manuales en Excel calculando automáticamente los salarios y comisiones de los entrenadores en base a su esquema contractual (Sueldo Base, Tarifa por Clase Dictada y Comisiones por Asistencia).
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Seleccioná el Período de Liquidación (ej. <code className="bg-secondary px-1.5 py-0.5 rounded text-foreground font-mono">Mes Actual</code> o <code className="bg-secondary px-1.5 py-0.5 rounded text-foreground font-mono">Mes Anterior</code>).</li>
-                            <li>Presioná <strong className="text-foreground">[Recalcular Asistencias & Clases]</strong>: el sistema cruzará la grilla horaria con los check-ins reales de alumnos.</li>
-                            <li>Verificá el desglose individual de cada profesor: (<code className="bg-secondary px-1.5 py-0.5 rounded text-foreground font-mono font-bold">Sueldo Base + (Clases Dictadas x Tarifa) + (Alumnos Asistidos x Bonificación)</code>).</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 4 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            4
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Acreditación de Pagos & Emisión de Recibos Digitales de Sueldo
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Otorga transparencia al equipo de profesores e impacta automáticamente el egreso financiero en la contabilidad del centro al momento de transferir o abonar los honorarios.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>En la fila del profesor liquidado, hacé clic en <strong className="text-foreground">[Acreditar Pago / Liquidador]</strong>.</li>
-                            <li>Seleccioná el Medio de Pago (<strong className="text-foreground">Transferencia Bancaria</strong>, <strong className="text-foreground">Efectivo</strong>) y confirmá la fecha de acreditación.</li>
-                            <li>El estado cambiará a <strong className="text-emerald-600 font-bold">PAGADO</strong> y se generará el <strong className="text-foreground">Recibo Digital de Sueldo</strong> descargable en PDF con el detalle de horas dictadas.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 5 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            5
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Análisis de Rentabilidad por Horario y Disciplina
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Permite a la gerencia deportiva tomar decisiones informadas sobre qué clases o profesores generan mayor rentabilidad y cuáles están operando a pérdida.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Revisá la tabla de rendimiento por disciplina y horario.</li>
-                            <li>Compará el costo de la hora del profesor versus los ingresos generados por los pases y asistencias de alumnos anotados.</li>
-                            <li>Identificá los horarios con baja rentabilidad para reestructurar la grilla.</li>
-                          </ol>
-                        </div>
-                      </section>
-                    </div>
-                  </article>
-                )}
-
-                {/* Expanded Details for Reportes Guide */}
-                {isReportes && isExpanded && (
-                  <article className="mt-6 pt-6 border-t border-border/80 space-y-6 animate-in fade-in duration-300 bg-background/50 p-6 md:p-8 rounded-3xl border border-border/60 shadow-xs">
-                    {/* Encabezado del Artículo */}
-                    <header className="space-y-3 pb-5 border-b border-border/60">
-                      <div className="flex items-center justify-between flex-wrap gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="bg-primary/10 text-primary text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg border border-primary/20">
-                            MANUAL DE OPERACIÓN
-                          </span>
-                          <span className="text-xs text-muted-foreground font-medium">
-                            • Lectura: 4 min
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="rounded-xl text-xs h-8 gap-1.5 font-semibold"
-                            onClick={handleCopyReportesGuideText}
-                          >
-                            <Copy className="w-3.5 h-3.5" /> Copiar Artículo
-                          </Button>
-                          <Button
-                            size="sm"
-                            className="rounded-xl text-xs h-8 gap-1.5 font-bold bg-primary text-primary-foreground hover:bg-primary/90"
-                            onClick={() => onNavigateTab?.("reportes")}
-                          >
-                            Ir al Módulo <ArrowRight className="w-3.5 h-3.5" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      <h3 className="text-xl md:text-2xl font-black text-foreground tracking-tight">
-                        Manual Operativo Completo: Reportes & Analítica de Negocio
-                      </h3>
-                      <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
-                        Guía detallada para analizar el rendimiento del centro deportivo mediante el toolbar ejecutivo, auditar fuentes de ingresos por canal, evaluar la tasa de ocupación con mapas de calor, calcular el Churn Rate de retención y medir el desempeño de profesores.
-                      </p>
-                    </header>
-
-                    {/* Contenido del Artículo: 5 Secciones Abiertas */}
-                    <div className="space-y-8 text-xs leading-relaxed text-foreground">
-                      {/* Sección 1 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            1
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Toolbar Ejecutivo & Filtros Multidimensionales
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Permite aislar y analizar el desempeño del gimnasio filtrando por rango temporal (Hoy, 7 Días, Mes Actual, Trimestre, Año) y por disciplina deportiva específica (CrossFit, Yoga, Pilates, Functional, Musculación).
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Usá el selector de Período en la parte superior para definir el rango de tiempo a auditar.</li>
-                            <li>Aplicá el filtro por Disciplina si deseás analizar una actividad deportiva en particular.</li>
-                            <li>Navegá entre las 4 sub-pestañas analíticas: <strong className="text-foreground">Finanzas</strong>, <strong className="text-foreground">Asistencia y Ocupación</strong>, <strong className="text-foreground">Retención de Socios</strong> y <strong className="text-foreground">Staff & Coaches</strong>.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 2 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            2
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Analítica Financiera & Desglose de Fuentes de Ingreso
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Muestra el origen exacto de los ingresos (Membresías recurrentes vs Ventas presenciales en POS/Tienda) y la evolución del Margen Operativo acumulado.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>En la sub-pestaña Finanzas, observá el gráfico comparativo de <strong className="text-foreground">Ingresos vs Egresos</strong>.</li>
-                            <li>Analizá el gráfico de dona <strong className="text-foreground">Desglose de Facturación por Canal</strong> (Efectivo, MercadoPago/QR, Transferencia).</li>
-                            <li>Identificá los productos o planes más vendidos en el ranking mensual.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 3 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            3
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Asistencia, Aforo & Mapas de Calor de Días/Horarios Pico
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Permite detectar las horas pico de concurrencia y los horarios de baja demanda para optimizar la asignación de profesores y salas.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Ingresá a la sub-pestaña <strong className="text-foreground">Asistencia y Ocupación</strong>.</li>
-                            <li>Observá la matriz de <strong className="text-foreground">Mapa de Calor (Heatmap) de Horarios Pico</strong>: los bloques oscuros señalan las franjas horarias con más del 85% de aforo ocupado.</li>
-                            <li>Consultá el ranking de <strong className="text-foreground">Clases con Mayor % de Ocupación</strong> para evaluar aperturas de nuevas comisiones.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 4 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            4
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Analítica de Retención & Cálculo Automático de Churn Rate
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Mide cuántos socios renovaron su cuota versus cuántos se dieron de baja (Tasa de Churn), identificando alumnos en riesgo de inactividad antes de que abandonen.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Seleccioná la sub-pestaña <strong className="text-foreground">Retención de Socios</strong>.</li>
-                            <li>Verificá la tasa de <strong className="text-foreground">Churn Rate %</strong> (porcentaje de bajas del período) y el indicador de <strong className="text-foreground">LTV (Lifetime Value)</strong> medio por alumno.</li>
-                            <li>Consultá el listado de alumnos en riesgo (socios que redujeron su frecuencia de check-in en más de un 50%) para lanzar campañas de reactivación.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 5 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            5
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Evaluación de Rendimiento del Staff & Exportación Ejecutiva
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Permite medir la eficiencia pedagógica de cada profesor (asistencias promedio por clase dictada y puntuación de los socios) y descargar reportes oficiales en CSV/PDF para la junta directiva.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>En la sub-pestaña <strong className="text-foreground">Staff & Coaches</strong>, revisá el ranking de profesores por volumen de alumnos atendidos y calificación promedio de reseñas.</li>
-                            <li>Presioná el botón <strong className="text-foreground">[Exportar Reporte Completo]</strong> para descargar la planilla descargable consolidada para contadores o socios inversores.</li>
-                          </ol>
-                        </div>
-                      </section>
-                    </div>
-                  </article>
-                )}
-
-                {/* Expanded Details for Inventario Guide */}
-                {isInventario && isExpanded && (
-                  <article className="mt-6 pt-6 border-t border-border/80 space-y-6 animate-in fade-in duration-300 bg-background/50 p-6 md:p-8 rounded-3xl border border-border/60 shadow-xs">
-                    {/* Encabezado del Artículo */}
-                    <header className="space-y-3 pb-5 border-b border-border/60">
-                      <div className="flex items-center justify-between flex-wrap gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="bg-primary/10 text-primary text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg border border-primary/20">
-                            MANUAL DE OPERACIÓN
-                          </span>
-                          <span className="text-xs text-muted-foreground font-medium">
-                            • Lectura: 4 min
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="rounded-xl text-xs h-8 gap-1.5 font-semibold"
-                            onClick={handleCopyInventarioGuideText}
-                          >
-                            <Copy className="w-3.5 h-3.5" /> Copiar Artículo
-                          </Button>
-                          <Button
-                            size="sm"
-                            className="rounded-xl text-xs h-8 gap-1.5 font-bold bg-primary text-primary-foreground hover:bg-primary/90"
-                            onClick={() => onNavigateTab?.("inventario")}
-                          >
-                            Ir al Módulo <ArrowRight className="w-3.5 h-3.5" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      <h3 className="text-xl md:text-2xl font-black text-foreground tracking-tight">
-                        Manual Operativo Completo: Inventario, Tienda y Kardex
-                      </h3>
-                      <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
-                        Guía detallada para administrar el catálogo de productos de la tienda, gestionar variantes de talles/sabores, automatizar descuentos por ventas en POS, auditar movimientos en el Kardex y configurar alertas de stock mínimo.
-                      </p>
-                    </header>
-
-                    {/* Contenido del Artículo: 6 Secciones Abiertas */}
-                    <div className="space-y-8 text-xs leading-relaxed text-foreground">
-                      {/* Sección 1 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            1
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Catálogo de Productos & Valoración de Stock en Tiempo Real
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Otorga visibilidad total del capital invertido en mercadería de la tienda (bebidas, suplementos, indumentaria, accesorios) e informa alertas tempranas de faltantes.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Revisá los indicadores superiores en el panel de Inventario: <strong className="text-foreground">Total de Productos</strong>, <strong className="text-foreground">Valoración de Stock en $</strong>, <strong className="text-foreground">Alertas de Stock Bajo</strong> y <strong className="text-foreground">Categorías</strong>.</li>
-                            <li>Usá los botones de filtro rápido por categoría (<em>Suplementos</em>, <em>Bebidas</em>, <em>Accesorios</em>, <em>Indumentaria</em>) o el buscador por nombre/código de barras.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 2 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            2
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Alta, Edición & Gestión de Variantes (Talles / Sabores)
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Permite administrar artículos complejos que cuentan con múltiples presentaciones (ej. Proteína en polvo con sabores Vainilla/Chocolate o Remeras con talles S/M/L) manteniendo el stock individualizado por variante.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Presioná el botón <strong className="text-primary">[+ Nuevo Producto]</strong>.</li>
-                            <li>Ingresá el Nombre, Categoría, Precio de Costo (para cálculo de margen), Precio de Venta al Público, Stock Inicial y Stock Mínimo para alertas.</li>
-                            <li>Si el producto tiene variantes, agregá los atributos (ej. Talle o Sabor) asignando el stock correspondiente a cada SKU.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 3 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            3
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Descuento Automático por Ventas en Terminal POS
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Conecta automáticamente las ventas presenciales realizadas en la recepción con el libro de inventario, evitando el conteo manual constante.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Cada vez que se procesa una venta en el módulo <strong className="text-foreground">Caja / POS</strong>, el sistema descuenta inmediatamente las unidades vendidas del stock actual.</li>
-                            <li>Si un producto alcanza su <strong className="text-foreground">Stock Mínimo</strong>, el sistema activará la insignia naranja de advertencia <code className="bg-amber-500/10 text-amber-600 px-1.5 py-0.5 rounded font-bold">Stock Bajo</code> en el catálogo.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 4 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            4
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Movimientos de Ajuste de Stock & Registro de Kardex
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Brinda auditoría completa de ingresos por compras a proveedores, roturas, vencimientos o consumos internos del personal.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>En la fila del producto, hacé clic en <strong className="text-foreground">[Ajustar Stock / Kardex]</strong>.</li>
-                            <li>Seleccioná el Tipo de Movimiento: <strong className="text-emerald-600">Ingreso de Stock</strong> (compra a proveedor), <strong className="text-destructive">Egreso por Vencimiento / Daño</strong> o <strong className="text-foreground">Ajuste de Conteo</strong>.</li>
-                            <li>Ingresá las unidades y el motivo: el kardex registrará la fecha, el usuario responsable y el nuevo balance final de stock.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 5 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            5
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Alertas de Reposición & Umbral Mínimo de Seguridad
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Evita perder ventas presenciales por quiebres de stock (quedarse sin mercadería disponible durante horarios pico).
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Definí un <strong className="text-foreground">Stock Mínimo</strong> preventivo para cada artículo (ej. 5 unidades).</li>
-                            <li>El sistema enviará una notificación visual cuando el stock disponible caiga por debajo de dicho umbral, sugiriendo la orden de compra a proveedores.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 6 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            6
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Reporte de Margen de Ganancia & Exportación CSV
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Muestra el beneficio bruto real por venta de productos (diferencia entre Precio de Venta y Precio de Costo) y permite exportar el inventario para balances contables.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Revisá el indicador de <strong className="text-foreground">Margen de Ganancia Promedio %</strong> en la ficha del producto.</li>
-                            <li>Presioná <strong className="text-foreground">[Exportar CSV]</strong> para descargar la planilla descargable con la valoración completa del inventario y las existencias físicas para auditorías.</li>
-                          </ol>
-                        </div>
-                      </section>
-                    </div>
-                  </article>
-                )}
-
-                {/* Expanded Details for Reseñas Guide */}
-                {isResenas && isExpanded && (
-                  <article className="mt-6 pt-6 border-t border-border/80 space-y-6 animate-in fade-in duration-300 bg-background/50 p-6 md:p-8 rounded-3xl border border-border/60 shadow-xs">
-                    {/* Encabezado del Artículo */}
-                    <header className="space-y-3 pb-5 border-b border-border/60">
-                      <div className="flex items-center justify-between flex-wrap gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="bg-primary/10 text-primary text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg border border-primary/20">
-                            MANUAL DE OPERACIÓN
-                          </span>
-                          <span className="text-xs text-muted-foreground font-medium">
-                            • Lectura: 4 min
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="rounded-xl text-xs h-8 gap-1.5 font-semibold"
-                            onClick={handleCopyResenasGuideText}
-                          >
-                            <Copy className="w-3.5 h-3.5" /> Copiar Artículo
-                          </Button>
-                          <Button
-                            size="sm"
-                            className="rounded-xl text-xs h-8 gap-1.5 font-bold bg-primary text-primary-foreground hover:bg-primary/90"
-                            onClick={() => onNavigateTab?.("reseñas")}
-                          >
-                            Ir al Módulo <ArrowRight className="w-3.5 h-3.5" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      <h3 className="text-xl md:text-2xl font-black text-foreground tracking-tight">
-                        Manual Operativo Completo: Reseñas, Satisfacción y Feedback
-                      </h3>
-                      <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
-                        Guía detallada para medir el Customer Satisfaction Score (CSAT), moderar reseñas destacadas para la portada pública, emitir respuestas oficiales del gimnasio, administrar el buzón privado de sugerencias y lanzar campañas automáticas por WhatsApp.
-                      </p>
-                    </header>
-
-                    {/* Contenido del Artículo: 5 Secciones Abiertas */}
-                    <div className="space-y-8 text-xs leading-relaxed text-foreground">
-                      {/* Sección 1 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            1
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Métricas de Calidad de Servicio & CSAT (Satisfacción del Alumno)
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Mide de forma cuantitativa la percepción del alumno sobre las instalaciones, los profesores y la atención general del centro deportivo (ej. Calificación Promedio ⭐ 4.9).
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Observá la tarjeta principal de <strong className="text-foreground">Puntuación Global (Rating Promedio)</strong>.</li>
-                            <li>Analizá los 4 pilares de satisfacción: <strong className="text-foreground">Limpieza y Mantenimiento</strong>, <strong className="text-foreground">Equipamiento y Máquinas</strong>, <strong className="text-foreground">Atención del Staff / Coaches</strong> y <strong className="text-foreground">Relación Precio-Calidad</strong>.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 2 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            2
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Moderación de Reseñas & Selección para Landing Page Pública
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Permite utilizar los mejores testimonios de alumnos satisfechos como prueba social para atraer nuevos clientes en la Landing Page pública de la sede.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Revisá el listado de opiniones enviadas por los socios.</li>
-                            <li>En las reseñas de 5 estrellas con comentarios destacados, hacé clic en <strong className="text-primary">[Destacar en Landing]</strong>.</li>
-                            <li>El testimonio se publicará automáticamente en el carrusel de testimonios de la página web pública.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 3 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            3
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Respuestas Oficiales Institucionales del Centro Deportivo
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Muestra compromiso y atención al cliente respondiendo a las consultas, agradecimientos o críticas constructivas de los alumnos.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>En la tarjeta de la reseña, hacé clic en <strong className="text-foreground">[Responder Oficialmente]</strong>.</li>
-                            <li>Redactá la respuesta institucional (ej. <em>"¡Gracias por tu reseña! Ya ajustamos la temperatura de la sala"</em>).</li>
-                            <li>Guardá la respuesta: quedará visible debajo del comentario del socio en la plataforma.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 4 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            4
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Buzón Privado de Sugerencias & Reclamos Confidenciales
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Brinda un canal seguro y privado para que los socios expresen disconformidades sin exponer públicamente a la marca antes de que la gerencia pueda resolver el problema.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Accedé a la pestaña <strong className="text-foreground">Buzón de Sugerencias / Reclamos Privados</strong>.</li>
-                            <li>Revisá las sugerencias enviadas directamente a la gerencia sin publicación web.</li>
-                            <li>Asigná un estado de resolución: <strong className="text-amber-600">En Revisión</strong>, <strong className="text-blue-600">Acción Tomada</strong> o <strong className="text-emerald-600">Resuelto</strong>.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 5 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            5
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Campañas Automáticas de Solicitud de Feedback por WhatsApp
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Incrementa la cantidad de reseñas positivas solicitando automáticamente una valoración a los alumnos que han asistido con frecuencia en los últimos 30 días.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Hacé clic en <strong className="text-foreground">[Enviar Campaña de Reseñas]</strong>.</li>
-                            <li>Seleccioná el segmento de alumnos a contactar (ej. socios con +10 asistencias en el mes).</li>
-                            <li>El sistema enviará la plantilla de invitación por WhatsApp para que el alumno deje su calificación en un clic.</li>
-                          </ol>
-                        </div>
-                      </section>
-                    </div>
-                  </article>
-                )}
-
-                {/* Expanded Details for Membresías Guide */}
-                {isMembresias && isExpanded && (
-                  <article className="mt-6 pt-6 border-t border-border/80 space-y-6 animate-in fade-in duration-300 bg-background/50 p-6 md:p-8 rounded-3xl border border-border/60 shadow-xs">
-                    {/* Encabezado del Artículo */}
-                    <header className="space-y-3 pb-5 border-b border-border/60">
-                      <div className="flex items-center justify-between flex-wrap gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="bg-primary/10 text-primary text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg border border-primary/20">
-                            MANUAL DE OPERACIÓN
-                          </span>
-                          <span className="text-xs text-muted-foreground font-medium">
-                            • Lectura: 4 min
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="rounded-xl text-xs h-8 gap-1.5 font-semibold"
-                            onClick={handleCopyMembresiasGuideText}
-                          >
-                            <Copy className="w-3.5 h-3.5" /> Copiar Artículo
-                          </Button>
-                          <Button
-                            size="sm"
-                            className="rounded-xl text-xs h-8 gap-1.5 font-bold bg-primary text-primary-foreground hover:bg-primary/90"
-                            onClick={() => onNavigateTab?.("membresias")}
-                          >
-                            Ir al Módulo <ArrowRight className="w-3.5 h-3.5" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      <h3 className="text-xl md:text-2xl font-black text-foreground tracking-tight">
-                        Manual Operativo Completo: Membresías, Tarifas y Pases
-                      </h3>
-                      <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
-                        Guía detallada para estructurar la oferta comercial del gimnasio, configurar planes por Pase Libre o Créditos, restringir franjas de Horario Valle (Off-Peak), asociar amenities de valor agregado y realizar actualizaciones masivas de tarifas.
-                      </p>
-                    </header>
-
-                    {/* Contenido del Artículo: 5 Secciones Abiertas */}
-                    <div className="space-y-8 text-xs leading-relaxed text-foreground">
-                      {/* Sección 1 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            1
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Catálogo de Planes, Tarifas & Métricas de Adhesión
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Muestra el abanico completo de planes comerciales activos (Pase Libre, Pases de Créditos, Pases Horario Valle/Off-Peak) con sus precios de lista, ofertas promocionales y el total de alumnos suscritos a cada plan.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Revisá las tarjetas de membresía en el catálogo del módulo.</li>
-                            <li>Verificá los precios de lista, los precios tachados de oferta, la vigencia del plan (<code className="bg-secondary px-1.5 py-0.5 rounded text-foreground font-mono">Mensual</code>, <code className="bg-secondary px-1.5 py-0.5 rounded text-foreground font-mono">Trimestral</code>, <code className="bg-secondary px-1.5 py-0.5 rounded text-foreground font-mono">Anual</code>) y el total de socios adheridos.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 2 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            2
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Alta & Configuración Avanzada de Planes (Pase Libre vs Créditos)
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Permite estructurar comercialmente la oferta del centro deportivo definiendo si un plan es de acceso ilimitado (Pase Libre) o si consume una bolsa de créditos por clase reservada.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Presioná el botón <strong className="text-primary">[+ Nueva Membresía]</strong>.</li>
-                            <li>Definí el Nombre del Plan, Precio de Lista, Precio Promocional (opcional), Matrícula de Inscripción y la Frecuencia de cobro.</li>
-                            <li>Seleccioná la Modalidad de Acceso: <strong className="text-foreground">Pase Libre (Ilimitado)</strong> o <strong className="text-foreground">Bolsa de Créditos</strong> (ej. 12 créditos mensuales para usar en cualquier clase).</li>
-                            <li>Especificá el límite máximo de reservas simultáneas y los días permitidos de congelamiento de pase.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 3 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            3
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Franjas Horarias Valle (Off-Peak) & Disciplinas Habilitadas
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Incentiva la asistencia en horarios de baja demanda (ej. de 12:00 a 16:00 hs) ofreciendo tarifas reducidas y restringiendo qué actividades deportivas están incluidas en el pase.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>En la configuración del plan, activá la casilla <strong className="text-foreground">Restringir Horario Valle (Off-Peak)</strong>.</li>
-                            <li>Definí el rango horario permitido (ej. 12:00 a 16:00 hs de Lunes a Viernes).</li>
-                            <li>Seleccioná las disciplinas deportivas incluidas en esta cuota (ej. Musculación + Functional).</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 4 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            4
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Beneficios, Amenities Incluidos & Portada Web (Landing Page)
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Destaca los valores agregados de cada membresía (ej. Lockers VIP, Evaluación Nutricional, Toalla, Acceso a Sauna) y permite marcar el plan estelar con la etiqueta "Más Popular" en la portada web oficial.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Agregá la lista de Amenities o Beneficios incluidos que el alumno verá en su aplicación móvil.</li>
-                            <li>Marcá la casilla <strong className="text-primary">Destacar Plan en Landing Page</strong> para que el plan se muestre resaltado en la portada pública del gimnasio.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 5 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            5
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Actualización Masiva de Precios & Congelamientos de Cuota
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Facilita el ajuste inflacionario masivo de cuotas sin necesidad de editar plan por plan individualmente, e inmuta el estado de cobro cuando un alumno solicita un congelamiento autorizado por viaje o salud.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Presioná <strong className="text-foreground">[Actualizar Precios Masivo]</strong> para aplicar un incremento porcentual (%) o de monto fijo ($) a todos los planes seleccionados.</li>
-                            <li>Para gestionar pausados de socios, consultá las solicitudes de congelamiento y aprobá el período sin cargos adicionales.</li>
-                          </ol>
-                        </div>
-                      </section>
-                    </div>
-                  </article>
-                )}
-
-                {/* Expanded Details for Configuración Guide */}
-                {isConfig && isExpanded && (
-                  <article className="mt-6 pt-6 border-t border-border/80 space-y-6 animate-in fade-in duration-300 bg-background/50 p-6 md:p-8 rounded-3xl border border-border/60 shadow-xs">
-                    {/* Encabezado del Artículo */}
-                    <header className="space-y-3 pb-5 border-b border-border/60">
-                      <div className="flex items-center justify-between flex-wrap gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="bg-primary/10 text-primary text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg border border-primary/20">
-                            MANUAL DE OPERACIÓN
-                          </span>
-                          <span className="text-xs text-muted-foreground font-medium">
-                            • Lectura: 4 min
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="rounded-xl text-xs h-8 gap-1.5 font-semibold"
-                            onClick={handleCopyConfigGuideText}
-                          >
-                            <Copy className="w-3.5 h-3.5" /> Copiar Artículo
-                          </Button>
-                          <Button
-                            size="sm"
-                            className="rounded-xl text-xs h-8 gap-1.5 font-bold bg-primary text-primary-foreground hover:bg-primary/90"
-                            onClick={() => onNavigateTab?.("config")}
-                          >
-                            Ir al Módulo <ArrowRight className="w-3.5 h-3.5" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      <h3 className="text-xl md:text-2xl font-black text-foreground tracking-tight">
-                        Manual Operativo Completo: Configuración y Políticas
-                      </h3>
-                      <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
-                        Guía detallada para administrar el perfil de la sede, gestionar salas y aforos, estructurar el directorio de staff y liquidaciones, vincular la pasarela MercadoPago API y definir políticas de reserva y días de cierre.
-                      </p>
-                    </header>
-
-                    {/* Contenido del Artículo: 5 Secciones Abiertas */}
-                    <div className="space-y-8 text-xs leading-relaxed text-foreground">
-                      {/* Sección 1 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            1
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Perfil Institucional, Identidad de Marca & Horarios de Apertura (7 Días)
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Mantiene actualizada la identidad visual y datos de contacto del gimnasio (Logotipo, Nombre Comercial, Dirección Física, Teléfono de Recepción, WhatsApp Oficial, Instagram) y su horario semanal de operaciones de 7 días.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Ingresá a la pestaña <strong className="text-foreground">Perfil de la Sede</strong>.</li>
-                            <li>Editá los datos institucionales, cargá el logotipo oficial y la galería de fotos.</li>
-                            <li>Definí el esquema horario semanal especificando ventanas de apertura y cierre.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 2 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            2
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Gestión de Salas & Espacios de Entrenamiento
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Permite delimitar los salones y espacios físicos de entrenamiento de la sede asignando su aforo y capacidad máxima autorizada de alumnos por clase.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>En la pestaña <strong className="text-foreground">Salas de Entrenamiento</strong>, agregá o editá un espacio (ej. <em>Sala de CrossFit</em>, <em>Estudio de Pilates</em>, <em>Salón Principal</em>).</li>
-                            <li>Asigná la capacidad física de cupos simultáneos autorizados para proteger el aforo.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 3 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            3
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Directorio de Staff, Disponibilidad Horaria & Liquidaciones
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Centraliza la información de entrenadores y personal de la sede, gestionando sus especialidades, certificados, horarios disponibles y la estructura salarial para la liquidación automática.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>En la sección <strong className="text-foreground">Staff & Profesores</strong>, registrá la ficha del entrenador con sus diplomas y especialidades.</li>
-                            <li>Configura su disponibilidad semanal de horarios.</li>
-                            <li>Establecé el esquema de liquidación: <strong className="text-foreground">Sueldo Base Mensual</strong>, <strong className="text-foreground">Tarifa por Clase Dictada</strong> y <strong className="text-foreground">Bonificaciones</strong>.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 4 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            4
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Métodos de Pago, MercadoPago QR & Métodos Habilitados
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Conecta los canales de cobro digital (MercadoPago API OAuth, QR dinámico, Transferencia Bancaria CBU/CVU) para la cobranza automática en la app de alumnos y en la caja presencial.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>En <strong className="text-foreground">Integraciones Financieras</strong>, vinculá la cuenta de <strong className="text-foreground">MercadoPago</strong> ingresando las credenciales (Access Token y Public Key).</li>
-                            <li>Configurá los datos de la cuenta bancaria del gimnasio (CBU, CVU, Alias y CUIT) para validaciones de transferencias.</li>
-                          </ol>
-                        </div>
-                      </section>
-
-                      <hr className="border-border/50" />
-
-                      {/* Sección 5 */}
-                      <section className="space-y-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0">
-                            5
-                          </span>
-                          <h4 className="text-sm font-bold text-foreground tracking-tight">
-                            Políticas de Reserva, Cancelación & Días de Cierre (Blackout Days)
-                          </h4>
-                        </div>
-                        
-                        <div className="p-3.5 bg-secondary/40 border border-border/80 rounded-2xl space-y-1">
-                          <span className="font-bold text-primary text-[11px] flex items-center gap-1.5">
-                            🎯 Problema que resuelve & Por qué existe:
-                          </span>
-                          <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-                            Establece reglas automáticas para reservas anticipadas, tiempo límite de cancelación sin sanción y bloqueos automáticos de calendario por feriados o mantenimiento.
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 pt-1 pl-1">
-                          <span className="font-bold text-foreground text-[11.5px] block">👣 Paso a Paso Práctico:</span>
-                          <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground text-[11.5px]">
-                            <li>Accedé a <strong className="text-foreground">Políticas de Reserva</strong>.</li>
-                            <li>Definí el <strong className="text-foreground">Límite de Cancelación sin Penalización</strong> (ej. cancelar hasta 2 horas antes de la clase).</li>
-                            <li>Configurá los <strong className="text-foreground">Días de Cierre (Blackout Days)</strong> para suspender la agenda automática en feriados nacionales.</li>
-                          </ol>
-                        </div>
-                      </section>
-                    </div>
-                  </article>
-                )}
-
-                {/* Footer Controls */}
-                <div className="flex items-center justify-between pt-4 mt-4 border-t border-border/50 text-xs">
-                  <span className="text-[10.5px] text-muted-foreground font-medium">
-                    {guide.modulesCount} Módulos explicados · Actualizado: {guide.lastUpdated}
-                  </span>
-
-                  {isAsistencias || isClases || isMiembros || isCaja || isFinanzas || isReportes || isInventario || isResenas || isMembresias || isConfig ? (
-                    <Button
-                      size="sm"
-                      variant={isExpanded ? "outline" : "default"}
-                      className="rounded-xl font-bold text-xs h-8 px-4"
-                      onClick={() => setActiveGuideId(isExpanded ? null : guide.id)}
-                    >
-                      {isExpanded ? "Ocultar Detalles" : "Ver Guía Completa"}
-                    </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled
-                      className="rounded-xl font-medium text-xs h-8 px-3 opacity-60"
-                    >
-                      Próximamente
-                    </Button>
-                  )}
-                </div>
+        <div className="grid gap-5 md:grid-cols-2">
+          {filteredSections.map((sec, idx) => (
+            <div
+              key={idx}
+              className="p-5 rounded-2xl border border-border/80 bg-background shadow-2xs hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg transition-all duration-300 flex flex-col justify-between"
+            >
+              <div className="space-y-3">
+                <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 border-b border-border/50 pb-2">
+                  {sec.heading}
+                </h4>
+                <p className="text-xs font-medium text-foreground leading-relaxed">
+                  {sec.text}
+                </p>
+                <ul className="space-y-2 text-xs text-muted-foreground">
+                  {sec.bullets.map((b, bIdx) => (
+                    <li key={bIdx} className="flex items-start gap-2 leading-relaxed">
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0 mt-1.5" />
+                      <span>{b}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-            );
-          })}
+            </div>
+          ))}
+
+          {filteredSections.length === 0 && (
+            <div className="col-span-2 py-8 text-center text-xs text-muted-foreground">
+              No se encontraron apartados que coincidan con "{searchTerm}".
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
+

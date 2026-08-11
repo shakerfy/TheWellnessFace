@@ -61,17 +61,17 @@ export function MobileBottomNav() {
   };
 
   return (
-    <nav className="flex md:hidden fixed bottom-0 left-0 right-0 border-t border-border/80 bg-background/95 backdrop-blur-xl px-1.5 py-1.5 justify-around items-center z-50 shadow-2xl">
+    <nav className="flex md:hidden fixed bottom-0 left-0 right-0 border-t border-border/60 bg-background/80 backdrop-blur-xl px-1.5 py-1.5 justify-around items-center z-50 shadow-2xl">
       {/* 1. Inicio */}
       <button
         onClick={() => handleNavClick(pathname === "/" ? "landing" : "inicio")}
         className={`flex flex-col items-center gap-1 flex-1 py-1 rounded-2xl transition-all duration-200 ${
           isInicioActive
-            ? "text-primary font-semibold scale-105"
+            ? "text-black dark:text-white font-bold scale-105"
             : "text-muted-foreground hover:text-foreground"
         }`}
       >
-        <Home className={`h-5 w-5 ${isInicioActive ? "stroke-[2.5px]" : "stroke-[1.8px]"}`} />
+        <Home className={`h-5 w-5 ${isInicioActive ? "stroke-[2.5px] text-black dark:text-white" : "stroke-[1.8px]"}`} />
         <span className="text-[10px] font-medium tracking-tight">Inicio</span>
       </button>
 
@@ -80,11 +80,11 @@ export function MobileBottomNav() {
         onClick={() => handleNavClick("clases")}
         className={`flex flex-col items-center gap-1 flex-1 py-1 rounded-2xl transition-all duration-200 ${
           isCheckInActive
-            ? "text-emerald-500 font-semibold scale-105"
+            ? "text-black dark:text-white font-bold scale-105"
             : "text-muted-foreground hover:text-foreground"
         }`}
       >
-        <QrCode className={`h-5 w-5 ${isCheckInActive ? "stroke-[2.5px]" : "stroke-[1.8px]"}`} />
+        <QrCode className={`h-5 w-5 ${isCheckInActive ? "stroke-[2.5px] text-black dark:text-white" : "stroke-[1.8px]"}`} />
         <span className="text-[10px] font-medium tracking-tight">Check-in</span>
       </button>
 
@@ -93,11 +93,11 @@ export function MobileBottomNav() {
         onClick={() => handleNavClick("diario")}
         className={`flex flex-col items-center gap-1 flex-1 py-1 rounded-2xl transition-all duration-200 ${
           isAiCoachActive
-            ? "text-indigo-500 font-semibold scale-105"
+            ? "text-black dark:text-white font-bold scale-105"
             : "text-muted-foreground hover:text-foreground"
         }`}
       >
-        <Sparkles className={`h-5 w-5 ${isAiCoachActive ? "stroke-[2.5px]" : "stroke-[1.8px]"}`} />
+        <Sparkles className={`h-5 w-5 ${isAiCoachActive ? "stroke-[2.5px] text-black dark:text-white" : "stroke-[1.8px]"}`} />
         <span className="text-[10px] font-medium tracking-tight">AI Coach</span>
       </button>
 
@@ -106,11 +106,11 @@ export function MobileBottomNav() {
         onClick={() => handleNavClick("favoritos")}
         className={`flex flex-col items-center gap-1 flex-1 py-1 rounded-2xl transition-all duration-200 ${
           isFavoritosActive
-            ? "text-rose-500 font-semibold scale-105"
+            ? "text-black dark:text-white font-bold scale-105"
             : "text-muted-foreground hover:text-foreground"
         }`}
       >
-        <Heart className={`h-5 w-5 ${isFavoritosActive ? "stroke-[2.5px] fill-rose-500 text-rose-500" : "stroke-[1.8px]"}`} />
+        <Heart className={`h-5 w-5 ${isFavoritosActive ? "stroke-[2.5px] fill-black dark:fill-white text-black dark:text-white" : "stroke-[1.8px]"}`} />
         <span className="text-[10px] font-medium tracking-tight">Favoritos</span>
       </button>
 
@@ -120,11 +120,11 @@ export function MobileBottomNav() {
           <button
             className={`flex flex-col items-center gap-1 flex-1 py-1 rounded-2xl transition-all duration-200 ${
               isPerfilActive
-                ? "text-primary font-semibold scale-105"
+                ? "text-black dark:text-white font-bold scale-105"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            <User className={`h-5 w-5 ${isPerfilActive ? "stroke-[2.5px]" : "stroke-[1.8px]"}`} />
+            <User className={`h-5 w-5 ${isPerfilActive ? "stroke-[2.5px] text-black dark:text-white" : "stroke-[1.8px]"}`} />
             <span className="text-[10px] font-medium tracking-tight">Perfil</span>
           </button>
         </SheetTrigger>

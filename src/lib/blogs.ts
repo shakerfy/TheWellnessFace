@@ -1301,6 +1301,70 @@ El **Food Quality Score** global integra todos los vectores y se clasifica de la
 4. **Hall, K. D., Ayuketah, A., Brychta, R., et al. (2019).** *"Ultra-processed diets cause excess calorie intake and weight gain: An inpatient randomized controlled trial of ad libitum food intake."* *Cell Metabolism*, 30(1), 67-77. DOI: 10.1016/j.cmet.2019.05.008.
     `,
   },
+  {
+    id: "post-16",
+    slug: "fisiologia-del-sueno-y-recuperacion-muscular",
+    title: "La Fisiología del Sueño en la Recuperación Muscular: Evidencia sobre hGH, Cortisol y Prevención de Lesiones",
+    excerpt:
+      "Analizamos la literatura endocrinológica y de medicina deportiva sobre cómo la privación del sueño de onda lenta (SWS) inhibe la hipertrofia y duplica el riesgo de lesiones.",
+    category: "Bienestar & Salud",
+    readTime: "7 min de lectura",
+    date: "25 de Julio, 2026",
+    author: {
+      name: "Shakerfy Team",
+      role: "Equipo de Ciencias del Deporte & Cronobiología",
+      avatar:
+        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+      bio: "Equipo multidisciplinario de especialistas en ciencias del ejercicio, cronobiología, nutrición basada en evidencia y tecnología aplicada al rendimiento.",
+    },
+    image:
+      "https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?auto=format&fit=crop&w=1200&q=80",
+    featured: true,
+    tags: ["Sueño", "Recuperación", "hGH", "Cortisol", "Lesiones", "Evidencia"],
+    content: `
+Durante décadas, la planificación del entrenamiento de fuerza e hipertrofia se ha enfocado casi exclusivamente en el volumen muscular, la selección de ejercicios y la ingesta proteica. Sin embargo, la evidencia en fisiología del ejercicio confirma que el **sueño es el mediador metabólico primario de la regeneración celular y la adaptación muscular**.
+
+---
+
+### 1. El Eje Hormonal: hGH vs. Cortisol en la Fase SWS
+
+Durante el **Sueño de Onda Lenta (SWS / Fase N3)** se produce entre el **60% y 70% de la secreción diaria de Hormona de Crecimiento Humana (hGH)** (*Dattilo et al., Sleep Medicine Reviews*). Esta hormona estimula la síntesis proteica miofibrilar y la captura de aminoácidos para reparar las microlesiones estructurales (*Z-discs*).
+
+Por el contrario, la restricción de sueño (dormir menos de 6 horas por noche):
+- Eleva sostenidamente el **Cortisol matutino**.
+- Altera el ratio **Testosterona / Cortisol (T:C)** hacia un estado marcadamente catabólico.
+- Inhibe la vía metabólica **mTORC1**, retrasando la supercompensación proteica (*Saner et al., 2020; Physiological Reports*).
+
+---
+
+### 2. Prevención de Lesiones y Sistema Nervioso Central (SNC)
+
+El estudio de referencia de *Milewski et al. (Journal of Pediatric Orthopaedics)* y revisiones sistemáticas en *Sports Medicine (Fullagar et al., 2015)* demostraron que atletas que duermen **menos de 8 horas diarias presentan 1.7 veces mayor riesgo de sufrir lesiones musculoesqueléticas** (desgarros, distensiones, tendinopatías).
+
+La privación de sueño disminuye la tasa de desarrollo de fuerza (RFD - *Rate of Force Development*), deteriora la velocidad propioceptiva y aumenta la fatiga del Sistema Nervioso Central (SNC).
+
+---
+
+### 3. Sensibilidad a la Insulina y Resíntesis de Glucógeno
+
+Estudios en *PNAS (Scheer et al.)* y *Nutrients (2024)* muestran que la desalineación circadiana y el insomnio reducen la sensibilidad a la insulina a nivel muscular hasta en un **30%**. Esto desacelera significativamente la velocidad de recarga del glucógeno muscular post-entrenamiento.
+
+---
+
+### Conclusión para tu Entrenamiento en Shakerfy
+
+En **Shakerfy / Studio Pulse Smart**, el módulo de **Gestión del Sueño** se integra con el **Monitor de Fatiga Muscular** y el **AI Coach**. Cuando registras un descanso < 6 horas, el algoritmo recalcula la fatiga muscular (+15%) y ajusta automáticamente la intensidad recomendada en tu próximo workout.
+
+---
+
+### Referencias Científicas
+
+1. **Dattilo, M., Antunes, H. K., Medeiros, C. A., et al. (2011).** *"Sleep and muscle recovery: Endocrinological and molecular mechanisms."* *Sleep Medicine Reviews*, 15(5), 321-327. DOI: 10.1016/j.smrv.2011.01.001.
+2. **Milewski, M. D., Skaggs, D. L., Bishop, G. A., et al. (2014).** *"Chronic lack of sleep is associated with increased sports injuries in adolescent athletes."* *Journal of Pediatric Orthopaedics*, 34(2), 129-133.
+3. **Saner, N. J., Lee, M. J. H., Pitchford, N. W., et al. (2020).** *"The effect of sleep restriction, with or without high-intensity interval exercise, on myofibrillar protein synthesis in healthy young men."* *Physiological Reports*, 8(6), e14389. DOI: 10.14814/phy2.14389.
+4. **Fullagar, H. H., Skorski, S., Duffield, R., et al. (2015).** *"Sleep and athletic performance: the effects of sleep loss on exercise performance and physiological recovery."* *Sports Medicine*, 45(2), 161-186.
+    `,
+  },
 ];
 
 export function getBlogPostBySlug(slug: string): BlogPost | undefined {

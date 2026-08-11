@@ -8,9 +8,9 @@ import {
   User, Calendar, BarChart3, CreditCard, Settings, 
   LogOut, QrCode, CheckCircle, Clock, AlertTriangle, 
   MapPin, ChevronRight, ChevronLeft, X, Sparkles, Shield, AlertCircle, ShieldAlert, Star, Heart,
-  Flame, Coffee, Droplet, TrendingUp, Info, Edit, Sun, Moon, ArrowUpRight, Utensils, Zap, Wheat, MessageSquare,
+  Flame, Coffee, Droplet, TrendingUp, Info, Edit, Sun, Moon, ArrowUpRight, Utensils, Zap, Wheat, MessageSquare, Bed, AlarmClock, ArrowUp,
   Camera, Dumbbell, Brain, Activity, Plus, Check, Loader2, ShoppingCart, Copy, Share2,
-  Play, Pause, RotateCcw, Search, ChevronUp, ChevronDown, Trash2, FileDown, Navigation, Scan, Smartphone
+  Play, Pause, RotateCcw, Search, ChevronUp, ChevronDown, Trash2, FileDown, Navigation, Scan, Smartphone, ArrowRightLeft
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -61,19 +61,19 @@ const SYMPTOMS_CHART_CONFIG = {
   ninguno: { label: "Ninguno", color: "#10b981" },
   cabeza: { label: "Dolor de cabeza", color: "#8b5cf6" },
   fatiga: { label: "Fatiga", color: "#f59e0b" },
-  hinchazon: { label: "HinchazÃ³n", color: "#f97316" },
+  hinchazon: { label: "Hinchazón", color: "#f97316" },
   humor: { label: "Cambios de humor", color: "#ec4899" },
-  estomago: { label: "Dolor de estÃ³mago", color: "#ef4444" },
-  nauseas: { label: "NÃ¡useas", color: "#eab308" },
+  estomago: { label: "Dolor de estómago", color: "#ef4444" },
+  nauseas: { label: "Náuseas", color: "#eab308" },
   otro: { label: "Otro", color: "#94a3b8" }
 };
 
 const WHY_EAT_DATA = [
   { reason: "hambre", label: "Hambre", percentage: 35, fill: "var(--color-hambre)" },
-  { reason: "estres", label: "EstrÃ©s", percentage: 15, fill: "var(--color-estres)" },
+  { reason: "estres", label: "Estrés", percentage: 15, fill: "var(--color-estres)" },
   { reason: "sabor", label: "Sabor", percentage: 15, fill: "var(--color-sabor)" },
   { reason: "social", label: "Social", percentage: 10, fill: "var(--color-social)" },
-  { reason: "habito", label: "HÃ¡bito", percentage: 10, fill: "var(--color-habito)" },
+  { reason: "habito", label: "Hábito", percentage: 10, fill: "var(--color-habito)" },
   { reason: "emocional", label: "Emocional", percentage: 8, fill: "var(--color-emocional)" },
   { reason: "aburrimiento", label: "Aburrimiento", percentage: 5, fill: "var(--color-aburrimiento)" },
   { reason: "otro", label: "Otro", percentage: 2, fill: "var(--color-otro)" }
@@ -84,10 +84,10 @@ const WHY_EAT_CHART_CONFIG = {
     label: "Porcentaje"
   },
   hambre: { label: "Hambre", color: "#10b981" },
-  estres: { label: "EstrÃ©s", color: "#ef4444" },
+  estres: { label: "Estrés", color: "#ef4444" },
   sabor: { label: "Sabor", color: "#eab308" },
   social: { label: "Social", color: "#0ea5e9" },
-  habito: { label: "HÃ¡bito", color: "#6366f1" },
+  habito: { label: "Hábito", color: "#6366f1" },
   emocional: { label: "Emocional", color: "#ec4899" },
   aburrimiento: { label: "Aburrimiento", color: "#a855f7" },
   otro: { label: "Otro", color: "#94a3b8" }
@@ -109,11 +109,26 @@ const ADHERENCE_CHART_CONFIG = {
 
 const STABILITY_DATA = [
   { subject: "Horarios", value: 85 },
-  { subject: "NutriciÃ³n", value: 90 },
+  { subject: "Nutrición", value: 90 },
   { subject: "Humor", value: 75 },
-  { subject: "HidrataciÃ³n", value: 80 },
+  { subject: "Hidratación", value: 80 },
   { subject: "Consistencia", value: 95 }
 ];
+
+const HOLISTIC_RADAR_DATA = [
+  { subject: "BODY AWARENESS", value: 86 },
+  { subject: "HORARIOS", value: 88 },
+  { subject: "NUTRICIÓN", value: 90 },
+  { subject: "HIDRATACIÓN", value: 82 },
+  { subject: "DENSIDAD", value: 85 }
+];
+
+const HOLISTIC_RADAR_CONFIG = {
+  value: {
+    label: "Nivel",
+    color: "#10b981"
+  }
+} satisfies ChartConfig;
 
 const STABILITY_CHART_CONFIG = {
   value: {
@@ -136,9 +151,9 @@ const COLOR_PLATE_CHART_CONFIG = {
     label: "Porcentaje"
   },
   verde: { label: "Verde (Vegetales)", color: "#10b981" },
-  amarillo: { label: "Amarillo/Naranja (CÃ­tricos)", color: "#f59e0b" },
+  amarillo: { label: "Amarillo/Naranja (Cítricos)", color: "#f59e0b" },
   rojo: { label: "Rojo (Frutos rojos)", color: "#f43f5e" },
-  marron: { label: "MarrÃ³n (Granos/ProteÃ­nas)", color: "#92400e" },
+  marron: { label: "Marrón (Granos/Proteínas)", color: "#92400e" },
   blanco: { label: "Blanco (Ajo/Hongos)", color: "#cbd5e1" },
   otros: { label: "Otros (Semillas)", color: "#94a3b8" }
 } satisfies ChartConfig;
@@ -153,8 +168,8 @@ const TABS = [
   { id: "clases", label: "Check-in", icon: QrCode },
   { id: "favoritos", label: "Favoritos", icon: Heart },
   { id: "progreso", label: "Mi Progreso", icon: BarChart3 },
-  { id: "pagos", label: "SuscripciÃ³n", icon: CreditCard },
-  { id: "config", label: "ConfiguraciÃ³n", icon: Settings },
+  { id: "pagos", label: "Suscripción", icon: CreditCard },
+  { id: "config", label: "Configuración", icon: Settings },
 ];
 
 function StudentDashboard() {
@@ -221,7 +236,7 @@ function StudentDashboard() {
 
       <div className="flex-1 pb-16 md:pb-0">
         {/* Main Content Area */}
-        <main className={`flex-1 w-full ${activeTab === "inicio" ? "" : "px-3 py-4 sm:p-6 md:p-10 max-w-5xl mx-auto"}`}>
+        <main className={`flex-1 w-full ${activeTab === "inicio" ? "" : activeTab === "diario" ? "px-3 pt-0 pb-4 sm:px-6 sm:pb-6 md:px-10 md:pb-10 max-w-5xl mx-auto" : "px-3 py-4 sm:p-6 md:p-10 max-w-5xl mx-auto"}`}>
 
         {activeTab === "inicio" && <InicioTab />}
         {activeTab === "diario" && <DiarioTab />}
@@ -245,7 +260,7 @@ function StudentDashboard() {
             </button>
 
             <h3 className="text-lg font-bold tracking-tight">QR de Ingreso</h3>
-            <p className="text-xs text-muted-foreground mt-1">Escanea este cÃ³digo en la entrada</p>
+            <p className="text-xs text-muted-foreground mt-1">Escanea este código en la entrada</p>
 
             {/* Simulated QR Code Visual */}
             <div className="mx-auto my-6 p-4 bg-white rounded-2xl w-48 h-48 flex flex-col items-center justify-center relative border border-border -inner">
@@ -259,7 +274,7 @@ function StudentDashboard() {
             </div>
             
             <p className="text-[11px] text-muted-foreground mt-4 flex items-center justify-center gap-1">
-              <Shield className="h-3 w-3" /> Token de seguridad dinÃ¡mico encriptado
+              <Shield className="h-3 w-3" /> Token de seguridad dinámico encriptado
             </p>
           </div>
         </div>
@@ -280,8 +295,8 @@ function StudentDashboard() {
               <ShieldAlert className="h-6 w-6" />
             </div>
 
-            <h3 className="text-lg font-bold tracking-tight text-foreground">CancelaciÃ³n Excedida</h3>
-            <p className="text-xs text-muted-foreground mt-1">No cumple con la polÃ­tica de anticipaciÃ³n mÃ­nima.</p>
+            <h3 className="text-lg font-bold tracking-tight text-foreground">Cancelación Excedida</h3>
+            <p className="text-xs text-muted-foreground mt-1">No cumple con la política de anticipación mínima.</p>
 
             <div className="mt-4 p-4 rounded-2xl bg-secondary/35 text-xs text-left space-y-2 border border-border w-full">
               <div className="flex justify-between">
@@ -293,13 +308,13 @@ function StudentDashboard() {
                 <span className="font-semibold text-rose-500">{blockedCancellationClass.timeRemainingLabel}</span>
               </div>
               <div className="flex justify-between border-t border-border/60 pt-2 mt-2">
-                <span className="text-muted-foreground">PolÃ­tica del Gimnasio:</span>
-                <span className="font-semibold text-foreground">MÃ­nimo 2 horas antes</span>
+                <span className="text-muted-foreground">Política del Gimnasio:</span>
+                <span className="font-semibold text-foreground">Mínimo 2 horas antes</span>
               </div>
             </div>
 
             <p className="text-xs text-muted-foreground mt-4 leading-relaxed">
-              De acuerdo con las normas de <strong>Kraft Strength Club</strong>, las cancelaciones deben realizarse con al menos 2 horas de antelaciÃ³n para permitir que otros alumnos en lista de espera tomen el cupo.
+              De acuerdo con las normas de <strong>Kraft Strength Club</strong>, las cancelaciones deben realizarse con al menos 2 horas de antelación para permitir que otros alumnos en lista de espera tomen el cupo.
             </p>
 
             <div className="mt-6 flex gap-2 w-full">
@@ -329,7 +344,7 @@ function StudentDashboard() {
           <form 
             onSubmit={(e) => {
               e.preventDefault();
-              alert("Â¡Gracias por tu opiniÃ³n! Tu reseÃ±a ha sido verificada con tus check-ins de asistencia por QR y fue publicada exitosamente.");
+              alert("¡Gracias por tu opinión! Tu reseña ha sido verificada con tus check-ins de asistencia por QR y fue publicada exitosamente.");
               setShowReviewPrompt(false);
               setReviewModalOpen(false);
             }}
@@ -348,7 +363,7 @@ function StudentDashboard() {
                 <Sparkles className="h-5 w-5" />
               </div>
               <h3 className="text-base font-bold tracking-tight">Califica tu Centro</h3>
-              <p className="text-xs text-muted-foreground">Miembro Verificado: AgustÃ­n GÃ³mez</p>
+              <p className="text-xs text-muted-foreground">Miembro Verificado: Agustín Gómez</p>
             </div>
 
             <div className="space-y-4">
@@ -356,8 +371,8 @@ function StudentDashboard() {
               {[
                 { label: "Limpieza", value: ratingCleanliness, setter: setRatingCleanliness },
                 { label: "Equipamiento", value: ratingEquipment, setter: setRatingEquipment },
-                { label: "AtenciÃ³n del Staff", value: ratingStaff, setter: setRatingStaff },
-                { label: "RelaciÃ³n Calidad/Precio", value: ratingPrice, setter: setRatingPrice }
+                { label: "Atención del Staff", value: ratingStaff, setter: setRatingStaff },
+                { label: "Relación Calidad/Precio", value: ratingPrice, setter: setRatingPrice }
               ].map((cat) => (
                 <div key={cat.label} className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-muted-foreground">{cat.label}</span>
@@ -378,20 +393,20 @@ function StudentDashboard() {
 
               {/* Textarea for comments */}
               <div className="space-y-1.5 mt-2">
-                <label className="text-xs font-semibold text-muted-foreground">Escribe tu opiniÃ³n</label>
+                <label className="text-xs font-semibold text-muted-foreground">Escribe tu opinión</label>
                 <textarea
                   required
                   rows={3}
                   value={reviewComment}
                   onChange={(e) => setReviewComment(e.target.value)}
-                  placeholder="CuÃ©ntale a otros quÃ© tal tu experiencia con los coaches, la limpieza del lugar, etc..."
+                  placeholder="Cuéntale a otros qué tal tu experiencia con los coaches, la limpieza del lugar, etc..."
                   className="flex w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 />
               </div>
             </div>
 
             <Button type="submit" className="rounded-xl mt-6">
-              Enviar ReseÃ±a Verificada
+              Enviar Reseña Verificada
             </Button>
           </form>
         </div>
@@ -460,7 +475,7 @@ function FavoritosTab() {
           </div>
           <h3 className="text-sm font-semibold text-foreground">No tienes gimnasios guardados</h3>
           <p className="mt-1 text-xs text-muted-foreground max-w-sm mx-auto">
-            Explora gimnasios en la pÃ¡gina principal y presiona el Ã­cono de corazÃ³n para guardarlos aquÃ­.
+            Explora gimnasios en la página principal y presiona el ícono de corazón para guardarlos aquí.
           </p>
           <Button
             onClick={() => navigate({ to: "/" })}
@@ -774,7 +789,7 @@ function ProgresoTab() {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold tracking-tight">Mi Progreso</h2>
-        <p className="text-sm text-muted-foreground">Tu historial de constancia fÃ­sica.</p>
+        <p className="text-sm text-muted-foreground">Tu historial de constancia física.</p>
       </div>
 
       {/* Metrics Cards */}
@@ -797,7 +812,7 @@ function ProgresoTab() {
       </div>
 
       <div className="rounded-2xl border border-border bg-card p-6 ">
-        <h3 className="text-sm font-bold text-muted-foreground mb-6 uppercase tracking-wider">Asistencias ConversiÃ³n</h3>
+        <h3 className="text-sm font-bold text-muted-foreground mb-6 uppercase tracking-wider">Asistencias Conversión</h3>
         <div className="flex items-end justify-between h-48 px-4">
           {chartData.map((d) => {
             const heightPercentage = `${(d.visits / 25) * 100}%`;
@@ -829,8 +844,8 @@ function PagosTab() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">SuscripciÃ³n y Pagos</h2>
-        <p className="text-sm text-muted-foreground">Tus recibos e informaciÃ³n financiera.</p>
+        <h2 className="text-2xl font-bold tracking-tight">Suscripción y Pagos</h2>
+        <p className="text-sm text-muted-foreground">Tus recibos e información financiera.</p>
       </div>
 
       <div className="rounded-2xl border border-border bg-secondary/50 p-6">
@@ -838,7 +853,7 @@ function PagosTab() {
         <div className="flex justify-between items-end mt-2">
           <div>
             <h4 className="text-lg font-bold">Pase Libre Mensual</h4>
-            <p className="text-sm text-muted-foreground mt-0.5">Acceso a todas las clases y sala de musculaciÃ³n.</p>
+            <p className="text-sm text-muted-foreground mt-0.5">Acceso a todas las clases y sala de musculación.</p>
           </div>
           <div className="text-right">
             <span className="text-2xl font-extrabold text-foreground">$18.900</span>
@@ -886,7 +901,7 @@ function ConfigTab() {
   return (
     <div className="space-y-6 max-w-xl">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">ConfiguraciÃ³n</h2>
+        <h2 className="text-2xl font-bold tracking-tight">Configuración</h2>
         <p className="text-sm text-muted-foreground">Preferencias y datos personales.</p>
       </div>
 
@@ -900,7 +915,7 @@ function ConfigTab() {
 
         <div className="grid gap-4 sm:grid-cols-2 mt-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-muted-foreground">TelÃ©fono</label>
+            <label className="text-xs font-semibold text-muted-foreground">Teléfono</label>
             <input type="text" className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" defaultValue="+54 9 11 3242-1241" />
           </div>
           <div className="space-y-1.5">
@@ -918,7 +933,7 @@ function ConfigTab() {
           <div className="flex items-center justify-between">
             <div>
               <div className="text-sm font-semibold">Recordatorios por WhatsApp</div>
-              <div className="text-xs text-muted-foreground">Recibe avisos automÃ¡ticos 2 horas antes de tu clase.</div>
+              <div className="text-xs text-muted-foreground">Recibe avisos automáticos 2 horas antes de tu clase.</div>
             </div>
             <input 
               type="checkbox" 
@@ -929,7 +944,7 @@ function ConfigTab() {
           </div>
           <div className="flex items-center justify-between border-t border-border/60 pt-3">
             <div>
-              <div className="text-sm font-semibold">Emails de ConfirmaciÃ³n</div>
+              <div className="text-sm font-semibold">Emails de Confirmación</div>
               <div className="text-xs text-muted-foreground">Confirmaciones de reservas y facturas digitales en tu casilla de correo.</div>
             </div>
             <input 
@@ -951,13 +966,13 @@ const muscleImages = [
   { id: "espalda", name: "Espalda", img: "/atras (4).png" },
   { id: "espalda-baja", name: "Espalda Baja", img: "/atras (3).png" },
   { id: "hombros", name: "Hombros", img: "/hombro (2).png" },
-  { id: "biceps", name: "BÃ­ceps", img: "/biceps.png" },
-  { id: "triceps", name: "TrÃ­ceps", img: "/musculos (4).png" },
+  { id: "biceps", name: "Bíceps", img: "/biceps.png" },
+  { id: "triceps", name: "Tríceps", img: "/musculos (4).png" },
   { id: "abdominales", name: "Abdominales", img: "/culturismo.png" },
-  { id: "cuadriceps", name: "CuÃ¡driceps", img: "/capacitacion.png" },
+  { id: "cuadriceps", name: "Cuádriceps", img: "/capacitacion.png" },
   { id: "isquiotibiales", name: "Isquiotibiales", img: "/atras (1).png" },
-  { id: "gluteos", name: "GlÃºteos", img: "/atras (5).png" },
-  { id: "gemelos", name: "Gemelos", img: "/atras (6).png" } // AÃ±adÃ­ gemelos para completar la pierna
+  { id: "gluteos", name: "Glúteos", img: "/atras (5).png" },
+  { id: "gemelos", name: "Gemelos", img: "/atras (6).png" } // Añadí gemelos para completar la pierna
 ];
 
 function WorkoutGeneratorModal({ 
@@ -1102,10 +1117,10 @@ function WorkoutGeneratorModal({
           )}
           <div>
             <h2 className="text-xl font-black text-foreground tracking-tight">
-              {view === "main" ? "Generar Workout" : view === "muscles" ? "MÃºsculos Objetivo" : "Equipamiento"}
+              {view === "main" ? "Generar Workout" : view === "muscles" ? "Músculos Objetivo" : "Equipamiento"}
             </h2>
             <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-0.5">
-              {view === "main" ? "ConfiguraciÃ³n de IA" : "SelecciÃ³n MÃºltiple"}
+              {view === "main" ? "Configuración de IA" : "Selección Múltiple"}
             </p>
           </div>
         </div>
@@ -1120,11 +1135,11 @@ function WorkoutGeneratorModal({
           
           {view === "main" && (
             <>
-              {/* UbicaciÃ³n */}
+              {/* Ubicación */}
               <section className="space-y-3.5">
                 <div>
                   <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-muted-foreground" /> UbicaciÃ³n
+                    <MapPin className="w-4 h-4 text-muted-foreground" /> Ubicación
                   </h3>
                   {renderChips(["Casa", "Gimnasio"], location, setLocation, false)}
                 </div>
@@ -1132,7 +1147,7 @@ function WorkoutGeneratorModal({
                 {location === "Gimnasio" && (
                   <div className="pl-4 border-l-2 border-border/80 mt-2 space-y-1.5 animate-in slide-in-from-left-2 duration-300">
                     <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
-                      Seleccionar Club (MembresÃ­a Activa)
+                      Seleccionar Club (Membresía Activa)
                     </label>
                     {renderChips(["Kraft Strength Club"], selectedGym, setSelectedGym, false)}
                   </div>
@@ -1147,11 +1162,11 @@ function WorkoutGeneratorModal({
                 {renderChips(["20 min", "30 min", "40 min", "50 min", "60 min", "80 min"], time, setTime, false)}
               </section>
 
-              {/* MÃºsculos objetivo (Summary) */}
+              {/* Músculos objetivo (Summary) */}
               <section>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                    <Dumbbell className="w-4 h-4 text-muted-foreground" /> MÃºsculos objetivo
+                    <Dumbbell className="w-4 h-4 text-muted-foreground" /> Músculos objetivo
                   </h3>
                 </div>
                 <button 
@@ -1160,7 +1175,7 @@ function WorkoutGeneratorModal({
                 >
                   <div className="text-left">
                     <span className="block text-sm font-bold text-foreground">
-                      MÃºsculos objetivo
+                      Músculos objetivo
                     </span>
                     <span className="block text-xs text-muted-foreground mt-0.5">
                       {(() => {
@@ -1284,15 +1299,15 @@ function WorkoutGeneratorModal({
                   <div className="bg-rose-500/5 border border-rose-500/10 rounded-xl p-3 flex gap-2.5 items-start text-[11px] text-muted-foreground leading-snug">
                     <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
                     <span>
-                      Algunos grupos musculares se han desactivado porque su nivel de recuperaciÃ³n actual es menor al 70%.
+                      Algunos grupos musculares se han desactivado porque su nivel de recuperación actual es menor al 70%.
                     </span>
                   </div>
                 )}
 
-                {/* Accesos RÃ¡pidos Presets */}
+                {/* Accesos Rápidos Presets */}
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
-                    Accesos RÃ¡pidos
+                    Accesos Rápidos
                   </label>
                   <div className="flex flex-wrap gap-1.5">
                     <button
@@ -1331,7 +1346,7 @@ function WorkoutGeneratorModal({
                   </div>
                 </div>
 
-                {/* Grid de MÃºsculos */}
+                {/* Grid de Músculos */}
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
                   {muscleImages.map(m => {
                     const isActive = muscles.includes(m.id);
@@ -1378,7 +1393,7 @@ function WorkoutGeneratorModal({
                     <Activity className="w-4 h-4 text-muted-foreground" /> Entrenamiento Cardiovascular
                   </h3>
                 </div>
-                {renderEquipmentGrid(["Bicicleta de asalto", "Bicicleta estÃ¡tica", "Cinta de correr", "ElÃ­ptica", "Escalador", "MÃ¡quina de remo"], cardio, setCardio)}
+                {renderEquipmentGrid(["Bicicleta de asalto", "Bicicleta estática", "Cinta de correr", "Elíptica", "Escalador", "Máquina de remo"], cardio, setCardio)}
               </section>
 
               <section>
@@ -1395,13 +1410,13 @@ function WorkoutGeneratorModal({
                   </div>
                   
                   <div>
-                    <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-1">MÃ¡quinas de Cable</h4>
-                    {renderEquipmentGrid(["MÃ¡quina de cable cruzado", "MÃ¡quina de jalÃ³n dorsal", "MÃ¡quina de poleas"], equipment, setEquipment)}
+                    <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Máquinas de Cable</h4>
+                    {renderEquipmentGrid(["Máquina de cable cruzado", "Máquina de jalón dorsal", "Máquina de poleas"], equipment, setEquipment)}
                   </div>
 
                   <div>
-                    <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-1">MÃ¡quina de Pesas</h4>
-                    {renderEquipmentGrid(["Curl de piernas", "Curl de piernas sentado", "ExtensiÃ³n de pierna", "MÃ¡quina smith", "MÃ¡quina de abducciÃ³n de cadera", "MÃ¡quina de aducciÃ³n de cadera", "MÃ¡quina de aperturas", "MÃ¡quina de bÃ­ceps", "MÃ¡quina de crunch abdominal", "MÃ¡quina de deltoides", "MÃ¡quina de fondos para trÃ­ceps", "MÃ¡quina de press de hombros", "MÃ¡quina de remo sentado", "Prensa de pecho", "Prensa de piernas", "Prensa de piernas 45Â°", "Remo T"], equipment, setEquipment)}
+                    <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Máquina de Pesas</h4>
+                    {renderEquipmentGrid(["Curl de piernas", "Curl de piernas sentado", "Extensión de pierna", "Máquina smith", "Máquina de abducción de cadera", "Máquina de aducción de cadera", "Máquina de aperturas", "Máquina de bíceps", "Máquina de crunch abdominal", "Máquina de deltoides", "Máquina de fondos para tríceps", "Máquina de press de hombros", "Máquina de remo sentado", "Prensa de pecho", "Prensa de piernas", "Prensa de piernas 45°", "Remo T"], equipment, setEquipment)}
                   </div>
 
                   <div>
@@ -1411,7 +1426,7 @@ function WorkoutGeneratorModal({
 
                   <div>
                     <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Bandas y Otros</h4>
-                    {renderEquipmentGrid(["Banda de resistencia", "Banda elÃ¡stica", "Esfera", "Esfera de estabilidad", "Caja pliomÃ©trica", "Colchoneta de yoga", "Cuerda para saltar", "Rodillo", "Rueda abdominal"], equipment, setEquipment)}
+                    {renderEquipmentGrid(["Banda de resistencia", "Banda elástica", "Esfera", "Esfera de estabilidad", "Caja pliométrica", "Colchoneta de yoga", "Cuerda para saltar", "Rodillo", "Rueda abdominal"], equipment, setEquipment)}
                   </div>
                 </div>
               </section>
@@ -1446,7 +1461,7 @@ function WorkoutGeneratorModal({
               onClick={() => setView("main")} 
               className="h-12 w-full rounded-xl bg-foreground text-background font-bold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
             >
-              Confirmar SelecciÃ³n
+              Confirmar Selección
             </Button>
           )}
         </div>
@@ -1463,7 +1478,7 @@ function ExerciseDetailModal({ exercise, onClose }: { exercise: any, onClose: ()
         {/* Header */}
         <div className="px-6 pt-8 pb-4 flex justify-between items-start bg-card">
           <div>
-            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest block mb-0.5">EjecuciÃ³n del Ejercicio</span>
+            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest block mb-0.5">Ejecución del Ejercicio</span>
             <h2 className="text-xl font-black text-foreground tracking-tight">{exercise.name}</h2>
           </div>
           <button 
@@ -1502,15 +1517,15 @@ function ExerciseDetailModal({ exercise, onClose }: { exercise: any, onClose: ()
             </>
           )}
           <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-md text-[10px] font-bold text-background uppercase tracking-wider">
-            DemostraciÃ³n de Video
+            Demostración de Video
           </div>
         </div>
 
         {/* Details Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {/* MÃºsculos Involucrados */}
+          {/* Músculos Involucrados */}
           <div>
-            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1.5">MÃºsculos Principales</h4>
+            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1.5">Músculos Principales</h4>
             <p className="text-xs font-bold text-foreground bg-secondary px-3 py-1.5 rounded-lg border border-border inline-block uppercase tracking-wide">
               {exercise.muscles}
             </p>
@@ -1570,14 +1585,14 @@ function WorkoutFeedbackModal({
       rest: 90, 
       img: "/pull-up.png", 
       video: "/chinupreversewidegrip_x264(2).mp4", 
-      muscles: "Dorsal Ancho, BÃ­ceps, Redondo Mayor, Trapecio",
+      muscles: "Dorsal Ancho, Bíceps, Redondo Mayor, Trapecio",
       instructions: [
-        "Sujeta la barra con las palmas hacia el frente (pronaciÃ³n) a un ancho ligeramente mayor al de los hombros.",
-        "MantÃ©n el core activo y los hombros hacia abajo y atrÃ¡s antes de empezar.",
-        "Tira de tu cuerpo hacia arriba concentrÃ¡ndote en llevar los codos hacia abajo, hasta que tu barbilla pase la barra.",
+        "Sujeta la barra con las palmas hacia el frente (pronación) a un ancho ligeramente mayor al de los hombros.",
+        "Mantén el core activo y los hombros hacia abajo y atrás antes de empezar.",
+        "Tira de tu cuerpo hacia arriba concentrándote en llevar los codos hacia abajo, hasta que tu barbilla pase la barra.",
         "Controla la bajada lentamente hasta estirar completamente los brazos de forma segura."
       ],
-      tips: "Evita balancear el cuerpo. Si te cuesta subir, usa una banda elÃ¡stica de resistencia para asistir el movimiento.",
+      tips: "Evita balancear el cuerpo. Si te cuesta subir, usa una banda elástica de resistencia para asistir el movimiento.",
       superset: "Superserie A"
     },
     { 
@@ -1590,30 +1605,30 @@ function WorkoutFeedbackModal({
       video: "/cable-crossover.png",
       muscles: "Pectoral Mayor, Deltoides Anterior",
       instructions: [
-        "Coloca las poleas en una posiciÃ³n alta y sujeta las manijas.",
-        "Da un paso al frente para crear tensiÃ³n en los cables e inclina ligeramente el torso hacia adelante.",
+        "Coloca las poleas en una posición alta y sujeta las manijas.",
+        "Da un paso al frente para crear tensión en los cables e inclina ligeramente el torso hacia adelante.",
         "Con los codos levemente flexionados, junta las manos al frente y abajo simulando dar un abrazo.",
         "Regresa lentamente sintiendo el estiramiento en el pecho."
       ],
-      tips: "No uses el impulso del cuerpo. MantÃ©n una velocidad constante durante todo el recorrido.",
+      tips: "No uses el impulso del cuerpo. Mantén una velocidad constante durante todo el recorrido.",
       superset: "Superserie A"
     },
     { 
       id: 3, 
-      name: "JalÃ³n Dorsal (Lat Pulldown)", 
+      name: "Jalón Dorsal (Lat Pulldown)", 
       reps: "15x", 
       weight: "45kg", 
       rest: 60, 
       img: "/lat-pulldown.png", 
       video: "/lat-pulldown.png",
-      muscles: "Dorsal Ancho, BÃ­ceps, Redondo Mayor",
+      muscles: "Dorsal Ancho, Bíceps, Redondo Mayor",
       instructions: [
-        "SiÃ©ntate en la mÃ¡quina de jalÃ³n dorsal y ajusta las almohadillas sobre tus muslos.",
-        "Sujeta la barra con un agarre amplio y mantÃ©n la espalda recta.",
+        "Siéntate en la máquina de jalón dorsal y ajusta las almohadillas sobre tus muslos.",
+        "Sujeta la barra con un agarre amplio y mantén la espalda recta.",
         "Tira de la barra hacia abajo hacia la parte superior de tu pecho, llevando los codos hacia tus costados.",
         "Sube de manera controlada controlando el peso de regreso."
       ],
-      tips: "MantÃ©n el pecho erguido y no te reclines excesivamente hacia atrÃ¡s.",
+      tips: "Mantén el pecho erguido y no te reclines excesivamente hacia atrás.",
       superset: null
     },
     { 
@@ -1626,17 +1641,17 @@ function WorkoutFeedbackModal({
       video: "/prone-leg-curl.png",
       muscles: "Isquiotibiales, Gastrocnemio",
       instructions: [
-        "AcuÃ©state boca abajo en la mÃ¡quina, alineando las rodillas con el eje de rotaciÃ³n.",
+        "Acuéstate boca abajo en la máquina, alineando las rodillas con el eje de rotación.",
         "Coloca el rodillo de tobillo justo encima de los talones.",
-        "Sujeta los agarres y flexiona las piernas llevando los talones hacia los glÃºteos de forma controlada.",
-        "Regresa lentamente a la posiciÃ³n inicial."
+        "Sujeta los agarres y flexiona las piernas llevando los talones hacia los glúteos de forma controlada.",
+        "Regresa lentamente a la posición inicial."
       ],
-      tips: "MantÃ©n las caderas pegadas al banco durante todo el movimiento para aislar bien el femoral.",
+      tips: "Mantén las caderas pegadas al banco durante todo el movimiento para aislar bien el femoral.",
       superset: "Superserie B"
     },
     { 
       id: 5, 
-      name: "SillÃ³n de FlexiÃ³n de Piernas Sentado", 
+      name: "Sillón de Flexión de Piernas Sentado", 
       reps: "12x", 
       weight: "35kg", 
       rest: 60, 
@@ -1644,12 +1659,12 @@ function WorkoutFeedbackModal({
       video: "/seated-leg-curl.png",
       muscles: "Isquiotibiales, Gastrocnemio",
       instructions: [
-        "SiÃ©ntate y ajusta el respaldo para alinear la articulaciÃ³n de la rodilla con la mÃ¡quina.",
+        "Siéntate y ajusta el respaldo para alinear la articulación de la rodilla con la máquina.",
         "Asegura el rodillo superior sobre los muslos y coloca las piernas extendidas sobre el rodillo inferior.",
-        "Flexiona las rodillas llevando los talones hacia atrÃ¡s y abajo.",
+        "Flexiona las rodillas llevando los talones hacia atrás y abajo.",
         "Regresa controlando el peso lentamente."
       ],
-      tips: "Aprieta por un segundo en la parte final de la contracciÃ³n.",
+      tips: "Aprieta por un segundo en la parte final de la contracción.",
       superset: "Superserie B"
     },
     { 
@@ -1660,9 +1675,9 @@ function WorkoutFeedbackModal({
       rest: 60, 
       img: "/seated-hamstring-curl.png", 
       video: "/seated-hamstring-curl.png",
-      muscles: "Isquiotibiales, GlÃºteo Mayor",
+      muscles: "Isquiotibiales, Glúteo Mayor",
       instructions: [
-        "Ajusta los soportes de la mÃ¡quina y adopta una postura erguida.",
+        "Ajusta los soportes de la máquina y adopta una postura erguida.",
         "Empuja el rodillo hacia abajo utilizando la fuerza de tus femorales.",
         "Extiende las piernas lentamente controlando la carga."
       ],
@@ -1765,24 +1780,24 @@ function WorkoutFeedbackModal({
 
   const getResponse = (f: string) => {
     switch (f) {
-      case "Muy fÃ¡cil": return "Aumentaremos mucho la intensidad.";
-      case "FÃ¡cil": return "Aumentaremos un poco la intensidad.";
+      case "Muy fácil": return "Aumentaremos mucho la intensidad.";
+      case "Fácil": return "Aumentaremos un poco la intensidad.";
       case "Bien": return "Mantendremos esta intensidad.";
-      case "DifÃ­cil": return "Reduciremos un poco la intensidad.";
-      case "Muy difÃ­cil": return "Reduciremos mucho la intensidad.";
+      case "Difícil": return "Reduciremos un poco la intensidad.";
+      case "Muy difícil": return "Reduciremos mucho la intensidad.";
       default: return "";
     }
   };
 
-  const options = ["Muy fÃ¡cil", "FÃ¡cil", "Bien", "DifÃ­cil", "Muy difÃ­cil"];
+  const options = ["Muy fácil", "Fácil", "Bien", "Difícil", "Muy difícil"];
   const techniqueOptions = ["No muy buena", "Buena", "Muy buena", "Excelente"];
 
   const getTechniqueResponse = (t: string) => {
     switch (t) {
       case "No muy buena": return "Nos enfocaremos en mejorar la postura y reducir el peso.";
       case "Buena": return "Buen control, seguiremos perfeccionando el rango de movimiento.";
-      case "Muy buena": return "Excelente ejecuciÃ³n, mantÃ©n ese ritmo y control.";
-      case "Excelente": return "No necesitÃ© pausas adicionales y pude completar todas las repeticiones con una tÃ©cnica perfecta.";
+      case "Muy buena": return "Excelente ejecución, mantén ese ritmo y control.";
+      case "Excelente": return "No necesité pausas adicionales y pude completar todas las repeticiones con una técnica perfecta.";
       default: return "";
     }
   };
@@ -1824,15 +1839,15 @@ function WorkoutFeedbackModal({
               <div className="w-16 h-16 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center justify-center mx-auto mb-2">
                 <Check className="w-8 h-8 stroke-[3]" />
               </div>
-              <h2 className="text-2xl font-black text-foreground tracking-tight">Â¡Entrenamiento Finalizado!</h2>
+              <h2 className="text-2xl font-black text-foreground tracking-tight">¡Entrenamiento Finalizado!</h2>
               <p className="text-xs text-muted-foreground font-medium">
-                Has registrado una sesiÃ³n de <span className="font-bold text-foreground">{formatTime(seconds)}</span>. Â¡Gran esfuerzo hoy!
+                Has registrado una sesión de <span className="font-bold text-foreground">{formatTime(seconds)}</span>. ¡Gran esfuerzo hoy!
               </p>
             </div>
 
             {/* Star Rating */}
             <div className="space-y-3">
-              <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest block text-center">Â¿CÃ³mo calificarÃ­as este entrenamiento?</span>
+              <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest block text-center">¿Cómo calificarías este entrenamiento?</span>
               <div className="flex items-center justify-center gap-2">
                 {[1, 2, 3, 4, 5].map((star) => {
                   const isActive = star <= generalRating;
@@ -1856,14 +1871,14 @@ function WorkoutFeedbackModal({
 
             {/* Energy Emojis */}
             <div className="space-y-3">
-              <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest block text-center">Â¿CÃ³mo te sientes de energÃ­a al terminar?</span>
+              <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest block text-center">¿Cómo te sientes de energía al terminar?</span>
               <div className="flex items-center justify-center gap-3">
                 {[
                   { emoji: "ðŸ˜«", label: "Agotado" },
                   { emoji: "ðŸ¥±", label: "Cansado" },
                   { emoji: "ðŸ˜", label: "Normal" },
                   { emoji: "ðŸ™‚", label: "Bien" },
-                  { emoji: "âš¡", label: "Con energÃ­a" }
+                  { emoji: "⚡", label: "Con energía" }
                 ].map((item) => {
                   const isActive = finalEnergy === item.emoji;
                   return (
@@ -1891,7 +1906,7 @@ function WorkoutFeedbackModal({
               <Textarea 
                 value={generalComments}
                 onChange={(e) => setGeneralComments(e.target.value)}
-                placeholder="Â¿QuÃ© tal estuvo la rutina? CuÃ©ntale a tu Coach IA para personalizar y adaptar tu prÃ³xima sesiÃ³n..."
+                placeholder="¿Qué tal estuvo la rutina? Cuéntale a tu Coach IA para personalizar y adaptar tu próxima sesión..."
                 className="w-full min-h-[90px] px-4 py-3 rounded-2xl bg-secondary border border-border text-sm font-semibold text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground/30 transition-colors resize-none"
               />
             </div>
@@ -1924,7 +1939,7 @@ function WorkoutFeedbackModal({
                 {workoutTitle || "Fuerza Funcional & Core"}
               </h1>
               <p className="text-sm text-muted-foreground font-medium">
-                Enfoque: Cuerpo Completo â€¢ Equipamiento: Mancuernas y Pesas Libres â€¢ Estimado: 40 min
+                Enfoque: Cuerpo Completo • Equipamiento: Mancuernas y Pesas Libres • Estimado: 40 min
               </p>
             </div>
             <button onClick={onClose} className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-foreground hover:bg-border transition-colors shrink-0">
@@ -1976,8 +1991,8 @@ function WorkoutFeedbackModal({
                                     <img src={ex.img} alt={ex.name} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
                                   </div>
                                   <div className="min-w-0">
-                                    <p className="text-sm font-bold text-foreground group-hover:underline leading-snug truncate">{ex.reps} {ex.name} â€¢ {ex.weight}</p>
-                                    <p className="text-[11px] text-muted-foreground mt-0.5">Ver detalles â†’</p>
+                                    <p className="text-sm font-bold text-foreground group-hover:underline leading-snug truncate">{ex.reps} {ex.name} • {ex.weight}</p>
+                                    <p className="text-[11px] text-muted-foreground mt-0.5">Ver detalles →</p>
                                   </div>
                                 </div>
                               </div>
@@ -2010,7 +2025,7 @@ function WorkoutFeedbackModal({
                                 </div>
 
                                 <div>
-                                  <span className="text-[9px] text-muted-foreground font-black uppercase tracking-wider block mb-1">Â¿QuÃ© tal estuvo tu tÃ©cnica?</span>
+                                  <span className="text-[9px] text-muted-foreground font-black uppercase tracking-wider block mb-1">¿Qué tal estuvo tu técnica?</span>
                                   <div className="flex rounded-xl overflow-hidden border border-border bg-secondary shadow-sm">
                                     {techniqueOptions.map((opt) => {
                                       const isActive = currentFeedback?.technique === opt;
@@ -2037,7 +2052,7 @@ function WorkoutFeedbackModal({
                                     <p className="leading-relaxed">Esfuerzo: <span className="font-bold text-muted-foreground">{getResponse(currentFeedback.intensity)}</span></p>
                                   )}
                                   {currentFeedback?.technique && (
-                                    <p className="leading-relaxed">TÃ©cnica: <span className="font-bold text-muted-foreground">{getTechniqueResponse(currentFeedback.technique)}</span></p>
+                                    <p className="leading-relaxed">Técnica: <span className="font-bold text-muted-foreground">{getTechniqueResponse(currentFeedback.technique)}</span></p>
                                   )}
                                 </div>
                               </div>
@@ -2072,8 +2087,8 @@ function WorkoutFeedbackModal({
                             <img src={ex.img} alt={ex.name} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
                           </div>
                           <div className="min-w-0">
-                            <p className="text-sm font-bold text-foreground group-hover:underline leading-snug truncate">{ex.reps} {ex.name} â€¢ {ex.weight}</p>
-                            <p className="text-[11px] text-muted-foreground mt-0.5">Descanso: {ex.rest}s â€¢ Ver detalles â†’</p>
+                            <p className="text-sm font-bold text-foreground group-hover:underline leading-snug truncate">{ex.reps} {ex.name} • {ex.weight}</p>
+                            <p className="text-[11px] text-muted-foreground mt-0.5">Descanso: {ex.rest}s • Ver detalles →</p>
                           </div>
                         </div>
                       </div>
@@ -2106,7 +2121,7 @@ function WorkoutFeedbackModal({
                         </div>
 
                         <div>
-                          <span className="text-[9px] text-muted-foreground font-black uppercase tracking-wider block mb-1">Â¿QuÃ© tal estuvo tu tÃ©cnica?</span>
+                          <span className="text-[9px] text-muted-foreground font-black uppercase tracking-wider block mb-1">¿Qué tal estuvo tu técnica?</span>
                           <div className="flex rounded-xl overflow-hidden border border-border bg-secondary shadow-sm">
                             {techniqueOptions.map((opt) => {
                               const isActive = currentFeedback?.technique === opt;
@@ -2133,7 +2148,7 @@ function WorkoutFeedbackModal({
                             <p className="leading-relaxed">Esfuerzo: <span className="font-bold text-muted-foreground">{getResponse(currentFeedback.intensity)}</span></p>
                           )}
                           {currentFeedback?.technique && (
-                            <p className="leading-relaxed">TÃ©cnica: <span className="font-bold text-muted-foreground">{getTechniqueResponse(currentFeedback.technique)}</span></p>
+                            <p className="leading-relaxed">Técnica: <span className="font-bold text-muted-foreground">{getTechniqueResponse(currentFeedback.technique)}</span></p>
                           )}
                         </div>
                       </div>
@@ -2267,10 +2282,10 @@ function WorkoutFeedbackModal({
           <AlertDialogHeader>
             <AlertDialogTitle className="text-lg font-black text-foreground flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-amber-500" />
-              Â¿Registrar incompleto?
+              ¿Registrar incompleto?
             </AlertDialogTitle>
             <AlertDialogDescription className="text-xs text-muted-foreground leading-relaxed mt-2">
-              AÃºn tienes ejercicios pendientes en tu rutina. Â¿Quieres finalizar y registrar tu progreso actual de todas formas?
+              Aún tienes ejercicios pendientes en tu rutina. ¿Quieres finalizar y registrar tu progreso actual de todas formas?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex flex-col-reverse sm:flex-row gap-2 mt-4">
@@ -2285,7 +2300,7 @@ function WorkoutFeedbackModal({
               }}
               className="w-full sm:w-auto h-11 rounded-xl bg-rose-500 text-background hover:bg-rose-600 font-bold text-xs uppercase tracking-wider"
             >
-              SÃ­, registrar
+              Sí, registrar
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -2336,9 +2351,9 @@ const formatDateLabel = (dateStr: string) => {
     const capitalized = formatted.charAt(0).toUpperCase() + formatted.slice(1);
     
     if (isToday) {
-      return `Hoy â€” ${capitalized}`;
+      return `Hoy — ${capitalized}`;
     } else if (isYesterday) {
-      return `Ayer â€” ${capitalized}`;
+      return `Ayer — ${capitalized}`;
     } else {
       return capitalized;
     }
@@ -2349,8 +2364,8 @@ const formatDateLabel = (dateStr: string) => {
 
 // Helper component to render dynamic glassmorphism badges for meals & recipes
 interface MealOrganizerBadgesProps {
-  category: string; // Momento del dÃ­a (Desayuno, Almuerzo, Cena, Snack)
-  tags?: string[]; // Badges nutricionales (Alta en ProteÃ­nas, Baja en Carbohidratos, etc.)
+  category: string; // Momento del día (Desayuno, Almuerzo, Cena, Snack)
+  tags?: string[]; // Badges nutricionales (Alta en Proteínas, Baja en Carbohidratos, etc.)
   className?: string;
 }
 
@@ -2361,14 +2376,14 @@ function MealOrganizerBadges({
 }: MealOrganizerBadgesProps) {
   return (
     <div className={`flex flex-wrap gap-1.5 items-center ${className}`}>
-      {/* 1. Momento del DÃ­a */}
+      {/* 1. Momento del Día */}
       {category && (
         <span className="inline-flex items-center backdrop-blur-md bg-secondary text-foreground text-[10px] font-bold tracking-wide px-2.5 py-0.5 rounded-full shadow-xs">
           <span>{category}</span>
         </span>
       )}
 
-      {/* 2. Badges Nutricionales & CaracterÃ­sticas */}
+      {/* 2. Badges Nutricionales & Características */}
       {tags.map((tag, idx) => (
         <span 
           key={idx} 
@@ -2384,88 +2399,88 @@ function MealOrganizerBadges({
 const RECIPES_POOL = [
   {
     id: "receta-1",
-    title: "Smoothie Bowl de ProteÃ­na y Berries",
+    title: "Smoothie Bowl de Proteína y Berries",
     category: "Desayuno",
-    tags: ["Alta en ProteÃ­nas", "Sin Gluten", "Alta en Antioxidantes"],
+    tags: ["Alto en Proteína", "Sin Gluten", "Alto en Fibra", "Vegan"],
     img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?auto=format&fit=crop&w=600&q=80",
     kcal: 340,
     protein: "22g",
     carbs: "45g",
     fat: "6g",
     prepTime: "10 min",
-    difficulty: "FÃ¡cil",
-    tag: "Alta en ProteÃ­nas",
-    coachFeedback: "Excelente para reponer glucÃ³geno post-entreno y aportar antioxidantes para combatir el estrÃ©s oxidativo celular.",
+    difficulty: "Fácil",
+    tag: "Alto en Proteína",
+    coachFeedback: "Excelente para reponer glucógeno post-entreno y aportar antioxidantes para combatir el estrés oxidativo celular.",
     ingredients: [
-      "1 taza de frutos rojos congelados (arÃ¡ndanos, frambuesas)",
-      "1 scoop de proteÃ­na de vainilla (suero o vegetal)",
-      "1/2 taza de leche de almendras sin azÃºcar",
-      "1 cda de granola integral sin azÃºcar",
-      "1 cdta de semillas de chÃ­a"
+      "1 taza de frutos rojos congelados (arándanos, frambuesas)",
+      "1 scoop de proteína de vainilla (suero o vegetal)",
+      "1/2 taza de leche de almendras sin azúcar",
+      "1 cda de granola integral sin azúcar",
+      "1 cdta de semillas de chía"
     ],
     instructions: [
-      "LicÃºa los frutos rojos, la proteÃ­na y la leche de almendras hasta obtener una consistencia cremosa y espesa.",
+      "Licúa los frutos rojos, la proteína y la leche de almendras hasta obtener una consistencia cremosa y espesa.",
       "Vierte la mezcla en un bowl profundo.",
-      "Decora por encima con la granola, las semillas de chÃ­a y algunos frutos rojos frescos.",
+      "Decora por encima con la granola, las semillas de chía y algunos frutos rojos frescos.",
       "Consumir de inmediato con cuchara."
     ]
   },
   {
     id: "receta-2",
-    title: "Bowl de Quinoa, SalmÃ³n y Aguacate",
+    title: "Bowl de Quinoa, Salmón y Aguacate",
     category: "Almuerzo",
-    tags: ["Grasas Saludables", "Omega 3", "Sin Lactosa"],
+    tags: ["Grasas Saludables", "Sin Lactosa", "Alto en Proteína", "Sin Gluten"],
     img: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80",
     kcal: 580,
     protein: "38g",
     carbs: "45g",
     fat: "24g",
     prepTime: "20 min",
-    difficulty: "FÃ¡cil",
+    difficulty: "Fácil",
     tag: "Grasas Saludables",
-    coachFeedback: "Excelente combinaciÃ³n de grasas saludables omega-3 y carbohidratos complejos. Ideal para tu ventana metabÃ³lica post-entrenamiento.",
+    coachFeedback: "Excelente combinación de grasas saludables omega-3 y carbohidratos complejos. Ideal para tu ventana metabólica post-entrenamiento.",
     ingredients: [
-      "150g de filete de salmÃ³n fresco",
+      "150g de filete de salmón fresco",
       "1/2 taza de quinoa cocida",
       "1/2 aguacate mediano en rebanadas",
       "1 taza de espinacas baby limpias",
       "1/2 taza de tomates cherry cortados al medio",
-      "1 cda de aderezo de limÃ³n y aceite de oliva"
+      "1 cda de aderezo de limón y aceite de oliva"
     ],
     instructions: [
-      "Sazona el salmÃ³n con sal, y pimienta al gusto. CocÃ­nalo a la plancha por 4 minutos de cada lado.",
+      "Sazona el salmón con sal, y pimienta al gusto. Cocínalo a la plancha por 4 minutos de cada lado.",
       "Coloca la quinoa cocida como base en un bowl.",
       "Acomoda las hojas de espinaca baby, los tomates cherry y las rebanadas de aguacate.",
-      "AÃ±ade el salmÃ³n desmenuzado por encima y vierte el aderezo de limÃ³n."
+      "Añade el salmón desmenuzado por encima y vierte el aderezo de limón."
     ]
   },
   {
     id: "receta-3",
-    title: "Pechuga de Pollo con Camote y BrÃ³coli",
+    title: "Pechuga de Pollo con Camote y Brócoli",
     category: "Cena",
-    tags: ["Alta en ProteÃ­nas", "Baja en Carbohidratos", "Sin Gluten"],
+    tags: ["Alto en Proteína", "Bajo en Hidratos", "Sin Gluten", "Sin Lactosa"],
     img: "https://images.unsplash.com/photo-1532550907401-a500c9a57435?auto=format&fit=crop&w=600&q=80",
     kcal: 460,
     protein: "42g",
     carbs: "35g",
     fat: "12g",
     prepTime: "25 min",
-    difficulty: "FÃ¡cil",
-    tag: "Alta en ProteÃ­nas",
-    coachFeedback: "Una cena ligera pero rica en aminoÃ¡cidos para optimizar la sÃ­ntesis proteica nocturna y favorecer la recuperaciÃ³n muscular.",
+    difficulty: "Fácil",
+    tag: "Alto en Proteína",
+    coachFeedback: "Una cena ligera pero rica en aminoácidos para optimizar la síntesis proteica nocturna y favorecer la recuperación muscular.",
     ingredients: [
       "150g de pechuga de pollo cortada en filetes",
       "1 camote (batata) mediano",
-      "1 taza de floretes de brÃ³coli fresco",
+      "1 taza de floretes de brócoli fresco",
       "1 diente de ajo picado fino",
-      "Jugo de 1/2 limÃ³n fresco",
+      "Jugo de 1/2 limón fresco",
       "1 cdta de aceite de coco para cocinar"
     ],
     instructions: [
-      "Corta el camote en rodajas y hornÃ©alo con un toque de sal a 200Â°C durante 20 minutos hasta que estÃ© suave.",
-      "Saltea el ajo y el pollo en una sartÃ©n con aceite de coco hasta dorar.",
-      "Agrega el jugo de limÃ³n al pollo y cocina a fuego lento por 5 minutos mÃ¡s.",
-      "Cocina el brÃ³coli al vapor durante 5 minutos para que quede al dente.",
+      "Corta el camote en rodajas y hornéalo con un toque de sal a 200°C durante 20 minutos hasta que esté suave.",
+      "Saltea el ajo y el pollo en una sartén con aceite de coco hasta dorar.",
+      "Agrega el jugo de limón al pollo y cocina a fuego lento por 5 minutos más.",
+      "Cocina el brócoli al vapor durante 5 minutos para que quede al dente.",
       "Sirve todo en un plato y disfruta."
     ]
   },
@@ -2473,28 +2488,28 @@ const RECIPES_POOL = [
     id: "receta-4",
     title: "Pancakes Fit de Avena y Banano",
     category: "Desayuno",
-    tags: ["EnergÃ­a Sostenible", "Alta en Fibra", "Vegetariana"],
+    tags: ["Alto en Fibra", "Vegan", "Sin Lactosa", "Alto en Proteína"],
     img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=600&q=80",
     kcal: 320,
     protein: "18g",
     carbs: "42g",
     fat: "6g",
     prepTime: "15 min",
-    difficulty: "Muy FÃ¡cil",
-    tag: "EnergÃ­a Sostenible",
-    coachFeedback: "Aporte rÃ¡pido de carbohidratos de absorciÃ³n lenta y potasio, perfecto para energÃ­a pre-entreno sin pesadez.",
+    difficulty: "Muy Fácil",
+    tag: "Alto en Fibra",
+    coachFeedback: "Aporte rápido de carbohidratos de absorción lenta y potasio, perfecto para energía pre-entreno sin pesadez.",
     ingredients: [
       "1 banano mediano maduro",
       "1 huevo entero",
       "1/3 taza de harina de avena",
-      "1/2 scoop de proteÃ­na de vainilla",
+      "1/2 scoop de proteína de vainilla",
       "Pizca de polvo de hornear",
       "1/4 taza de leche descremada o de almendras"
     ],
     instructions: [
-      "En una licuadora, mezcla el banano, el huevo, la harina de avena, la proteÃ­na, el polvo de hornear y la leche hasta lograr una pasta homogÃ©nea.",
-      "Calienta una sartÃ©n antiadherente a fuego medio y pincela con una gota de aceite.",
-      "Vierte porciones pequeÃ±as para formar los pancakes.",
+      "En una licuadora, mezcla el banano, el huevo, la harina de avena, la proteína, el polvo de hornear y la leche hasta lograr una pasta homogénea.",
+      "Calienta una sartén antiadherente a fuego medio y pincela con una gota de aceite.",
+      "Vierte porciones pequeñas para formar los pancakes.",
       "Cocina hasta que aparezcan burbujas en la superficie, voltea y cocina 1 minuto del otro lado.",
       "Sirve opcionalmente con frutos secos picados."
     ]
@@ -2503,16 +2518,16 @@ const RECIPES_POOL = [
     id: "receta-5",
     title: "Tostada de Masa Madre con Ricotta e Higos",
     category: "Snack",
-    tags: ["Microbiota Amigable", "Vegetariana", "Gourmet Fit"],
+    tags: ["Alto en Fibra", "Bajo en Hidratos", "Grasas Saludables", "Vegan"],
     img: "https://images.unsplash.com/photo-1541532713592-79a0317b6b77?auto=format&fit=crop&w=600&q=80",
     kcal: 290,
     protein: "12g",
     carbs: "38g",
     fat: "8g",
     prepTime: "10 min",
-    difficulty: "Muy FÃ¡cil",
-    tag: "Microbiota Amigable",
-    coachFeedback: "El pan de masa madre es excelente para la digestiÃ³n y la ricotta ofrece una liberaciÃ³n sustained de aminoÃ¡cidos.",
+    difficulty: "Muy Fácil",
+    tag: "Alto en Fibra",
+    coachFeedback: "El pan de masa madre es excelente para la digestión y la ricotta ofrece una liberación sustained de aminoácidos.",
     ingredients: [
       "1 rebanada gruesa de pan de masa madre tostado",
       "3 cdas de queso ricotta descremado o cottage",
@@ -2524,7 +2539,7 @@ const RECIPES_POOL = [
       "Tuesta la rebanada de pan de masa madre al nivel deseado.",
       "Esparce uniformemente el queso ricotta sobre la tostada caliente.",
       "Acomoda las rebanadas de higo fresco encima.",
-      "RocÃ­a con el hilo de miel y decora con la albahaca fresca antes de servir."
+      "Rocía con el hilo de miel y decora con la albahaca fresca antes de servir."
     ]
   }
 ];
@@ -2576,14 +2591,94 @@ function CircularProgress({
   );
 }
 
+function TypewriterOnce({ text, speed = 25 }: { text: string; speed?: number }) {
+  const [displayedText, setDisplayedText] = useState("");
+
+  useEffect(() => {
+    let index = 0;
+    setDisplayedText("");
+    const timer = setInterval(() => {
+      if (index < text.length) {
+        setDisplayedText((prev) => text.slice(0, index + 1));
+        index++;
+      } else {
+        clearInterval(timer);
+      }
+    }, speed);
+    return () => clearInterval(timer);
+  }, [text, speed]);
+
+  return (
+    <span>
+      {displayedText}
+      {displayedText.length < text.length && (
+        <span className="inline-block w-1.5 h-3.5 bg-amber-500 ml-1 animate-pulse rounded-xs align-middle" />
+      )}
+    </span>
+  );
+}
+
+interface SleepHistoryItem {
+  label: string;
+  hours: number;
+  qualityScore: number;
+}
+
+const INITIAL_SLEEP_HISTORY: Record<"week" | "month" | "quarter", SleepHistoryItem[]> = {
+  week: [
+    { label: "Lun", hours: 7.2, qualityScore: 82 },
+    { label: "Mar", hours: 7.8, qualityScore: 88 },
+    { label: "Mié", hours: 6.5, qualityScore: 74 },
+    { label: "Jue", hours: 8.0, qualityScore: 92 },
+    { label: "Vie", hours: 7.5, qualityScore: 85 },
+    { label: "Sáb", hours: 8.4, qualityScore: 95 },
+    { label: "Dom", hours: 7.75, qualityScore: 88 },
+  ],
+  month: [
+    { label: "Sem 1", hours: 7.4, qualityScore: 84 },
+    { label: "Sem 2", hours: 6.9, qualityScore: 78 },
+    { label: "Sem 3", hours: 7.9, qualityScore: 90 },
+    { label: "Sem 4", hours: 7.75, qualityScore: 88 },
+  ],
+  quarter: [
+    { label: "Mayo", hours: 7.3, qualityScore: 81 },
+    { label: "Junio", hours: 7.6, qualityScore: 86 },
+    { label: "Julio", hours: 7.8, qualityScore: 89 },
+  ],
+};
+
+const sleepChartConfig = {
+  hours: {
+    label: "Horas de Sueño",
+    color: "#6366f1",
+  },
+} satisfies ChartConfig;
+
 // Subcomponent: AI Coach Diario (Wellfooder Timeline)
 function DiarioTab() {
-  const [subTab, setSubTab] = useState<"diario" | "analisis" | "recuperacion" | "recetas">("diario");
+  const [subTab, setSubTab] = useState<"diario" | "analisis" | "sueno" | "recuperacion" | "recetas">("diario");
   const [nutritionMode, setNutritionMode] = useState<"qualitative" | "quantitative">("quantitative");
   const [insightPeriod, setInsightPeriod] = useState<"day" | "week" | "month" | "quarter" | "all">("week");
   const [sunTimes, setSunTimes] = useState({ sunrise: "06:30", sunset: "20:15" });
-  const [cardSlideIndex, setCardSlideIndex] = useState(0);
-  const carouselRef = React.useRef<HTMLDivElement>(null);
+  const [calMode, setCalMode] = useState<"consumed" | "remaining" | "target">("consumed");
+  const [proteinMode, setProteinMode] = useState<"consumed" | "remaining" | "target">("consumed");
+  const [carbsMode, setCarbsMode] = useState<"consumed" | "remaining" | "target">("consumed");
+  const [fatsMode, setFatsMode] = useState<"consumed" | "remaining" | "target">("consumed");
+  const [sleepData, setSleepData] = useState({
+    duration: "7h 45m",
+    hours: 7.75,
+    bedtime: "23:30",
+    wakeTime: "07:15",
+    quality: "Reparador",
+    score: 88,
+    factors: ["Magnesio", "Habitación fresca"],
+  });
+  const [sleepFilter, setSleepFilter] = useState<"week" | "month" | "quarter">("week");
+  const [sleepHistory, setSleepHistory] = useState(INITIAL_SLEEP_HISTORY);
+
+  const currentSleepData = sleepHistory[sleepFilter];
+  const avgSleepHours = (currentSleepData.reduce((acc: number, curr: SleepHistoryItem) => acc + curr.hours, 0) / currentSleepData.length).toFixed(1);
+  const targetPercent = Math.round((Number(avgSleepHours) / 8) * 100);
 
   useEffect(() => {
     const getSolarTimes = (lat: number, lng: number) => {
@@ -2617,7 +2712,7 @@ function DiarioTab() {
           getSolarTimes(position.coords.latitude, position.coords.longitude);
         },
         (error) => {
-          console.warn("Error de geolocalizaciÃ³n, usando Buenos Aires:", error);
+          console.warn("Error de geolocalización, usando Buenos Aires:", error);
           getSolarTimes(defaultLat, defaultLng);
         },
         { enableHighAccuracy: false, timeout: 5000 }
@@ -2635,10 +2730,10 @@ function DiarioTab() {
   const [activityData, setActivityData] = useState([
     { day: "Lun", puntos: 180 },
     { day: "Mar", puntos: 160 },
-    { day: "MiÃ©", puntos: 175 },
+    { day: "Mié", puntos: 175 },
     { day: "Jue", puntos: 140 },
     { day: "Vie", puntos: 155 },
-    { day: "SÃ¡b", puntos: 190 },
+    { day: "Sáb", puntos: 190 },
     { day: "Dom", puntos: 168 }
   ]);
 
@@ -2651,6 +2746,152 @@ function DiarioTab() {
   const [currentSwipeIndex, setCurrentSwipeIndex] = useState(0);
   const [activeRecipeDetail, setActiveRecipeDetail] = useState<any | null>(null);
 
+  const handleOpenExplorarIdeas = () => {
+    setSubTab("diario");
+    const todayStr = new Date().toISOString().split("T")[0];
+    const newStackId = `swipe-stack-${Date.now()}`;
+    const newStackItem = {
+      id: newStackId,
+      date: todayStr,
+      time: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+      title: "Explorar Ideas",
+      subtitle: "Explorar Ideas",
+      type: "swipe-stack",
+    };
+    setUserTimelineItems(prev => [newStackItem, ...prev]);
+
+    setTimeout(() => {
+      const el = document.getElementById(`recipe-swipe-stack-card-${newStackId}`);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 100);
+  };
+
+  // Shake for AI State & Logic
+  const [shakeModalOpen, setShakeModalOpen] = useState(false);
+  const [shakeData, setShakeData] = useState<{
+    title: string;
+    icon: string;
+    description: string;
+    actionText: string;
+    actionType: "water" | "scan" | "recipe" | "diario";
+  } | null>(null);
+  const [isShaking, setIsShaking] = useState(false);
+  const lastShakeTimeRef = React.useRef(0);
+
+  const triggerShakeAI = React.useCallback(() => {
+    const now = Date.now();
+    if (now - lastShakeTimeRef.current < 2500) return; // 2.5s cooldown
+    lastShakeTimeRef.current = now;
+
+    if (typeof window !== "undefined" && "vibrate" in navigator) {
+      try { navigator.vibrate([40, 30, 40]); } catch (e) {}
+    }
+
+    setIsShaking(true);
+    setTimeout(() => setIsShaking(false), 500);
+
+    const hour = new Date().getHours();
+    let recommendation;
+
+    if (hour >= 6 && hour < 11) {
+      recommendation = {
+        title: "Tu Mezcla Matutina",
+        icon: "🥣",
+        description: "Aún es temprano para consolidar tu energía. Media taza de avena cocida con yogur natural y trozos de banana o arándanos te dará saciedad duradera con comida real.",
+        actionText: "Ver recetas de desayuno",
+        actionType: "recipe" as const,
+      };
+    } else if (hour >= 11 && hour < 15) {
+      recommendation = {
+        title: "Nutrición de Mediodía",
+        icon: "🍗",
+        description: "¿A punto de almorzar? Un filete de pechuga de pollo o tofu salteado (~150g) con un bowl de ensalada fresca y quinoa repondrá tus reservas sin pesadez.",
+        actionText: "Escanear mi almuerzo",
+        actionType: "scan" as const,
+      };
+    } else if (hour >= 15 && hour < 19) {
+      recommendation = {
+        title: "Recarga de Hidratación & Energía",
+        icon: "🥤",
+        description: "Es un excelente momento para hidratarte. Toma un vaso de agua fresca (250ml) y acompáñalo con un puñado de frutos secos (~30g) para mantener tu concentración.",
+        actionText: "+250ml Agua pura",
+        actionType: "water" as const,
+      };
+    } else if (hour >= 19 && hour < 22) {
+      recommendation = {
+        title: "Cena de Recuperación Muscular",
+        icon: "🥑",
+        description: "Para tu cena, una porción de salmón o huevos al plato con camote (batata) al horno repondrá el tejido muscular de tu día de forma ligera.",
+        actionText: "Explorar ideas de cena",
+        actionType: "recipe" as const,
+      };
+    } else {
+      recommendation = {
+        title: "Cierre de Jornada",
+        icon: "🌙",
+        description: "Completaste tus comidas del día con alimentos reales. Desconéctate de las pantallas e inicia tu rutina de descanso para optimizar tu melatonina.",
+        actionText: "Cerrar diario de hoy",
+        actionType: "diario" as const,
+      };
+    }
+
+    const newShakeItem = {
+      id: `shake-ai-${Date.now()}`,
+      date: new Date().toISOString().split("T")[0],
+      time: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+      title: recommendation.title,
+      subtitle: "Shake for AI",
+      type: "shake-ai",
+      icon: recommendation.icon,
+      kcal: 0,
+      tag: "IA Contextual",
+      coachFeedback: recommendation.description,
+      actionText: recommendation.actionText,
+      actionType: recommendation.actionType,
+    };
+
+    setUserTimelineItems(prev => [newShakeItem, ...prev]);
+    toast.success("🥤 ¡Shake for AI! Se generó una recomendación en tu diario.");
+  }, []);
+
+  useEffect(() => {
+    let lastX = 0, lastY = 0, lastZ = 0;
+    let lastTime = Date.now();
+
+    const handleMotion = (e: DeviceMotionEvent) => {
+      const acc = e.accelerationIncludingGravity;
+      if (!acc || acc.x === null || acc.y === null || acc.z === null) return;
+
+      const currentTime = Date.now();
+      if (currentTime - lastTime > 100) {
+        const diffTime = currentTime - lastTime;
+        lastTime = currentTime;
+
+        const deltaX = Math.abs(acc.x - lastX);
+        const deltaY = Math.abs(acc.y - lastY);
+        const deltaZ = Math.abs(acc.z - lastZ);
+
+        const speed = ((deltaX + deltaY + deltaZ) / diffTime) * 10000;
+        if (speed > 800) {
+          triggerShakeAI();
+        }
+
+        lastX = acc.x;
+        lastY = acc.y;
+        lastZ = acc.z;
+      }
+    };
+
+    if (typeof window !== "undefined" && "DeviceMotionEvent" in window) {
+      window.addEventListener("devicemotion", handleMotion, false);
+    }
+    return () => {
+      if (typeof window !== "undefined" && "DeviceMotionEvent" in window) {
+        window.removeEventListener("devicemotion", handleMotion, false);
+      }
+    };
+  }, [triggerShakeAI]);
+
   const toggleCartRecipe = (recipeId: string) => {
     setCartRecipeIds(prev => 
       prev.includes(recipeId) 
@@ -2659,36 +2900,29 @@ function DiarioTab() {
     );
   };
 
-  const chartConfig = {
-    puntos: {
-      label: "Puntos de Actividad",
-      color: "hsl(var(--primary))",
-    },
-  };
-
   // States and data for page 2 (Racha de Actividad & MET Calculator)
   const MET_ACTIVITIES = [
-    { name: "AerÃ³bica", low: 3.5, med: 5.0, high: 7.3 },
+    { name: "Aeróbica", low: 3.5, med: 5.0, high: 7.3 },
     { name: "Artes marciales", low: 5.3, med: 7.0, high: 10.3 },
     { name: "Artes marciales combinadas", low: 6.0, med: 9.0, high: 12.0 },
-    { name: "BÃ¡dminton", low: 4.5, med: 5.5, high: 7.0 },
+    { name: "Bádminton", low: 4.5, med: 5.5, high: 7.0 },
     { name: "Baile", low: 3.3, med: 5.0, high: 7.0 },
     { name: "Baile floss", low: 3.0, med: 4.5, high: 6.0 },
-    { name: "BÃ¡squetbol", low: 4.5, med: 6.0, high: 8.0 },
-    { name: "BÃ©isbol", low: 3.0, med: 4.0, high: 5.0 },
-    { name: "BiatlÃ³n", low: 7.0, med: 10.5, high: 13.5 },
+    { name: "Básquetbol", low: 4.5, med: 6.0, high: 8.0 },
+    { name: "Béisbol", low: 3.0, med: 4.0, high: 5.0 },
+    { name: "Biatlón", low: 7.0, med: 10.5, high: 13.5 },
     { name: "Bicicleta", low: 4.0, med: 8.0, high: 10.0 },
     { name: "Bicicleta fija", low: 3.5, med: 6.0, high: 8.5 },
     { name: "Boxeo", low: 5.5, med: 7.0, high: 12.8 },
     { name: "Buceo", low: 4.0, med: 7.0, high: 10.0 },
     { name: "Calistenia", low: 3.5, med: 5.0, high: 8.0 },
     { name: "Caminata", low: 2.5, med: 3.5, high: 4.5 },
-    { name: "Caminata a ritmo rÃ¡pido", low: 3.8, med: 5.0, high: 6.5 },
-    { name: "Caminata con un carrito para niÃ±os", low: 3.0, med: 4.0, high: 5.0 },
+    { name: "Caminata a ritmo rápido", low: 3.8, med: 5.0, high: 6.5 },
+    { name: "Caminata con un carrito para niños", low: 3.0, med: 4.0, high: 5.0 },
     { name: "Caminata en la cinta", low: 2.5, med: 3.8, high: 5.0 },
-    { name: "Caminata nÃ³rdica", low: 3.0, med: 4.8, high: 6.0 },
-    { name: "Caminata rÃ¡pida", low: 3.8, med: 5.0, high: 6.5 },
-    { name: "Ciclismo de montaÃ±a", low: 5.5, med: 8.5, high: 14.0 },
+    { name: "Caminata nórdica", low: 3.0, med: 4.8, high: 6.0 },
+    { name: "Caminata rápida", low: 3.8, med: 5.0, high: 6.5 },
+    { name: "Ciclismo de montaña", low: 5.5, med: 8.5, high: 14.0 },
     { name: "Ciclismo de ruta", low: 6.0, med: 9.0, high: 12.0 },
     { name: "Ciclismo manual", low: 3.0, med: 5.0, high: 7.5 },
     { name: "Ciclismo urbano", low: 4.0, med: 6.8, high: 10.0 },
@@ -2697,57 +2931,57 @@ function DiarioTab() {
     { name: "Correr", low: 7.0, med: 10.0, high: 15.0 },
     { name: "Correr en cinta", low: 7.0, med: 9.8, high: 14.0 },
     { name: "Correr en la arena", low: 8.0, med: 11.5, high: 16.0 },
-    { name: "CrÃ­quet", low: 3.0, med: 4.8, high: 6.0 },
+    { name: "Críquet", low: 3.0, med: 4.8, high: 6.0 },
     { name: "Crossfit", low: 5.0, med: 8.0, high: 12.0 },
     { name: "Curling", low: 2.5, med: 3.5, high: 4.5 },
-    { name: "ElÃ­ptico", low: 4.5, med: 7.0, high: 10.0 },
+    { name: "Elíptico", low: 4.5, med: 7.0, high: 10.0 },
     { name: "Entrenamiento de fuerza", low: 3.0, med: 5.0, high: 6.0 },
     { name: "Entrenamiento por intervalos", low: 4.5, med: 7.0, high: 10.0 },
     { name: "Entrenamiento por intervalos intenso", low: 6.0, med: 9.5, high: 13.0 },
-    { name: "EquitaciÃ³n", low: 3.0, med: 5.5, high: 8.0 },
+    { name: "Equitación", low: 3.0, med: 5.5, high: 8.0 },
     { name: "Escalada", low: 5.0, med: 8.0, high: 11.0 },
     { name: "Escalador", low: 4.5, med: 7.5, high: 10.0 },
     { name: "Esgrima", low: 4.0, med: 6.0, high: 8.0 },
-    { name: "EsquÃ­", low: 4.5, med: 7.0, high: 9.5 },
-    { name: "EsquÃ­ con raquetas de nieve", low: 5.0, med: 8.0, high: 11.0 },
-    { name: "EsquÃ­ cuesta abajo", low: 4.0, med: 6.0, high: 8.0 },
-    { name: "EsquÃ­ de fondo", low: 5.5, med: 9.0, high: 12.5 },
+    { name: "Esquí", low: 4.5, med: 7.0, high: 9.5 },
+    { name: "Esquí con raquetas de nieve", low: 5.0, med: 8.0, high: 11.0 },
+    { name: "Esquí cuesta abajo", low: 4.0, med: 6.0, high: 8.0 },
+    { name: "Esquí de fondo", low: 5.5, med: 9.0, high: 12.5 },
     { name: "Freeride", low: 5.0, med: 7.5, high: 10.0 },
     { name: "Frisbee", low: 3.0, med: 4.0, high: 5.0 },
-    { name: "FÃºtbol", low: 5.0, med: 7.0, high: 10.0 },
-    { name: "FÃºtbol americano", low: 4.5, med: 7.0, high: 9.0 },
-    { name: "FÃºtbol australiano", low: 5.0, med: 7.5, high: 10.5 },
+    { name: "Fútbol", low: 5.0, med: 7.0, high: 10.0 },
+    { name: "Fútbol americano", low: 4.5, med: 7.0, high: 9.0 },
+    { name: "Fútbol australiano", low: 5.0, med: 7.5, high: 10.5 },
     { name: "Gimnasia", low: 3.0, med: 4.0, high: 6.0 },
     { name: "Golf", low: 2.5, med: 3.5, high: 4.5 },
     { name: "Handball", low: 5.0, med: 8.0, high: 11.0 },
     { name: "Hockey", low: 5.0, med: 7.8, high: 10.0 },
     { name: "Hyrox", low: 6.0, med: 9.0, high: 13.0 },
-    { name: "JardinerÃ­a", low: 2.5, med: 3.8, high: 5.0 },
+    { name: "Jardinería", low: 2.5, med: 3.8, high: 5.0 },
     { name: "Kayakismo", low: 3.0, med: 5.0, high: 8.0 },
     { name: "Kickboxing", low: 5.5, med: 8.0, high: 11.5 },
-    { name: "Kite esquÃ­", low: 5.0, med: 7.5, high: 10.0 },
+    { name: "Kite esquí", low: 5.0, med: 7.5, high: 10.0 },
     { name: "Kitesurf", low: 5.0, med: 7.8, high: 11.0 },
     { name: "Levantamiento de pesas", low: 3.0, med: 5.0, high: 6.0 },
-    { name: "MÃ¡quina de ejercicios", low: 3.0, med: 4.5, high: 6.0 },
-    { name: "MÃ¡quina de remo", low: 3.5, med: 6.0, high: 8.5 },
-    { name: "MeditaciÃ³n", low: 1.0, med: 1.2, high: 1.5 },
-    { name: "MonopatÃ­n", low: 3.0, med: 5.0, high: 6.5 },
-    { name: "NataciÃ³n", low: 5.3, med: 8.0, high: 10.0 },
-    { name: "NataciÃ³n en aguas abiertas", low: 6.0, med: 8.5, high: 11.0 },
-    { name: "NataciÃ³n en piscinas", low: 5.0, med: 7.5, high: 9.5 },
+    { name: "Máquina de ejercicios", low: 3.0, med: 4.5, high: 6.0 },
+    { name: "Máquina de remo", low: 3.5, med: 6.0, high: 8.5 },
+    { name: "Meditación", low: 1.0, med: 1.2, high: 1.5 },
+    { name: "Monopatín", low: 3.0, med: 5.0, high: 6.5 },
+    { name: "Natación", low: 5.3, med: 8.0, high: 10.0 },
+    { name: "Natación en aguas abiertas", low: 6.0, med: 8.5, high: 11.0 },
+    { name: "Natación en piscinas", low: 5.0, med: 7.5, high: 9.5 },
     { name: "Otro", low: 3.0, med: 5.0, high: 7.0 },
     { name: "P90x", low: 5.5, med: 7.8, high: 10.5 },
     { name: "Parapente", low: 2.0, med: 2.8, high: 3.5 },
     { name: "Patinaje", low: 4.0, med: 6.0, high: 8.0 },
-    { name: "Patinaje en lÃ­nea", low: 4.5, med: 7.0, high: 9.8 },
+    { name: "Patinaje en línea", low: 4.5, med: 7.0, high: 9.8 },
     { name: "Patinaje en pista cubierta", low: 4.0, med: 6.5, high: 8.5 },
-    { name: "Patinaje nÃ³rdico", low: 5.0, med: 7.5, high: 10.5 },
+    { name: "Patinaje nórdico", low: 5.0, med: 7.5, high: 10.5 },
     { name: "Patinaje sobre hielo", low: 3.5, med: 5.5, high: 7.5 },
     { name: "Pesas rusas", low: 4.0, med: 7.0, high: 9.5 },
     { name: "Pilates", low: 2.5, med: 3.5, high: 5.0 },
     { name: "Polo", low: 4.0, med: 6.0, high: 8.0 },
-    { name: "Polo acÃºstico", low: 3.0, med: 4.5, high: 6.0 },
-    { name: "RÃ¡quetbol", low: 5.0, med: 7.5, high: 10.0 },
+    { name: "Polo acústico", low: 3.0, med: 4.5, high: 6.0 },
+    { name: "Ráquetbol", low: 5.0, med: 7.5, high: 10.0 },
     { name: "Remo", low: 3.5, med: 6.0, high: 8.5 },
     { name: "Rugby", low: 5.0, med: 8.0, high: 11.0 },
     { name: "Saltar la cuerda", low: 8.0, med: 11.0, high: 14.0 },
@@ -2778,20 +3012,20 @@ function DiarioTab() {
 
   const STREAK_FAQ = [
     {
-      q: "Â¿QuÃ© es la racha y cÃ³mo se mide?",
-      a: "La Racha de Actividad ayuda a mantener tu constancia fÃ­sica a largo plazo. En lugar de evaluar dÃ­a a dÃ­a, la app calcula un promedio ponderado de 7 dÃ­as de tu actividad fÃ­sica (caminar, correr, gimnasio, etc.), donde las actividades mÃ¡s recientes tienen mayor peso."
+      q: "¿Qué es la racha y cómo se mide?",
+      a: "La Racha de Actividad ayuda a mantener tu constancia física a largo plazo. En lugar de evaluar día a día, la app calcula un promedio ponderado de 7 días de tu actividad física (caminar, correr, gimnasio, etc.), donde las actividades más recientes tienen mayor peso."
     },
     {
-      q: "Â¿CÃ³mo se mantiene y cuÃ¡ndo se pierde?",
-      a: "Para mantener tu racha, tu promedio de 7 dÃ­as debe estar en el nivel Saludable (150 Puntos o mÃ¡s). Si cae por debajo de este lÃ­mite, tu racha vuelve a cero. No obstante, Â¡se permite descansar! Si te saltas un dÃ­a pero tu promedio sigue arriba de 150, tu racha no se romperÃ¡."
+      q: "¿Cómo se mantiene y cuándo se pierde?",
+      a: "Para mantener tu racha, tu promedio de 7 días debe estar en el nivel Saludable (150 Puntos o más). Si cae por debajo de este límite, tu racha vuelve a cero. No obstante, ¡se permite descansar! Si te saltas un día pero tu promedio sigue arriba de 150, tu racha no se romperá."
     },
     {
-      q: "Â¿QuÃ© es la Curva de Actividad y la LÃ­nea Base?",
-      a: "La Curva de Actividad grafica tu promedio de Puntos de Actividad de los Ãºltimos 7 dÃ­as. La LÃ­nea Base Saludable (150 puntos) combina las pautas de actividad fÃ­sica diaria de la OrganizaciÃ³n Mundial de la Salud (OMS) con el MET."
+      q: "¿Qué es la Curva de Actividad y la Línea Base?",
+      a: "La Curva de Actividad grafica tu promedio de Puntos de Actividad de los últimos 7 días. La Línea Base Saludable (150 puntos) combina las pautas de actividad física diaria de la Organización Mundial de la Salud (OMS) con el MET."
     },
     {
-      q: "Â¿CÃ³mo se calculan los Puntos de Actividad?",
-      a: "Los puntos diarios son el promedio ponderado de los minutos MET. El MET (Equivalente MetabÃ³lico) mide la energÃ­a que consume una actividad comparada con el reposo. Los minutos MET de cada ejercicio se calculan multiplicando el valor MET de la actividad (segÃºn su intensidad) por los minutos entrenados."
+      q: "¿Cómo se calculan los Puntos de Actividad?",
+      a: "Los puntos diarios son el promedio ponderado de los minutos MET. El MET (Equivalente Metabólico) mide la energía que consume una actividad comparada con el reposo. Los minutos MET de cada ejercicio se calculan multiplicando el valor MET de la actividad (según su intensidad) por los minutos entrenados."
     }
   ];
 
@@ -2858,25 +3092,25 @@ function DiarioTab() {
         fat: "18g",
         tags: ["Alta en Fibra", "Grasas Saludables"],
         tag: "Alta en Fibra",
-        coachFeedback: "Excelente balance de grasas saludables. ConsiderÃ¡ agregar una fuente de proteÃ­na la prÃ³xima vez para prolongar la saciedad.",
+        coachFeedback: "Excelente balance de grasas saludables. Considerá agregar una fuente de proteína la próxima vez para prolongar la saciedad.",
       },
       {
         id: "2",
         date: "2026-07-15",
         time: "02:00 PM",
-        title: "Registro de HidrataciÃ³n",
+        title: "Registro de Hidratación",
         subtitle: "Control de Rutina",
         type: "hydration",
         img: null,
         kcal: 0,
         tag: "Armstrong 5",
-        coachFeedback: "Nivel 5 indica deshidrataciÃ³n leve. Toma 500ml de agua ahora mismo para compensar el entrenamiento o la actividad.",
+        coachFeedback: "Nivel 5 indica deshidratación leve. Toma 500ml de agua ahora mismo para compensar el entrenamiento o la actividad.",
       },
       {
         id: "3",
         date: "2026-07-15",
         time: "08:15 AM",
-        title: "CafÃ© Negro",
+        title: "Café Negro",
         subtitle: "Desayuno",
         type: "coffee",
         img: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=150&q=80",
@@ -2884,8 +3118,8 @@ function DiarioTab() {
         protein: "0g",
         carbs: "0g",
         fat: "0g",
-        tags: ["Sin AzÃºcar", "Cero CalorÃ­as"],
-        tag: "Sin AzÃºcar",
+        tags: ["Sin Azúcar", "Cero Calorías"],
+        tag: "Sin Azúcar",
         coachFeedback: null,
       },
       {
@@ -2900,9 +3134,9 @@ function DiarioTab() {
         protein: "24g",
         carbs: "4g",
         fat: "22g",
-        tags: ["Alta en ProteÃ­nas", "Baja en Carbohidratos"],
-        tag: "Alta en ProteÃ­nas",
-        coachFeedback: "Muy buena elecciÃ³n proteica por la maÃ±ana. Mantener un desayuno con bajo Ã­ndice glucÃ©mico estabiliza tu energÃ­a por horas.",
+        tags: ["Alta en Proteínas", "Baja en Carbohidratos"],
+        tag: "Alta en Proteínas",
+        coachFeedback: "Muy buena elección proteica por la mañana. Mantener un desayuno con bajo índice glucémico estabiliza tu energía por horas.",
       },
       {
         id: "5",
@@ -2918,13 +3152,13 @@ function DiarioTab() {
         fat: "15g",
         tags: ["Grasas Saludables", "Baja en Carbohidratos"],
         tag: "Grasas Saludables",
-        coachFeedback: "El snack de frutos secos aporta Ã¡cidos grasos esenciales y saciedad antes de tu cena.",
+        coachFeedback: "El snack de frutos secos aporta ácidos grasos esenciales y saciedad antes de tu cena.",
       },
       {
         id: "6",
         date: "2026-07-13",
         time: "08:30 AM",
-        title: "CafÃ© con Leche y Tostadas de Masa Madre",
+        title: "Café con Leche y Tostadas de Masa Madre",
         subtitle: "Desayuno",
         type: "food",
         img: null,
@@ -2932,15 +3166,15 @@ function DiarioTab() {
         protein: "10g",
         carbs: "40g",
         fat: "8g",
-        tags: ["EnergÃ­a Compleja", "Microbiota Amigable"],
-        tag: "EnergÃ­a Compleja",
-        coachFeedback: "La masa madre es excelente para tu microbiota digestiva. Buena combinaciÃ³n energÃ©tica para arrancar el dÃ­a.",
+        tags: ["Energía Compleja", "Microbiota Amigable"],
+        tag: "Energía Compleja",
+        coachFeedback: "La masa madre es excelente para tu microbiota digestiva. Buena combinación energética para arrancar el día.",
       },
       {
         id: "7",
         date: "2026-07-13",
         time: "08:30 PM",
-        title: "SalmÃ³n Grillado con EspÃ¡rragos",
+        title: "Salmón Grillado con Espárragos",
         subtitle: "Cena",
         type: "food",
         img: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=600&q=80",
@@ -2948,9 +3182,9 @@ function DiarioTab() {
         protein: "44g",
         carbs: "6g",
         fat: "36g",
-        tags: ["Alta en ProteÃ­nas", "Baja en Carbohidratos", "Omega 3"],
-        tag: "Alta en ProteÃ­nas",
-        coachFeedback: "Excelente cena ligera y rica en grasas saludables que promueven la recuperaciÃ³n celular durante el sueÃ±o profundo.",
+        tags: ["Alta en Proteínas", "Baja en Carbohidratos", "Omega 3"],
+        tag: "Alta en Proteínas",
+        coachFeedback: "Excelente cena ligera y rica en grasas saludables que promueven la recuperación celular durante el sueño profundo.",
       }
     ];
   });
@@ -2979,20 +3213,42 @@ function DiarioTab() {
       exercisesTrained.forEach(ex => {
         if (!ex.muscles) return;
         const text = ex.muscles.toLowerCase();
-        if (text.includes("biceps") || text.includes("bÃ­ceps")) next["biceps"] = Math.max(0, next["biceps"] - 35);
-        if (text.includes("triceps") || text.includes("trÃ­ceps")) next["triceps"] = Math.max(0, next["triceps"] - 35);
+        if (text.includes("biceps") || text.includes("bíceps")) next["biceps"] = Math.max(0, next["biceps"] - 35);
+        if (text.includes("triceps") || text.includes("tríceps")) next["triceps"] = Math.max(0, next["triceps"] - 35);
         if (text.includes("pectoral") || text.includes("pecho")) next["pecho"] = Math.max(0, next["pecho"] - 35);
         if (text.includes("dorsal") || text.includes("espalda")) next["espalda"] = Math.max(0, next["espalda"] - 35);
         if (text.includes("lumbar") || text.includes("baja")) next["espalda-baja"] = Math.max(0, next["espalda-baja"] - 35);
         if (text.includes("deltoides") || text.includes("hombro")) next["hombros"] = Math.max(0, next["hombros"] - 35);
         if (text.includes("abdominal") || text.includes("abs")) next["abdominales"] = Math.max(0, next["abdominales"] - 35);
-        if (text.includes("cuadriceps") || text.includes("cuÃ¡driceps")) next["cuadriceps"] = Math.max(0, next["cuadriceps"] - 35);
+        if (text.includes("cuadriceps") || text.includes("cuádriceps")) next["cuadriceps"] = Math.max(0, next["cuadriceps"] - 35);
         if (text.includes("femoral") || text.includes("isquiotibiales")) next["isquiotibiales"] = Math.max(0, next["isquiotibiales"] - 35);
-        if (text.includes("gluteo") || text.includes("glÃºteo")) next["gluteos"] = Math.max(0, next["gluteos"] - 35);
+        if (text.includes("gluteo") || text.includes("glúteo")) next["gluteos"] = Math.max(0, next["gluteos"] - 35);
         if (text.includes("gemelo")) next["gemelos"] = Math.max(0, next["gemelos"] - 35);
       });
       return next;
     });
+
+    const dayLabels = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+    const todayLabel = dayLabels[new Date().getDay()];
+    setActivityData(prev => prev.map(item => 
+      item.day === todayLabel ? { ...item, puntos: item.puntos + 185 } : item
+    ));
+
+    const newWorkoutCard = {
+      id: `workout-ai-${Date.now()}`,
+      date: new Date().toISOString().split("T")[0],
+      time: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+      title: "Entrenamiento IA Completado",
+      subtitle: "Rutina Inteligente",
+      type: "activity",
+      img: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=600&q=80",
+      kcal: 380,
+      tag: "185 Pts MET",
+      coachFeedback: "Completaste tu rutina personalizada de musculación generada por la IA. Excelente técnica y volumen de trabajo. Tus niveles de recuperación muscular se han actualizado."
+    };
+
+    setUserTimelineItems(prev => [newWorkoutCard, ...prev]);
+    toast.success("🏋️ Registraste tu entrenamiento con IA en tu diario");
   };
 
   const [isFabOpen, setIsFabOpen] = useState(false);
@@ -3019,7 +3275,7 @@ function DiarioTab() {
     return () => clearTimeout(timer);
   }, [activeModal, foodAnalysisStep]);
 
-  // Motor de respiraciÃ³n guiada a 60 FPS sincronizado con reloj de tiempo real (Date.now())
+  // Motor de respiración guiada a 60 FPS sincronizado con reloj de tiempo real (Date.now())
   useEffect(() => {
     let animationFrameId: number;
     let isCompleted = false;
@@ -3038,24 +3294,24 @@ function DiarioTab() {
         const phaseMs = totalElapsed % 16000;
 
         if (phaseMs < 4000) {
-          // 1. Inhala (0s - 4s): ExpansiÃ³n fluida desde 0.60 hasta 1.00
+          // 1. Inhala (0s - 4s): Expansión fluida desde 0.60 hasta 1.00
           const progress = phaseMs / 4000;
           setBreathingPhase("inhale");
           setBreathingSeconds(Math.ceil((4000 - phaseMs) / 1000) || 1);
           setBreathingOrbScale(0.60 + progress * 0.40);
         } else if (phaseMs < 8000) {
-          // 2. Pausa Lleno (4s - 8s): RetenciÃ³n estÃ¡tica en 1.00
+          // 2. Pausa Lleno (4s - 8s): Retención estática en 1.00
           setBreathingPhase("hold1");
           setBreathingSeconds(Math.ceil((8000 - phaseMs) / 1000) || 1);
           setBreathingOrbScale(1.00);
         } else if (phaseMs < 12000) {
-          // 3. Exhala (8s - 12s): ContracciÃ³n fluida desde 1.00 hasta 0.60
+          // 3. Exhala (8s - 12s): Contracción fluida desde 1.00 hasta 0.60
           const progress = (phaseMs - 8000) / 4000;
           setBreathingPhase("exhale");
           setBreathingSeconds(Math.ceil((12000 - phaseMs) / 1000) || 1);
           setBreathingOrbScale(1.00 - progress * 0.40);
         } else {
-          // 4. Pausa VacÃ­o (12s - 16s): RetenciÃ³n estÃ¡tica en 0.60
+          // 4. Pausa Vacío (12s - 16s): Retención estática en 0.60
           setBreathingPhase("hold2");
           setBreathingSeconds(Math.ceil((16000 - phaseMs) / 1000) || 1);
           setBreathingOrbScale(0.60);
@@ -3105,9 +3361,9 @@ function DiarioTab() {
       protein: "32g",
       carbs: "54g",
       fat: "12g",
-      tags: ["MÃ­nimamente Procesado", "Score NRF 9.3"],
+      tags: ["Mínimamente Procesado", "Score NRF 9.3"],
       tag: "Score NRF 9.3 (88/100)",
-      coachFeedback: "Excelente balance de proteÃ­nas y fibra en la sopa. ConsiderÃ¡ controlar el aporte de sodio del caldo para optimizar tu perfil diario.",
+      coachFeedback: "Excelente balance de proteínas y fibra en la sopa. Considerá controlar el aporte de sodio del caldo para optimizar tu perfil diario.",
     };
     setUserTimelineItems(prev => [newFood, ...prev]);
 
@@ -3120,22 +3376,22 @@ function DiarioTab() {
       if (level <= 2) {
         return {
           tag: `Armstrong ${level}`,
-          feedback: `Nivel ${level} indica hidrataciÃ³n Ã³ptima. Â¡Excelente trabajo manteniendo tu cuerpo equilibrado!`
+          feedback: `Nivel ${level} indica hidratación óptima. ¡Excelente trabajo manteniendo tu cuerpo equilibrado!`
         };
       } else if (level <= 4) {
         return {
           tag: `Armstrong ${level}`,
-          feedback: `Nivel ${level} indica hidrataciÃ³n normal tirando a levemente baja. Bebe un vaso de agua (250ml) ahora para mantener el estado Ã³ptimo.`
+          feedback: `Nivel ${level} indica hidratación normal tirando a levemente baja. Bebe un vaso de agua (250ml) ahora para mantener el estado óptimo.`
         };
       } else if (level <= 6) {
         return {
           tag: `Armstrong ${level}`,
-          feedback: `Nivel ${level} indica deshidrataciÃ³n leve. Toma 500ml de agua ahora mismo para compensar el entrenamiento o la actividad.`
+          feedback: `Nivel ${level} indica deshidratación leve. Toma 500ml de agua ahora mismo para compensar el entrenamiento o la actividad.`
         };
       } else {
         return {
           tag: `Armstrong ${level}`,
-          feedback: `Â¡AtenciÃ³n! Nivel ${level} indica deshidrataciÃ³n severa. Consume de 750ml a 1L de agua, preferiblemente con electrolitos, y modera el esfuerzo fÃ­sico.`
+          feedback: `¡Atención! Nivel ${level} indica deshidratación severa. Consume de 750ml a 1L de agua, preferiblemente con electrolitos, y modera el esfuerzo físico.`
         };
       }
     };
@@ -3204,7 +3460,7 @@ function DiarioTab() {
           img: null,
           kcal: 0,
           tag: "Inicio de Fase de Luz",
-          coachFeedback: "Amanecer biolÃ³gico. Tu cuerpo frena la melatonina e inicia la secreciÃ³n de cortisol. Momento ideal para exponerte a la luz natural y activar tu metabolismo.",
+          coachFeedback: "Amanecer biológico. Tu cuerpo frena la melatonina e inicia la secreción de cortisol. Momento ideal para exponerte a la luz natural y activar tu metabolismo.",
         });
       }
 
@@ -3213,13 +3469,13 @@ function DiarioTab() {
           id: `circadian-peak-${d}`,
           date: d,
           time: peakTime,
-          title: "Pico MetabÃ³lico",
+          title: "Pico Metabólico",
           subtitle: "Eficiencia Digestiva",
           type: "peak",
           img: null,
           kcal: 0,
-          tag: "MÃ¡xima Sensibilidad",
-          coachFeedback: "Pico de sensibilidad a la insulina y temperatura corporal. Tu capacidad de asimilaciÃ³n de nutrientes es Ã³ptima. Excelente momento para tu comida principal.",
+          tag: "Máxima Sensibilidad",
+          coachFeedback: "Pico de sensibilidad a la insulina y temperatura corporal. Tu capacidad de asimilación de nutrientes es óptima. Excelente momento para tu comida principal.",
         });
       }
 
@@ -3234,7 +3490,7 @@ function DiarioTab() {
           img: null,
           kcal: 0,
           tag: "Inicio de Fase Oscura",
-          coachFeedback: "Atardecer biolÃ³gico. Comienza la transiciÃ³n hacia la producciÃ³n de melatonina. Se recomienda cenar ligero y evitar pantallas de luz azul intensa.",
+          coachFeedback: "Atardecer biológico. Comienza la transición hacia la producción de melatonina. Se recomienda cenar ligero y evitar pantallas de luz azul intensa.",
         });
       }
     });
@@ -3245,7 +3501,7 @@ function DiarioTab() {
       }
       return parseTimeToMinutes(b.time) - parseTimeToMinutes(a.time);
     });
-  }, [sunTimes, hydrationLevel, customActivities]);
+  }, [userTimelineItems, sunTimes, hydrationLevel, customActivities]);
 
   const dynamicAdherence = React.useMemo(() => {
     const foodLogsByDate: { [date: string]: number } = {};
@@ -3302,7 +3558,7 @@ function DiarioTab() {
       <html lang="es">
       <head>
         <meta charset="utf-8">
-        <title>Reporte de Bienestar y AlimentaciÃ³n â€” Shakerfy</title>
+        <title>Reporte de Bienestar y Alimentación — Shakerfy</title>
         <style>
           body {
             font-family: system-ui, -apple-system, sans-serif;
@@ -3430,12 +3686,12 @@ function DiarioTab() {
         <div class="header">
           <div>
             <div class="logo">Shakerfy</div>
-            <div style="font-size: 12px; color: #64748b; margin-top: 4px;">Pulse Smart â€” Wellness Lab</div>
+            <div style="font-size: 12px; color: #64748b; margin-top: 4px;">Pulse Smart — Wellness Lab</div>
           </div>
           <div class="date" style="text-align: right;">
-            <div><strong>Usuario:</strong> AgustÃ­n</div>
-            <div style="margin-top: 4px;"><strong>Rango:</strong> ${insightPeriod === "day" ? "Hoy" : insightPeriod === "week" ? "Ãšltimos 7 dÃ­as" : insightPeriod === "month" ? "Ãšltimo mes" : "Ãšltimo trimestre"}</div>
-            <div style="margin-top: 4px;"><strong>Fecha EmisiÃ³n:</strong> ${new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+            <div><strong>Usuario:</strong> Agustín</div>
+            <div style="margin-top: 4px;"><strong>Rango:</strong> ${insightPeriod === "day" ? "Hoy" : insightPeriod === "week" ? "Últimos 7 días" : insightPeriod === "month" ? "Último mes" : "Último trimestre"}</div>
+            <div style="margin-top: 4px;"><strong>Fecha Emisión:</strong> ${new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
           </div>
         </div>
 
@@ -3448,7 +3704,7 @@ function DiarioTab() {
           <div class="card">
             <div class="card-title">Estabilidad de Horarios</div>
             <div class="card-value">95%</div>
-            <p style="font-size: 11px; color: #64748b; margin-top: 5px;">AlineaciÃ³n de tus ingestas con tus ventanas biolÃ³gicas Ã³ptimas.</p>
+            <p style="font-size: 11px; color: #64748b; margin-top: 5px;">Alineación de tus ingestas con tus ventanas biológicas óptimas.</p>
           </div>
         </div>
 
@@ -3469,7 +3725,7 @@ function DiarioTab() {
           </div>
 
           <div class="card" style="background: white;">
-            <div class="card-title" style="border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 12px;">SÃ­ntomas FÃ­sicos Reportados</div>
+            <div class="card-title" style="border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 12px;">Síntomas Físicos Reportados</div>
             ${SYMPTOMS_DATA.map(d => {
               const maxCount = Math.max(...SYMPTOMS_DATA.map(x => x.count));
               const pct = Math.round((d.count / maxCount) * 100);
@@ -3496,7 +3752,7 @@ function DiarioTab() {
             <tr>
               <th>Fecha</th>
               <th>Hora</th>
-              <th>CategorÃ­a</th>
+              <th>Categoría</th>
               <th>Detalle / Registro</th>
               <th>Impacto / Feedback Nutricional</th>
             </tr>
@@ -3508,7 +3764,7 @@ function DiarioTab() {
                 <td style="font-weight: 600;">${item.time}</td>
                 <td>
                   <span class="badge badge-${item.type === 'food' ? 'food' : item.type === 'hydration' ? 'hydration' : item.type === 'coffee' ? 'coffee' : item.type === 'activity' ? 'activity' : 'circadian'}">
-                    ${item.type === 'food' ? 'Comida' : item.type === 'hydration' ? 'HidrataciÃ³n' : item.type === 'coffee' ? 'CafÃ©' : item.type === 'activity' ? 'Actividad' : 'Hito Solar'}
+                    ${item.type === 'food' ? 'Comida' : item.type === 'hydration' ? 'Hidratación' : item.type === 'coffee' ? 'Café' : item.type === 'activity' ? 'Actividad' : 'Hito Solar'}
                   </span>
                 </td>
                 <td><strong>${item.title}</strong>${item.kcal > 0 ? ` (${item.kcal} kcal)` : ''}</td>
@@ -3519,7 +3775,7 @@ function DiarioTab() {
         </table>
 
         <div class="disclaimer">
-          <strong>Aviso MÃ©dico & Disclaimer:</strong> Este documento es un resumen de registros de hÃ¡bitos y estimaciones circadianas con fines informativos de autoconocimiento. No constituye un diagnÃ³stico mÃ©dico, prescripciÃ³n clÃ­nica ni asesoramiento nutricional formal. Por favor, consulte con su mÃ©dico, nutricionista o profesional de la salud matriculado antes de realizar cambios significativos en su dieta, rutina de ayuno o hÃ¡bitos biolÃ³gicos.
+          <strong>Aviso Médico & Disclaimer:</strong> Este documento es un resumen de registros de hábitos y estimaciones circadianas con fines informativos de autoconocimiento. No constituye un diagnóstico médico, prescripción clínica ni asesoramiento nutricional formal. Por favor, consulte con su médico, nutricionista o profesional de la salud matriculado antes de realizar cambios significativos en su dieta, rutina de ayuno o hábitos biológicos.
         </div>
 
         <script>
@@ -3535,407 +3791,43 @@ function DiarioTab() {
     printWindow.document.close();
   };
 
-  const CustomSlider = ({ value, onChange, labelLeft, labelRight, colorClass }: any) => {
-    const handleSliderClick = (e: React.MouseEvent<HTMLDivElement>) => {
-      const rect = e.currentTarget.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const pct = Math.round((x / rect.width) * 100);
-      onChange(Math.max(0, Math.min(100, pct)));
-    };
-
-    return (
-      <div className="space-y-2">
-        <div className="flex justify-between text-xs text-muted-foreground tracking-wide font-bold uppercase select-none">
-          <span>{labelLeft}</span>
-          <span className="text-foreground">{labelRight}</span>
-        </div>
-        <div 
-          onClick={handleSliderClick}
-          className="relative h-12 bg-slate-100 dark:bg-slate-900/60 rounded-xl overflow-hidden group cursor-pointer border border-border select-none flex items-center"
-        >
-          <div 
-            className={`absolute top-0 left-0 h-full bg-gradient-to-r ${colorClass} rounded-xl transition-all duration-300`} 
-            style={{ width: `${value}%` }}
-          />
-          <div 
-            className="absolute top-1/2 -translate-y-1/2 w-1.5 h-6 bg-white border border-slate-300 dark:border-slate-700 rounded-full transform -translate-x-1/2 transition-all duration-300 cursor-col-resize shadow-sm"
-            style={{ left: `${value}%` }}
-          />
-        </div>
-      </div>
-    );
-  };
-
   return (
-    <div className="mx-auto w-full space-y-5 sm:space-y-8 pb-20 max-w-2xl">
-      {/* Header Section */}
-      <header className="flex items-center justify-start">
-        <div className="flex p-1 bg-secondary/35 rounded-xl border border-border overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-          <button 
-            type="button"
-            onClick={() => setSubTab("diario")}
-            className={`shrink-0 px-3 sm:px-4 py-2 text-[11px] sm:text-xs font-bold rounded-lg transition ${
-              subTab === "diario" 
-                ? "bg-foreground text-background" 
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Diario
-          </button>
-          <button 
-            type="button"
-            onClick={() => setSubTab("recuperacion")}
-            className={`shrink-0 px-3 sm:px-4 py-2 text-[11px] sm:text-xs font-bold rounded-lg transition ${
-              subTab === "recuperacion" 
-                ? "bg-foreground text-background" 
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            RecuperaciÃ³n
-          </button>
-          <button 
-            type="button"
-            onClick={() => setSubTab("analisis")}
-            className={`shrink-0 px-3 sm:px-4 py-2 text-[11px] sm:text-xs font-bold rounded-lg transition ${
-              subTab === "analisis" 
-                ? "bg-foreground text-background" 
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            AlimentaciÃ³n
-          </button>
-          <button 
-            type="button"
-            onClick={() => setSubTab("recetas")}
-            className={`shrink-0 px-3 sm:px-4 py-2 text-[11px] sm:text-xs font-bold rounded-lg transition ${
-              subTab === "recetas" 
-                ? "bg-foreground text-background" 
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Mis recetas
-          </button>
+    <div className={`mx-auto w-full space-y-5 sm:space-y-8 pb-20 max-w-2xl transition-transform duration-300 ${isShaking ? "animate-bounce scale-[0.98]" : ""}`}>
+      {/* Header Section (Sticky Equal-Width Subtabs) */}
+      <header className="sticky top-16 z-30 bg-background/80 backdrop-blur-xl border-b border-border/60 pt-3 pb-0 transition-all">
+        <div className="grid grid-cols-5 w-full select-none text-center">
+          {[
+            { id: "diario", label: "Diario" },
+            { id: "analisis", label: "Alimentación" },
+            { id: "sueno", label: "Sueño" },
+            { id: "recuperacion", label: "Recuperación" },
+            { id: "recetas", label: "Recetas" },
+          ].map((tab) => {
+            const isActive = subTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setSubTab(tab.id as any)}
+                className={`pb-3 text-[11px] sm:text-xs font-bold border-b-2 transition-all whitespace-nowrap text-center justify-center flex items-center cursor-pointer px-1 ${
+                  isActive
+                    ? "border-foreground text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
       </header>
 
       {subTab === "diario" && (
         <>
-          {/* Header Horizontal Swipeable Cards Container */}
-          <div className="mb-6 space-y-2">
-            {/* Horizontal Swipe Scroll Container (Scrollbar oculto) */}
-            <div
-              ref={carouselRef}
-              onScroll={(e) => {
-                const width = e.currentTarget.clientWidth;
-                if (width > 0) {
-                  const idx = Math.round(e.currentTarget.scrollLeft / width);
-                  if (idx !== cardSlideIndex) setCardSlideIndex(idx);
-                }
-              }}
-              className="flex overflow-x-auto snap-x snap-mandatory transition-all rounded-3xl [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-              style={{ scrollSnapType: "x mandatory" }}
-            >
-              {/* SLIDE 1: NutriciÃ³n & CalorÃ­as (Cal AI) */}
-              <div className="w-full shrink-0 snap-center min-w-full">
-                <div className="bg-card border border-border/80 rounded-3xl p-5 sm:p-6 space-y-4 text-card-foreground shadow-xs hover:shadow-md transition-all">
-                  {/* Top Calories Card */}
-                  <div className="bg-secondary/40 dark:bg-secondary/20 border border-border/60 rounded-2xl p-5 sm:p-6 flex items-center justify-between hover:border-foreground/20 transition-all">
-                    <div className="space-y-1">
-                      <div className="text-4xl sm:text-5xl font-bold tracking-tight text-foreground font-sans">
-                        2500
-                      </div>
-                      <div className="text-xs text-muted-foreground font-medium">Calories left</div>
-                      <div className="text-[10px] text-muted-foreground/70 font-mono mt-0.5">
-                        1,900 - 2,150 kcal
-                      </div>
-                    </div>
-
-                    {/* Big Circular Ring */}
-                    <div className="shrink-0">
-                      <CircularProgress percent={75} color="#f97316" size={84} strokeWidth={8} trackClass="stroke-zinc-200 dark:stroke-zinc-800">
-                        <div className="w-9 h-9 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center shadow-xs">
-                          <Flame className="w-4 h-4 text-orange-500 fill-orange-500" />
-                        </div>
-                      </CircularProgress>
-                    </div>
-                  </div>
-
-                  {/* 3 Macro Cards Row */}
-                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                    {/* Protein Card */}
-                    <div className="bg-secondary/40 dark:bg-secondary/20 border border-border/60 rounded-2xl p-3 sm:p-4 flex flex-col justify-between h-[140px] sm:h-[155px] hover:border-foreground/20 hover:-translate-y-0.5 transition-all">
-                      <div>
-                        <div className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground font-sans tracking-tight">
-                          45g
-                        </div>
-                        <div className="text-[10px] sm:text-[11px] text-muted-foreground font-medium leading-tight mt-0.5">
-                          Protein over
-                        </div>
-                        <div className="text-[9px] sm:text-[10px] text-muted-foreground/70 font-mono mt-0.5">80-120g</div>
-                      </div>
-                      <div className="flex justify-center">
-                        <CircularProgress percent={85} color="#ff4d6d" size={48} strokeWidth={5} trackClass="stroke-zinc-200 dark:stroke-zinc-800">
-                          <div className="w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center shadow-xs">
-                            <Zap className="w-3 h-3 text-[#ff4d6d] fill-[#ff4d6d]" />
-                          </div>
-                        </CircularProgress>
-                      </div>
-                    </div>
-
-                    {/* Carbs Card */}
-                    <div className="bg-secondary/40 dark:bg-secondary/20 border border-border/60 rounded-2xl p-3 sm:p-4 flex flex-col justify-between h-[140px] sm:h-[155px] hover:border-foreground/20 hover:-translate-y-0.5 transition-all">
-                      <div>
-                        <div className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground font-sans tracking-tight">
-                          89g
-                        </div>
-                        <div className="text-[10px] sm:text-[11px] text-muted-foreground font-medium leading-tight mt-0.5">
-                          Carbs left
-                        </div>
-                        <div className="text-[9px] sm:text-[10px] text-muted-foreground/70 font-mono mt-0.5">200-240g</div>
-                      </div>
-                      <div className="flex justify-center">
-                        <CircularProgress percent={65} color="#ffaa00" size={48} strokeWidth={5} trackClass="stroke-zinc-200 dark:stroke-zinc-800">
-                          <div className="w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center shadow-xs">
-                            <Wheat className="w-3 h-3 text-[#ffaa00]" />
-                          </div>
-                        </CircularProgress>
-                      </div>
-                    </div>
-
-                    {/* Fats Card */}
-                    <div className="bg-secondary/40 dark:bg-secondary/20 border border-border/60 rounded-2xl p-3 sm:p-4 flex flex-col justify-between h-[140px] sm:h-[155px] hover:border-foreground/20 hover:-translate-y-0.5 transition-all">
-                      <div>
-                        <div className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground font-sans tracking-tight">
-                          48g
-                        </div>
-                        <div className="text-[10px] sm:text-[11px] text-muted-foreground font-medium leading-tight mt-0.5">
-                          Fats left
-                        </div>
-                        <div className="text-[9px] sm:text-[10px] text-muted-foreground/70 font-mono mt-0.5">55-70g</div>
-                      </div>
-                      <div className="flex justify-center">
-                        <CircularProgress percent={55} color="#4d9fff" size={48} strokeWidth={5} trackClass="stroke-zinc-200 dark:stroke-zinc-800">
-                          <div className="w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center shadow-xs">
-                            <Droplet className="w-3 h-3 text-[#4d9fff] fill-[#4d9fff]" />
-                          </div>
-                        </CircularProgress>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* SLIDE 2: Control de Bienestar (Estado Actual con Sliders y Orbs) */}
-              <div className="w-full shrink-0 snap-center min-w-full">
-                <div className="bg-card border border-border/80 rounded-3xl p-5 sm:p-6 space-y-4 text-card-foreground shadow-xs hover:shadow-md transition-all relative overflow-hidden h-full flex flex-col justify-between">
-                  {/* Animated Hero Pastel Orbs Background */}
-                  <div aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-30 dark:opacity-20">
-                    <div
-                      className="absolute -right-[30px] -top-[30px] h-[180px] w-[180px] rounded-full bg-[#ff7b7c]/60 blur-[45px]"
-                      style={{ animation: "orb1 22s infinite ease-in-out" }}
-                    />
-                    <div
-                      className="absolute -left-[40px] top-[20%] h-[180px] w-[180px] rounded-full bg-[#aafc75]/60 blur-[50px]"
-                      style={{ animation: "orb2 25s infinite ease-in-out 1s" }}
-                    />
-                    <div
-                      className="absolute -bottom-[30px] -right-[30px] h-[180px] w-[180px] rounded-full bg-[#60f2fc]/60 blur-[50px]"
-                      style={{ animation: "orb3 28s infinite ease-in-out 3s" }}
-                    />
-                  </div>
-
-                  {/* Card Header */}
-                  <div className="relative z-10 flex items-center justify-between border-b border-border/40 pb-3">
-                    <div>
-                      <span className="text-[10px] text-muted-foreground/80 font-bold uppercase tracking-wider block mb-0.5">
-                        Control de Bienestar
-                      </span>
-                      <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                        <span>Estado Actual de Hoy</span>
-                        <div className="p-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-500">
-                          <Heart className="w-3.5 h-3.5 fill-rose-500" />
-                        </div>
-                      </h3>
-                    </div>
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        toast.success("âœ“ Registro de estado actual guardado correctamente");
-                      }}
-                      className="rounded-xl h-8 text-xs font-bold bg-foreground text-background hover:opacity-90 transition-all cursor-pointer shadow-xs"
-                    >
-                      Guardar Registro
-                    </Button>
-                  </div>
-
-                  {/* Sliders Body (Ãnimo, Apetito, EnergÃ­a) */}
-                  <div className="relative z-10 space-y-4 pt-1 flex-1 flex flex-col justify-center">
-                    <CustomSlider
-                      value={mood}
-                      onChange={setMood}
-                      labelLeft="Ansioso"
-                      labelRight="Calmo"
-                      colorClass="from-[#46e8f5]/30 via-[#46e8f5]/70 to-[#46e8f5]"
-                    />
-                    <CustomSlider
-                      value={hunger}
-                      onChange={setHunger}
-                      labelLeft="Hambriento"
-                      labelRight="Saciado"
-                      colorClass="from-[#8ee853]/30 via-[#8ee853]/70 to-[#8ee853]"
-                    />
-                    <CustomSlider
-                      value={energy}
-                      onChange={setEnergy}
-                      labelLeft="Cansado"
-                      labelRight="EnÃ©rgico"
-                      colorClass="from-[#ff7b7c]/30 via-[#ff7b7c]/70 to-[#ff7b7c]"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* SLIDE 3: Racha de Actividad (Curva 7 DÃ­as) */}
-              <div className="w-full shrink-0 snap-center min-w-full">
-                <div className="bg-card border border-border/80 rounded-3xl p-5 sm:p-6 space-y-4 text-card-foreground shadow-xs hover:shadow-md transition-all h-full flex flex-col justify-between">
-                  {/* Card Header */}
-                  <div className="flex items-center justify-between border-b border-border/40 pb-3">
-                    <div className="flex items-center gap-2">
-                      <div>
-                        <span className="text-[10px] text-muted-foreground/80 font-bold uppercase tracking-wider block mb-0.5">
-                          HÃ¡bitos & Movimiento
-                        </span>
-                        <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                          <span>Racha de Actividad</span>
-                          <span className="inline-flex items-center gap-1 text-[11px] font-black px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                            <Zap className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-                            12 dÃ­as
-                          </span>
-                        </h3>
-                      </div>
-                    </div>
-                    <span className="text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold border border-emerald-500/20">
-                      BASE: 150 PTOS
-                    </span>
-                  </div>
-
-                  {/* Chart Body */}
-                  <div className="pt-1 flex-1 flex flex-col justify-center">
-                    <div className="flex justify-between items-center text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground mb-2 px-0.5">
-                      <span>Curva de Actividad (7 dÃ­as)</span>
-                      <span className="text-emerald-500 font-bold">MÃ­nimo Saludable (150)</span>
-                    </div>
-
-                    <ChartContainer config={chartConfig} className="h-44 w-full aspect-auto select-none">
-                      <AreaChart
-                        data={activityData}
-                        margin={{ top: 5, right: 5, left: -25, bottom: 0 }}
-                      >
-                        <defs>
-                          <linearGradient id="recharts-activity-grad-card" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.25} />
-                            <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.0} />
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border/40" />
-                        <XAxis 
-                          dataKey="day" 
-                          tickLine={false} 
-                          axisLine={false} 
-                          tickMargin={6}
-                          className="text-[10px] font-bold fill-muted-foreground"
-                        />
-                        <YAxis 
-                          tickLine={false} 
-                          axisLine={false} 
-                          tickMargin={4}
-                          domain={[100, 200]}
-                          className="text-[9px] font-semibold fill-muted-foreground"
-                        />
-                        <ReferenceLine 
-                          y={150} 
-                          stroke="#10b981" 
-                          strokeDasharray="4 4" 
-                          strokeWidth={2}
-                          label={{ 
-                            value: "MÃ­nimo Saludable (150)", 
-                            position: "insideBottomRight", 
-                            offset: 8,
-                            fill: "#10b981",
-                            fontSize: 9,
-                            fontWeight: "bold"
-                          }} 
-                        />
-                        <Area
-                          type="monotone"
-                          dataKey="puntos"
-                          stroke="hsl(var(--primary))"
-                          strokeWidth={2.5}
-                          fillOpacity={1}
-                          fill="url(#recharts-activity-grad-card)"
-                        />
-                      </AreaChart>
-                    </ChartContainer>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom Indicator Dots Only (â— â—‹ â—‹ | â—‹ â— â—‹ | â—‹ â—‹ â—) */}
-            <div className="flex items-center justify-center gap-2 pt-1">
-              {[0, 1, 2].map((idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => {
-                    setCardSlideIndex(idx);
-                    if (carouselRef.current) {
-                      carouselRef.current.scrollTo({
-                        left: idx * carouselRef.current.clientWidth,
-                        behavior: "smooth",
-                      });
-                    }
-                  }}
-                  className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
-                    cardSlideIndex === idx
-                      ? "bg-foreground w-6"
-                      : "bg-muted-foreground/30 hover:bg-muted-foreground/50 w-2"
-                  }`}
-                  aria-label={`Ir a tarjeta ${idx + 1}`}
-                />
-              ))}
-            </div>
-          </div>
-
           {/* Timeline */}
           <div className="relative pl-6 md:pl-0">
             {/* Vertical Line */}
             <div className="absolute left-6 md:left-[50%] top-0 bottom-0 w-[2px] bg-border transform -translate-x-1/2 md:-translate-x-[1px]"></div>
-
-            {/* Recipe Swipe Stack timeline item */}
-            {showSwipeStack && (
-              <div className="relative mb-12 md:grid md:grid-cols-2 md:gap-12 items-center group animate-in slide-in-from-top-4 duration-300">
-                {/* Timeline Dot */}
-                <div className="absolute left-0 md:left-1/2 w-4.5 h-4.5 rounded-full border-4 bg-background z-10 transform -translate-x-1/2 border-foreground/40 shadow-sm"></div>
-
-                {/* Time Label for Desktop */}
-                <div className="hidden md:block text-right pr-6 md:order-2">
-                  <span className="font-extrabold text-base text-foreground">Ahora</span>
-                  <p className="text-muted-foreground/70 text-xs mt-0.5 font-semibold">Explorar Ideas</p>
-                </div>
-
-                {/* Card Container */}
-                <div className="pl-6 md:pl-0 md:order-1">
-                  <RecipeSwipeStack 
-                    onClose={() => setShowSwipeStack(false)}
-                    savedRecipes={savedRecipes}
-                    setSavedRecipes={setSavedRecipes}
-                    currentSwipeIndex={currentSwipeIndex}
-                    setCurrentSwipeIndex={setCurrentSwipeIndex}
-                  />
-                </div>
-              </div>
-            )}
 
             {(() => {
               let lastDate = "";
@@ -3957,18 +3849,183 @@ function DiarioTab() {
 
                 const catConfig = {
                   mente: {
-                    // bg: "bg-gradient-to-br from-[#ff7b7c]/70 via-[#ff7b7c]/15 to-card dark:from-[#ff7b7c]/45 dark:via-[#ff7b7c]/8 dark:to-card",
                     bg: "",
                   },
                   nutricion: {
-                    // bg: "bg-gradient-to-br from-[#aafc75]/70 via-[#aafc75]/15 to-card dark:from-[#aafc75]/45 dark:via-[#aafc75]/8 dark:to-card",
                     bg: "",
                   },
                   movimiento: {
-                    // bg: "bg-gradient-to-br from-[#60f2fc]/70 via-[#60f2fc]/15 to-card dark:from-[#60f2fc]/45 dark:via-[#60f2fc]/8 dark:to-card",
                     bg: "",
                   }
                 }[category];
+
+                if (item.type === "swipe-stack") {
+                  return (
+                    <React.Fragment key={item.id}>
+                      {showDateSeparator && (
+                        <div className="relative flex justify-center my-8 pl-6 md:pl-0 w-full select-none">
+                          <div className="absolute top-1/2 left-6 md:left-0 right-0 h-[1px] bg-border/40 -translate-y-1/2"></div>
+                          <Badge 
+                            variant="outline" 
+                            className="relative z-10 bg-background text-[11px] font-bold px-4 py-1.5 rounded-full flex items-center gap-2 border-border shadow-none"
+                          >
+                            <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
+                            <span>{formatDateLabel(item.date)}</span>
+                          </Badge>
+                        </div>
+                      )}
+
+                      <div id={`recipe-swipe-stack-card-${item.id}`} className="relative mb-12 md:grid md:grid-cols-2 md:gap-12 items-center group animate-in slide-in-from-top-4 duration-300">
+                        {/* Timeline Dot */}
+                        <div className="absolute left-0 md:left-1/2 w-4.5 h-4.5 rounded-full border-4 bg-background z-10 transform -translate-x-1/2 border-emerald-500 shadow-xs"></div>
+
+                        {/* Time Label for Desktop */}
+                        <div className={`hidden md:block ${showOnLeft ? "text-right pr-6 md:order-2" : "text-left pl-6 md:order-1"}`}>
+                          <span className="font-extrabold text-base text-foreground">{item.time}</span>
+                          <p className="text-emerald-500 font-bold text-xs mt-0.5">Explorar Ideas</p>
+                        </div>
+
+                        {/* Card Container */}
+                        <div className={`pl-6 md:pl-0 ${showOnLeft ? "md:order-1" : "md:order-2"}`}>
+                          <RecipeSwipeStack 
+                            onClose={() => handleDeleteTimelineItem(item.id)}
+                            savedRecipes={savedRecipes}
+                            setSavedRecipes={setSavedRecipes}
+                            currentSwipeIndex={currentSwipeIndex}
+                            setCurrentSwipeIndex={setCurrentSwipeIndex}
+                            onSaveRecipeTimeline={(recipe) => {
+                              const newMeal = {
+                                id: `swipe-saved-${Date.now()}`,
+                                date: new Date().toISOString().split('T')[0],
+                                time: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+                                title: recipe.title,
+                                subtitle: recipe.category || "Receta Guardada",
+                                type: "food",
+                                img: recipe.img,
+                                kcal: recipe.kcal,
+                                tags: recipe.tags || (recipe.tag ? [recipe.tag] : []),
+                                tag: recipe.tag,
+                                coachFeedback: recipe.coachFeedback || `Guardaste "${recipe.title}" en tu diario de alimentación.`,
+                              };
+                              setUserTimelineItems(prev => [newMeal, ...prev]);
+                              toast.success(`❤️ Receta "${recipe.title}" agregada a tu diario`);
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </React.Fragment>
+                  );
+                }
+
+                if (item.type === "shake-ai") {
+                  return (
+                    <React.Fragment key={item.id}>
+                      {showDateSeparator && (
+                        <div className="relative flex justify-center my-8 pl-6 md:pl-0 w-full select-none">
+                          <div className="absolute top-1/2 left-6 md:left-0 right-0 h-[1px] bg-border/40 -translate-y-1/2"></div>
+                          <Badge 
+                            variant="outline" 
+                            className="relative z-10 bg-background text-[11px] font-bold px-4 py-1.5 rounded-full flex items-center gap-2 border-border shadow-none"
+                          >
+                            <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
+                            <span>{formatDateLabel(item.date)}</span>
+                          </Badge>
+                        </div>
+                      )}
+
+                      <div className="relative mb-12 md:grid md:grid-cols-2 md:gap-12 items-center group animate-in slide-in-from-top-5 duration-300">
+                        {/* Timeline Dot */}
+                        <div className="absolute left-0 md:left-1/2 w-4.5 h-4.5 rounded-full border-4 bg-background z-10 transform -translate-x-1/2 border-amber-500 shadow-xs"></div>
+
+                        {/* Time Label for Desktop */}
+                        <div className={`hidden md:block ${showOnLeft ? "text-right pr-6 md:order-2" : "text-left pl-6 md:order-1"}`}>
+                          <span className="font-extrabold text-base text-amber-600 dark:text-amber-400">{item.time}</span>
+                          <p className="text-amber-500/80 text-xs mt-0.5 font-bold">Shake for AI</p>
+                        </div>
+
+                        {/* Card Container */}
+                        <div className={`pl-6 md:pl-0 ${showOnLeft ? "md:order-1" : "md:order-2"}`}>
+                          <Card className="rounded-2xl overflow-hidden transition-all duration-300 border border-amber-500/40 bg-card/90 dark:bg-card/80 backdrop-blur-md shadow-sm hover:border-amber-500/60 p-5 space-y-3.5 relative">
+                            {/* Ambient Light */}
+                            <div className="pointer-events-none absolute -right-10 -top-10 w-28 h-28 bg-amber-500/15 rounded-full blur-2xl" />
+
+                            <div className="flex items-start justify-between relative z-10">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-xl shrink-0 shadow-xs">
+                                  {item.icon || "🥤"}
+                                </div>
+                                <div>
+                                  <span className="text-[10px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-400 block mb-0.5">
+                                    SHAKE FOR AI
+                                  </span>
+                                  <h4 className="text-sm font-black text-foreground">{item.title}</h4>
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteTimelineItem(item.id)}
+                                className="text-muted-foreground hover:text-rose-500 transition-colors p-1 cursor-pointer"
+                                title="Eliminar recomendación"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+
+                            <div className="bg-secondary/40 border border-border/50 rounded-xl p-3.5 text-xs text-foreground leading-relaxed font-medium relative z-10">
+                              <TypewriterOnce text={item.coachFeedback || ""} speed={25} />
+                            </div>
+
+                            {item.actionText && (
+                              <Button
+                                onClick={() => {
+                                  if (item.actionType === "water") {
+                                    setHydrationLevel(prev => Math.min(8, prev + 1));
+                                    const newHydCard = {
+                                      id: `hydration-${Date.now()}`,
+                                      date: new Date().toISOString().split("T")[0],
+                                      time: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+                                      title: "Registro de Hidratación (+250ml)",
+                                      subtitle: "Control de Rutina",
+                                      type: "hydration",
+                                      img: null,
+                                      kcal: 0,
+                                      tag: "Hidratación +250ml",
+                                      coachFeedback: "Sumaste +250ml de agua pura recomendados por tu Coach IA. Tu nivel de hidratación se mantiene en estado óptimo.",
+                                    };
+                                    setUserTimelineItems(prev => [newHydCard, ...prev]);
+                                    toast.success("✓ Registraste +250ml de agua pura");
+                                  } else if (item.actionType === "scan") {
+                                    setActiveModal("food-analysis");
+                                  } else if (item.actionType === "recipe") {
+                                    handleOpenExplorarIdeas();
+                                  } else if (item.actionType === "diario") {
+                                    const newClosureCard = {
+                                      id: `closure-${Date.now()}`,
+                                      date: new Date().toISOString().split("T")[0],
+                                      time: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+                                      title: "Cierre de Jornada & Descanso",
+                                      subtitle: "Ritmo Circadiano",
+                                      type: "thought",
+                                      img: null,
+                                      kcal: 0,
+                                      tag: "Recuperación Nocturna",
+                                      coachFeedback: "Completaste el seguimiento de hábitos de hoy con éxito. Desconecta pantallas e inicia tu rutina de descanso para un sueño reparador.",
+                                    };
+                                    setUserTimelineItems(prev => [newClosureCard, ...prev]);
+                                    toast.success("🌙 Registraste tu cierre de jornada");
+                                  }
+                                }}
+                                className="w-full rounded-xl bg-foreground text-background font-bold text-xs h-10 hover:opacity-90 transition-opacity gap-2 relative z-10 shadow-xs cursor-pointer"
+                              >
+                                <span>{item.actionText}</span>
+                              </Button>
+                            )}
+                          </Card>
+                        </div>
+                      </div>
+                    </React.Fragment>
+                  );
+                }
 
                 return (
                   <React.Fragment key={item.id}>
@@ -4022,7 +4079,7 @@ function DiarioTab() {
                                     type="button"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      if (confirm(`Â¿Deseas eliminar "${item.title}" de tu diario?`)) {
+                                      if (confirm(`¿Deseas eliminar "${item.title}" de tu diario?`)) {
                                         handleDeleteTimelineItem(item.id);
                                       }
                                     }}
@@ -4048,14 +4105,14 @@ function DiarioTab() {
                                           <button
                                             type="button"
                                             className="p-0.5 text-muted-foreground hover:text-emerald-500 transition-colors rounded-full hover:bg-secondary/60 cursor-pointer"
-                                            aria-label="InformaciÃ³n sobre ritmos circadianos"
+                                            aria-label="Información sobre ritmos circadianos"
                                           >
                                             <Info className="w-3.5 h-3.5 text-emerald-500" />
                                           </button>
                                         </TooltipTrigger>
                                         <TooltipContent className="max-w-[280px] p-3 text-xs leading-relaxed space-y-2 bg-popover text-popover-foreground border border-border shadow-xl">
                                           <p className="font-medium">
-                                            Tu cuerpo funciona en ciclos de 24 hs. Estas tarjetas te indican los momentos Ã³ptimos del dÃ­a para comer, activar tu metabolismo y descansar.
+                                            Tu cuerpo funciona en ciclos de 24 hs. Estas tarjetas te indican los momentos óptimos del día para comer, activar tu metabolismo y descansar.
                                           </p>
                                           <div className="pt-1.5 border-t border-border/60 flex justify-end">
                                             <Link
@@ -4063,7 +4120,7 @@ function DiarioTab() {
                                               params={{ slug: "ritmos-circadianos-y-bienestar" }}
                                               className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 hover:underline text-[11px]"
                                             >
-                                              <span>Leer mÃ¡s</span>
+                                              <span>Leer más</span>
                                               <ArrowUpRight className="w-3.5 h-3.5" />
                                             </Link>
                                           </div>
@@ -4094,7 +4151,7 @@ function DiarioTab() {
                                       type="button"
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        if (confirm(`Â¿Deseas eliminar "${item.title}" de tu diario?`)) {
+                                        if (confirm(`¿Deseas eliminar "${item.title}" de tu diario?`)) {
                                           handleDeleteTimelineItem(item.id);
                                         }
                                       }}
@@ -4176,7 +4233,7 @@ function DiarioTab() {
                                   ))}
                                 </div>
                                 <div className="flex justify-between text-[9px] uppercase font-bold text-muted-foreground/80 tracking-wider">
-                                  <span>Ã“ptimo</span>
+                                  <span>Óptimo</span>
                                   <span>Deshidratado</span>
                                 </div>
                               </div>
@@ -4221,17 +4278,17 @@ function DiarioTab() {
       {subTab === "analisis" && (
         <div className="space-y-6 animate-in fade-in duration-300">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <p className="text-sm text-muted-foreground">Perspectivas detalladas de tu alimentaciÃ³n y bienestar.</p>
+            <p className="text-sm text-muted-foreground">Perspectivas detalladas de tu alimentación y bienestar.</p>
             
             <Select 
               value={insightPeriod} 
               onValueChange={(val: any) => setInsightPeriod(val)}
             >
               <SelectTrigger className="w-full sm:w-48 bg-card border border-border text-xs font-bold h-9">
-                <SelectValue placeholder="Seleccionar perÃ­odo" />
+                <SelectValue placeholder="Seleccionar período" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem className="text-xs font-bold" value="day">DÃ­a</SelectItem>
+                <SelectItem className="text-xs font-bold" value="day">Día</SelectItem>
                 <SelectItem className="text-xs font-bold" value="week">Semana</SelectItem>
                 <SelectItem className="text-xs font-bold" value="month">Mes</SelectItem>
                 <SelectItem className="text-xs font-bold" value="quarter">Trimestre</SelectItem>
@@ -4241,16 +4298,16 @@ function DiarioTab() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* AlimentaciÃ³n Consciente */}
+            {/* Alimentación Consciente */}
             <Card className="col-span-1 flex flex-col justify-between">
               <CardHeader className="pb-0 flex flex-row items-start justify-between space-y-0">
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <CardTitle className="text-lg font-bold text-foreground tracking-tight leading-none">AlimentaciÃ³n consciente</CardTitle>
+                    <CardTitle className="text-lg font-bold text-foreground tracking-tight leading-none">Alimentación consciente</CardTitle>
                     <TooltipProvider>
                       <ShadcnTooltip>
                         <TooltipTrigger asChild>
-                          <button type="button" className="text-muted-foreground hover:text-emerald-500 transition-colors cursor-pointer" aria-label="InformaciÃ³n de alimentaciÃ³n consciente">
+                          <button type="button" className="text-muted-foreground hover:text-emerald-500 transition-colors cursor-pointer" aria-label="Información de alimentación consciente">
                             <Info className="w-3.5 h-3.5 text-emerald-500" />
                           </button>
                         </TooltipTrigger>
@@ -4264,7 +4321,7 @@ function DiarioTab() {
                               params={{ slug: "alimentacion-consciente-y-adherencia" }}
                               className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 hover:underline text-[11px]"
                             >
-                              <span>Leer mÃ¡s</span>
+                              <span>Leer más</span>
                               <ArrowUpRight className="w-3.5 h-3.5" />
                             </Link>
                           </div>
@@ -4357,22 +4414,22 @@ function DiarioTab() {
               </CardFooter>
             </Card>
 
-            {/* Â¿Por quÃ© comiste? */}
+            {/* ¿Por qué comiste? */}
             <Card className="col-span-1 flex flex-col justify-between">
               <CardHeader className="pb-0 flex flex-row items-start justify-between space-y-0">
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <CardTitle className="text-lg font-bold text-foreground tracking-tight leading-none">Â¿Por quÃ© comiste?</CardTitle>
+                    <CardTitle className="text-lg font-bold text-foreground tracking-tight leading-none">¿Por qué comiste?</CardTitle>
                     <TooltipProvider>
                       <ShadcnTooltip>
                         <TooltipTrigger asChild>
-                          <button type="button" className="text-muted-foreground hover:text-emerald-500 transition-colors cursor-pointer" aria-label="InformaciÃ³n de causas de ingesta">
+                          <button type="button" className="text-muted-foreground hover:text-emerald-500 transition-colors cursor-pointer" aria-label="Información de causas de ingesta">
                             <Info className="w-3.5 h-3.5 text-emerald-500" />
                           </button>
                         </TooltipTrigger>
                         <TooltipContent className="max-w-[280px] p-3 text-xs leading-relaxed space-y-2 bg-popover text-popover-foreground border border-border shadow-xl">
                           <p className="font-medium">
-                            Clasificar tus ingestas te ayuda a distinguir el hambre fisiolÃ³gica real de los desencadenantes de hambre emocional (como aburrimiento, estrÃ©s o hÃ¡bitos sociales).
+                            Clasificar tus ingestas te ayuda a distinguir el hambre fisiológica real de los desencadenantes de hambre emocional (como aburrimiento, estrés o hábitos sociales).
                           </p>
                           <div className="pt-1.5 border-t border-border/60 flex justify-end">
                             <Link
@@ -4380,7 +4437,7 @@ function DiarioTab() {
                               params={{ slug: "hambre-emocional-vs-fisiologica" }}
                               className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 hover:underline text-[11px]"
                             >
-                              <span>Leer mÃ¡s</span>
+                              <span>Leer más</span>
                               <ArrowUpRight className="w-3.5 h-3.5" />
                             </Link>
                           </div>
@@ -4419,22 +4476,22 @@ function DiarioTab() {
               </CardContent>
             </Card>
 
-            {/* SÃ­ntomas FÃ­sicos */}
+            {/* Síntomas Físicos */}
             <Card className="col-span-1 flex flex-col justify-between">
               <CardHeader className="pb-2 flex flex-row items-start justify-between space-y-0">
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <CardTitle className="text-lg font-bold text-foreground tracking-tight leading-none">SÃ­ntomas FÃ­sicos</CardTitle>
+                    <CardTitle className="text-lg font-bold text-foreground tracking-tight leading-none">Síntomas Físicos</CardTitle>
                     <TooltipProvider>
                       <ShadcnTooltip>
                         <TooltipTrigger asChild>
-                          <button type="button" className="text-muted-foreground hover:text-emerald-500 transition-colors cursor-pointer" aria-label="InformaciÃ³n de sÃ­ntomas fÃ­sicos">
+                          <button type="button" className="text-muted-foreground hover:text-emerald-500 transition-colors cursor-pointer" aria-label="Información de síntomas físicos">
                             <Info className="w-3.5 h-3.5 text-emerald-500" />
                           </button>
                         </TooltipTrigger>
                         <TooltipContent className="max-w-[280px] p-3 text-xs leading-relaxed space-y-2 bg-popover text-popover-foreground border border-border shadow-xl">
                           <p className="font-medium">
-                            Registrar molestias corporales post-ingesta ayuda a identificar intolerancias alimentarias ocultas y a comprender cÃ³mo reacciona tu digestiÃ³n ante diferentes tipos de nutrientes.
+                            Registrar molestias corporales post-ingesta ayuda a identificar intolerancias alimentarias ocultas y a comprender cómo reacciona tu digestión ante diferentes tipos de nutrientes.
                           </p>
                           <div className="pt-1.5 border-t border-border/60 flex justify-end">
                             <Link
@@ -4442,7 +4499,7 @@ function DiarioTab() {
                               params={{ slug: "sintomas-fisicos-salud-digestiva" }}
                               className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 hover:underline text-[11px]"
                             >
-                              <span>Leer mÃ¡s</span>
+                              <span>Leer más</span>
                               <ArrowUpRight className="w-3.5 h-3.5" />
                             </Link>
                           </div>
@@ -4450,7 +4507,7 @@ function DiarioTab() {
                       </ShadcnTooltip>
                     </TooltipProvider>
                   </div>
-                  <CardDescription className="text-xs text-muted-foreground mt-1">Frecuencia de sÃ­ntomas reportados</CardDescription>
+                  <CardDescription className="text-xs text-muted-foreground mt-1">Frecuencia de síntomas reportados</CardDescription>
                 </div>
               </CardHeader>
               
@@ -4487,51 +4544,48 @@ function DiarioTab() {
               </CardContent>
             </Card>
 
-            {/* Behavioral Stability Index */}
-            <Card className="col-span-1 flex flex-col justify-between">
-              <CardHeader className="pb-0 flex flex-row items-start justify-between space-y-0">
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <CardTitle className="text-lg font-bold text-foreground tracking-tight leading-none">Estabilidad Conductual</CardTitle>
-                    <TooltipProvider>
-                      <ShadcnTooltip>
-                        <TooltipTrigger asChild>
-                          <button type="button" className="text-muted-foreground hover:text-emerald-500 transition-colors cursor-pointer" aria-label="InformaciÃ³n de estabilidad conductual">
-                            <Info className="w-3.5 h-3.5 text-emerald-500" />
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-[280px] p-3 text-xs leading-relaxed space-y-2 bg-popover text-popover-foreground border border-border shadow-xl">
-                          <p className="font-medium">
-                            Este grÃ¡fico de radar evalÃºa tu regularidad en 5 pilares clave del bienestar: horarios, nutriciÃ³n, humor, hidrataciÃ³n y consistencia. Es fundamental mantener un equilibrio entre todos ellos.
-                          </p>
-                          <div className="pt-1.5 border-t border-border/60 flex justify-end">
-                            <Link
-                              to="/blog/$slug"
-                              params={{ slug: "estabilidad-conductual-pilares-salud" }}
-                              className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 hover:underline text-[11px]"
-                            >
-                              <span>Leer mÃ¡s</span>
-                              <ArrowUpRight className="w-3.5 h-3.5" />
-                            </Link>
-                          </div>
-                        </TooltipContent>
-                      </ShadcnTooltip>
-                    </TooltipProvider>
-                  </div>
-                  <CardDescription className="text-xs text-muted-foreground mt-1">SincronizaciÃ³n de hÃ¡bitos y ritmos</CardDescription>
+            {/* Balance Alimentario */}
+            <Card className="col-span-1 flex flex-col justify-between p-5 space-y-4">
+              <CardHeader className="p-0 flex flex-row items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <CardTitle className="text-base font-bold text-foreground tracking-tight">Balance Alimentario</CardTitle>
+                  <TooltipProvider>
+                    <ShadcnTooltip>
+                      <TooltipTrigger asChild>
+                        <button type="button" className="text-muted-foreground hover:text-emerald-500 transition-colors cursor-pointer" aria-label="Información del Balance Alimentario">
+                          <Info className="w-3.5 h-3.5 text-emerald-500" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-[280px] p-3 text-xs leading-relaxed space-y-2 bg-popover text-popover-foreground border border-border shadow-xl">
+                        <p className="font-medium">
+                          Evaluación multidimensional de tus hábitos: calidad nutricional, densidad de comida real, hidratación, sincronía con tus horarios y escucha corporal (Body Awareness).
+                        </p>
+                        <div className="pt-1.5 border-t border-border/60 flex justify-end">
+                          <Link
+                            to="/blog/$slug"
+                            params={{ slug: "por-que-no-contar-calorias-nutricion-consciente" }}
+                            className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 hover:underline text-[11px]"
+                          >
+                            <span>Leer más</span>
+                            <ArrowUpRight className="w-3.5 h-3.5" />
+                          </Link>
+                        </div>
+                      </TooltipContent>
+                    </ShadcnTooltip>
+                  </TooltipProvider>
                 </div>
-                <div className="flex items-baseline gap-1 bg-secondary/30 px-2 py-1 rounded-lg border border-border/40">
-                  <span className="text-sm font-black text-foreground">85</span>
-                  <span className="text-[10px] text-muted-foreground font-bold">/100</span>
+                <div className="flex items-baseline gap-1 bg-secondary/40 px-2.5 py-1 rounded-xl border border-border/40">
+                  <span className="text-xs font-black text-foreground">85</span>
+                  <span className="text-[10px] text-muted-foreground font-bold">/100 Pts</span>
                 </div>
               </CardHeader>
-              
-              <CardContent className="flex-1 flex items-center justify-center pt-4 pb-4">
+
+              <CardContent className="p-0 pt-2 flex-1 flex items-center justify-center">
                 <ChartContainer
-                  config={STABILITY_CHART_CONFIG}
-                  className="mx-auto aspect-square w-full max-h-[180px] select-none"
+                  config={HOLISTIC_RADAR_CONFIG}
+                  className="mx-auto aspect-square w-full max-h-[195px] select-none"
                 >
-                  <RadarChart data={STABILITY_DATA}>
+                  <RadarChart data={HOLISTIC_RADAR_DATA} margin={{ top: 10, right: 15, bottom: 10, left: 15 }}>
                     <ChartTooltip
                       cursor={false}
                       content={<ChartTooltipContent hideLabel />}
@@ -4539,10 +4593,10 @@ function DiarioTab() {
                     <PolarGrid strokeWidth={1} stroke="var(--border)" />
                     <PolarAngleAxis
                       dataKey="subject"
-                      tick={{ fill: "var(--muted-foreground)", fontSize: 9, fontWeight: 400 }}
+                      tick={{ fill: "var(--muted-foreground)", fontSize: 8.5, fontWeight: 700 }}
                     />
                     <Radar
-                      name="Estabilidad"
+                      name="Nivel"
                       dataKey="value"
                       fill="var(--color-value)"
                       fillOpacity={0.25}
@@ -4563,13 +4617,13 @@ function DiarioTab() {
                     <TooltipProvider>
                       <ShadcnTooltip>
                         <TooltipTrigger asChild>
-                          <button type="button" className="text-muted-foreground hover:text-emerald-500 transition-colors cursor-pointer" aria-label="InformaciÃ³n de tendencia del plato colorido">
+                          <button type="button" className="text-muted-foreground hover:text-emerald-500 transition-colors cursor-pointer" aria-label="Información de tendencia del plato colorido">
                             <Info className="w-3.5 h-3.5 text-emerald-500" />
                           </button>
                         </TooltipTrigger>
                         <TooltipContent className="max-w-[280px] p-3 text-xs leading-relaxed space-y-2 bg-popover text-popover-foreground border border-border shadow-xl">
                           <p className="font-medium">
-                            Este grÃ¡fico categoriza tus comidas segÃºn su color dominante, reflejando el aporte de fitonutrientes y antioxidantes en tu dieta para asegurar un plato balanceado.
+                            Este gráfico categoriza tus comidas según su color dominante, reflejando el aporte de fitonutrientes y antioxidantes en tu dieta para asegurar un plato balanceado.
                           </p>
                           <div className="pt-1.5 border-t border-border/60 flex justify-end">
                             <Link
@@ -4577,7 +4631,7 @@ function DiarioTab() {
                               params={{ slug: "platodelbienestar-fitonutrientes-colores" }}
                               className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 hover:underline text-[11px]"
                             >
-                              <span>Leer mÃ¡s</span>
+                              <span>Leer más</span>
                               <ArrowUpRight className="w-3.5 h-3.5" />
                             </Link>
                           </div>
@@ -4616,22 +4670,22 @@ function DiarioTab() {
               </CardContent>
             </Card>
 
-            {/* AlineaciÃ³n Circadiana Card */}
+            {/* Alineación Circadiana Card */}
             <Card className="col-span-1 flex flex-col justify-between">
               <CardHeader className="pb-0 flex flex-row items-start justify-between space-y-0">
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <CardTitle className="text-lg font-bold text-foreground tracking-tight leading-none">AlineaciÃ³n Circadiana</CardTitle>
+                    <CardTitle className="text-lg font-bold text-foreground tracking-tight leading-none">Alineación Circadiana</CardTitle>
                     <TooltipProvider>
                       <ShadcnTooltip>
                         <TooltipTrigger asChild>
-                          <button type="button" className="text-muted-foreground hover:text-emerald-500 transition-colors cursor-pointer" aria-label="InformaciÃ³n de alineaciÃ³n circadiana">
+                          <button type="button" className="text-muted-foreground hover:text-emerald-500 transition-colors cursor-pointer" aria-label="Información de alineación circadiana">
                             <Info className="w-3.5 h-3.5 text-emerald-500" />
                           </button>
                         </TooltipTrigger>
                         <TooltipContent className="max-w-[280px] p-3 text-xs leading-relaxed space-y-2 bg-popover text-popover-foreground border border-border shadow-xl">
                           <p className="font-medium">
-                            Mantener tu ventana de alimentaciÃ³n sincronizada con tu ritmo circadiano optimiza la sensibilidad a la insulina y favorece la digestiÃ³n antes de tu descanso.
+                            Mantener tu ventana de alimentación sincronizada con tu ritmo circadiano optimiza la sensibilidad a la insulina y favorece la digestión antes de tu descanso.
                           </p>
                           <div className="pt-1.5 border-t border-border/60 flex justify-end">
                             <Link
@@ -4639,7 +4693,7 @@ function DiarioTab() {
                               params={{ slug: "ritmos-circadianos-y-bienestar" }}
                               className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 hover:underline text-[11px]"
                             >
-                              <span>Leer mÃ¡s</span>
+                              <span>Leer más</span>
                               <ArrowUpRight className="w-3.5 h-3.5" />
                             </Link>
                           </div>
@@ -4647,7 +4701,7 @@ function DiarioTab() {
                       </ShadcnTooltip>
                     </TooltipProvider>
                   </div>
-                  <CardDescription className="text-xs text-muted-foreground mt-1">Reloj biolÃ³gico vs. Ingestas</CardDescription>
+                  <CardDescription className="text-xs text-muted-foreground mt-1">Reloj biológico vs. Ingestas</CardDescription>
                 </div>
               </CardHeader>
               
@@ -4714,142 +4768,261 @@ function DiarioTab() {
         </div>
       )}
 
+      {/* Dedicated Pestaña: Sueño & Ritmo Circadiano */}
+      {subTab === "sueno" && (
+        <div className="space-y-6 animate-in fade-in duration-300">
+          {/* CARD 1: Gestión y Seguimiento del Sueño con Filtros (Full Width) */}
+          <div className="bg-card border border-border rounded-3xl p-5 sm:p-6 space-y-4 shadow-xs hover:-translate-y-1 hover:shadow-md transition-all flex flex-col justify-between w-full">
+            {/* Card Header */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-border/40 pb-3 gap-3">
+              <div className="flex items-center gap-2">
+                <Moon className="w-4 h-4 text-indigo-400 shrink-0" />
+                <div>
+                  <span className="text-[10px] text-muted-foreground/80 font-bold uppercase tracking-wider block mb-0.5">
+                    Fisiología & Descanso
+                  </span>
+                  <h3 className="text-sm font-bold text-foreground">Gestión & Seguimiento del Sueño</h3>
+                </div>
+                <TooltipProvider>
+                  <ShadcnTooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        className="p-1 rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors shrink-0 flex items-center justify-center cursor-pointer border-0 bg-transparent"
+                      >
+                        <Info className="w-3.5 h-3.5 text-emerald-500" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" align="start" className="max-w-xs p-3.5 bg-card border border-border shadow-xl rounded-2xl text-xs space-y-2 text-left">
+                      <p className="font-bold text-foreground">Evidencia Científica del Sueño</p>
+                      <p className="text-muted-foreground text-[11px] leading-relaxed">
+                        La fase de sueño de onda lenta (SWS) secreta el 60-70% de la hormona de crecimiento (hGH) para reparar tejidos musculares. Dormir menos de 8 horas duplica (1.7x) el riesgo de lesiones.
+                      </p>
+                      <div className="pt-1.5 border-t border-border/60 text-[10px]">
+                        <Link
+                          to="/blog/$slug"
+                          params={{ slug: "fisiologia-del-sueno-y-recuperacion-muscular" }}
+                          className="text-emerald-500 font-bold hover:underline flex items-center justify-between gap-1 group"
+                        >
+                          <span>📖 Leer evidencia sobre hGH, cortisol y lesiones</span>
+                          <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                        </Link>
+                      </div>
+                    </TooltipContent>
+                  </ShadcnTooltip>
+                </TooltipProvider>
+              </div>
+
+              {/* Filtros de Tiempo (Pills) Alineados */}
+              <div className="flex items-center gap-1 bg-secondary/60 p-1 rounded-2xl border border-border/60 shrink-0 self-end sm:self-center">
+                {(["week", "month", "quarter"] as const).map((period) => (
+                  <button
+                    key={period}
+                    onClick={() => setSleepFilter(period)}
+                    className={`px-2.5 py-1 rounded-xl text-[10px] font-bold transition-all cursor-pointer ${
+                      sleepFilter === period
+                        ? "bg-foreground text-background shadow-xs"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {period === "week" ? "Semana" : period === "month" ? "Mes" : "Trimestre"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Stats Bar Explicativas */}
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="p-2.5 bg-secondary/30 border border-border/40 rounded-2xl flex flex-col justify-center">
+                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block mb-0.5">Promedio Noche</span>
+                <span className="text-xs sm:text-sm font-black text-foreground">{avgSleepHours}h</span>
+                <span className="text-[9px] text-muted-foreground font-semibold">por descanso</span>
+              </div>
+              <div className="p-2.5 bg-secondary/30 border border-border/40 rounded-2xl flex flex-col justify-center">
+                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block mb-0.5">Meta Circadiana</span>
+                <span className="text-xs sm:text-sm font-black text-indigo-500">{targetPercent}%</span>
+                <span className="text-[9px] text-muted-foreground font-semibold">de 8h objetivo</span>
+              </div>
+              <div className="p-2.5 bg-secondary/30 border border-border/40 rounded-2xl flex flex-col justify-center">
+                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block mb-0.5">Calidad (SWS)</span>
+                <span className="text-xs sm:text-sm font-black text-emerald-500">{sleepData.score} Pts</span>
+                <span className="text-[9px] text-emerald-500/80 font-bold">{sleepData.quality}</span>
+              </div>
+            </div>
+
+            {/* AreaChart para el Seguimiento del Sueño */}
+            <div className="h-44 w-full pt-1">
+              <ChartContainer config={sleepChartConfig} className="h-full w-full">
+                <AreaChart data={sleepHistory[sleepFilter]} margin={{ top: 12, right: 10, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="sleepAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4} />
+                      <stop offset="95%" stopColor="#6366f1" stopOpacity={0.0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" opacity={0.1} />
+                  <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={6} tick={{ fontSize: 10, fill: "currentColor", opacity: 0.7 }} />
+                  <YAxis domain={[4, 10]} ticks={[4, 6, 8, 10]} tickLine={false} axisLine={false} tickMargin={4} tickFormatter={(v) => `${v}h`} tick={{ fontSize: 10, fill: "currentColor", opacity: 0.7 }} />
+                  <ReferenceLine y={8} stroke="#6366f1" strokeDasharray="3 3" opacity={0.6} label={{ value: "Obj. 8h", position: "insideTopRight", fill: "#6366f1", fontSize: 9, fontWeight: "bold" }} />
+                  <ChartTooltip content={<ChartTooltipContent indicator="line" formatter={(value) => [`${value} hrs`, "Sueño"]} />} />
+                  <Area type="monotone" dataKey="hours" stroke="#6366f1" strokeWidth={2.5} fillOpacity={1} fill="url(#sleepAreaGradient)" dot={{ r: 3.5, fill: "#6366f1", strokeWidth: 0 }} activeDot={{ r: 5.5, strokeWidth: 0 }} />
+                </AreaChart>
+              </ChartContainer>
+            </div>
+
+            {/* Bottom Info & Register Action */}
+            <div className="space-y-3 pt-1 border-t border-border/40">
+              <div className="flex flex-wrap justify-between items-center text-[10px] text-muted-foreground gap-1">
+                <span>Horario habitual ({sleepData.bedtime} - {sleepData.wakeTime})</span>
+                <span className="text-indigo-400 font-semibold">Atardecer: {sunTimes.sunset}</span>
+              </div>
+
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex flex-wrap gap-1">
+                  {sleepData.factors.map((factor) => (
+                    <span key={factor} className="px-2 py-0.5 rounded-md bg-secondary/40 text-muted-foreground text-[10px] font-semibold">
+                      ✓ {factor}
+                    </span>
+                  ))}
+                </div>
+
+                <Button
+                  onClick={() => setActiveModal("registrar-sueno")}
+                  size="sm"
+                  className="h-8 px-3 rounded-xl font-bold bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] flex items-center gap-1.5 shrink-0 cursor-pointer"
+                >
+                  <Moon className="w-3.5 h-3.5" />
+                  <span>Registrar</span>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dedicated Pestaña: Recuperación Muscular */}
       {subTab === "recuperacion" && (
         <div className="space-y-6 animate-in fade-in duration-300">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div className="flex items-center gap-2">
-              <p className="text-sm text-muted-foreground">Monitorea y edita el estado de fatiga de tus grupos musculares.</p>
-              <TooltipProvider>
-                <ShadcnTooltip>
-                  <TooltipTrigger asChild>
-                    <button 
-                      type="button"
-                      className="p-1.5 rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors shrink-0 flex items-center justify-center cursor-pointer border-0 bg-transparent"
-                    >
-                      <Info className="w-4 h-4" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" align="start" className="max-w-md p-4 bg-card border border-border shadow-xl rounded-2xl text-xs space-y-3 text-left">
-                    <div className="flex gap-2.5 pb-2.5 border-b border-border/50">
-                      <ShieldAlert className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+          <div className="bg-card border border-border rounded-3xl p-5 sm:p-6 space-y-4 shadow-xs hover:-translate-y-1 hover:shadow-md transition-all flex flex-col justify-between h-full">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-border/40 pb-3">
+              <div className="flex items-center gap-2">
+                <div>
+                  <span className="text-[10px] text-muted-foreground/80 font-bold uppercase tracking-wider block mb-0.5">
+                    Recuperación Tisular
+                  </span>
+                  <h3 className="text-sm font-bold text-foreground">Fatiga & Estado Muscular por Grupos</h3>
+                </div>
+                <TooltipProvider>
+                  <ShadcnTooltip>
+                    <TooltipTrigger asChild>
+                      <button 
+                        type="button"
+                        className="p-1 rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors shrink-0 flex items-center justify-center cursor-pointer border-0 bg-transparent"
+                      >
+                        <Info className="w-3.5 h-3.5 text-emerald-500" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" align="start" className="max-w-xs p-3.5 bg-card border border-border shadow-xl rounded-2xl text-xs space-y-2 text-left">
+                      <div className="flex gap-2 pb-2 border-b border-border/50">
+                        <ShieldAlert className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                        <div>
+                          <span className="block font-bold text-foreground mb-0.5">Exclusión por Fatiga</span>
+                          <span className="text-muted-foreground text-[11px] leading-relaxed">
+                            Músculos &lt; 70% se excluyen del Generador de Workouts IA para prevenir lesiones.
+                          </span>
+                        </div>
+                      </div>
+                      <div className="pt-1 border-t border-border/60 text-[10px]">
+                        <Link 
+                          to="/blog/$slug"
+                          params={{ slug: "fisiologia-de-la-recuperacion-muscular-y-fatiga" }}
+                          className="text-emerald-500 font-bold hover:underline flex items-center justify-between gap-1 group"
+                        >
+                          <span>🛡️ Leer evidencia de fatiga</span>
+                          <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                        </Link>
+                      </div>
+                    </TooltipContent>
+                  </ShadcnTooltip>
+                </TooltipProvider>
+              </div>
+
+              <Button
+                onClick={() => setIsEditingRecovery(!isEditingRecovery)}
+                variant={isEditingRecovery ? "default" : "outline"}
+                className="h-8 px-3 rounded-xl font-bold flex items-center gap-1.5 text-[11px] transition-colors shrink-0 cursor-pointer"
+              >
+                {isEditingRecovery ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    Guardar
+                  </>
+                ) : (
+                  <>
+                    <Edit className="w-3.5 h-3.5" />
+                    Editar Estado
+                  </>
+                )}
+              </Button>
+            </div>
+
+            {/* Muscles List Grid (2 Columnas Simétricas) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {muscleImages.map(m => {
+                const value = muscleRecovery[m.id] ?? 100;
+                const isExcluded = value < 70;
+                return (
+                  <div key={m.id} className="flex items-center justify-between p-3 bg-secondary/20 border border-border/40 rounded-2xl transition duration-300 hover:border-foreground/20">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 rounded-xl bg-secondary/50 flex items-center justify-center p-1 shrink-0 border border-border/40">
+                        <img src={m.img} alt={m.name} className="w-full h-full object-contain" />
+                      </div>
                       <div>
-                        <span className="block font-bold text-foreground mb-0.5">ExclusiÃ³n de MÃºsculos por Fatiga</span>
-                        <span className="text-muted-foreground text-[11px] leading-relaxed">
-                          MÃºsculos con recuperaciÃ³n inferior al 70% se excluirÃ¡n automÃ¡ticamente del Generador de Workouts con IA para prevenir lesiones.
+                        <span className="block text-xs font-bold text-foreground">{m.name}</span>
+                        <span className="text-[10px] text-muted-foreground">
+                          {isExcluded ? "En descanso (IA Excluido)" : "Listo para cargar"}
                         </span>
                       </div>
                     </div>
-                    
-                    <div className="space-y-2">
-                      <span className="block font-bold text-foreground text-[11px]">Â¿CÃ³mo estimar tu porcentaje?</span>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px]">
-                        <div className="p-2.5 bg-secondary/30 rounded-xl space-y-0.5">
-                          <span className="font-bold text-emerald-500 block">90% - 100% (Sano)</span>
-                          <p className="text-muted-foreground leading-snug">Sin agujetas ni dolor. Fuerza mÃ¡xima.</p>
-                        </div>
-                        <div className="p-2.5 bg-secondary/30 rounded-xl space-y-0.5">
-                          <span className="font-bold text-teal-500 block">70% - 80% (Cansancio leve)</span>
-                          <p className="text-muted-foreground leading-snug">Agujetas mÃ­nimas que pasan al calentar.</p>
-                        </div>
-                        <div className="p-2.5 bg-secondary/30 rounded-xl space-y-0.5">
-                          <span className="font-bold text-amber-500 block">50% - 60% (Fatiga moderada)</span>
-                          <p className="text-muted-foreground leading-snug">Agujetas al tacto/estirar. Evita alta intensidad.</p>
-                        </div>
-                        <div className="p-2.5 bg-secondary/30 rounded-xl space-y-0.5">
-                          <span className="font-bold text-rose-500 block">&lt; 50% (Sobrecarga)</span>
-                          <p className="text-muted-foreground leading-snug">Dolor fuerte o rigidez. Requiere descanso.</p>
-                        </div>
-                      </div>
-                    </div>
 
-                    <div className="pt-2 border-t border-border/60 text-[10px]">
-                      <Link 
-                        to="/blog/$slug"
-                        params={{ slug: "fisiologia-de-la-recuperacion-muscular-y-fatiga" }}
-                        className="text-emerald-500 font-bold hover:underline flex items-center justify-between gap-1 group"
-                      >
-                        <span>ðŸ”¬ Leer artÃ­culo completo sobre evidencia y fatiga (6 min)</span>
-                        <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                      </Link>
-                    </div>
-                  </TooltipContent>
-                </ShadcnTooltip>
-              </TooltipProvider>
-            </div>
-
-            <Button
-              onClick={() => setIsEditingRecovery(!isEditingRecovery)}
-              variant={isEditingRecovery ? "default" : "outline"}
-              className="h-10 px-4 rounded-xl font-bold flex items-center gap-2 text-xs transition-colors shrink-0"
-            >
-              {isEditingRecovery ? (
-                <>
-                  <Check className="w-4 h-4" />
-                  Guardar Estado
-                </>
-              ) : (
-                <>
-                  <Edit className="w-4 h-4" />
-                  Editar Estado
-                </>
-              )}
-            </Button>
-          </div>
-
-          {/* Muscles List */}
-          <div className="space-y-3">
-            {muscleImages.map(m => {
-              const value = muscleRecovery[m.id] ?? 100;
-              const isExcluded = value < 70;
-              return (
-                <div key={m.id} className="flex items-center justify-between p-4 bg-card border border-border rounded-2xl transition duration-300 hover:border-foreground/20">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-secondary/40 flex items-center justify-center p-1.5 shrink-0 border border-border/40">
-                      <img src={m.img} alt={m.name} className="w-full h-full object-contain" />
-                    </div>
-                    <div>
-                      <span className="block text-xs font-bold text-foreground">{m.name}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-4 shrink-0">
-                    {isEditingRecovery ? (
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="range"
-                          min="0"
-                          max="100"
-                          value={value}
-                          onChange={(e) => {
-                            const val = parseInt(e.target.value);
-                            setMuscleRecovery(prev => ({ ...prev, [m.id]: val }));
-                          }}
-                          className="w-24 sm:w-32 h-1.5 bg-secondary rounded-lg cursor-pointer accent-foreground"
-                        />
-                        <span className="text-xs font-extrabold text-foreground w-8 text-right shrink-0">{value}%</span>
-                      </div>
-                    ) : (
-                      <div 
-                        onClick={() => setIsEditingRecovery(true)}
-                        className="flex items-center gap-2.5 cursor-pointer group"
-                        title="Haga clic para editar manualmente"
-                      >
-                        <span className="text-xs font-extrabold text-foreground w-8 text-right shrink-0">{value}%</span>
-                        <div className="w-20 h-2 bg-secondary rounded-full overflow-hidden shrink-0">
-                          <div
-                            className={`h-full rounded-full transition-all duration-300 ${isExcluded ? "bg-rose-500" : "bg-emerald-500"}`}
-                            style={{ width: `${value}%` }}
+                    <div className="flex items-center gap-3 shrink-0">
+                      {isEditingRecovery ? (
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={value}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value);
+                              setMuscleRecovery(prev => ({ ...prev, [m.id]: val }));
+                            }}
+                            className="w-16 sm:w-20 h-1.5 bg-secondary rounded-lg cursor-pointer accent-foreground"
                           />
+                          <span className="text-xs font-extrabold text-foreground w-7 text-right shrink-0">{value}%</span>
                         </div>
-                        <Edit className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                      </div>
-                    )}
+                      ) : (
+                        <div 
+                          onClick={() => setIsEditingRecovery(true)}
+                          className="flex items-center gap-2 cursor-pointer group"
+                          title="Haga clic para editar manualmente"
+                        >
+                          <span className="text-xs font-extrabold text-foreground w-7 text-right shrink-0">{value}%</span>
+                          <div className="w-14 h-2 bg-secondary rounded-full overflow-hidden shrink-0">
+                            <div
+                              className={`h-full rounded-full transition-all duration-300 ${isExcluded ? "bg-rose-500" : "bg-emerald-500"}`}
+                              style={{ width: `${value}%` }}
+                            />
+                          </div>
+                          <Edit className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-
         </div>
       )}
 
@@ -4861,7 +5034,7 @@ function DiarioTab() {
             <div className="space-y-1">
               <h5 className="text-xs font-bold text-foreground">Aviso de Uso de Datos</h5>
               <p className="text-[11px] leading-relaxed text-muted-foreground font-medium">
-                Este reporte es un resumen de registros de hÃ¡bitos y estimaciones circadianas con fines meramente informativos y de autoconocimiento. No constituye un diagnÃ³stico mÃ©dico, prescripciÃ³n clÃ­nica ni asesoramiento nutricional profesional. Consulta con un profesional de la salud matriculado antes de realizar cambios significativos en tu alimentaciÃ³n o estilo de vida.
+                Este reporte es un resumen de registros de hábitos y estimaciones circadianas con fines meramente informativos y de autoconocimiento. No constituye un diagnóstico médico, prescripción clínica ni asesoramiento nutricional profesional. Consulta con un profesional de la salud matriculado antes de realizar cambios significativos en tu alimentación o estilo de vida.
               </p>
             </div>
           </div>
@@ -4870,7 +5043,7 @@ function DiarioTab() {
             <div className="space-y-0.5 text-center sm:text-left">
               <h4 className="text-sm font-bold text-foreground">Compartir con tu Profesional</h4>
               <p className="text-xs text-muted-foreground font-medium">
-                Exporta un reporte clÃ­nico en PDF {insightPeriod === "day" ? "de hoy" : insightPeriod === "week" ? "de los Ãºltimos 7 dÃ­as" : insightPeriod === "month" ? "del Ãºltimo mes" : "del Ãºltimo trimestre"} con tu adherencia, estabilidad conductual y registros circadianos.
+                Exporta un reporte clínico en PDF {insightPeriod === "day" ? "de hoy" : insightPeriod === "week" ? "de los últimos 7 días" : insightPeriod === "month" ? "del último mes" : "del último trimestre"} con tu adherencia, estabilidad conductual y registros circadianos.
               </p>
             </div>
             <Button 
@@ -4891,10 +5064,7 @@ function DiarioTab() {
           cartRecipeIds={cartRecipeIds}
           onToggleCart={toggleCartRecipe}
           onOpenCart={() => setIsCartOpen(true)}
-          onExploreClick={() => {
-            setShowSwipeStack(true);
-            setSubTab("diario");
-          }}
+          onExploreClick={handleOpenExplorarIdeas}
           onOpenDetail={(recipe) => setActiveRecipeDetail(recipe)}
         />
       )}
@@ -4922,7 +5092,7 @@ function DiarioTab() {
             setUserTimelineItems(prev => [newMeal, ...prev]);
             setActiveRecipeDetail(null);
             setSubTab("diario");
-            alert(`Â¡Registrado! Se aÃ±adiÃ³ "${recipe.title}" a tu diario de hoy.`);
+            alert(`¡Registrado! Se añadió "${recipe.title}" a tu diario de hoy.`);
           }}
           onRemove={(recipeId) => {
             setSavedRecipes(prev => prev.filter(id => id !== recipeId));
@@ -4941,6 +5111,8 @@ function DiarioTab() {
         />
       )}
 
+
+
       {/* FAB Overlay Blur */}
       {isFabOpen && (
         <div 
@@ -4950,90 +5122,109 @@ function DiarioTab() {
       )}
 
       {/* FAB Menu */}
-      <div className="fixed bottom-24 right-6 md:bottom-8 md:right-8 z-50 flex flex-col items-end gap-4">
+      <div className="fixed bottom-24 right-6 md:bottom-8 md:right-8 z-50 flex flex-col items-end gap-3">
         {isFabOpen && (
-          <div className="flex flex-col items-end gap-3 animate-in slide-in-from-bottom-5 fade-in duration-200">
+          <div className="bg-card/95 border border-border/80 rounded-3xl p-2 sm:p-2.5 shadow-2xl min-w-[260px] sm:min-w-[280px] max-w-[310px] animate-in slide-in-from-bottom-4 fade-in duration-200 space-y-0.5 backdrop-blur-xl">
+            {/* Group 1: Registros Diarios */}
             <button 
-              className="flex items-center gap-3 group" 
+              onClick={() => {
+                setIsFabOpen(false);
+                setActiveModal("registrar-sueno");
+              }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-secondary/70 transition-colors text-left group cursor-pointer"
+            >
+              <Moon className="w-4 h-4 text-indigo-400 group-hover:scale-110 transition-transform shrink-0" />
+              <span className="text-xs font-semibold text-foreground flex-1">Registrar sueño & descanso</span>
+            </button>
+
+            <button 
               onClick={() => {
                 setIsFabOpen(false);
                 setActiveModal("estado-actual");
               }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-secondary/70 transition-colors text-left group cursor-pointer"
             >
-              <span className="bg-card text-foreground text-xs font-bold px-3 py-2 rounded-lg border border-border shadow-sm group-hover:scale-105 transition-transform">Registrar estado actual</span>
-              <div className="w-12 h-12 rounded-full bg-card border border-border shadow-sm flex items-center justify-center text-rose-500 group-hover:scale-110 transition-transform">
-                <Heart className="w-5 h-5 fill-rose-500 text-rose-500" />
-              </div>
-            </button>
-            <button 
-              className="flex items-center gap-3 group" 
-              onClick={() => {
-                setIsFabOpen(false);
-                setActiveModal("generate-workout");
-              }}
-            >
-              <span className="bg-card text-foreground text-xs font-bold px-3 py-2 rounded-lg border border-border shadow-sm group-hover:scale-105 transition-transform">Generar Workout con IA</span>
-              <div className="w-12 h-12 rounded-full bg-card border border-border shadow-sm flex items-center justify-center text-indigo-500 group-hover:scale-110 transition-transform">
-                <Sparkles className="w-5 h-5 fill-current" />
-              </div>
+              <Heart className="w-4 h-4 text-rose-500 group-hover:scale-110 transition-transform shrink-0" />
+              <span className="text-xs font-semibold text-foreground flex-1">Registrar estado actual</span>
             </button>
 
             <button 
-              className="flex items-center gap-3 group" 
               onClick={() => {
                 setIsFabOpen(false);
                 setActiveModal("registrar-hidratacion");
               }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-secondary/70 transition-colors text-left group cursor-pointer"
             >
-              <span className="bg-card text-foreground text-xs font-bold px-3 py-2 rounded-lg border border-border shadow-sm group-hover:scale-105 transition-transform">Registrar hidrataciÃ³n</span>
-              <div className="w-12 h-12 rounded-full bg-card border border-border shadow-sm flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
-                <Droplet className="w-5 h-5" />
-              </div>
+              <Droplet className="w-4 h-4 text-blue-500 group-hover:scale-110 transition-transform shrink-0" />
+              <span className="text-xs font-semibold text-foreground flex-1">Registrar hidratación</span>
             </button>
+
             <button 
-              className="flex items-center gap-3 group" 
-              onClick={() => {
-                setIsFabOpen(false);
-                setActiveModal("registrar-actividad");
-              }}
-            >
-              <span className="bg-card text-foreground text-xs font-bold px-3 py-2 rounded-lg border border-border shadow-sm group-hover:scale-105 transition-transform">Registrar actividad</span>
-              <div className="w-12 h-12 rounded-full bg-card border border-border shadow-sm flex items-center justify-center text-orange-500 group-hover:scale-110 transition-transform">
-                <Activity className="w-5 h-5" />
-              </div>
-            </button>
-            <button 
-              className="flex items-center gap-3 group" 
               onClick={() => {
                 setIsFabOpen(false);
                 setActiveModal("food-analysis");
                 setFoodAnalysisStep("upload");
               }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-secondary/70 transition-colors text-left group cursor-pointer"
             >
-              <span className="bg-card text-foreground text-xs font-bold px-3 py-2 rounded-lg border border-border shadow-sm group-hover:scale-105 transition-transform">Registrar comida</span>
-              <div className="w-12 h-12 rounded-full bg-card border border-border shadow-sm flex items-center justify-center text-foreground group-hover:scale-110 transition-transform">
-                <Camera className="w-5 h-5" />
-              </div>
+              <Camera className="w-4 h-4 text-emerald-500 group-hover:scale-110 transition-transform shrink-0" />
+              <span className="text-xs font-semibold text-foreground flex-1">Registrar comida</span>
             </button>
+
             <button 
-              className="flex items-center gap-3 group" 
               onClick={() => {
                 setIsFabOpen(false);
-                setShowSwipeStack(true);
-                setSubTab("diario");
+                setActiveModal("registrar-actividad");
               }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-secondary/70 transition-colors text-left group cursor-pointer"
             >
-              <span className="bg-card text-foreground text-xs font-bold px-3 py-2 rounded-lg border border-border shadow-sm group-hover:scale-105 transition-transform">Explorar ideas</span>
-              <div className="w-12 h-12 rounded-full bg-card border border-border shadow-sm flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
-                <Utensils className="w-5 h-5" />
-              </div>
+              <Activity className="w-4 h-4 text-orange-500 group-hover:scale-110 transition-transform shrink-0" />
+              <span className="text-xs font-semibold text-foreground flex-1">Registrar actividad</span>
+            </button>
+
+            {/* Separator Line */}
+            <div className="h-[1px] bg-border/50 my-1 mx-2" />
+
+            {/* Group 2: Herramientas IA & Exploración */}
+            <button 
+              onClick={() => {
+                setIsFabOpen(false);
+                setActiveModal("generate-workout");
+              }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-secondary/70 transition-colors text-left group cursor-pointer"
+            >
+              <Sparkles className="w-4 h-4 text-indigo-500 group-hover:scale-110 transition-transform shrink-0" />
+              <span className="text-xs font-semibold text-foreground flex-1">Generar Workout con IA</span>
+            </button>
+
+            <button 
+              onClick={() => {
+                setIsFabOpen(false);
+                handleOpenExplorarIdeas();
+              }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-secondary/70 transition-colors text-left group cursor-pointer"
+            >
+              <Utensils className="w-4 h-4 text-amber-500 group-hover:scale-110 transition-transform shrink-0" />
+              <span className="text-xs font-semibold text-foreground flex-1">Explorar ideas</span>
+            </button>
+
+            <button 
+              onClick={() => {
+                setIsFabOpen(false);
+                triggerShakeAI();
+              }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-secondary/70 transition-colors text-left group cursor-pointer"
+            >
+              <span className="text-base leading-none shrink-0 group-hover:scale-110 transition-transform">🥤</span>
+              <span className="text-xs font-semibold text-foreground flex-1">Shake for AI (Sugerencia)</span>
             </button>
           </div>
         )}
         
         <button 
           onClick={() => setIsFabOpen(!isFabOpen)}
-          className="w-14 h-14 rounded-full bg-foreground text-background flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all"
+          className="w-14 h-14 rounded-full bg-foreground text-background flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer"
+          aria-label="Abrir menú de acciones"
         >
           <Plus className={`w-6 h-6 transition-transform duration-300 ${isFabOpen ? "rotate-45" : ""}`} />
         </button>
@@ -5064,7 +5255,7 @@ function DiarioTab() {
                   onClick={() => setFoodAnalysisStep("analyzing")} 
                   className="w-full rounded-xl h-12 text-base font-bold bg-foreground text-background hover:opacity-90 mt-4"
                 >
-                  Tomar FotografÃ­a
+                  Tomar Fotografía
                 </Button>
               </div>
             )}
@@ -5080,8 +5271,8 @@ function DiarioTab() {
               <div className="px-6 pb-8 overflow-y-auto animate-in slide-in-from-bottom-4 fade-in duration-300">
                 {/* Encabezado Principal de la Comida */}
                 <div className="mb-4">
-                  <h2 className="text-lg font-black text-foreground tracking-tight leading-snug">Chicken Phá»Ÿ con Vegetales</h2>
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">ANÃLISIS DE CALIDAD NUTRICIONAL</p>
+                  <h2 className="text-lg font-black text-foreground tracking-tight leading-snug">Chicken Phở con Vegetales</h2>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">ANÁLISIS DE CALIDAD NUTRICIONAL</p>
                 </div>
 
                 {/* Score de Calidad Nutricional basado en evidencia */}
@@ -5096,7 +5287,7 @@ function DiarioTab() {
                               to="/blog/$slug"
                               params={{ slug: "score-calidad-nutricional-evidencia" }}
                               className="w-5 h-5 rounded-full bg-secondary border border-border/60 text-muted-foreground hover:text-foreground hover:bg-secondary/80 flex items-center justify-center transition-colors cursor-pointer"
-                              aria-label="InformaciÃ³n del Score Nutricional"
+                              aria-label="Información del Score Nutricional"
                             >
                               <Info className="w-3.5 h-3.5" />
                             </Link>
@@ -5111,7 +5302,7 @@ function DiarioTab() {
                                 params={{ slug: "score-calidad-nutricional-evidencia" }}
                                 className="inline-flex items-center gap-1 font-bold text-foreground hover:underline text-[11px]"
                               >
-                                <span>Leer mÃ¡s</span>
+                                <span>Leer más</span>
                                 <ArrowUpRight className="w-3.5 h-3.5" />
                               </Link>
                             </div>
@@ -5148,7 +5339,7 @@ function DiarioTab() {
                     <div className="flex items-center justify-between py-1">
                       <span className="text-xs font-bold text-foreground">Grado de Procesamiento</span>
                       <span className="bg-secondary text-foreground text-xs font-bold px-3 py-1 rounded-full">
-                        MÃ­nimamente Procesado
+                        Mínimamente Procesado
                       </span>
                     </div>
                   </div>
@@ -5158,8 +5349,8 @@ function DiarioTab() {
                     <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">NUTRIENTES A PROMOVER (NR9)</h4>
                     <div className="space-y-2.5">
                       {[
-                        { label: "ProteÃ­na Magra", value: "Alta Calidad", isPrimary: true },
-                        { label: "Fibra DietÃ©tica", value: "Buena Fuente", isPrimary: true },
+                        { label: "Proteína Magra", value: "Alta Calidad", isPrimary: true },
+                        { label: "Fibra Dietética", value: "Buena Fuente", isPrimary: true },
                         { label: "Hierro", value: "Buena Fuente", isPrimary: true },
                         { label: "Magnesio", value: "Buena Fuente", isPrimary: true },
                         { label: "Calcio", value: "Aporte Moderado", isPrimary: false },
@@ -5183,7 +5374,7 @@ function DiarioTab() {
                     <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">COMPONENTES A LIMITAR (LIM3)</h4>
                     <div className="space-y-2.5">
                       {[
-                        { label: "AzÃºcares AÃ±adidos", value: "Sin AÃ±adidos", isPrimary: true },
+                        { label: "Azúcares Añadidos", value: "Sin Añadidos", isPrimary: true },
                         { label: "Grasas Saturadas / Trans", value: "Bajo", isPrimary: true },
                         { label: "Sodio", value: "Elevado", isPrimary: false },
                       ].map((item, i) => (
@@ -5205,32 +5396,32 @@ function DiarioTab() {
                   Continuar a Registro
                 </Button>
 
-                {/* Caja de Insight del AI Coach (Copiado idÃ©ntico al pie de card de timeline de la imagen) */}
+                {/* Caja de Insight del AI Coach (Copiado idéntico al pie de card de timeline de la imagen) */}
                 <div className="mt-6 pt-4 border-t border-border/60 flex items-start gap-3">
                   <Sparkles className="w-4 h-4 text-foreground/80 shrink-0 mt-0.5" />
                   <p className="text-xs font-medium text-foreground/80 leading-relaxed">
-                    Excelente balance de proteÃ­nas y fibra en la sopa. ConsiderÃ¡ controlar el aporte de sodio del caldo para optimizar tu perfil diario.
+                    Excelente balance de proteínas y fibra en la sopa. Considerá controlar el aporte de sodio del caldo para optimizar tu perfil diario.
                   </p>
                 </div>
               </div>
             )}
 
-            {/* Paso 4: Â¿Por quÃ© comiste? */}
+            {/* Paso 4: ¿Por qué comiste? */}
             {foodAnalysisStep === "reason" && (
               <div className="px-6 pb-8 overflow-y-auto animate-in slide-in-from-right-4 fade-in duration-300">
-                <h3 className="text-lg font-black text-foreground tracking-tight mb-1">Â¿Por quÃ© comiste?</h3>
-                <p className="text-xs text-muted-foreground font-medium mb-5">Selecciona el motivo o desencadenante principal de esta ingesta para tu diario de alimentaciÃ³n.</p>
+                <h3 className="text-lg font-black text-foreground tracking-tight mb-1">¿Por qué comiste?</h3>
+                <p className="text-xs text-muted-foreground font-medium mb-5">Selecciona el motivo o desencadenante principal de esta ingesta para tu diario de alimentación.</p>
                 
                 <div className="grid grid-cols-2 gap-2.5 mb-6">
                   {[
-                    { id: "hambre", label: "Hambre", icon: "ðŸŒ¿", color: "hover:border-emerald-500/50 hover:bg-emerald-500/5" },
-                    { id: "estres", label: "EstrÃ©s", icon: "âš¡", color: "hover:border-rose-500/50 hover:bg-rose-500/5" },
-                    { id: "sabor", label: "Sabor", icon: "ðŸ°", color: "hover:border-amber-500/50 hover:bg-amber-500/5" },
-                    { id: "social", label: "Social", icon: "ðŸ‘¥", color: "hover:border-sky-500/50 hover:bg-sky-500/5" },
-                    { id: "habito", label: "HÃ¡bito", icon: "ðŸ”„", color: "hover:border-indigo-500/50 hover:bg-indigo-500/5" },
-                    { id: "emocional", label: "Emocional", icon: "ðŸ’–", color: "hover:border-pink-500/50 hover:bg-pink-500/5" },
-                    { id: "aburrimiento", label: "Aburrimiento", icon: "ðŸ¥±", color: "hover:border-purple-500/50 hover:bg-purple-500/5" },
-                    { id: "otro", label: "Otro", icon: "â“", color: "hover:border-slate-500/50 hover:bg-slate-500/5" },
+                    { id: "hambre", label: "Hambre", icon: "🌱", color: "hover:border-emerald-500/50 hover:bg-emerald-500/5" },
+                    { id: "estres", label: "Estrés", icon: "⚡", color: "hover:border-rose-500/50 hover:bg-rose-500/5" },
+                    { id: "sabor", label: "Sabor", icon: "😋", color: "hover:border-amber-500/50 hover:bg-amber-500/5" },
+                    { id: "social", label: "Social", icon: "👥", color: "hover:border-sky-500/50 hover:bg-sky-500/5" },
+                    { id: "habito", label: "Hábito", icon: "🔄", color: "hover:border-indigo-500/50 hover:bg-indigo-500/5" },
+                    { id: "emocional", label: "Emocional", icon: "💖", color: "hover:border-pink-500/50 hover:bg-pink-500/5" },
+                    { id: "aburrimiento", label: "Aburrimiento", icon: "🥱", color: "hover:border-purple-500/50 hover:bg-purple-500/5" },
+                    { id: "otro", label: "Otro", icon: "❓", color: "hover:border-slate-500/50 hover:bg-slate-500/5" },
                   ].map((item) => (
                     <button
                       key={item.id}
@@ -5255,7 +5446,7 @@ function DiarioTab() {
                     onClick={() => setFoodAnalysisStep("report")}
                     className="rounded-xl h-11 text-xs font-bold border-border"
                   >
-                    AtrÃ¡s
+                    Atrás
                   </Button>
                   <Button
                     type="button"
@@ -5275,7 +5466,7 @@ function DiarioTab() {
               </div>
             )}
 
-            {/* Paso 5: Sugerencia de RespiraciÃ³n Guiada para emociones negativas */}
+            {/* Paso 5: Sugerencia de Respiración Guiada para emociones negativas */}
             {foodAnalysisStep === "breathing_prompt" && (
               <div className="px-6 pb-8 flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-300">
                 <div className="w-14 h-14 rounded-full bg-secondary border border-border/80 text-foreground flex items-center justify-center mb-4 mt-4 shadow-xs">
@@ -5283,7 +5474,7 @@ function DiarioTab() {
                 </div>
                 <h3 className="text-lg font-black text-foreground mb-2 tracking-tight">Pausa Reguladora</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed mb-6 max-w-[280px] font-medium">
-                  Detectamos que el motivo de tu comida fue <strong>{WHY_EAT_CHART_CONFIG[selectedEatReason as keyof typeof WHY_EAT_CHART_CONFIG]?.label || selectedEatReason}</strong>. Â¿Te gustarÃ­a hacer 1 minuto de respiraciÃ³n guiada para autorregular tu sistema nervioso?
+                  Detectamos que el motivo de tu comida fue <strong>{WHY_EAT_CHART_CONFIG[selectedEatReason as keyof typeof WHY_EAT_CHART_CONFIG]?.label || selectedEatReason}</strong>. ¿Te gustaría hacer 1 minuto de respiración guiada para autorregular tu sistema nervioso?
                 </p>
                 
                 <div className="w-full space-y-2.5">
@@ -5299,7 +5490,7 @@ function DiarioTab() {
                     }}
                     className="w-full rounded-xl h-12 text-sm font-bold bg-foreground text-background hover:opacity-90 shadow-md"
                   >
-                    Iniciar RespiraciÃ³n Guiada
+                    Iniciar Respiración Guiada
                   </Button>
                   <Button
                     type="button"
@@ -5313,17 +5504,17 @@ function DiarioTab() {
               </div>
             )}
 
-            {/* Paso 6: Ejercicio Interactivo de RespiraciÃ³n Guiada */}
+            {/* Paso 6: Ejercicio Interactivo de Respiración Guiada */}
             {foodAnalysisStep === "breathing_exercise" && (
               <div className="px-6 pb-8 flex flex-col items-center text-center animate-in fade-in duration-300">
                 <div className="flex justify-between items-center w-full mb-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">RESPIRACIÃ“N CUADRADA</span>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">RESPIRACIÓN CUADRADA</span>
                   <span className="bg-secondary text-foreground text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-border/60">
                     Ciclos completados: {breathingCyclesCompleted}
                   </span>
                 </div>
                 
-                {/* CÃ­rculo animado interactivo: ExpansiÃ³n y contracciÃ³n continua a 60 FPS sincronizado en tiempo real */}
+                {/* Círculo animado interactivo: Expansión y contracción continua a 60 FPS sincronizado en tiempo real */}
                 <div className="relative w-44 h-44 my-6 flex items-center justify-center">
                   <div 
                     style={{ 
@@ -5336,7 +5527,7 @@ function DiarioTab() {
                       {breathingPhase === "inhale" && "Inhala"}
                       {breathingPhase === "hold1" && "Pausa (Lleno)"}
                       {breathingPhase === "exhale" && "Exhala"}
-                      {breathingPhase === "hold2" && "Pausa (VacÃ­o)"}
+                      {breathingPhase === "hold2" && "Pausa (Vacío)"}
                     </span>
                     <span className="text-3xl font-black text-foreground tracking-tight mt-1">{breathingSeconds}s</span>
                   </div>
@@ -5344,9 +5535,9 @@ function DiarioTab() {
 
                 <p className="text-xs text-muted-foreground mb-6 font-medium max-w-[260px] h-8 flex items-center justify-center">
                   {breathingPhase === "inhale" && "Inhala profundamente por la nariz expandiendo el abdomen."}
-                  {breathingPhase === "hold1" && "SostÃ©n el aire con serenidad en la caja torÃ¡cica."}
-                  {breathingPhase === "exhale" && "Exhala lentamente por la boca liberando toda la tensiÃ³n."}
-                  {breathingPhase === "hold2" && "MantÃ©n los pulmones vacÃ­os en profunda calma."}
+                  {breathingPhase === "hold1" && "Sostén el aire con serenidad en la caja torácica."}
+                  {breathingPhase === "exhale" && "Exhala lentamente por la boca liberando toda la tensión."}
+                  {breathingPhase === "hold2" && "Mantén los pulmones vacíos en profunda calma."}
                 </p>
 
                 <Button
@@ -5376,9 +5567,9 @@ function DiarioTab() {
         <WorkoutFeedbackModal 
           onClose={() => setActiveModal("none")} 
           onComplete={() => {
-            // For AI workout, we can simulate training some muscles (e.g. Espalda and BÃ­ceps)
+            // For AI workout, we can simulate training some muscles (e.g. Espalda and Bíceps)
             handleWorkoutComplete([
-              { muscles: "Dorsal Ancho, BÃ­ceps" },
+              { muscles: "Dorsal Ancho, Bíceps" },
               { muscles: "Deltoides Anterior" }
             ]);
           }}
@@ -5390,81 +5581,119 @@ function DiarioTab() {
 
 
 
-      {/* Estado Actual Modal */}
-      {activeModal === "estado-actual" && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="relative w-full max-w-md bg-card/90 dark:bg-card/85 backdrop-blur-xl border border-border rounded-[2rem] shadow-2xl flex flex-col overflow-hidden max-h-[90vh]">
-            {/* Animated Hero Pastel Orbs Background */}
-            <div aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-50 dark:opacity-45">
-              <div
-                className="absolute -right-[30px] -top-[30px] h-[200px] w-[200px] rounded-full bg-[#ff7b7c]/70 blur-[45px]"
-                style={{ animation: "orb1 22s infinite ease-in-out" }}
-              />
-              <div
-                className="absolute -left-[40px] top-[25%] h-[220px] w-[220px] rounded-full bg-[#aafc75]/70 blur-[50px]"
-                style={{ animation: "orb2 25s infinite ease-in-out 1s" }}
-              />
-              <div
-                className="absolute -bottom-[30px] -right-[30px] h-[200px] w-[200px] rounded-full bg-[#60f2fc]/70 blur-[50px]"
-                style={{ animation: "orb3 28s infinite ease-in-out 3s" }}
-              />
-            </div>
 
-            {/* Header */}
-            <div className="relative z-10 px-6 pt-8 pb-4 flex justify-between items-center bg-card/40 backdrop-blur-md border-b border-border/40">
-              <div>
-                <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest block mb-0.5">Control de Bienestar</span>
-                <h3 className="text-lg font-bold text-foreground">Estado Actual</h3>
-              </div>
-              <button 
-                onClick={() => setActiveModal("none")} 
-                className="p-2 rounded-full bg-secondary/60 hover:bg-secondary transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5 text-muted-foreground" />
-              </button>
-            </div>
 
-            {/* Body */}
-            <div className="relative z-10 p-6 pt-4 space-y-6 overflow-y-auto">
-              <CustomSlider 
-                value={mood} 
-                onChange={setMood} 
-                labelLeft="Ansioso" 
-                labelRight="Calmo" 
-                colorClass="from-[#46e8f5]/30 via-[#46e8f5]/70 to-[#46e8f5]"
-              />
-              <CustomSlider 
-                value={hunger} 
-                onChange={setHunger} 
-                labelLeft="Hambriento" 
-                labelRight="Saciado" 
-                colorClass="from-[#8ee853]/30 via-[#9ee853]/70 to-[#8ee853]"
-              />
-              <CustomSlider 
-                value={energy} 
-                onChange={setEnergy} 
-                labelLeft="Cansado" 
-                labelRight="EnÃ©rgico" 
-                colorClass="from-[#ff7b7c]/30 via-[#ff7b7c]/70 to-[#ff7b7c]"
-              />
-              
-              <Button 
-                onClick={() => setActiveModal("none")}
-                className="w-full rounded-xl h-11 text-sm font-bold bg-foreground text-background hover:opacity-90 mt-4 shadow-md"
-              >
-                Guardar Registro
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Registrar HidrataciÃ³n Modal */}
+      {/* Registrar Hidratación Modal */}
       {activeModal === "registrar-hidratacion" && (
         <HydrationLogModal 
           onClose={() => setActiveModal("none")} 
           currentLevel={hydrationLevel}
-          onSave={(level) => setHydrationLevel(level)}
+          onSave={(level) => {
+            setHydrationLevel(level);
+            const newHyd = {
+              id: `hydration-log-${Date.now()}`,
+              date: new Date().toISOString().split("T")[0],
+              time: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+              title: `Registro de Hidratación (Nivel ${level})`,
+              subtitle: "Control de Rutina",
+              type: "hydration",
+              img: null,
+              kcal: 0,
+              tag: `Nivel ${level}`,
+              coachFeedback: `Actualizaste tu nivel de hidratación a ${level}/8. Mantener una ingesta sostenida de agua optimiza la oxigenación celular y previene la fatiga muscular.`
+            };
+            setUserTimelineItems(prev => [newHyd, ...prev]);
+            toast.success(`✓ Registraste tu nivel de hidratación: ${level}/8`);
+          }}
+        />
+      )}
+
+      {/* Modal Registrar Estado Actual */}
+      {activeModal === "estado-actual" && (
+        <StateLogModal 
+          onClose={() => setActiveModal("none")}
+          mood={mood}
+          setMood={setMood}
+          hunger={hunger}
+          setHunger={setHunger}
+          energy={energy}
+          setEnergy={setEnergy}
+          onSave={() => {
+            const newStatusCard = {
+              id: `status-log-${Date.now()}`,
+              date: new Date().toISOString().split("T")[0],
+              time: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+              title: "Registro de Estado Actual",
+              subtitle: "Autoconocimiento & Bienestar",
+              type: "thought",
+              img: null,
+              kcal: 0,
+              tag: `Ánimo: ${mood}% • Apetito: ${hunger}% • Energía: ${energy}%`,
+              coachFeedback: `Registraste tu estado de bienestar de hoy. Ánimo: ${mood >= 60 ? "Calmo" : "Ansioso"}, Apetito: ${hunger >= 60 ? "Saciado" : "Hambriento"}, Energía: ${energy >= 60 ? "Enérgico" : "Cansado"}. Este monitoreo regular optimiza tu autorregulación conductual.`
+            };
+            setUserTimelineItems(prev => [newStatusCard, ...prev]);
+            setActiveModal("none");
+            toast.success("✓ Registro de estado actual guardado en tu diario");
+          }}
+        />
+      )}
+
+      {/* Modal Registrar Sueño & Descanso */}
+      {activeModal === "registrar-sueno" && (
+        <SleepLogModal
+          onClose={() => setActiveModal("none")}
+          onSave={(data) => {
+            const totalHours = data.hours + data.minutes / 60;
+            setSleepData({
+              duration: `${data.hours}h ${data.minutes}m`,
+              hours: totalHours,
+              bedtime: data.bedtime,
+              wakeTime: data.wakeTime,
+              quality: data.quality,
+              score: data.score,
+              factors: data.factors,
+            });
+
+            if (totalHours < 6) {
+              setMuscleRecovery((prev) => {
+                const updated: Record<string, number> = {};
+                Object.keys(prev).forEach((key) => {
+                  updated[key] = Math.max(20, prev[key] - 15);
+                });
+                return updated;
+              });
+            }
+
+            // Update real-time sleep history chart
+            setSleepHistory((prev: typeof INITIAL_SLEEP_HISTORY) => {
+              const updatedWeek = [...prev.week];
+              updatedWeek[updatedWeek.length - 1] = {
+                ...updatedWeek[updatedWeek.length - 1],
+                hours: Number(totalHours.toFixed(1)),
+                qualityScore: data.score,
+              };
+              return { ...prev, week: updatedWeek };
+            });
+
+            const newSleepItem = {
+              id: `sleep-${Date.now()}`,
+              date: new Date().toISOString().split("T")[0],
+              time: data.wakeTime,
+              title: `Descanso Nocturno (${data.hours}h ${data.minutes}m)`,
+              subtitle: `Calidad: ${data.quality}`,
+              type: "thought",
+              kcal: 0,
+              tag: "Sueño & Circadiano",
+              coachFeedback:
+                totalHours < 6
+                  ? `Registraste un descanso de ${data.hours}h. El déficit de sueño eleva el cortisol matutino y desacelera la síntesis proteica miofibrilar. Se incrementó la fatiga estimada muscular en +15% para prevenir lesiones.`
+                  : `Excelente descanso de ${data.hours}h ${data.minutes}m. La fase de sueño profundo (SWS) optimizó la secreción de hGH para la reparación de microlesiones musculares.`,
+            };
+
+            setUserTimelineItems((prev) => [newSleepItem, ...prev]);
+            setActiveModal("none");
+            toast.success("🌙 Descanso nocturno registrado en tu diario");
+          }}
         />
       )}
 
@@ -5473,7 +5702,7 @@ function DiarioTab() {
         <ActivityLogModal 
           onClose={() => setActiveModal("none")} 
           onSave={(activityName, duration, intensity, metPoints) => {
-            const dayLabels = ["Dom", "Lun", "Mar", "MiÃ©", "Jue", "Vie", "SÃ¡b"];
+            const dayLabels = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
             const todayLabel = dayLabels[new Date().getDay()];
             
             // 1. Update activityData points
@@ -5492,7 +5721,7 @@ function DiarioTab() {
               img: null,
               kcal: 0,
               tag: `${metPoints} Pts MET`,
-              coachFeedback: `Registraste ${duration} min de ${activityName} (intensidad ${intensity === "low" ? "Baja" : intensity === "med" ? "Media" : "Alta"}). Sumaste ${metPoints} puntos MET a tu curva de actividad diaria. Â¡Gran trabajo!`
+              coachFeedback: `Registraste ${duration} min de ${activityName} (intensidad ${intensity === "low" ? "Baja" : intensity === "med" ? "Media" : "Alta"}). Sumaste ${metPoints} puntos MET a tu curva de actividad diaria. ¡Gran trabajo!`
             };
             setUserTimelineItems(prev => [newAct, ...prev]);
           }}
@@ -5544,12 +5773,12 @@ function EditTimelineItemModal({
         <DialogHeader className="mb-4">
           <DialogTitle className="text-lg font-bold text-foreground">Editar Registro del Diario</DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            Modifica la informaciÃ³n de tu tarjeta registrada en la lÃ­nea de tiempo.
+            Modifica la información de tu tarjeta registrada en la línea de tiempo.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-muted-foreground">TÃ­tulo</label>
+            <label className="text-xs font-semibold text-muted-foreground">Título</label>
             <input
               type="text"
               required
@@ -5561,7 +5790,7 @@ function EditTimelineItemModal({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">CategorÃ­a / Momento</label>
+              <label className="text-xs font-semibold text-muted-foreground">Categoría / Momento</label>
               <input
                 type="text"
                 required
@@ -5571,7 +5800,7 @@ function EditTimelineItemModal({
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">CalorÃ­as (kcal)</label>
+              <label className="text-xs font-semibold text-muted-foreground">Calorías (kcal)</label>
               <input
                 type="number"
                 min="0"
@@ -5629,13 +5858,13 @@ function HydrationLogModal({ onClose, currentLevel, onSave }: HydrationLogModalP
 
   const getHydrationAdvice = (level: number) => {
     if (level <= 2) {
-      return `Nivel ${level} indica hidrataciÃ³n Ã³ptima. Â¡Excelente trabajo manteniendo tu cuerpo equilibrado!`;
+      return `Nivel ${level} indica hidratación óptima. ¡Excelente trabajo manteniendo tu cuerpo equilibrado!`;
     } else if (level <= 4) {
-      return `Nivel ${level} indica hidrataciÃ³n normal tirando a levemente baja. Bebe un vaso de agua (250ml) ahora para mantener el estado Ã³ptimo.`;
+      return `Nivel ${level} indica hidratación normal tirando a levemente baja. Bebe un vaso de agua (250ml) ahora para mantener el estado óptimo.`;
     } else if (level <= 6) {
-      return `Nivel ${level} indica deshidrataciÃ³n leve. Toma 500ml de agua ahora mismo para compensar el entrenamiento de la maÃ±ana.`;
+      return `Nivel ${level} indica deshidratación leve. Toma 500ml de agua ahora mismo para compensar el entrenamiento de la mañana.`;
     } else {
-      return `Â¡AtenciÃ³n! Nivel ${level} indica deshidrataciÃ³n severa. Consume de 750ml a 1L de agua, preferiblemente con electrolitos, y modera el esfuerzo fÃ­sico.`;
+      return `¡Atención! Nivel ${level} indica deshidratación severa. Consume de 750ml a 1L de agua, preferiblemente con electrolitos, y modera el esfuerzo físico.`;
     }
   };
 
@@ -5646,7 +5875,7 @@ function HydrationLogModal({ onClose, currentLevel, onSave }: HydrationLogModalP
         <div className="px-6 pt-8 pb-4 flex justify-between items-start bg-card">
           <div className="space-y-1">
             <span className="text-[10px] uppercase font-black tracking-widest text-muted-foreground text-left block">Control de Rutina</span>
-            <h3 className="text-xl font-black text-foreground text-left">Registro de HidrataciÃ³n</h3>
+            <h3 className="text-xl font-black text-foreground text-left">Registro de Hidratación</h3>
           </div>
           <button 
             onClick={onClose} 
@@ -5675,12 +5904,12 @@ function HydrationLogModal({ onClose, currentLevel, onSave }: HydrationLogModalP
                   <TooltipContent side="bottom" align="start" className="max-w-xs sm:max-w-sm p-4 bg-card border border-border shadow-2xl rounded-2xl text-xs space-y-3 text-left">
                     <div className="flex items-center gap-2 font-bold text-foreground border-b border-border/50 pb-2">
                       <Droplet className="w-4 h-4 text-blue-500 fill-blue-500" />
-                      <span>EvaluaciÃ³n de HidrataciÃ³n (Armstrong)</span>
+                      <span>Evaluación de Hidratación (Armstrong)</span>
                     </div>
                     
                     <div className="space-y-2 text-[11px] leading-relaxed text-muted-foreground">
                       <p>
-                        <strong className="text-foreground">EstÃ¡ndar ClÃ­nico (Ucol):</strong> Desarrollado por el Dr. Lawrence Armstrong (UCONN) para medir la osmolalidad urinaria sin requerir laboratorios.
+                        <strong className="text-foreground">Estándar Clínico (Ucol):</strong> Desarrollado por el Dr. Lawrence Armstrong (UCONN) para medir la osmolalidad urinaria sin requerir laboratorios.
                       </p>
                       <p>
                         <strong className="text-foreground">Rango Objetivo:</strong> Mantenerse en Niveles 1, 2 y 3. Perder un 2% de agua corporal reduce la fuerza y resistencia hasta un 15%.
@@ -5693,7 +5922,7 @@ function HydrationLogModal({ onClose, currentLevel, onSave }: HydrationLogModalP
                         params={{ slug: "escala-de-armstrong-y-fisiologia-de-la-hidratacion" }}
                         className="text-emerald-500 font-bold hover:underline flex items-center justify-between gap-1 group"
                       >
-                        <span>ðŸ”¬ Leer artÃ­culo completo sobre la Escala de Armstrong y la HidrataciÃ³n</span>
+                        <span>🛡️ Leer artículo completo sobre la Escala de Armstrong y la Hidratación</span>
                         <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                       </Link>
                     </div>
@@ -5731,7 +5960,7 @@ function HydrationLogModal({ onClose, currentLevel, onSave }: HydrationLogModalP
               })}
             </div>
             <div className="flex justify-between text-[9px] uppercase font-black text-muted-foreground/80 tracking-widest px-1">
-              <span>Ã“ptimo</span>
+              <span>Óptimo</span>
               <span>Deshidratado</span>
             </div>
           </div>
@@ -5747,7 +5976,7 @@ function HydrationLogModal({ onClose, currentLevel, onSave }: HydrationLogModalP
           {/* Symptoms of Dehydration grid */}
           <div className="space-y-2.5">
             <span className="text-[9px] text-muted-foreground font-black uppercase tracking-widest block text-left">
-              SÃ­ntomas de DeshidrataciÃ³n a vigilar
+              Síntomas de Deshidratación a vigilar
             </span>
             <div className="grid grid-cols-2 gap-2.5">
               <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-secondary/20 border border-border/20">
@@ -5775,7 +6004,7 @@ function HydrationLogModal({ onClose, currentLevel, onSave }: HydrationLogModalP
                 <AlertCircle className="w-4.5 h-4.5 text-rose-400 shrink-0" />
                 <div className="min-w-0 text-left">
                   <p className="text-xs font-bold text-foreground leading-tight">Mareos</p>
-                  <p className="text-[10px] text-muted-foreground leading-none">PÃ©rdida de balance</p>
+                  <p className="text-[10px] text-muted-foreground leading-none">Pérdida de balance</p>
                 </div>
               </div>
             </div>
@@ -5785,7 +6014,7 @@ function HydrationLogModal({ onClose, currentLevel, onSave }: HydrationLogModalP
           <div className="text-[10px] text-muted-foreground leading-relaxed flex items-start gap-2 bg-secondary/10 p-3 rounded-2xl border border-border/10">
             <Info className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
             <p className="text-left">
-              <span className="font-bold text-foreground">Aviso sobre coloraciÃ³n:</span> Ciertos suplementos (como el complejo de vitamina B) y alimentos (como la remolacha) pueden intensificar temporalmente el color de la orina, sin representar deshidrataciÃ³n real.
+              <span className="font-bold text-foreground">Aviso sobre coloración:</span> Ciertos suplementos (como el complejo de vitamina B) y alimentos (como la remolacha) pueden intensificar temporalmente el color de la orina, sin representar deshidratación real.
             </p>
           </div>
         </div>
@@ -5904,7 +6133,7 @@ function ActivityLogModal({ onClose, onSave, activities }: ActivityLogModalProps
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              CronÃ³metro
+              Cronómetro
             </button>
           </div>
         </div>
@@ -5939,7 +6168,7 @@ function ActivityLogModal({ onClose, onSave, activities }: ActivityLogModalProps
                 { 
                   id: "low", 
                   label: "Baja", 
-                  desc: "RespiraciÃ³n normal que permite conversar o cantar.", 
+                  desc: "Respiración normal que permite conversar o cantar.", 
                   border: "border-emerald-500/20 dark:border-emerald-500/10",
                   bg: "bg-emerald-500/5", 
                   activeBorder: "border-emerald-500 ring-1 ring-emerald-500" 
@@ -5947,7 +6176,7 @@ function ActivityLogModal({ onClose, onSave, activities }: ActivityLogModalProps
                 { 
                   id: "med", 
                   label: "Media", 
-                  desc: "RespiraciÃ³n agitada que permite conversar brevemente, pero no cantar.", 
+                  desc: "Respiración agitada que permite conversar brevemente, pero no cantar.", 
                   border: "border-amber-500/20 dark:border-amber-500/10",
                   bg: "bg-amber-500/5", 
                   activeBorder: "border-amber-500 ring-1 ring-amber-500" 
@@ -5955,7 +6184,7 @@ function ActivityLogModal({ onClose, onSave, activities }: ActivityLogModalProps
                 { 
                   id: "high", 
                   label: "Alta", 
-                  desc: "RespiraciÃ³n muy agitada que solo permite hablar con oraciones breves.", 
+                  desc: "Respiración muy agitada que solo permite hablar con oraciones breves.", 
                   border: "border-rose-500/20 dark:border-rose-500/10",
                   bg: "bg-rose-500/5", 
                   activeBorder: "border-rose-500 ring-1 ring-rose-500" 
@@ -5991,7 +6220,7 @@ function ActivityLogModal({ onClose, onSave, activities }: ActivityLogModalProps
               <div className="space-y-1.5 text-left">
                 <div className="flex justify-between items-center">
                   <label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">
-                    DuraciÃ³n (minutos)
+                    Duración (minutos)
                   </label>
                   <span className="text-xs font-extrabold text-foreground bg-secondary/50 px-2.5 py-0.5 rounded-md">
                     {duration} min
@@ -6089,7 +6318,7 @@ function ActivityLogModal({ onClose, onSave, activities }: ActivityLogModalProps
           <div className="p-4 bg-primary/5 border border-primary/10 rounded-2xl flex items-start gap-2.5 text-left">
             <Sparkles className="w-4.5 h-4.5 text-primary shrink-0 mt-0.5" />
             <p className="text-[10px] text-muted-foreground leading-relaxed font-semibold">
-              <span className="text-foreground">Â¿QuÃ© son los Puntos MET?</span> El Equivalente MetabÃ³lico (MET) mide la intensidad de tu ejercicio. La OMS recomienda sumar al menos <span className="text-foreground">150 Puntos de Actividad</span> diarios para mantener un estilo de vida saludable y conservar tu racha.
+              <span className="text-foreground">¿Qué son los Puntos MET?</span> El Equivalente Metabólico (MET) mide la intensidad de tu ejercicio. La OMS recomienda sumar al menos <span className="text-foreground">150 Puntos de Actividad</span> diarios para mantener un estilo de vida saludable y conservar tu racha.
             </p>
           </div>
         </div>
@@ -6126,6 +6355,7 @@ interface RecipeSwipeStackProps {
   setSavedRecipes: React.Dispatch<React.SetStateAction<string[]>>;
   currentSwipeIndex: number;
   setCurrentSwipeIndex: React.Dispatch<React.SetStateAction<number>>;
+  onSaveRecipeTimeline?: (recipe: any) => void;
 }
 
 function RecipeSwipeStack({
@@ -6134,6 +6364,7 @@ function RecipeSwipeStack({
   setSavedRecipes,
   currentSwipeIndex,
   setCurrentSwipeIndex,
+  onSaveRecipeTimeline,
 }: RecipeSwipeStackProps) {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -6153,6 +6384,9 @@ function RecipeSwipeStack({
       if (direction === "right" && currentRecipe) {
         if (!savedRecipes.includes(currentRecipe.id)) {
           setSavedRecipes(prev => [...prev, currentRecipe.id]);
+        }
+        if (onSaveRecipeTimeline) {
+          onSaveRecipeTimeline(currentRecipe);
         }
       }
       setCurrentSwipeIndex(prev => prev + 1);
@@ -6264,12 +6498,12 @@ function RecipeSwipeStack({
                 {/* Status Badges */}
                 {dragOffset.x > 40 && (
                   <div className="absolute top-4 left-4 border border-foreground text-white font-black text-[10px] uppercase tracking-widest px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md pointer-events-none">
-                    GUARDAR â¤ï¸
+                    GUARDAR ❤️
                   </div>
                 )}
                 {dragOffset.x < -40 && (
                   <div className="absolute top-4 right-4 border border-rose-500 text-rose-400 font-black text-[10px] uppercase tracking-widest px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md pointer-events-none">
-                    PASAR âŒ
+                    PASAR ❌
                   </div>
                 )}
 
@@ -6321,7 +6555,7 @@ function RecipeSwipeStack({
                         ))}
                         {currentRecipe.ingredients.length > 5 && (
                           <li className="text-[9px] text-muted-foreground/70 italic font-bold">
-                            + {currentRecipe.ingredients.length - 5} ingredientes mÃ¡s
+                            + {currentRecipe.ingredients.length - 5} ingredientes más
                           </li>
                         )}
                       </ul>
@@ -6379,7 +6613,7 @@ function RecipeSwipeStack({
               <Check className="w-5 h-5 stroke-[3]" />
             </div>
             <div>
-              <h4 className="text-xs font-bold text-foreground">Â¡Todo explorado!</h4>
+              <h4 className="text-xs font-bold text-foreground">¡Todo explorado!</h4>
               <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">
                 Revisa tus platos guardados en <strong>Mis recetas</strong> o inicia una nueva ronda.
               </p>
@@ -6389,7 +6623,7 @@ function RecipeSwipeStack({
                 onClick={() => setCurrentSwipeIndex(0)} 
                 className="w-full text-[10px] h-8 font-bold rounded-xl bg-foreground text-background"
               >
-                Reiniciar exploraciÃ³n
+                Reiniciar exploración
               </Button>
             </div>
           </div>
@@ -6420,18 +6654,53 @@ function RecipesGridTab({
   onOpenDetail,
 }: RecipesGridTabProps) {
   const [filterText, setFilterText] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("Todas");
+  const [selectedChips, setSelectedChips] = useState<string[]>([]);
+
+  const choiceChips = [
+    "Desayuno", "Almuerzo", "Cena", "Snack",
+    "Alto en Proteína", "Alto en Fibra", "Bajo en Hidratos",
+    "Sin Gluten", "Vegan", "Grasas Saludables", "Sin Lactosa"
+  ];
 
   const list = RECIPES_POOL.filter(r => savedRecipes.includes(r.id));
+
+  const recipeMatchesChip = (r: any, chipId: string): boolean => {
+    const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const target = norm(chipId);
+    if (norm(r.category || "") === target) return true;
+    const allTags = [...(r.tags || []), r.tag].filter(Boolean);
+    return allTags.some(t => {
+      const nTag = norm(t);
+      if (nTag === target) return true;
+      if (target.includes("proteina") && (nTag.includes("proteina") || nTag.includes("protein"))) return true;
+      if (target.includes("fibra") && nTag.includes("fibra")) return true;
+      if (target.includes("hidrato") && (nTag.includes("hidrato") || nTag.includes("carbohidrat"))) return true;
+      if (target.includes("gluten") && nTag.includes("gluten")) return true;
+      if (target.includes("vegan") && (nTag.includes("vegan") || nTag.includes("vegetar"))) return true;
+      if (target.includes("grasa") && nTag.includes("grasa")) return true;
+      if (target.includes("lactosa") && nTag.includes("lactosa")) return true;
+      return false;
+    });
+  };
+
+  const toggleChip = (chipId: string) => {
+    if (chipId === "Todas") {
+      setSelectedChips([]);
+      return;
+    }
+    setSelectedChips(prev => 
+      prev.includes(chipId)
+        ? prev.filter(c => c !== chipId)
+        : [...prev, chipId]
+    );
+  };
 
   const filteredList = list.filter(r => {
     const matchesText = r.title.toLowerCase().includes(filterText.toLowerCase()) || 
                         r.coachFeedback.toLowerCase().includes(filterText.toLowerCase());
-    const matchesCat = selectedCategory === "Todas" || r.category === selectedCategory;
-    return matchesText && matchesCat;
+    const matchesChips = selectedChips.length === 0 || selectedChips.every(chip => recipeMatchesChip(r, chip));
+    return matchesText && matchesChips;
   });
-
-  const categories = ["Todas", "Desayuno", "Almuerzo", "Cena", "Snack"];
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300 text-left px-6 py-6 pb-24 max-w-6xl mx-auto">
@@ -6441,7 +6710,7 @@ function RecipesGridTab({
           <div>
             <h2 className="text-[22px] font-black text-foreground leading-tight tracking-tight">Mis Recetas Guardadas</h2>
             <p className="text-xs text-muted-foreground mt-1 font-medium">
-              Platos recomendados por tu Coach IA que has guardado durante la exploraciÃ³n.
+              Platos recomendados por tu Coach IA que has guardado durante la exploración.
             </p>
           </div>
 
@@ -6457,34 +6726,54 @@ function RecipesGridTab({
           </Button>
         </div>
 
-        {/* Search & Categories */}
+        {/* Search & Multi-Select Choice Chips */}
         {list.length > 0 && (
           <div className="space-y-3">
             <div className="relative">
               <Search className="absolute left-3.5 top-3.5 w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Buscar recetas..."
+                placeholder="Buscar recetas por nombre o ingrediente..."
                 value={filterText}
                 onChange={(e) => setFilterText(e.target.value)}
                 className="w-full bg-secondary/35 border border-border rounded-xl pl-10 pr-4 py-3 text-xs font-semibold focus:outline-none focus:border-foreground/30 transition-colors"
               />
             </div>
             
-            <div className="flex flex-wrap gap-1.5">
-              {categories.map(cat => (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition cursor-pointer ${
-                    selectedCategory === cat
-                      ? "border-foreground bg-foreground text-background"
-                      : "border-border bg-background text-muted-foreground hover:border-foreground/20 hover:text-foreground"
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
+            {/* Multi-Select Choice Chips */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+                  Filtros de Comida {selectedChips.length > 0 && `(${selectedChips.length} activos)`}
+                </span>
+                {selectedChips.length > 0 && (
+                  <button
+                    onClick={() => setSelectedChips([])}
+                    className="text-[11px] font-bold text-rose-500 hover:underline cursor-pointer"
+                  >
+                    Limpiar filtros
+                  </button>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {choiceChips.map(chip => {
+                  const isSelected = selectedChips.includes(chip);
+                  return (
+                    <button
+                      key={chip}
+                      onClick={() => toggleChip(chip)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition cursor-pointer select-none flex items-center gap-1.5 ${
+                        isSelected
+                          ? "border-foreground bg-foreground text-background shadow-xs font-bold"
+                          : "border-border/80 bg-secondary/30 text-muted-foreground hover:border-foreground/30 hover:text-foreground"
+                      }`}
+                    >
+                      {isSelected && <Check className="w-3 h-3 text-background" />}
+                      <span>{chip}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         )}
@@ -6496,7 +6785,7 @@ function RecipesGridTab({
             <Heart className="w-7 h-7 fill-emerald-500/20" />
           </div>
           <div>
-            <h4 className="text-sm font-bold text-foreground">AÃºn no tienes recetas guardadas</h4>
+            <h4 className="text-sm font-bold text-foreground">Aún no tienes recetas guardadas</h4>
             <p className="text-xs text-muted-foreground mt-1.5 max-w-xs mx-auto leading-relaxed font-medium">
               Descubre platos saludables recomendados por tu Coach IA en la herramienta "Explorar ideas".
             </p>
@@ -6507,10 +6796,6 @@ function RecipesGridTab({
           >
             Explorar ideas ahora
           </Button>
-        </div>
-      ) : filteredList.length === 0 ? (
-        <div className="p-12 text-center text-xs text-muted-foreground font-semibold">
-          No se encontraron recetas que coincidan con tu bÃºsqueda.
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -6547,7 +6832,7 @@ function RecipesGridTab({
                         ? "bg-foreground text-background border-foreground shadow-md scale-105"
                         : "bg-black/50 hover:bg-black/70 text-white/80 hover:text-white border-white/20"
                     }`}
-                    title={isInCart ? "Quitar de lista de compras" : "AÃ±adir a lista de compras"}
+                    title={isInCart ? "Quitar de lista de compras" : "Añadir a lista de compras"}
                   >
                     <ShoppingCart className="w-3.5 h-3.5" />
                   </button>
@@ -6566,7 +6851,7 @@ function RecipesGridTab({
                 {/* Header */}
                 <CardHeader className="p-4 pb-2 text-left">
                   <CardDescription className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
-                    Receta IA â€¢ {recipe.category}
+                    Receta IA • {recipe.category}
                   </CardDescription>
                   <CardTitle className="text-sm font-extrabold leading-snug text-foreground group-hover:text-emerald-500 transition-colors line-clamp-2">
                     {recipe.title}
@@ -6586,7 +6871,7 @@ function RecipesGridTab({
                 {/* Footer */}
                 <CardFooter className="px-4 py-3 bg-secondary/20 border-t border-border flex items-center justify-between shrink-0">
                   <span className="text-[11px] font-bold text-muted-foreground group-hover:text-foreground transition-colors">
-                    Ver preparaciÃ³n
+                    Ver preparación
                   </span>
                   <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-muted-foreground group-hover:text-foreground group-hover:bg-foreground group-hover:text-background transition-colors">
                     <ChevronRight className="w-3.5 h-3.5" />
@@ -6662,11 +6947,11 @@ function RecipeDetailModal({
           {/* Quick info row */}
           <div className="grid grid-cols-4 gap-2 text-center bg-secondary/35 rounded-2xl p-3 border border-border/50">
             <div>
-              <span className="block text-[9px] uppercase font-black text-muted-foreground tracking-wider">CalorÃ­as</span>
+              <span className="block text-[9px] uppercase font-black text-muted-foreground tracking-wider">Calorías</span>
               <span className="text-xs font-extrabold text-foreground">{recipe.kcal} kcal</span>
             </div>
             <div>
-              <span className="block text-[9px] uppercase font-black text-muted-foreground tracking-wider">ProteÃ­nas</span>
+              <span className="block text-[9px] uppercase font-black text-muted-foreground tracking-wider">Proteínas</span>
               <span className="text-xs font-extrabold text-foreground">{recipe.protein}</span>
             </div>
             <div>
@@ -6679,11 +6964,11 @@ function RecipeDetailModal({
             </div>
           </div>
 
-          {/* CaracterÃ­sticas Nutricionales Badges */}
+          {/* Características Nutricionales Badges */}
           <div className="bg-secondary/20 rounded-2xl p-3.5 border border-border/60 space-y-2">
             <h5 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
-              CaracterÃ­sticas Nutricionales
+              Características Nutricionales
             </h5>
             <MealOrganizerBadges
               category={recipe.category}
@@ -6735,7 +7020,7 @@ function RecipeDetailModal({
           {/* Steps */}
           <div className="space-y-3">
             <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground border-b border-border pb-1.5">
-              PreparaciÃ³n
+              Preparación
             </h4>
             <ol className="space-y-3">
               {recipe.instructions.map((step: string, i: number) => (
@@ -6772,7 +7057,7 @@ function RecipeDetailModal({
               }`}
             >
               <ShoppingCart className="w-3.5 h-3.5" />
-              {isInCart ? "En Compras" : "AÃ±adir a Compras"}
+              {isInCart ? "En Compras" : "Añadir a Compras"}
             </Button>
 
             <Button 
@@ -6828,7 +7113,7 @@ function ShoppingCartModal({
       `Recetas (${selectedRecipes.length}):\n` +
       selectedRecipes.map(r => `- ${r.title}`).join('\n') +
       `\n\nIngredientes:\n` +
-      uniqueIngredients.map(ing => `${checkedItems[ing] ? 'âœ“' : 'â˜'} ${ing}`).join('\n');
+      uniqueIngredients.map(ing => `${checkedItems[ing] ? '✓' : 'â˜'} ${ing}`).join('\n');
   };
 
   const handleCopy = () => {
@@ -6884,9 +7169,9 @@ function ShoppingCartModal({
               <div className="w-12 h-12 rounded-full bg-secondary/50 flex items-center justify-center mx-auto text-muted-foreground">
                 <ShoppingCart className="w-6 h-6" />
               </div>
-              <p className="text-xs font-bold text-foreground">Tu lista de compras estÃ¡ vacÃ­a</p>
+              <p className="text-xs font-bold text-foreground">Tu lista de compras está vacía</p>
               <p className="text-[11px] text-muted-foreground max-w-xs mx-auto leading-relaxed font-medium">
-                Presiona el icono de carrito en tus recetas guardadas para generar la lista de compras automÃ¡ticamente.
+                Presiona el icono de carrito en tus recetas guardadas para generar la lista de compras automáticamente.
               </p>
             </div>
           ) : (
@@ -6977,7 +7262,7 @@ function ShoppingCartModal({
                 className="text-xs font-bold rounded-xl gap-1.5"
               >
                 {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-                {copied ? "Â¡Copiado!" : "Copiar"}
+                {copied ? "¡Copiado!" : "Copiar"}
               </Button>
               <Button
                 onClick={onClose}
@@ -6988,6 +7273,478 @@ function ShoppingCartModal({
             </div>
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+// Subcomponent: State Log Modal (Registrar estado actual)
+function StateLogModal({
+  onClose,
+  mood,
+  setMood,
+  hunger,
+  setHunger,
+  energy,
+  setEnergy,
+  onSave,
+}: {
+  onClose: () => void;
+  mood: number;
+  setMood: (val: number) => void;
+  hunger: number;
+  setHunger: (val: number) => void;
+  energy: number;
+  setEnergy: (val: number) => void;
+  onSave: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="w-full max-w-sm bg-card border border-border rounded-[2rem] shadow-2xl flex flex-col overflow-hidden relative">
+        <div className="px-6 pt-6 pb-4 flex justify-between items-center bg-card border-b border-border/40">
+          <div>
+            <span className="text-[10px] text-muted-foreground/80 font-bold uppercase tracking-wider block mb-0.5">
+              Autoconocimiento & Salud
+            </span>
+            <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+              <span>Registrar Estado Actual</span>
+              <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
+            </h3>
+          </div>
+          <button 
+            onClick={onClose} 
+            className="p-2 rounded-full bg-secondary/50 hover:bg-secondary transition-colors cursor-pointer"
+          >
+            <X className="w-4 h-4 text-muted-foreground" />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-6">
+          <p className="text-xs text-muted-foreground font-medium">Ajusta los indicadores para registrar tu nivel de calma, saciedad y energía de hoy.</p>
+          
+          <div className="space-y-4">
+            <CustomSlider
+              value={mood}
+              onChange={setMood}
+              labelLeft="Ansioso"
+              labelRight="Calmo"
+              colorClass="from-[#46e8f5]/30 via-[#46e8f5]/70 to-[#46e8f5]"
+            />
+            <CustomSlider
+              value={hunger}
+              onChange={setHunger}
+              labelLeft="Hambriento"
+              labelRight="Saciado"
+              colorClass="from-[#8ee853]/30 via-[#8ee853]/70 to-[#8ee853]"
+            />
+            <CustomSlider
+              value={energy}
+              onChange={setEnergy}
+              labelLeft="Cansado"
+              labelRight="Enérgico"
+              colorClass="from-[#ff7b7c]/30 via-[#ff7b7c]/70 to-[#ff7b7c]"
+            />
+          </div>
+
+          <Button
+            onClick={onSave}
+            className="w-full rounded-xl h-12 text-sm font-bold bg-foreground text-background hover:opacity-90 transition-all shadow-md cursor-pointer mt-2"
+          >
+            Guardar Registro
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Subcomponent: Custom Slider
+function CustomSlider({ value, onChange, labelLeft, labelRight, colorClass }: any) {
+  const handleSliderClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const pct = Math.round((x / rect.width) * 100);
+    onChange(Math.max(0, Math.min(100, pct)));
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-between text-xs text-muted-foreground tracking-wide font-bold uppercase select-none">
+        <span>{labelLeft}</span>
+        <span className="text-foreground">{labelRight}</span>
+      </div>
+      <div 
+        onClick={handleSliderClick}
+        className="relative h-12 bg-slate-100 dark:bg-slate-900/60 rounded-xl overflow-hidden group cursor-pointer border border-border select-none flex items-center"
+      >
+        <div 
+          className={`absolute top-0 left-0 h-full bg-gradient-to-r ${colorClass} rounded-xl transition-all duration-300`} 
+          style={{ width: `${value}%` }}
+        />
+        <div 
+          className="absolute top-1/2 -translate-y-1/2 w-1.5 h-6 bg-white border border-slate-300 dark:border-slate-700 rounded-full transform -translate-x-1/2 transition-all duration-300 cursor-col-resize shadow-sm"
+          style={{ left: `${value}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+// Subcomponent: Sleep Log Modal (Diseño fiel a la referencia)
+function SleepLogModal({
+  onClose,
+  onSave,
+}: {
+  onClose: () => void;
+  onSave: (data: {
+    hours: number;
+    minutes: number;
+    bedtime: string;
+    wakeTime: string;
+    quality: string;
+    score: number;
+    factors: string[];
+  }) => void;
+}) {
+  const [bedtime, setBedtime] = useState("23:00");
+  const [wakeTime, setWakeTime] = useState("09:00");
+  const [is24h, setIs24h] = useState(false);
+  const [quality, setQuality] = useState("Reparador");
+  const [selectedFactors, setSelectedFactors] = useState<string[]>(["Magnesio", "Habitación fresca"]);
+
+  const calculateDuration = () => {
+    try {
+      const [bH, bM] = bedtime.split(":").map(Number);
+      const [wH, wM] = wakeTime.split(":").map(Number);
+      let bMins = bH * 60 + bM;
+      let wMins = wH * 60 + wM;
+      if (wMins <= bMins) wMins += 24 * 60;
+      const diffMins = wMins - bMins;
+      const h = Math.floor(diffMins / 60);
+      const m = diffMins % 60;
+      return { hours: h, minutes: m, diffMins };
+    } catch (e) {
+      return { hours: 10, minutes: 0, diffMins: 600 };
+    }
+  };
+
+  const { hours, minutes, diffMins } = calculateDuration();
+
+  const computeTrackPositions = () => {
+    try {
+      const [bH, bM] = bedtime.split(":").map(Number);
+      const startMins = bH * 60 + bM;
+      const startTimelineMins = 20 * 60; // 8 PM (20:00)
+      let offsetMins = startMins - startTimelineMins;
+      if (offsetMins < 0) offsetMins += 24 * 60;
+      const leftPct = Math.max(0, Math.min(95, (offsetMins / (24 * 60)) * 100));
+      const widthPct = Math.max(5, Math.min(100 - leftPct, (diffMins / (24 * 60)) * 100));
+      return { leftPct, widthPct };
+    } catch (e) {
+      return { leftPct: 12.5, widthPct: 41.6 };
+    }
+  };
+
+  const { leftPct, widthPct } = computeTrackPositions();
+
+  const trackRef = React.useRef<HTMLDivElement>(null);
+  const [activeDrag, setActiveDrag] = useState<"start" | "end" | null>(null);
+
+  const pctToTimeStr = (pct: number) => {
+    const clamped = Math.max(0, Math.min(100, pct));
+    const offsetMins = (clamped / 100) * 1440;
+    const snappedOffset = Math.round(offsetMins / 15) * 15;
+    const actualMins = (20 * 60 + snappedOffset) % 1440;
+    const h = Math.floor(actualMins / 60) % 24;
+    const m = actualMins % 60;
+    return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
+  };
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>, handle?: "start" | "end") => {
+    if (!trackRef.current) return;
+    const rect = trackRef.current.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickPct = (clickX / rect.width) * 100;
+
+    let target = handle;
+    if (!target) {
+      const distStart = Math.abs(clickPct - leftPct);
+      const distEnd = Math.abs(clickPct - (leftPct + widthPct));
+      target = distStart <= distEnd ? "start" : "end";
+    }
+
+    setActiveDrag(target);
+    const newTime = pctToTimeStr(clickPct);
+    if (target === "start") setBedtime(newTime);
+    else setWakeTime(newTime);
+    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!activeDrag || !trackRef.current) return;
+    const rect = trackRef.current.getBoundingClientRect();
+    const moveX = e.clientX - rect.left;
+    const movePct = (moveX / rect.width) * 100;
+    const newTime = pctToTimeStr(movePct);
+    if (activeDrag === "start") setBedtime(newTime);
+    else setWakeTime(newTime);
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (activeDrag) {
+      (e.target as HTMLElement).releasePointerCapture?.(e.pointerId);
+      setActiveDrag(null);
+    }
+  };
+
+  const formatDisplayTime = (timeStr: string) => {
+    if (!timeStr) return { num: "11", ampm: "PM" };
+    const [h, m] = timeStr.split(":").map(Number);
+    if (is24h) {
+      return { num: `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`, ampm: "HRS" };
+    }
+    const ampm = h >= 12 ? "PM" : "AM";
+    let hour12 = h % 12;
+    if (hour12 === 0) hour12 = 12;
+    const num = m > 0 ? `${hour12}:${m.toString().padStart(2, "0")}` : `${hour12}`;
+    return { num, ampm };
+  };
+
+  const bedDisplay = formatDisplayTime(bedtime);
+  const wakeDisplay = formatDisplayTime(wakeTime);
+
+  const handleToggleFactor = (factor: string) => {
+    setSelectedFactors((prev) =>
+      prev.includes(factor) ? prev.filter((f) => f !== factor) : [...prev, factor]
+    );
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const totalH = hours + minutes / 60;
+    const score = Math.min(
+      100,
+      Math.max(
+        40,
+        Math.round((totalH / 8) * 90 + (quality === "Reparador" ? 10 : quality === "Levemente fragmentado" ? 0 : -15))
+      )
+    );
+    onSave({
+      hours,
+      minutes,
+      bedtime,
+      wakeTime,
+      quality,
+      score,
+      factors: selectedFactors,
+    });
+  };
+
+  const factorOptions = [
+    "Magnesio",
+    "Habitación fresca",
+    "Sin pantallas pre-sueño",
+    "Cafeína tardía",
+    "Cena abundante",
+  ];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-200">
+      <div className="w-full max-w-md bg-card border border-border rounded-[2.2rem] shadow-2xl flex flex-col overflow-hidden relative max-h-[92vh] text-foreground">
+        
+        {/* Top Sheet Handle */}
+        <div className="w-12 h-1 bg-secondary/80 rounded-full mx-auto mt-3" />
+
+        {/* Modal Header */}
+        <div className="flex items-center justify-between px-6 pt-3 pb-4 border-b border-border/40">
+          <div className="flex items-center gap-2">
+            <div className="flex items-baseline gap-1">
+              <span className="text-lg font-black tracking-tight text-foreground">sleep</span>
+              <span className="text-xs font-bold text-muted-foreground/80">timings</span>
+            </div>
+            <span className="text-muted-foreground/30 font-light">|</span>
+            <span className="text-xs font-semibold text-muted-foreground">when did you sleep last night?</span>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-7 h-7 rounded-full border border-border/60 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Scrollable Content */}
+        <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar">
+
+          {/* Dual Readout Section (Sleep time | Wake time) */}
+          <div className="grid grid-cols-2 gap-4 items-center relative py-1">
+            {/* Left: Sleep Time */}
+            <div className="text-center space-y-1">
+              <div className="flex items-center justify-center gap-1.5 text-muted-foreground/80 text-[11px] font-bold">
+                <Bed className="w-3.5 h-3.5" />
+                <span>Sleep time</span>
+              </div>
+              <div className="flex items-baseline justify-center gap-1">
+                <span className="text-4xl font-black tracking-tight text-foreground">{bedDisplay.num}</span>
+                <span className="text-xs font-bold uppercase text-muted-foreground">{bedDisplay.ampm}</span>
+              </div>
+            </div>
+
+            {/* Vertical Divider */}
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-12 w-[1px] bg-border/60" />
+
+            {/* Right: Wake Time */}
+            <div className="text-center space-y-1">
+              <div className="flex items-center justify-center gap-1.5 text-muted-foreground/80 text-[11px] font-bold">
+                <AlarmClock className="w-3.5 h-3.5" />
+                <span>Wake time</span>
+              </div>
+              <div className="flex items-baseline justify-center gap-1">
+                <span className="text-4xl font-black tracking-tight text-foreground">{wakeDisplay.num}</span>
+                <span className="text-xs font-bold uppercase text-muted-foreground">{wakeDisplay.ampm}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Dynamic Duration Label */}
+          <div className="text-center">
+            <span className="text-xs font-bold text-muted-foreground/80">
+              ~{hours} hours {minutes > 0 ? `and ${minutes} mins ` : ""}of sleep
+            </span>
+          </div>
+
+          {/* Visual 24-Hour Interactive Timeline Bar */}
+          <div className="space-y-2 pt-2">
+            <div
+              ref={trackRef}
+              onPointerDown={(e) => handlePointerDown(e)}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              className="relative h-12 bg-secondary/40 rounded-xl border border-border/60 p-1 flex items-center overflow-hidden select-none cursor-pointer touch-none"
+            >
+              {/* Background Tick Marks */}
+              <div className="absolute inset-x-3 top-0 bottom-0 flex justify-between items-center pointer-events-none opacity-30">
+                {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+                  <div key={i} className="h-3 w-[1px] bg-foreground/60" />
+                ))}
+              </div>
+
+              {/* Active Sleep Range Bar */}
+              <div
+                className="absolute top-1 bottom-1 rounded-lg bg-gradient-to-r from-indigo-400 via-indigo-500 to-purple-400 dark:from-indigo-500 dark:to-purple-600 shadow-sm flex items-center justify-between border border-indigo-400/40 transition-all duration-75"
+                style={{
+                  left: `${leftPct}%`,
+                  width: `${widthPct}%`,
+                }}
+              >
+                {/* Left Start Handle */}
+                <div
+                  onPointerDown={(e) => {
+                    e.stopPropagation();
+                    handlePointerDown(e, "start");
+                  }}
+                  className="w-3 h-full flex items-center justify-center cursor-col-resize group z-20"
+                >
+                  <div className="w-1.5 h-6 bg-white border border-slate-300 dark:border-slate-700 rounded-full shadow-sm group-hover:scale-110 transition-all" />
+                </div>
+
+                {/* Right End Handle */}
+                <div
+                  onPointerDown={(e) => {
+                    e.stopPropagation();
+                    handlePointerDown(e, "end");
+                  }}
+                  className="w-3 h-full flex items-center justify-center cursor-col-resize group z-20"
+                >
+                  <div className="w-1.5 h-6 bg-white border border-slate-300 dark:border-slate-700 rounded-full shadow-sm group-hover:scale-110 transition-all" />
+                </div>
+              </div>
+            </div>
+
+            {/* Timeline Tick Labels */}
+            <div className="flex justify-between text-[9px] font-bold text-muted-foreground/60 px-2 uppercase select-none">
+              <span>8 PM</span>
+              <span>12 AM</span>
+              <span>4 AM</span>
+              <span>8 AM</span>
+              <span>12 PM</span>
+              <span>4 PM</span>
+              <span>8 PM</span>
+            </div>
+          </div>
+
+          {/* Quality & Factors Selectors */}
+          <div className="space-y-3 pt-1">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Calidad Percibida</span>
+              <div className="flex gap-1.5">
+                {[
+                  { label: "Reparador", val: "Reparador" },
+                  { label: "Fragmentado", val: "Levemente fragmentado" },
+                  { label: "Insuficiente", val: "Insuficiente" },
+                ].map((q) => (
+                  <button
+                    key={q.val}
+                    type="button"
+                    onClick={() => setQuality(q.val)}
+                    className={`px-2.5 py-1 rounded-xl text-[10px] font-bold border transition-all cursor-pointer ${
+                      quality === q.val
+                        ? "bg-indigo-500/15 border-indigo-500/40 text-foreground"
+                        : "bg-secondary/30 border-border/40 text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {q.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">Factores del Descanso</span>
+              <div className="flex flex-wrap gap-1.5">
+                {factorOptions.map((factor) => {
+                  const isSelected = selectedFactors.includes(factor);
+                  return (
+                    <button
+                      key={factor}
+                      type="button"
+                      onClick={() => handleToggleFactor(factor)}
+                      className={`px-2.5 py-1 rounded-full text-[10px] font-bold border transition-all cursor-pointer ${
+                        isSelected
+                          ? "bg-foreground text-background border-foreground"
+                          : "bg-secondary/30 border-border/60 text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {isSelected ? "✓ " : ""}{factor}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Footer Bar: Format Toggle & Action Button */}
+          <div className="flex items-center justify-between pt-3 border-t border-border/40">
+            <button
+              type="button"
+              onClick={() => setIs24h(!is24h)}
+              className="px-3.5 py-2.5 rounded-2xl bg-secondary/50 hover:bg-secondary text-[11px] font-bold text-muted-foreground hover:text-foreground border border-border/60 transition-all cursor-pointer"
+            >
+              {is24h ? "Formato 12h" : "Formato 24h"}
+            </button>
+
+            <button
+              type="submit"
+              onClick={handleSubmit}
+              className="h-11 px-6 rounded-2xl bg-foreground text-background hover:opacity-90 font-extrabold text-xs flex items-center gap-2 shadow-lg transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <ArrowUp className="w-4 h-4 stroke-[2.5]" />
+              <span>Guardar descanso</span>
+            </button>
+          </div>
+
+        </div>
       </div>
     </div>
   );
