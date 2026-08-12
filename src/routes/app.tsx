@@ -7,7 +7,7 @@ import { GYMS } from "@/lib/gyms";
 import { cn } from "@/lib/utils";
 import { 
   User, Calendar, BarChart3, CreditCard, Settings, 
-  LogOut, QrCode, CheckCircle, Clock, AlertTriangle, 
+  LogOut, QrCode, CheckCircle, CheckCircle2, Flag, Clock, AlertTriangle, 
   MapPin, ChevronRight, ChevronLeft, X, Sparkles, Shield, AlertCircle, ShieldAlert, Star, Heart,
   Flame, Coffee, Droplet, TrendingUp, Info, Edit, Sun, Moon, ArrowUpRight, Utensils, Zap, Wheat, MessageSquare, Bed, AlarmClock, ArrowUp,
   Camera, Dumbbell, Brain, Activity, Plus, Check, Loader2, ShoppingCart, Copy, Share2,
@@ -3786,38 +3786,6 @@ function DiarioTab() {
 
       {subTab === "diario" && (
         <div className="space-y-6 animate-in fade-in duration-300">
-          {/* SHAKE FOR AI (TU MEZCLA DEL MOMENTO) CARD */}
-          <div className={cn(
-            "p-5 rounded-3xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-purple-500/5 to-cyan-500/10 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all duration-300",
-            isShaking && "animate-bounce"
-          )}>
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-2xl bg-foreground text-background shrink-0 shadow-md">
-                <Zap className="w-5 h-5 text-amber-400 fill-amber-400" />
-              </div>
-              <div className="space-y-0.5">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-xs font-bold text-foreground">Tu Mezcla del Momento</h3>
-                  <Badge variant="outline" className="text-[10px] font-extrabold border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                    Shake for AI 🥤
-                  </Badge>
-                </div>
-                <p className="text-[11px] text-muted-foreground leading-relaxed">
-                  Agita tu teléfono o presiona para generar tu recomendación inteligente usando los alimentos de tu alacena.
-                </p>
-              </div>
-            </div>
-
-            <Button
-              type="button"
-              onClick={triggerShakeForAi}
-              className="rounded-2xl font-bold text-xs bg-foreground text-background hover:opacity-90 shrink-0 w-full sm:w-auto shadow-sm flex items-center justify-center gap-2"
-            >
-              <Sparkles className="w-4 h-4 text-amber-400" />
-              <span>Mezclar Ahora</span>
-            </Button>
-          </div>
-
           {/* CARD 1: Racha de Actividad (Full Width, estilo Gestión del Sueño) */}
           <div className="bg-card border border-border rounded-3xl p-5 sm:p-6 space-y-4 shadow-xs hover:-translate-y-1 hover:shadow-md transition-all flex flex-col justify-between w-full">
             {/* Card Header */}
@@ -4005,14 +3973,34 @@ function DiarioTab() {
                       <div className={`pl-6 md:pl-0 ${showOnLeft ? "md:order-1" : "md:order-2"}`}>
                         <Card className={`rounded-2xl overflow-hidden transition-all duration-300 shadow-none border-border hover:-translate-y-1.5 hover:shadow-xl hover:shadow-foreground/5 hover:border-border/80 cursor-pointer ${catConfig.bg}`}>
                           {item.img && (
-                            <div className="relative h-40 w-full overflow-hidden">
+                            <div className="relative h-44 w-full overflow-hidden group">
                               <img 
                                 src={item.img} 
                                 alt={item.title} 
-                                className="w-full h-full object-cover" 
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                               />
+                              
+                              {/* GLASSMORPHISM BADGES ON TOP OF IMAGE (NEUTRAL STYLING) */}
+                              {(item.highlightBadges || (item.type === "meal" && item.metrics)) && (
+                                <div className="absolute bottom-3 left-3 right-3 flex flex-wrap gap-1.5 z-10">
+                                  {(item.highlightBadges || [
+                                    { text: "Mínimamente Procesado" },
+                                    { text: "Alto en Proteína Magra" },
+                                    { text: "Alto en Fibra" },
+                                    { text: "Cero Azúcar Añadido" }
+                                  ]).map((b: any, idx: number) => (
+                                    <Badge
+                                      key={idx}
+                                      className="border border-white/40 dark:border-white/20 bg-background/70 dark:bg-card/80 text-foreground backdrop-blur-md text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-md transition-all hover:scale-105"
+                                    >
+                                      {b.text}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              )}
+
                               {item.type !== "sunrise" && item.type !== "sunset" && item.type !== "peak" && (
-                                <div className="absolute top-3 right-3 flex items-center gap-1 bg-background/80 backdrop-blur-md px-2 py-1 rounded-full border border-border/60 shadow-sm">
+                                <div className="absolute top-3 right-3 z-10 flex items-center gap-1 bg-background/80 backdrop-blur-md px-2 py-1 rounded-full border border-border/60 shadow-sm">
                                   <button
                                     type="button"
                                     onClick={(e) => {
@@ -4046,9 +4034,11 @@ function DiarioTab() {
                             <div className="flex items-start justify-between gap-4">
                               <div className="space-y-1">
                                 <CardTitle className="text-base font-bold leading-tight text-foreground">{item.title}</CardTitle>
-                                <CardDescription className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                                  {item.subtitle}
-                                </CardDescription>
+                                {item.type !== "meal" && item.subtitle && (
+                                  <CardDescription className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                    {item.subtitle}
+                                  </CardDescription>
+                                )}
                               </div>
                               <div className="flex items-center gap-1.5 shrink-0">
                                 {!item.img && (
@@ -4092,18 +4082,34 @@ function DiarioTab() {
                             </div>
                           </CardHeader>
 
-                          {(item.kcal > 0 || item.tag) && (
-                            <CardContent className="px-5 pb-4 pt-0">
-                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                {item.kcal > 0 && (
-                                  <span className="flex items-center gap-0.5 font-medium">
-                                    <Flame className="w-3.5 h-3.5 text-orange-500" /> {item.kcal} kcal
-                                  </span>
-                                )}
-                                {item.kcal > 0 && item.tag && <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />}
-                                {item.tag && <span className="font-medium text-foreground/80">{item.tag}</span>}
-                              </div>
+                          {item.type === "meal" ? (
+                            <CardContent className="px-5 pb-5 pt-0 space-y-3">
+                              {/* Qualitative Summary Paragraph */}
+                              {item.summary && (
+                                <p className="text-xs text-muted-foreground leading-relaxed">
+                                  {item.summary}
+                                </p>
+                              )}
+
+                              {/* Footer Disclaimer Label (matching image exact footnote) */}
+                              <p className="text-[10px] text-muted-foreground/70 leading-relaxed text-left italic pt-2 border-t border-border/30">
+                                Visual identification may be inaccurate. Always check important details.
+                              </p>
                             </CardContent>
+                          ) : (
+                            (item.kcal > 0 || item.tag) && (
+                              <CardContent className="px-5 pb-4 pt-0">
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                  {item.kcal > 0 && (
+                                    <span className="flex items-center gap-0.5 font-medium">
+                                      <Flame className="w-3.5 h-3.5 text-orange-500" /> {item.kcal} kcal
+                                    </span>
+                                  )}
+                                  {item.kcal > 0 && item.tag && <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />}
+                                  {item.tag && <span className="font-medium text-foreground/80">{item.tag}</span>}
+                                </div>
+                              </CardContent>
+                            )
                           )}
 
                           {/* Mobile-only Time Stamp */}
@@ -4111,13 +4117,11 @@ function DiarioTab() {
                             <span>{item.time}</span>
                           </div>
 
-                          {/* Coach / AI Feedback Section */}
-                          {item.coachFeedback && (
+                          {/* Coach / AI Feedback Section (para actividades e hidratación) */}
+                          {item.coachFeedback && item.type !== "meal" && (
                             <CardFooter className="px-5 py-4 bg-secondary/20 border-t border-border flex items-start gap-2.5">
                               {item.type === "hydration" ? (
                                 <Droplet className="w-4 h-4 text-cyan-500 shrink-0 mt-0.5" />
-                              ) : item.type === "meal" ? (
-                                <Camera className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                               ) : item.type === "activity" ? (
                                 <Activity className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
                               ) : (
@@ -4284,6 +4288,17 @@ function DiarioTab() {
             <button 
               onClick={() => {
                 setIsFabOpen(false);
+                triggerShakeForAi();
+              }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-secondary/70 transition-colors text-left group cursor-pointer border border-amber-500/30 bg-amber-500/10"
+            >
+              <Zap className="w-4 h-4 text-amber-500 fill-amber-500 group-hover:scale-110 transition-transform shrink-0" />
+              <span className="text-xs font-bold text-foreground flex-1">Shake for AI 🥤 (Tu Mezcla)</span>
+            </button>
+
+            <button 
+              onClick={() => {
+                setIsFabOpen(false);
                 setActiveModal("registrar-actividad");
               }}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-secondary/70 transition-colors text-left group cursor-pointer"
@@ -4351,9 +4366,14 @@ function DiarioTab() {
               time: timeStr,
               date: dateStr,
               title: mealData.title,
-              subtitle: "Análisis Cualitativo AI Coach",
+              subtitle: "REPORTE NUTRICIONAL & BIOLÓGICO (IA)",
               img: mealData.img,
               desc: mealData.desc,
+              summary: mealData.summary,
+              overallRating: mealData.overallRating,
+              overallScore: mealData.overallScore,
+              metrics: mealData.metrics,
+              highlightBadges: mealData.highlightBadges,
               coachFeedback: mealData.coachFeedback,
               tag: mealData.tag
             };
@@ -4979,45 +4999,155 @@ function HydrationArmstrongModal({ onClose, onSave }: HydrationArmstrongModalPro
   );
 }
 
-// Subcomponent: Photo Meal Analysis Modal (Análisis Cualitativo Sin Conteo de Calorías)
+// Subcomponent: Photo Meal Analysis Modal (Análisis Cualitativo & Reporte Nutricional Sin Conteo de Calorías)
 const SAMPLE_MEAL_PHOTOS = [
   {
     id: "sample-1",
     title: "Bowl de Pollo, Camote y Palta",
     img: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80",
+    summary: "Este bowl combina proteína magra del pollo a la plancha con fibra y beta-carotenos del camote horneado, todo mínimamente procesado. Aporta ácidos grasos esenciales y cero azúcares añadidos.",
+    overallRating: "ALTO",
+    overallScore: 4,
+    metrics: [
+      { label: "Nivel de Procesamiento", value: "Mínimamente Procesado", status: "success" },
+      { label: "Fibra Dietética", value: "Buena Fuente", status: "success" },
+      { label: "Calidad de Proteína", value: "Proteína Magra", status: "success" },
+      { label: "Azúcares Añadidos", value: "Cero", status: "success" },
+      { label: "Grasas Saludables", value: "Moderado / Palta", status: "neutral" },
+      { label: "Granos & Tubérculos", value: "Tubérculo Complejo", status: "success" },
+      { label: "Sodio & Electrolitos", value: "Bajo / Natural", status: "success" }
+    ],
+    highlightBadges: [
+      { text: "Mínimamente Procesado", type: "success" },
+      { text: "Alto en Proteína Magra", type: "success" },
+      { text: "Alto en Fibra", type: "success" },
+      { text: "Cero Azúcar Añadido", type: "success" },
+      { text: "Grasas Saludables (Palta)", type: "neutral" }
+    ],
     desc: "Pollo a la plancha (1 palma), Camote horneado (1 puño) y Palta en lonchas (1 pulgar).",
     coachFeedback: "🌱 Aporte Biológico: Excelente matriz proteica para la síntesis muscular sin picos glucémicos.",
     tag: "Proteína Magra & Carbos Complejos"
   },
   {
     id: "sample-2",
+    title: "Chicken Phở con Fideos, Vegetales y Caldo",
+    img: "https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=600&q=80",
+    summary: "Sopa tradicional vietnamita que obtiene proteína magra del pollo y fibra de brotes de soja y vegetales, todo mínimamente procesado. El caldo a base de salsa de pescado aporta sodio elevado, y los fideos provienen de granos de arroz.",
+    overallRating: "ALTO",
+    overallScore: 4,
+    metrics: [
+      { label: "Nivel de Procesamiento", value: "Mínimamente Procesado", status: "success" },
+      { label: "Fibra Dietética", value: "Buena Fuente", status: "success" },
+      { label: "Calidad de Proteína", value: "Proteína Magra", status: "success" },
+      { label: "Azúcares Añadidos", value: "Cero", status: "success" },
+      { label: "Grasas Saludables", value: "Moderado / Balanceado", status: "neutral" },
+      { label: "Granos & Fideos", value: "Arroz Refinado", status: "warning" },
+      { label: "Sodio & Osmolalidad", value: "Elevado en Caldo", status: "warning" }
+    ],
+    highlightBadges: [
+      { text: "Mínimamente Procesado", type: "success" },
+      { text: "Alto en Proteína Magra", type: "success" },
+      { text: "Fuente de Fibra & Vegetales", type: "success" },
+      { text: "Sodio Elevado en Caldo", type: "warning" }
+    ],
+    desc: "Pechuga de pollo desmenuzada (1 palma), Fideos de arroz (1 puño), Vegetales al vapor.",
+    coachFeedback: "🍲 Aporte Biológico: Sopa de fácil asimilación hídrica e hidratación celular, rica en colágeno y electrolitos.",
+    tag: "Hidratación & Proteína Magra"
+  },
+  {
+    id: "sample-3",
     title: "Omelette de Huevos con Avena y Banano",
     img: "https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=600&q=80",
+    summary: "Omelette proteico de huevo entero acompañado de avena integral en copos y banano maduro. Aporta colina, grasas saludables de la yema y carbohidratos de absorción progresiva.",
+    overallRating: "MUY ALTO",
+    overallScore: 5,
+    metrics: [
+      { label: "Nivel de Procesamiento", value: "Sin Procesar / Natural", status: "success" },
+      { label: "Fibra Dietética", value: "Excelente Fuente", status: "success" },
+      { label: "Calidad de Proteína", value: "Valor Biológico Completo", status: "success" },
+      { label: "Azúcares Añadidos", value: "Cero (Azúcar de fruta)", status: "success" },
+      { label: "Grasas Saludables", value: "Lípidos Complejos", status: "neutral" },
+      { label: "Granos & Cereales", value: "Avena Integral", status: "success" },
+      { label: "Sodio & Osmolalidad", value: "Bajo / Mínimo", status: "success" }
+    ],
+    highlightBadges: [
+      { text: "Comida Real / Sin Procesar", type: "success" },
+      { text: "Proteína de Valor Biológico Completo", type: "success" },
+      { text: "Alto en Avena Integral", type: "success" },
+      { text: "Cero Azúcar Añadido", type: "success" }
+    ],
     desc: "3 Huevos enteros (1 palma), Avena integral en copos (1 taza) y Banano maduro.",
     coachFeedback: "⚡ Aporte Biológico: Recarga rápida de glucógeno y colina para la salud neuronal y energía sostenida.",
     tag: "Desayuno Nutritivo & Energía"
   },
   {
-    id: "sample-3",
+    id: "sample-4",
     title: "Ensalada de Atún con Quinoa y Espinacas",
     img: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=600&q=80",
+    summary: "Ensalada fresca de lomo de atún con quinoa real y hojas de espinaca. Excelente densidad micronutricional en hierro, magnesio y ácidos grasos esenciales Omega 3.",
+    overallRating: "EXCELENTE",
+    overallScore: 5,
+    metrics: [
+      { label: "Nivel de Procesamiento", value: "Mínimamente Procesado", status: "success" },
+      { label: "Fibra Dietética", value: "Alta en Fibra & Hierro", status: "success" },
+      { label: "Calidad de Proteína", value: "Proteína de Mar Magra", status: "success" },
+      { label: "Azúcares Añadidos", value: "Cero", status: "success" },
+      { label: "Grasas Saludables", value: "Rico en Omega 3", status: "success" },
+      { label: "Granos & Pseudocereales", value: "Quinoa Completa", status: "success" },
+      { label: "Sodio & Osmolalidad", value: "Equilibrado", status: "success" }
+    ],
+    highlightBadges: [
+      { text: "Mínimamente Procesado", type: "success" },
+      { text: "Proteína de Mar Magra", type: "success" },
+      { text: "Rico en Omega 3", type: "success" },
+      { text: "Alto en Fibra & Hierro", type: "success" }
+    ],
     desc: "Lomo de Atún al agua (1 palma), Quinoa cocida (1 puño) y Aceite de oliva virgen extra (1 cucharada).",
     coachFeedback: "🛡️ Aporte Biológico: Alto contenido de Omega 3 y antioxidantes para reducir la inflamación pos-entrenamiento.",
     tag: "Omega 3 & Antioxidantes"
   },
   {
-    id: "sample-4",
-    title: "Filete de Merluza con Arroz Integral",
-    img: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=600&q=80",
-    desc: "Filete de pescado blanco (1 palma), Arroz integral (1 puño) y Ensalada de vegetales verdes.",
-    coachFeedback: "💧 Aporte Biológico: Digestión ligera de alta absorción biológica, ideal para cenas o entrenos tardíos.",
-    tag: "Proteína Ligera & Saciedad"
+    id: "sample-5",
+    title: "Hamburguesa Doble, Papas Fritas y Gaseosa",
+    img: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80",
+    summary: "Combo clásico de comida rápida industrial. Aporta energía densa y palatabilidad alta. El pan refinado, la gaseosa azucarada y las frituras aumentan la carga glucémica y el sodio celular, manteniendo una densidad baja en fibra vegetal.",
+    overallRating: "MODERADO / BAJO",
+    overallScore: 2,
+    metrics: [
+      { label: "Nivel de Procesamiento", value: "Ultraprocesado / Industrial", status: "warning" },
+      { label: "Fibra Dietética", value: "Baja Fuente / Mínima", status: "neutral" },
+      { label: "Calidad de Proteína", value: "Proteína con Grasas Saturadas", status: "neutral" },
+      { label: "Azúcares Añadidos", value: "Elevado (Gaseosa)", status: "warning" },
+      { label: "Grasas Saludables", value: "Elevado / Grasas Saturadas", status: "warning" },
+      { label: "Granos & Cereales", value: "Pan Refinado", status: "warning" },
+      { label: "Sodio & Osmolalidad", value: "Elevado / Malla Salina", status: "warning" }
+    ],
+    highlightBadges: [
+      { text: "Ultraprocesado / Industrial", type: "warning" },
+      { text: "Elevado en Azúcar Añadido", type: "warning" },
+      { text: "Elevado en Grasas Saturadas", type: "warning" },
+      { text: "Sodio Elevado", type: "warning" }
+    ],
+    desc: "Medallón de carne doble (1.5 palmas), Pan blanco de hamburguesa (1 puño), Papas fritas y Gaseosa comercial.",
+    coachFeedback: "💬 Aporte Biológico & Consejo: Este plato aporta energía rápida de alta densidad. Para equilibrar la respuesta osmótica y glucémica sin culpas ni restricciones, hidrátate bien con agua mineral y complementa con vegetales frescos en tu próxima comida.",
+    tag: "Energía Densa & Ultraprocesado"
   }
 ];
 
 interface PhotoMealAnalysisModalProps {
   onClose: () => void;
-  onSave: (mealData: { title: string; img: string; desc: string; coachFeedback: string; tag: string }) => void;
+  onSave: (mealData: {
+    title: string;
+    img: string;
+    desc: string;
+    summary?: string;
+    overallRating?: string;
+    overallScore?: number;
+    metrics?: { label: string; value: string; status: string }[];
+    highlightBadges?: { text: string; type: string }[];
+    coachFeedback: string;
+    tag: string;
+  }) => void;
 }
 
 function PhotoMealAnalysisModal({ onClose, onSave }: PhotoMealAnalysisModalProps) {
@@ -5028,6 +5158,26 @@ function PhotoMealAnalysisModal({ onClose, onSave }: PhotoMealAnalysisModalProps
 
   const activeImage = customImage || selectedSample.img;
   const activeTitle = customImage ? "Plato de Comida Real" : selectedSample.title;
+  const activeSummary = customImage ? "Este plato aporta proteína magra de alta asimilación con vegetales frescos y grasas saludables de matriz natural, todo mínimamente procesado y sin azúcares añadidos." : selectedSample.summary;
+  const activeOverallRating = customImage ? "ALTO" : selectedSample.overallRating;
+  const activeOverallScore = customImage ? 4 : selectedSample.overallScore;
+  const activeMetrics = customImage ? [
+    { label: "Nivel de Procesamiento", value: "Mínimamente Procesado", status: "success" },
+    { label: "Fibra Dietética", value: "Buena Fuente", status: "success" },
+    { label: "Calidad de Proteína", value: "Proteína Magra", status: "success" },
+    { label: "Azúcares Añadidos", value: "Cero", status: "success" },
+    { label: "Grasas Saludables", value: "Moderado / Balanceado", status: "neutral" },
+    { label: "Granos & Cereales", value: "Integrales / Complejos", status: "success" },
+    { label: "Sodio & Osmolalidad", value: "Bajo / Natural", status: "success" }
+  ] : selectedSample.metrics;
+
+  const activeBadges = customImage ? [
+    { text: "Mínimamente Procesado", type: "success" },
+    { text: "Alto en Proteína Magra", type: "success" },
+    { text: "Alto en Fibra", type: "success" },
+    { text: "Cero Azúcar Añadido", type: "success" }
+  ] : selectedSample.highlightBadges;
+
   const activeDesc = customImage ? "Proteína Magra (1 palma), Carbohidratos Complejos (1 puño) y Grasas Saludables (1 pulgar)." : selectedSample.desc;
   const activeFeedback = customImage ? "🌱 Aporte Biológico: Excelente balance cualitativo de nutrientes para recuperación muscular y energía celular." : selectedSample.coachFeedback;
   const activeTag = customImage ? "Nutrición Consciente & Real" : selectedSample.tag;
@@ -5049,7 +5199,7 @@ function PhotoMealAnalysisModal({ onClose, onSave }: PhotoMealAnalysisModalProps
     setTimeout(() => {
       setIsAnalyzing(false);
       setAnalyzed(true);
-      toast.success("Análisis de visión IA completado");
+      toast.success("Reporte nutricional IA generado");
     }, 1400);
   };
 
@@ -5058,6 +5208,11 @@ function PhotoMealAnalysisModal({ onClose, onSave }: PhotoMealAnalysisModalProps
       title: activeTitle,
       img: activeImage,
       desc: activeDesc,
+      summary: activeSummary,
+      overallRating: activeOverallRating,
+      overallScore: activeOverallScore,
+      metrics: activeMetrics,
+      highlightBadges: activeBadges,
       coachFeedback: activeFeedback,
       tag: activeTag
     });
@@ -5066,25 +5221,25 @@ function PhotoMealAnalysisModal({ onClose, onSave }: PhotoMealAnalysisModalProps
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg rounded-3xl p-6 sm:p-8 border border-border bg-card max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <DialogContent className="sm:max-w-lg rounded-3xl p-6 sm:p-8 border border-border bg-card max-h-[92vh] overflow-y-auto custom-scrollbar">
         <DialogHeader className="pb-3 border-b border-border/40">
           <DialogTitle className="text-base font-bold flex items-center justify-between text-foreground">
             <div className="flex items-center gap-2">
               <Camera className="w-5 h-5 text-emerald-500" />
-              <span>Análisis Cualitativo de Plato</span>
+              <span>Reporte Nutricional por Visión IA</span>
             </div>
             <Badge variant="outline" className="text-[10px] font-extrabold border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
               Cero Calorías / Énfasis Biológico
             </Badge>
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground pt-1">
-            Sube o toma una foto de tu comida. El AI Coach analizará el aporte de nutrición real y porciones visuales.
+            Análisis cualitativo del nivel de procesamiento, densidad de fibra, proteínas, azúcares y sodio.
           </DialogDescription>
         </DialogHeader>
 
         <div className="py-4 space-y-4">
-          {/* Main Image Preview / Dropzone */}
-          <div className="relative h-48 w-full rounded-2xl overflow-hidden border border-border/80 bg-muted/20 flex flex-col items-center justify-center group">
+          {/* Main Image Preview */}
+          <div className="relative h-44 w-full rounded-2xl overflow-hidden border border-border/80 bg-muted/20 flex flex-col items-center justify-center group">
             <img src={activeImage} alt="Preview del plato" className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-background/40 backdrop-blur-xs opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
               <label className="p-2.5 rounded-xl bg-foreground text-background font-bold text-xs cursor-pointer shadow-lg flex items-center gap-1.5 hover:scale-105 transition">
@@ -5097,8 +5252,8 @@ function PhotoMealAnalysisModal({ onClose, onSave }: PhotoMealAnalysisModalProps
 
           {/* Sample Photos Selector */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-foreground block">Fotos de Muestra o Sube la Tuya:</label>
-            <div className="grid grid-cols-4 gap-2">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block">Fotos de Muestra o Sube la Tuya:</label>
+            <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
               {SAMPLE_MEAL_PHOTOS.map((sample) => {
                 const isSelected = !customImage && selectedSample.id === sample.id;
                 return (
@@ -5132,40 +5287,114 @@ function PhotoMealAnalysisModal({ onClose, onSave }: PhotoMealAnalysisModalProps
               {isAnalyzing ? (
                 <>
                   <Sparkles className="w-4 h-4 animate-spin text-white" />
-                  <span>Analizando densidad y porciones...</span>
+                  <span>Generando Reporte Nutricional...</span>
                 </>
               ) : (
                 <>
                   <Sparkles className="w-4 h-4" />
-                  <span>Analizar Plato con IA</span>
+                  <span>Generar Reporte Nutricional IA</span>
                 </>
               )}
             </Button>
           )}
 
-          {/* Analysis Results */}
+          {/* EXACT NUTRITION REPORT UI MATCHING DESIGN */}
           {analyzed && (
-            <div className="p-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 space-y-3 animate-in fade-in duration-300">
-              <div className="flex items-center justify-between">
-                <h4 className="text-xs font-bold text-foreground">{activeTitle}</h4>
-                <Badge className="bg-emerald-500 text-white text-[10px] font-extrabold">{activeTag}</Badge>
+            <div className="p-5 rounded-3xl border border-border bg-background/90 space-y-4 animate-in fade-in duration-300 shadow-sm">
+              <div className="text-center space-y-0.5 pb-2 border-b border-border/40">
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground/80 block">REPORTE NUTRICIONAL</span>
+                <h3 className="text-sm font-bold text-foreground leading-tight">{activeTitle}</h3>
               </div>
 
-              {/* Hand Portions */}
-              <div className="p-3 rounded-xl bg-card border border-border/60 text-xs space-y-1">
-                <div className="font-bold text-foreground flex items-center gap-1.5">
-                  🖐️ Porciones Visuales de Mano:
+              {/* Qualitative Summary Paragraph */}
+              <p className="text-xs text-muted-foreground leading-relaxed text-left">
+                {activeSummary}
+              </p>
+
+              {/* OVERVIEW SECTION */}
+              <div className="space-y-2 pt-1">
+                <div className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground/80 block">OVERVIEW</div>
+                <div className="flex items-baseline justify-between">
+                  <span className="text-xl font-extrabold text-foreground tracking-tight">{activeOverallRating}</span>
+                  <span className="text-[11px] font-medium text-muted-foreground">Valor Nutricional</span>
                 </div>
-                <p className="text-[11px] text-muted-foreground leading-relaxed">{activeDesc}</p>
+
+                {/* 5-bar Segmented Visual Meter */}
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1.5 w-full">
+                    {[1, 2, 3, 4, 5].map((lvl) => (
+                      <div
+                        key={lvl}
+                        className={cn(
+                          "h-2 flex-1 rounded-full transition-all duration-300",
+                          lvl <= activeOverallScore ? "bg-cyan-500 dark:bg-cyan-400" : "bg-secondary"
+                        )}
+                      />
+                    ))}
+                  </div>
+                  <div className="flex justify-between text-[10px] text-muted-foreground font-medium">
+                    <span>Muy Bajo</span>
+                    <span>Muy Alto</span>
+                  </div>
+                </div>
               </div>
 
-              {/* Biological Contribution */}
-              <div className="text-xs space-y-1">
-                <div className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5" /> Aporte Biológico Positivo:
-                </div>
-                <p className="text-[11px] text-muted-foreground leading-relaxed">{activeFeedback}</p>
+              {/* QUALITATIVE METRIC ROWS */}
+              <div className="divide-y divide-border/40 border-t border-b border-border/40">
+                {activeMetrics.map((m, idx) => (
+                  <div key={idx} className="py-2.5 flex items-center justify-between text-xs">
+                    <span className="font-semibold text-foreground">{m.label}</span>
+                    <span className={cn(
+                      "font-bold flex items-center gap-1.5 text-xs",
+                      m.status === "success" ? "text-cyan-600 dark:text-cyan-400" :
+                      m.status === "warning" ? "text-rose-500 dark:text-rose-400" :
+                      "text-muted-foreground"
+                    )}>
+                      <span>{m.value}</span>
+                      {m.status === "success" && <CheckCircle2 className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400 shrink-0" />}
+                      {m.status === "warning" && <Flag className="w-3.5 h-3.5 text-rose-500 fill-rose-500/20 shrink-0" />}
+                      {m.status === "neutral" && <MessageSquare className="w-3.5 h-3.5 text-muted-foreground shrink-0" />}
+                    </span>
+                  </div>
+                ))}
               </div>
+
+              {/* BADGES METRICS WRAP */}
+              <div className="space-y-1.5 pt-1">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground/80 block">Insignias Fisiológicas Rápidas:</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {activeMetrics.map((m, idx) => (
+                    <Badge
+                      key={idx}
+                      variant="outline"
+                      className={cn(
+                        "text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 border transition-all hover:scale-105",
+                        m.status === "success"
+                          ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                          : m.status === "warning"
+                          ? "border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-400"
+                          : "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                      )}
+                    >
+                      <span className="opacity-70 font-normal">{m.label.split(" ")[0]}:</span>
+                      <span>{m.value}</span>
+                      {m.status === "success" && <CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" />}
+                      {m.status === "warning" && <Flag className="w-3 h-3 text-rose-500 fill-rose-500/20 shrink-0" />}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              {/* Hand Portions Reference */}
+              <div className="p-3 rounded-2xl bg-secondary/50 border border-border/50 text-[11px] space-y-1">
+                <span className="font-bold text-foreground block">🖐️ Porciones Visuales Estimadas:</span>
+                <p className="text-muted-foreground leading-relaxed">{activeDesc}</p>
+              </div>
+
+              {/* Disclaimer */}
+              <p className="text-[10px] text-muted-foreground/80 leading-relaxed text-center italic pt-1">
+                El análisis visual por IA es orientativo y cualitativo. Siempre consulta a tu profesional de la salud o nutricionista matriculado.
+              </p>
             </div>
           )}
         </div>
