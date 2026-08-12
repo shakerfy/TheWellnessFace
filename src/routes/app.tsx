@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { SiteHeader } from "@/components/site-header";
 import { Index } from "./index";
 import { GYMS } from "@/lib/gyms";
+import { cn } from "@/lib/utils";
 import { 
   User, Calendar, BarChart3, CreditCard, Settings, 
   LogOut, QrCode, CheckCircle, Clock, AlertTriangle, 
@@ -18,6 +19,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Tooltip as ShadcnTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
@@ -43,120 +45,7 @@ import {
   RadialBarChart, RadialBar, PolarRadiusAxis, PolarAngleAxis, Label
 } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, type ChartConfig } from "@/components/ui/chart";
-// @ts-ignore
-import * as SunCalc from "suncalc";
 
-const SYMPTOMS_DATA = [
-  { symptom: "ninguno", count: 18, fill: "var(--color-ninguno)" },
-  { symptom: "cabeza", count: 14, fill: "var(--color-cabeza)" },
-  { symptom: "fatiga", count: 10, fill: "var(--color-fatiga)" },
-  { symptom: "hinchazon", count: 8, fill: "var(--color-hinchazon)" },
-  { symptom: "humor", count: 7, fill: "var(--color-humor)" },
-  { symptom: "estomago", count: 5, fill: "var(--color-estomago)" },
-  { symptom: "nauseas", count: 3, fill: "var(--color-nauseas)" },
-  { symptom: "otro", count: 2, fill: "var(--color-otro)" }
-];
-
-const SYMPTOMS_CHART_CONFIG = {
-  ninguno: { label: "Ninguno", color: "#10b981" },
-  cabeza: { label: "Dolor de cabeza", color: "#8b5cf6" },
-  fatiga: { label: "Fatiga", color: "#f59e0b" },
-  hinchazon: { label: "Hinchazón", color: "#f97316" },
-  humor: { label: "Cambios de humor", color: "#ec4899" },
-  estomago: { label: "Dolor de estómago", color: "#ef4444" },
-  nauseas: { label: "Náuseas", color: "#eab308" },
-  otro: { label: "Otro", color: "#94a3b8" }
-};
-
-const WHY_EAT_DATA = [
-  { reason: "hambre", label: "Hambre", percentage: 35, fill: "var(--color-hambre)" },
-  { reason: "estres", label: "Estrés", percentage: 15, fill: "var(--color-estres)" },
-  { reason: "sabor", label: "Sabor", percentage: 15, fill: "var(--color-sabor)" },
-  { reason: "social", label: "Social", percentage: 10, fill: "var(--color-social)" },
-  { reason: "habito", label: "Hábito", percentage: 10, fill: "var(--color-habito)" },
-  { reason: "emocional", label: "Emocional", percentage: 8, fill: "var(--color-emocional)" },
-  { reason: "aburrimiento", label: "Aburrimiento", percentage: 5, fill: "var(--color-aburrimiento)" },
-  { reason: "otro", label: "Otro", percentage: 2, fill: "var(--color-otro)" }
-];
-
-const WHY_EAT_CHART_CONFIG = {
-  percentage: {
-    label: "Porcentaje"
-  },
-  hambre: { label: "Hambre", color: "#10b981" },
-  estres: { label: "Estrés", color: "#ef4444" },
-  sabor: { label: "Sabor", color: "#eab308" },
-  social: { label: "Social", color: "#0ea5e9" },
-  habito: { label: "Hábito", color: "#6366f1" },
-  emocional: { label: "Emocional", color: "#ec4899" },
-  aburrimiento: { label: "Aburrimiento", color: "#a855f7" },
-  otro: { label: "Otro", color: "#94a3b8" }
-};
-
-const ADHERENCE_DATA = [
-  { name: "adherencia", value: 85, fill: "var(--color-adherencia)" }
-];
-
-const ADHERENCE_CHART_CONFIG = {
-  value: {
-    label: "Adherencia"
-  },
-  adherencia: {
-    label: "Adherencia Nutricional",
-    color: "#10b981"
-  }
-};
-
-const STABILITY_DATA = [
-  { subject: "Horarios", value: 85 },
-  { subject: "Nutrición", value: 90 },
-  { subject: "Humor", value: 75 },
-  { subject: "Hidratación", value: 80 },
-  { subject: "Consistencia", value: 95 }
-];
-
-const HOLISTIC_RADAR_DATA = [
-  { subject: "BODY AWARENESS", value: 86 },
-  { subject: "HORARIOS", value: 88 },
-  { subject: "NUTRICIÓN", value: 90 },
-  { subject: "HIDRATACIÓN", value: 82 },
-  { subject: "DENSIDAD", value: 85 }
-];
-
-const HOLISTIC_RADAR_CONFIG = {
-  value: {
-    label: "Nivel",
-    color: "#10b981"
-  }
-} satisfies ChartConfig;
-
-const STABILITY_CHART_CONFIG = {
-  value: {
-    label: "Estabilidad",
-    color: "#10b981"
-  }
-} satisfies ChartConfig;
-
-const COLOR_PLATE_DATA = [
-  { colorKey: "verde", percentage: 35, fill: "var(--color-verde)" },
-  { colorKey: "amarillo", percentage: 20, fill: "var(--color-amarillo)" },
-  { colorKey: "rojo", percentage: 15, fill: "var(--color-rojo)" },
-  { colorKey: "marron", percentage: 13, fill: "var(--color-marron)" },
-  { colorKey: "blanco", percentage: 12, fill: "var(--color-blanco)" },
-  { colorKey: "otros", percentage: 5, fill: "var(--color-otros)" }
-];
-
-const COLOR_PLATE_CHART_CONFIG = {
-  percentage: {
-    label: "Porcentaje"
-  },
-  verde: { label: "Verde (Vegetales)", color: "#10b981" },
-  amarillo: { label: "Amarillo/Naranja (Cítricos)", color: "#f59e0b" },
-  rojo: { label: "Rojo (Frutos rojos)", color: "#f43f5e" },
-  marron: { label: "Marrón (Granos/Proteínas)", color: "#92400e" },
-  blanco: { label: "Blanco (Ajo/Hongos)", color: "#cbd5e1" },
-  otros: { label: "Otros (Semillas)", color: "#94a3b8" }
-} satisfies ChartConfig;
 
 export const Route = createFileRoute("/app")({
   component: StudentDashboard,
@@ -893,69 +782,1104 @@ function PagosTab() {
 }
 
 // Subcomponent: Config Tab
+// Food Categories Data for Pantry Selector
+const FOOD_CATEGORIES = [
+  {
+    id: "hortalizas",
+    name: "Hortalizas & Vegetales",
+    items: [
+      "Lechuga", "Rúcula", "Radicheta", "Tomate", "Puerro", "Cebolla", "Berenjena",
+      "Zapallito", "Morrón", "Brócoli", "Coliflor", "Brotes de soja", "Repollito de bruselas",
+      "Remolacha", "Ajo", "Zanahoria", "Repollo", "Champiñon", "Calabaza", "Zapallo", "Apio"
+    ]
+  },
+  {
+    id: "frutas",
+    name: "Frutas Frescas",
+    items: [
+      "Banana", "Manzana", "Mandarina", "Naranja", "Pera", "Uva", "Frutilla",
+      "Arándano", "Sandía", "Melón", "Durazno", "Ananá"
+    ]
+  },
+  {
+    id: "dulces",
+    name: "Dulces Saludables",
+    items: ["Miel", "Mermelada sin azúcar", "Dátiles"]
+  },
+  {
+    id: "proteina_animal",
+    name: "Proteína Animal",
+    items: ["Cerdo", "Pescado", "Pollo", "Vaca", "Huevo", "Jamón cocido", "Lomito", "Pavita"]
+  },
+  {
+    id: "proteina_vegetal",
+    name: "Proteína Vegetal",
+    items: [
+      "Lenteja", "Garbanzo", "Poroto", "Soja", "Arveja", "Habas", "Soja texturizada",
+      "Tofu", "Tempeh", "Levadura nutricional", "Germen de trigo", "Seitán", "Medallones de legumbres"
+    ]
+  },
+  {
+    id: "grasas_saludables",
+    name: "Grasas Saludables",
+    items: ["Aceite", "Palta", "Aceituna", "Frutos secos", "Semillas", "Pasta de maní"]
+  },
+  {
+    id: "lacteos",
+    name: "Lácteos & Quesos",
+    items: ["Leche parcialmente descremada", "Yogurt parcialmente descremado", "Quesos magros"]
+  },
+  {
+    id: "carbohidratos",
+    name: "Carbohidratos & Granos",
+    items: [
+      "Amaranto", "Arroz", "Avena", "Cebada", "Centeno", "Trigo", "Trigo sarraceno",
+      "Trigo burgol", "Cous cous", "Mijo", "Quinoa", "Polenta", "Almidón de maíz",
+      "Pastas simples", "Pastas rellenas", "Masas de empanadas", "Masas de tartas",
+      "Masas de fajitas", "Pan", "Papa", "Batata", "Choclo"
+    ]
+  },
+  {
+    id: "condimentos",
+    name: "Condimentos & Especias",
+    items: ["Nuez moscada", "Pimentón", "Pimienta blanca / negra", "Perejil", "Orégano", "Ají", "Cúrcuma", "Curry"]
+  },
+  {
+    id: "otros",
+    name: "Otros Esenciales",
+    items: ["Bebidas vegetales sin azúcar", "Coco rallado", "Esencia de vainilla", "Stevia", "Polvo para hornear"]
+  }
+];
+
+// Subcomponent: Config Tab (Perfil & Configuración)
 function ConfigTab() {
-  const [photo, setPhoto] = useState("https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80");
-  const [whatsapp, setWhatsapp] = useState(true);
-  const [emailAlert, setEmailAlert] = useState(true);
+  const navigate = useNavigate();
+  const [subView, setSubView] = useState<"main" | "edit-profile" | "diet-preferences" | "app-settings">("main");
 
+  // Profile Form States
+  const [photo] = useState("https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80");
+  const [fullName, setFullName] = useState("Agustín Gómez");
+  const [sex, setSex] = useState<"masculino" | "femenino" | "otro">("masculino");
+  const [birthDate, setBirthDate] = useState("1996-05-14");
+  const [units, setUnits] = useState<"metrico" | "imperial">("metrico");
+  const [height, setHeight] = useState("175");
+  const [weight, setWeight] = useState("72");
+  const [goal, setGoal] = useState<"musculo" | "en_forma" | "perder_peso" | "saludable">("en_forma");
+
+  // Diet Preferences Form States
+  const [dietType, setDietType] = useState<string>("recomendada");
+  const [restrictions, setRestrictions] = useState<string[]>([]);
+  const [meals, setMeals] = useState<string[]>(["desayuno", "almuerzo", "snack_1", "cena"]);
+  const [suggestionStyle, setSuggestionStyle] = useState<"recetas" | "ingredientes">("recetas");
+  const [variety, setVariety] = useState<"mucha" | "moderada" | "poca">("moderada");
+  const [selectedFoods, setSelectedFoods] = useState<string[]>(() => {
+    return FOOD_CATEGORIES.flatMap(c => c.items);
+  });
+
+  // App Settings State
+  const [theme, setTheme] = useState<"system" | "light" | "dark">("system");
+  const [language, setLanguage] = useState("es");
+  const [reminders, setReminders] = useState(true);
+  const [motionSensorEnabled, setMotionSensorEnabled] = useState(false);
+
+  // Legal, Contact, Logout & Delete Account Modals State
+  const [privacyModalOpen, setPrivacyModalOpen] = useState(false);
+  const [termsModalOpen, setTermsModalOpen] = useState(false);
+  const [contactModalOpen, setContactModalOpen] = useState(false);
+  const [logoutModalOpen, setLogoutModalOpen] = useState(false);
+  const [deleteAccountModalOpen, setDeleteAccountModalOpen] = useState(false);
+
+  // Profile Completion Percentage Calculation (Gamificación sin bloqueo)
+  const profileCompletion = useMemo(() => {
+    let completedSteps = 0;
+    const totalSteps = 7;
+
+    if (fullName.trim().length > 0) completedSteps++;
+    if (birthDate && sex) completedSteps++;
+    if (height && weight && Number(height) > 0 && Number(weight) > 0) completedSteps++;
+    if (goal) completedSteps++;
+    if (dietType) completedSteps++;
+    if (meals.length > 0) completedSteps++;
+    if (selectedFoods.length > 0) completedSteps++;
+
+    return Math.round((completedSteps / totalSteps) * 100);
+  }, [fullName, birthDate, sex, height, weight, goal, dietType, meals, selectedFoods]);
+
+  const handleToggleMotionSensor = async (enabled: boolean) => {
+    setMotionSensorEnabled(enabled);
+    if (enabled) {
+      if (typeof window !== "undefined" && typeof (DeviceMotionEvent as any)?.requestPermission === "function") {
+        try {
+          const permissionState = await (DeviceMotionEvent as any).requestPermission();
+          if (permissionState === "granted") {
+            toast.success("Permiso de sensor de movimiento activado para iPhone");
+          } else {
+            toast.error("Permiso de acelerómetro denegado en iOS");
+            setMotionSensorEnabled(false);
+          }
+        } catch (err) {
+          toast.info("Sensor de movimiento activado para Shake AI");
+        }
+      } else {
+        toast.success("Sensor de movimiento Shake AI activado");
+      }
+    } else {
+      toast.info("Sensor de movimiento desactivado");
+    }
+  };
+
+  const handleSaveProfile = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (typeof window !== "undefined") {
+      const updatedProfile = { fullName, sex, birthDate, units, height, weight, goal };
+      localStorage.setItem("shakerfy_user_profile_edit", JSON.stringify(updatedProfile));
+    }
+    toast.success("Perfil guardado correctamente");
+    setSubView("main");
+  };
+
+  const handleSaveDietPreferences = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (typeof window !== "undefined") {
+      const dietData = { dietType, restrictions, meals, suggestionStyle, variety, selectedFoods };
+      localStorage.setItem("shakerfy_diet_preferences", JSON.stringify(dietData));
+    }
+    toast.success("Preferencias alimenticias guardadas");
+    setSubView("main");
+  };
+
+  const handleSaveAppSettings = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (typeof window !== "undefined") {
+      const appSettingsData = { theme, language, reminders, motionSensorEnabled };
+      localStorage.setItem("shakerfy_app_settings", JSON.stringify(appSettingsData));
+    }
+    toast.success("Configuración de la aplicación guardada");
+    setSubView("main");
+  };
+
+  const handleLogout = () => {
+    setLogoutModalOpen(false);
+    toast.success("Sesión cerrada correctamente");
+    navigate({ to: "/" });
+  };
+
+  const toggleRestriction = (res: string) => {
+    setRestrictions(prev => prev.includes(res) ? prev.filter(r => r !== res) : [...prev, res]);
+  };
+
+  const toggleMeal = (meal: string) => {
+    setMeals(prev => prev.includes(meal) ? prev.filter(m => m !== meal) : [...prev, meal]);
+  };
+
+  const toggleFood = (item: string) => {
+    setSelectedFoods(prev => prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]);
+  };
+
+  const toggleCategoryFoods = (categoryItems: string[]) => {
+    const allSelected = categoryItems.every(i => selectedFoods.includes(i));
+    if (allSelected) {
+      setSelectedFoods(prev => prev.filter(i => !categoryItems.includes(i)));
+    } else {
+      setSelectedFoods(prev => Array.from(new Set([...prev, ...categoryItems])));
+    }
+  };
+
+  const getGoalLabel = (g: string) => {
+    switch (g) {
+      case "musculo": return "Ganar músculo";
+      case "perder_peso": return "Perder peso";
+      case "saludable": return "Ser saludable";
+      default: return "Ponerme en forma";
+    }
+  };
+
+  const getDietTypeLabel = (d: string) => {
+    switch (d) {
+      case "alta_proteinas": return "Alta en proteínas";
+      case "baja_carbos": return "Baja en carbohidratos";
+      case "keto": return "Keto";
+      case "bajo_grasas": return "Bajo en grasas";
+      default: return "Recomendada";
+    }
+  };
+
+  // SUB-SCREEN 1: PERFIL (EDITAR PERFIL)
+  if (subView === "edit-profile") {
+    return (
+      <div className="space-y-6 max-w-2xl pb-12 animate-fade-in">
+        <button
+          type="button"
+          onClick={() => setSubView("main")}
+          className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground transition cursor-pointer"
+        >
+          <ChevronLeft className="w-4 h-4" /> Volver a Configuración
+        </button>
+
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Perfil</h2>
+          <p className="text-sm text-muted-foreground">Configura tus datos biológicos, unidades de medida y objetivo principal.</p>
+        </div>
+
+        <form onSubmit={handleSaveProfile} className="space-y-6 border border-border bg-card shadow-xs rounded-3xl p-6 sm:p-8">
+          {/* Avatar Header */}
+          <div className="flex items-center gap-4 pb-4 border-b border-border/40">
+            <img src={photo} alt="Perfil" className="h-16 w-16 rounded-full object-cover border border-border shadow-xs" />
+            <div>
+              <Button type="button" size="sm" variant="outline" className="rounded-xl text-xs font-semibold">
+                Cambiar foto
+              </Button>
+              <p className="text-[11px] text-muted-foreground mt-1">JPG, PNG o WEBP. Máx 2MB.</p>
+            </div>
+          </div>
+
+          {/* Nombre & Sexo */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground">Nombre Completo</label>
+              <input
+                type="text"
+                required
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground">Sexo / Género</label>
+              <Select value={sex} onValueChange={(val: any) => setSex(val)}>
+                <SelectTrigger className="w-full rounded-xl">
+                  <SelectValue placeholder="Selecciona sexo" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl">
+                  <SelectItem value="masculino">Masculino</SelectItem>
+                  <SelectItem value="femenino">Femenino</SelectItem>
+                  <SelectItem value="otro">Otro / Prefiero no decir</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Fecha de Nacimiento & Unidades */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground">Fecha de Nacimiento</label>
+              <input
+                type="date"
+                value={birthDate}
+                onChange={(e) => setBirthDate(e.target.value)}
+                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground">Sistema de Unidades</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setUnits("metrico")}
+                  className={cn(
+                    "h-10 rounded-xl border text-xs font-semibold transition cursor-pointer flex items-center justify-center",
+                    units === "metrico" ? "border-foreground bg-accent text-foreground font-bold" : "border-border/60 hover:border-border text-muted-foreground"
+                  )}
+                >
+                  Métrico (kg, cm)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUnits("imperial")}
+                  className={cn(
+                    "h-10 rounded-xl border text-xs font-semibold transition cursor-pointer flex items-center justify-center",
+                    units === "imperial" ? "border-foreground bg-accent text-foreground font-bold" : "border-border/60 hover:border-border text-muted-foreground"
+                  )}
+                >
+                  Imperial (lbs, in)
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Altura & Peso */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground">
+                Altura ({units === "metrico" ? "cm" : "pulgadas"})
+              </label>
+              <input
+                type="number"
+                value={height}
+                onChange={(e) => setHeight(e.target.value)}
+                placeholder={units === "metrico" ? "175" : "69"}
+                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground">
+                Peso ({units === "metrico" ? "kg" : "lbs"})
+              </label>
+              <input
+                type="number"
+                value={weight}
+                onChange={(e) => setWeight(e.target.value)}
+                placeholder={units === "metrico" ? "70" : "154"}
+                className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+          </div>
+
+          {/* Objetivo Principal */}
+          <div className="space-y-2 pt-2 border-t border-border/40">
+            <label className="text-xs font-semibold text-foreground block">Objetivo Principal</label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              {[
+                { id: "musculo", label: "Ganar músculo", icon: Dumbbell, color: "text-orange-500" },
+                { id: "en_forma", label: "Ponerme en forma", icon: Flame, color: "text-amber-500" },
+                { id: "perder_peso", label: "Perder peso", icon: TrendingUp, color: "text-emerald-500" },
+                { id: "saludable", label: "Ser saludable", icon: Heart, color: "text-rose-500" }
+              ].map((item) => {
+                const IconComp = item.icon;
+                const isSelected = goal === item.id;
+                return (
+                  <button
+                    type="button"
+                    key={item.id}
+                    onClick={() => setGoal(item.id as any)}
+                    className={cn(
+                      "flex flex-col items-center justify-center p-3 rounded-2xl border text-xs font-medium transition cursor-pointer text-center space-y-1.5",
+                      isSelected ? "border-foreground bg-accent text-foreground font-bold shadow-xs" : "border-border/60 hover:border-border text-muted-foreground"
+                    )}
+                  >
+                    <IconComp className={cn("w-4 h-4", isSelected ? item.color : "text-muted-foreground")} />
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="pt-4 flex items-center gap-3">
+            <Button type="submit" size="default" className="rounded-xl font-bold flex-1 sm:flex-initial">
+              Guardar Cambios de Perfil
+            </Button>
+            <Button type="button" variant="outline" size="default" onClick={() => setSubView("main")} className="rounded-xl font-semibold">
+              Cancelar
+            </Button>
+          </div>
+        </form>
+      </div>
+    );
+  }
+
+  // SUB-SCREEN 2: PREFERENCIAS ALIMENTICIAS
+  if (subView === "diet-preferences") {
+    return (
+      <div className="space-y-6 max-w-3xl pb-16 animate-fade-in">
+        <button
+          type="button"
+          onClick={() => setSubView("main")}
+          className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground transition cursor-pointer"
+        >
+          <ChevronLeft className="w-4 h-4" /> Volver a Configuración
+        </button>
+
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Preferencias Alimenticias</h2>
+          <p className="text-sm text-muted-foreground">Personaliza tus metas nutricionales, tipo de sugerencias y disponibilidad de alimentos.</p>
+        </div>
+
+        <form onSubmit={handleSaveDietPreferences} className="space-y-8">
+          {/* 1. TIPO DE DIETA */}
+          <div className="border border-border bg-card shadow-xs rounded-3xl p-6 sm:p-8 space-y-4">
+            <div className="space-y-1">
+              <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                <Utensils className="w-4 h-4 text-emerald-500" /> ¿Qué tipo de dieta prefieres?
+              </h3>
+              <p className="text-xs text-muted-foreground">La IA ajustará la distribución de nutrientes según tu filosofía nutricional.</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                { id: "recomendada", title: "Recomendada", desc: "La mejor para ti. Mezcla óptima de proteínas, carbohidratos y grasas." },
+                { id: "alta_proteinas", title: "Alta en proteínas", desc: "Más proteínas, menos carbohidratos y grasas moderadas." },
+                { id: "baja_carbos", title: "Baja en carbohidratos", desc: "Menos carbohidratos, más grasas y proteínas moderadas." },
+                { id: "keto", title: "Keto", desc: "Muy baja en carbohidratos, alta en grasas y proteínas moderadas." },
+                { id: "bajo_grasas", title: "Bajo en grasas", desc: "Menos grasas, más carbohidratos y proteínas moderadas." }
+              ].map((dt) => {
+                const isSelected = dietType === dt.id;
+                return (
+                  <button
+                    type="button"
+                    key={dt.id}
+                    onClick={() => setDietType(dt.id)}
+                    className={cn(
+                      "p-4 rounded-2xl border text-left transition cursor-pointer space-y-1",
+                      isSelected ? "border-foreground bg-accent/80 text-foreground shadow-xs" : "border-border/60 hover:border-border text-muted-foreground"
+                    )}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-foreground">{dt.title}</span>
+                      {isSelected && <Check className="w-4 h-4 text-emerald-500" />}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">{dt.desc}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 2. RESTRICCIONES & FRECUENCIA DE COMIDAS */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Restricciones */}
+            <div className="border border-border bg-card shadow-xs rounded-3xl p-6 space-y-4">
+              <div className="space-y-1">
+                <h3 className="text-sm font-bold text-foreground">Restricciones Alimentarias</h3>
+                <p className="text-xs text-muted-foreground">Selecciona si sigues algún régimen estricto.</p>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { id: "vegano", label: "Vegano" },
+                  { id: "vegetariano", label: "Vegetariano" },
+                  { id: "sin_lactosa", label: "Sin Lactosa" },
+                  { id: "sin_gluten", label: "Sin Gluten / Celiaco" }
+                ].map((res) => {
+                  const isChecked = restrictions.includes(res.id);
+                  return (
+                    <button
+                      type="button"
+                      key={res.id}
+                      onClick={() => toggleRestriction(res.id)}
+                      className={cn(
+                        "px-3.5 py-2 rounded-xl border text-xs font-semibold transition cursor-pointer flex items-center gap-1.5",
+                        isChecked ? "border-foreground bg-foreground text-background" : "border-border/60 hover:border-border text-muted-foreground"
+                      )}
+                    >
+                      {isChecked && <Check className="w-3.5 h-3.5" />}
+                      <span>{res.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Frecuencia de comidas */}
+            <div className="border border-border bg-card shadow-xs rounded-3xl p-6 space-y-4">
+              <div className="space-y-1">
+                <h3 className="text-sm font-bold text-foreground">Distribución de Comidas</h3>
+                <p className="text-xs text-muted-foreground">¿Cuántas comidas al día sueles o deseas hacer?</p>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { id: "desayuno", label: "Desayuno" },
+                  { id: "almuerzo", label: "Almuerzo" },
+                  { id: "snack_1", label: "Snack 1" },
+                  { id: "cena", label: "Cena" },
+                  { id: "snack_2", label: "Snack 2" }
+                ].map((m) => {
+                  const isChecked = meals.includes(m.id);
+                  return (
+                    <button
+                      type="button"
+                      key={m.id}
+                      onClick={() => toggleMeal(m.id)}
+                      className={cn(
+                        "px-3.5 py-2 rounded-xl border text-xs font-semibold transition cursor-pointer flex items-center gap-1.5",
+                        isChecked ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "border-border/60 hover:border-border text-muted-foreground"
+                      )}
+                    >
+                      {isChecked && <Check className="w-3.5 h-3.5" />}
+                      <span>{m.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* 3. FORMATO & VARIEDAD DE SUGERENCIAS */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Formato de Sugerencias */}
+            <div className="border border-border bg-card shadow-xs rounded-3xl p-6 space-y-4">
+              <div className="space-y-1">
+                <h3 className="text-sm font-bold text-foreground">Formato de Sugerencias</h3>
+                <p className="text-xs text-muted-foreground">¿Cómo prefieres que la IA te presente tus comidas?</p>
+              </div>
+
+              <div className="space-y-2.5">
+                {[
+                  { id: "recetas", title: "📖 Recetas", desc: "Instrucciones paso a paso. Ej: Avocado Chicken Sandwich." },
+                  { id: "ingredientes", title: "🥩 Solo ingredientes", desc: "Prepáralos como quieras. Ej: 1 filete de pollo, 1 taza de arroz, 1/2 palta." }
+                ].map((fmt) => {
+                  const isSelected = suggestionStyle === fmt.id;
+                  return (
+                    <button
+                      type="button"
+                      key={fmt.id}
+                      onClick={() => setSuggestionStyle(fmt.id as any)}
+                      className={cn(
+                        "w-full p-3.5 rounded-2xl border text-left transition cursor-pointer space-y-1",
+                        isSelected ? "border-foreground bg-accent text-foreground font-bold" : "border-border/60 hover:border-border text-muted-foreground"
+                      )}
+                    >
+                      <div className="text-xs font-bold text-foreground">{fmt.title}</div>
+                      <p className="text-[11px] text-muted-foreground">{fmt.desc}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Variedad de Comidas */}
+            <div className="border border-border bg-card shadow-xs rounded-3xl p-6 space-y-4">
+              <div className="space-y-1">
+                <h3 className="text-sm font-bold text-foreground">Variedad en tus Comidas</h3>
+                <p className="text-xs text-muted-foreground">¿Cuánta diversidad te gustaría en tus menúes cotidianos?</p>
+              </div>
+
+              <div className="space-y-2.5">
+                {[
+                  { id: "mucha", title: "Mucha variedad", desc: "Ideal si te gusta preparar diferentes platos todos los días." },
+                  { id: "moderada", title: "Variedad moderada", desc: "Buena si te gusta repetir platos pero quieres algo de variedad." },
+                  { id: "poca", title: "Poca variedad", desc: "Perfecta para facilitar la planificación y compra de supermercado." }
+                ].map((v) => {
+                  const isSelected = variety === v.id;
+                  return (
+                    <button
+                      type="button"
+                      key={v.id}
+                      onClick={() => setVariety(v.id as any)}
+                      className={cn(
+                        "w-full p-3 rounded-2xl border text-left transition cursor-pointer space-y-0.5",
+                        isSelected ? "border-foreground bg-accent text-foreground font-bold" : "border-border/60 hover:border-border text-muted-foreground"
+                      )}
+                    >
+                      <div className="text-xs font-bold text-foreground">{v.title}</div>
+                      <p className="text-[11px] text-muted-foreground">{v.desc}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* 4. ALIMENTOS DISPONIBLES EN ALACENA (POR CATEGORÍAS) */}
+          <div className="border border-border bg-card shadow-xs rounded-3xl p-6 sm:p-8 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/40 pb-4">
+              <div>
+                <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                  <Wheat className="w-4 h-4 text-amber-500" /> Selecciona tus Alimentos Disponibles
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Tus sugerencias dependerán exclusivamente de las elecciones que marques aquí.</p>
+              </div>
+              <Badge variant="outline" className="text-xs font-bold self-start sm:self-auto">
+                {selectedFoods.length} alimentos activos
+              </Badge>
+            </div>
+
+            <div className="space-y-6">
+              {FOOD_CATEGORIES.map((cat) => {
+                const categorySelectedCount = cat.items.filter(i => selectedFoods.includes(i)).length;
+                const allSelected = categorySelectedCount === cat.items.length;
+
+                return (
+                  <div key={cat.id} className="space-y-2.5 border-b border-border/30 pb-4 last:border-0 last:pb-0">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-foreground uppercase tracking-wider text-muted-foreground/90">
+                        {cat.name} ({categorySelectedCount}/{cat.items.length})
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => toggleCategoryFoods(cat.items)}
+                        className="text-[11px] font-semibold text-primary hover:underline cursor-pointer"
+                      >
+                        {allSelected ? "Desmarcar todos" : "Seleccionar todos"}
+                      </button>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1.5">
+                      {cat.items.map((item) => {
+                        const isChecked = selectedFoods.includes(item);
+                        return (
+                          <button
+                            type="button"
+                            key={item}
+                            onClick={() => toggleFood(item)}
+                            className={cn(
+                              "px-2.5 py-1.5 rounded-xl border text-[11px] font-medium transition cursor-pointer select-none",
+                              isChecked ? "border-foreground/80 bg-foreground text-background font-semibold" : "border-border/60 hover:border-border text-muted-foreground/80 bg-background/50"
+                            )}
+                          >
+                            {isChecked ? `✓ ${item}` : item}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Button type="submit" size="default" className="rounded-xl font-bold flex-1 sm:flex-initial">
+              Guardar Preferencias Alimenticias
+            </Button>
+            <Button type="button" variant="outline" size="default" onClick={() => setSubView("main")} className="rounded-xl font-semibold">
+              Cancelar
+            </Button>
+          </div>
+        </form>
+      </div>
+    );
+  }
+
+  // SUB-SCREEN 3: CONFIGURACIÓN DE LA APLICACIÓN
+  if (subView === "app-settings") {
+    return (
+      <div className="space-y-6 max-w-2xl pb-12 animate-fade-in">
+        <button
+          type="button"
+          onClick={() => setSubView("main")}
+          className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground transition cursor-pointer"
+        >
+          <ChevronLeft className="w-4 h-4" /> Volver a Configuración
+        </button>
+
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Configuración de la Aplicación</h2>
+          <p className="text-sm text-muted-foreground">Personaliza el tema visual, idioma y tus notificaciones de recordatorios.</p>
+        </div>
+
+        <form onSubmit={handleSaveAppSettings} className="space-y-6 border border-border bg-card shadow-xs rounded-3xl p-6 sm:p-8">
+          {/* Tema visual */}
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-foreground block">Tema de Interfaz</label>
+            <div className="grid grid-cols-3 gap-2.5">
+              <button
+                type="button"
+                onClick={() => setTheme("light")}
+                className={cn(
+                  "flex flex-col items-center justify-center p-3.5 rounded-2xl border text-xs font-medium transition-all cursor-pointer space-y-1.5",
+                  theme === "light" ? "border-foreground bg-accent text-foreground font-bold shadow-xs" : "border-border/60 hover:border-border text-muted-foreground"
+                )}
+              >
+                <Sun className="w-4 h-4" />
+                <span>Claro</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setTheme("dark")}
+                className={cn(
+                  "flex flex-col items-center justify-center p-3.5 rounded-2xl border text-xs font-medium transition-all cursor-pointer space-y-1.5",
+                  theme === "dark" ? "border-foreground bg-accent text-foreground font-bold shadow-xs" : "border-border/60 hover:border-border text-muted-foreground"
+                )}
+              >
+                <Moon className="w-4 h-4" />
+                <span>Oscuro</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setTheme("system")}
+                className={cn(
+                  "flex flex-col items-center justify-center p-3.5 rounded-2xl border text-xs font-medium transition-all cursor-pointer space-y-1.5",
+                  theme === "system" ? "border-foreground bg-accent text-foreground font-bold shadow-xs" : "border-border/60 hover:border-border text-muted-foreground"
+                )}
+              >
+                <Smartphone className="w-4 h-4" />
+                <span>Sistema</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Idioma */}
+          <div className="space-y-1.5 pt-2 border-t border-border/40">
+            <label className="text-xs font-semibold text-foreground block">Idioma de Preferencia</label>
+            <Select value={language} onValueChange={setLanguage}>
+              <SelectTrigger className="w-full rounded-xl h-11">
+                <SelectValue placeholder="Selecciona idioma" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl">
+                <SelectItem value="es">Español (Latinoamérica)</SelectItem>
+                <SelectItem value="en">English (US)</SelectItem>
+                <SelectItem value="pt">Português (Brasil)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Switch Recordatorios */}
+          <div className="space-y-2 pt-2 border-t border-border/40">
+            <label className="text-xs font-semibold text-foreground block">Notificaciones</label>
+            <div className="flex items-center justify-between p-4 rounded-2xl border border-border/60 bg-muted/20">
+              <div className="space-y-0.5">
+                <div className="text-xs font-bold text-foreground">Recordatorios</div>
+                <div className="text-[11px] text-muted-foreground">Alertas y avisos de tus clases, reservas e hidratación.</div>
+              </div>
+              <Switch
+                checked={reminders}
+                onCheckedChange={setReminders}
+              />
+            </div>
+          </div>
+
+          {/* Sensor de Movimiento (Shake AI) */}
+          <div className="space-y-2 pt-2 border-t border-border/40">
+            <label className="text-xs font-semibold text-foreground block">Sensor de Movimiento</label>
+            <div className="flex items-center justify-between p-4 rounded-2xl border border-border/60 bg-muted/20">
+              <div className="space-y-0.5 max-w-[78%]">
+                <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5 text-amber-500" /> Shake AI (Gesto de agitar iPhone)
+                </div>
+                <div className="text-[11px] text-muted-foreground leading-relaxed">
+                  Permite agitar tu dispositivo para consultar al AI Coach. Solicita permiso explícito de acelerómetro en iOS.
+                </div>
+              </div>
+              <Switch
+                checked={motionSensorEnabled}
+                onCheckedChange={handleToggleMotionSensor}
+              />
+            </div>
+          </div>
+
+          {/* Zona de Peligro: Eliminar Cuenta */}
+          <div className="space-y-2 pt-4 border-t border-rose-500/20">
+            <label className="text-[11px] font-bold text-rose-500 block uppercase tracking-wider">Zona de Peligro</label>
+            <div className="p-4 rounded-2xl border border-rose-500/30 bg-rose-500/5 flex items-center justify-between gap-3">
+              <div className="space-y-0.5">
+                <div className="text-xs font-bold text-rose-600 dark:text-rose-400">Eliminar cuenta permanentemente</div>
+                <div className="text-[11px] text-muted-foreground">Borrará definitivamente tus datos biológicos, historial y créditos.</div>
+              </div>
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                onClick={() => setDeleteAccountModalOpen(true)}
+                className="rounded-xl font-bold text-xs shrink-0"
+              >
+                Eliminar cuenta
+              </Button>
+            </div>
+          </div>
+
+          <div className="pt-4 flex items-center gap-3">
+            <Button type="submit" size="default" className="rounded-xl font-bold flex-1 sm:flex-initial">
+              Guardar Configuración
+            </Button>
+            <Button type="button" variant="outline" size="default" onClick={() => setSubView("main")} className="rounded-xl font-semibold">
+              Cancelar
+            </Button>
+          </div>
+        </form>
+      </div>
+    );
+  }
+
+  // MAIN SCREEN: PERFIL & CONFIGURACIÓN (CON 7 LIST TILES UNIFICADOS Y MINIMALISTAS)
   return (
-    <div className="space-y-6 max-w-xl">
+    <div className="space-y-6 max-w-3xl pb-16 animate-fade-in">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Configuración</h2>
-        <p className="text-sm text-muted-foreground">Preferencias y datos personales.</p>
+        <h2 className="text-2xl font-bold tracking-tight">Perfil & Configuración</h2>
+        <p className="text-sm text-muted-foreground">Gestiona tus datos personales, preferencias de app y soporte.</p>
       </div>
 
-      <div className="space-y-4 rounded-2xl border border-border bg-card p-6">
-        <h3 className="text-sm font-bold text-muted-foreground uppercase mb-4">Datos Personales</h3>
-        
-        <div className="flex items-center gap-4">
-          <img src={photo} alt="Perfil" className="h-16 w-16 rounded-full object-cover border border-border" />
-          <Button size="sm" variant="outline" className="rounded-xl">Cambiar foto</Button>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2 mt-4">
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-muted-foreground">Teléfono</label>
-            <input type="text" className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" defaultValue="+54 9 11 3242-1241" />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-muted-foreground">Email</label>
-            <input type="email" className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" defaultValue="agustin.gomez@email.com" />
-          </div>
-        </div>
-        <Button size="sm" className="rounded-xl mt-2">Guardar cambios</Button>
-      </div>
-
-      <div className="space-y-4 rounded-2xl border border-border bg-card p-6">
-        <h3 className="text-sm font-bold text-muted-foreground uppercase mb-4">Notificaciones</h3>
-
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm font-semibold">Recordatorios por WhatsApp</div>
-              <div className="text-xs text-muted-foreground">Recibe avisos automáticos 2 horas antes de tu clase.</div>
+      {/* BARRA DE PROGRESO DE CALIBRACIÓN DE PERFIL (Gamificación sin bloqueo) */}
+      <div className="p-5 rounded-3xl border border-border bg-card shadow-xs space-y-3 hover:-translate-y-0.5 transition-all duration-300">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-2xl bg-primary/10 text-primary shrink-0">
+              <Sparkles className="w-4 h-4" />
             </div>
-            <input 
-              type="checkbox" 
-              checked={whatsapp} 
-              onChange={() => setWhatsapp(!whatsapp)} 
-              className="h-5 w-10 accent-foreground rounded-full cursor-pointer"
-            />
-          </div>
-          <div className="flex items-center justify-between border-t border-border/60 pt-3">
             <div>
-              <div className="text-sm font-semibold">Emails de Confirmación</div>
-              <div className="text-xs text-muted-foreground">Confirmaciones de reservas y facturas digitales en tu casilla de correo.</div>
+              <h3 className="text-xs font-bold text-foreground">Calibración del Perfil</h3>
+              <p className="text-[11px] text-muted-foreground">Tu AI Coach ofrecerá respuestas más precisas a mayor calibración.</p>
             </div>
-            <input 
-              type="checkbox" 
-              checked={emailAlert} 
-              onChange={() => setEmailAlert(!emailAlert)} 
-              className="h-5 w-10 accent-foreground rounded-full cursor-pointer"
-            />
           </div>
+          <Badge variant="outline" className={cn("text-xs font-extrabold rounded-xl px-2.5 py-1 shrink-0", profileCompletion === 100 ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "border-primary/30 bg-primary/10 text-primary")}>
+            {profileCompletion}% Calibrado
+          </Badge>
+        </div>
+
+        {/* Barra de progreso visual */}
+        <div className="w-full h-2.5 bg-secondary rounded-full overflow-hidden">
+          <div
+            className={cn(
+              "h-full rounded-full transition-all duration-500 ease-out",
+              profileCompletion === 100 ? "bg-emerald-500" : "bg-primary"
+            )}
+            style={{ width: `${profileCompletion}%` }}
+          />
+        </div>
+
+        {profileCompletion < 100 ? (
+          <p className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5 pt-0.5">
+            💡 Tip: Completa tus <span className="font-bold text-foreground">Preferencias alimenticias</span> y alacena para alcanzar el 100%.
+          </p>
+        ) : (
+          <p className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 pt-0.5">
+            ✓ ¡Perfil 100% calibrado! Tu AI Coach conoce exactamente tu contexto.
+          </p>
+        )}
+      </div>
+
+      {/* UNIFIED 7 LIST TILES */}
+      <div className="space-y-3">
+        <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+          Opciones de Cuenta & Aplicación
+        </div>
+
+        <div className="grid grid-cols-1 gap-2.5">
+          {/* TILE 1: PERFIL */}
+          <button
+            type="button"
+            onClick={() => setSubView("edit-profile")}
+            className="flex items-center justify-between p-4 rounded-3xl border border-border bg-card hover:bg-secondary/40 shadow-xs hover:-translate-y-0.5 transition-all duration-300 cursor-pointer text-left group"
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="p-2.5 rounded-2xl bg-indigo-500/10 text-indigo-500 group-hover:scale-105 transition-transform shrink-0">
+                <User className="w-5 h-5" />
+              </div>
+              <div className="space-y-0.5">
+                <div className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">Perfil</div>
+                <div className="text-xs text-muted-foreground">Nombre, datos biológicos, peso, altura y objetivo.</div>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
+          </button>
+
+          {/* TILE 2: PREFERENCIAS ALIMENTICIAS */}
+          <button
+            type="button"
+            onClick={() => setSubView("diet-preferences")}
+            className="flex items-center justify-between p-4 rounded-3xl border border-border bg-card hover:bg-secondary/40 shadow-xs hover:-translate-y-0.5 transition-all duration-300 cursor-pointer text-left group"
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="p-2.5 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 group-hover:scale-105 transition-transform shrink-0">
+                <Utensils className="w-5 h-5" />
+              </div>
+              <div className="space-y-0.5">
+                <div className="text-sm font-bold text-foreground group-hover:text-emerald-500 transition-colors">Preferencias alimenticias</div>
+                <div className="text-xs text-muted-foreground">Tipo de dieta, recetas, comidas al día y alimentos disponibles.</div>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
+          </button>
+
+          {/* TILE 3: CONFIGURACIÓN DE LA APLICACIÓN */}
+          <button
+            type="button"
+            onClick={() => setSubView("app-settings")}
+            className="flex items-center justify-between p-4 rounded-3xl border border-border bg-card hover:bg-secondary/40 shadow-xs hover:-translate-y-0.5 transition-all duration-300 cursor-pointer text-left group"
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="p-2.5 rounded-2xl bg-sky-500/10 text-sky-500 group-hover:scale-105 transition-transform shrink-0">
+                <Settings className="w-5 h-5" />
+              </div>
+              <div className="space-y-0.5">
+                <div className="text-sm font-bold text-foreground group-hover:text-sky-500 transition-colors">Configuración de la aplicación</div>
+                <div className="text-xs text-muted-foreground">Tema visual (claro/oscuro), idioma y recordatorios.</div>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
+          </button>
+
+          {/* TILE 4: POLÍTICAS DE PRIVACIDAD */}
+          <button
+            type="button"
+            onClick={() => setPrivacyModalOpen(true)}
+            className="flex items-center justify-between p-4 rounded-3xl border border-border bg-card hover:bg-secondary/40 shadow-xs hover:-translate-y-0.5 transition-all duration-300 cursor-pointer text-left group"
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="p-2.5 rounded-2xl bg-purple-500/10 text-purple-500 group-hover:scale-105 transition-transform shrink-0">
+                <Shield className="w-5 h-5" />
+              </div>
+              <div className="space-y-0.5">
+                <div className="text-sm font-bold text-foreground group-hover:text-purple-500 transition-colors">Políticas de privacidad</div>
+                <div className="text-xs text-muted-foreground">Protección de datos personales y biométricos.</div>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
+          </button>
+
+          {/* TILE 5: TÉRMINOS Y CONDICIONES */}
+          <button
+            type="button"
+            onClick={() => setTermsModalOpen(true)}
+            className="flex items-center justify-between p-4 rounded-3xl border border-border bg-card hover:bg-secondary/40 shadow-xs hover:-translate-y-0.5 transition-all duration-300 cursor-pointer text-left group"
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="p-2.5 rounded-2xl bg-amber-500/10 text-amber-500 group-hover:scale-105 transition-transform shrink-0">
+                <FileDown className="w-5 h-5" />
+              </div>
+              <div className="space-y-0.5">
+                <div className="text-sm font-bold text-foreground group-hover:text-amber-500 transition-colors">Términos y condiciones</div>
+                <div className="text-xs text-muted-foreground">Condiciones de servicio y reservas de Shakerfy.</div>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
+          </button>
+
+          {/* TILE 6: CONTACTAR CON SHAKERFY */}
+          <button
+            type="button"
+            onClick={() => setContactModalOpen(true)}
+            className="flex items-center justify-between p-4 rounded-3xl border border-border bg-card hover:bg-secondary/40 shadow-xs hover:-translate-y-0.5 transition-all duration-300 cursor-pointer text-left group"
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="p-2.5 rounded-2xl bg-teal-500/10 text-teal-500 group-hover:scale-105 transition-transform shrink-0">
+                <MessageSquare className="w-5 h-5" />
+              </div>
+              <div className="space-y-0.5">
+                <div className="text-sm font-bold text-foreground group-hover:text-teal-500 transition-colors">Contactar con Shakerfy</div>
+                <div className="text-xs text-muted-foreground">Soporte al cliente por WhatsApp y correo electrónico.</div>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
+          </button>
+
+          {/* TILE 7: CERRAR SESIÓN */}
+          <button
+            type="button"
+            onClick={() => setLogoutModalOpen(true)}
+            className="flex items-center justify-between p-4 rounded-3xl border border-rose-500/20 bg-rose-500/5 hover:bg-rose-500/10 shadow-xs hover:-translate-y-0.5 transition-all duration-300 cursor-pointer text-left group"
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="p-2.5 rounded-2xl bg-rose-500/15 text-rose-500 group-hover:scale-105 transition-transform shrink-0">
+                <LogOut className="w-5 h-5" />
+              </div>
+              <div className="space-y-0.5">
+                <div className="text-sm font-bold text-rose-600 dark:text-rose-400">Cerrar sesión</div>
+                <div className="text-xs text-muted-foreground">Salir de tu cuenta en este dispositivo.</div>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-rose-400 shrink-0" />
+          </button>
         </div>
       </div>
+
+      {/* MODAL: POLÍTICAS DE PRIVACIDAD */}
+      <Dialog open={privacyModalOpen} onOpenChange={setPrivacyModalOpen}>
+        <DialogContent className="sm:max-w-lg rounded-3xl p-6 sm:p-8 border border-border bg-card">
+          <DialogHeader className="pb-3 border-b border-border/40">
+            <DialogTitle className="text-base font-bold flex items-center gap-2 text-foreground">
+              <Shield className="w-5 h-5 text-purple-500" /> Políticas de Privacidad
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-3 text-xs text-muted-foreground leading-relaxed max-h-[55vh] overflow-y-auto custom-scrollbar">
+            <p className="font-semibold text-foreground">En Shakerfy nos tomamos tu privacidad y la seguridad de tus datos biológicos con máxima seriedad.</p>
+            <p>1. <strong>Protección de Datos Biométricos:</strong> Toda tu información de peso, altura, frecuencia de comidas y entrenamientos se almacena de forma encriptada localmente y nunca se vende a terceros.</p>
+            <p>2. <strong>Uso de Inteligencia Artificial:</strong> Las consultas enviadas al AI Coach se procesan de forma anónima para generar recomendaciones nutricionales y deportivas sin vincular datos personales identificables.</p>
+            <p>3. <strong>Derecho de Cancelación:</strong> Puedes solicitar en cualquier momento la eliminación total de tus métricas y registros de la plataforma.</p>
+          </div>
+          <div className="pt-3 border-t border-border/40 flex justify-end">
+            <Button onClick={() => setPrivacyModalOpen(false)} className="rounded-xl font-bold">
+              Entendido
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* MODAL: TÉRMINOS Y CONDICIONES */}
+      <Dialog open={termsModalOpen} onOpenChange={setTermsModalOpen}>
+        <DialogContent className="sm:max-w-lg rounded-3xl p-6 sm:p-8 border border-border bg-card">
+          <DialogHeader className="pb-3 border-b border-border/40">
+            <DialogTitle className="text-base font-bold flex items-center gap-2 text-foreground">
+              <FileDown className="w-5 h-5 text-amber-500" /> Términos y Condiciones
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-3 text-xs text-muted-foreground leading-relaxed max-h-[55vh] overflow-y-auto custom-scrollbar">
+            <p className="font-semibold text-foreground">Al utilizar la plataforma Shakerfy y el motor AI Coach, aceptas los siguientes términos de servicio:</p>
+            <p>1. <strong>Alcance Informativo:</strong> El AI Coach brinda sugerencias de nutrición deportiva general y hábitos saludables. No constituye asesoramiento médico ni prescripción dietoterápica clínica.</p>
+            <p>2. <strong>Uso Personal e Intransferible:</strong> Tu cuenta y tus reservas en centros asociados (gimnasios, pases y clases) son personales.</p>
+            <p>3. <strong>Políticas de Reserva:</strong> Las cancelaciones de clases se rigen por la anticipación mínima definida por cada centro deportivo registrado.</p>
+          </div>
+          <div className="pt-3 border-t border-border/40 flex justify-end">
+            <Button onClick={() => setTermsModalOpen(false)} className="rounded-xl font-bold">
+              Aceptar Términos
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* MODAL: CONTACTAR CON SHAKERFY */}
+      <Dialog open={contactModalOpen} onOpenChange={setContactModalOpen}>
+        <DialogContent className="sm:max-w-md rounded-3xl p-6 sm:p-8 border border-border bg-card text-center">
+          <DialogHeader className="pb-3 border-b border-border/40">
+            <DialogTitle className="text-base font-bold flex items-center justify-center gap-2 text-foreground">
+              <MessageSquare className="w-5 h-5 text-teal-500" /> Contactar con Shakerfy
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-4 text-xs">
+            <p className="text-muted-foreground">¿Tienes alguna consulta o necesitas ayuda con tus clases, pagos o el AI Coach?</p>
+            
+            <div className="grid grid-cols-1 gap-2.5">
+              <a
+                href="https://wa.me/5491132421241"
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-center gap-2 p-3.5 rounded-2xl bg-emerald-500 text-white font-bold hover:bg-emerald-600 transition shadow-xs"
+              >
+                <Smartphone className="w-4 h-4" /> WhatsApp Oficial de Soporte
+              </a>
+              
+              <a
+                href="mailto:soporte@shakerfy.com"
+                className="flex items-center justify-center gap-2 p-3.5 rounded-2xl border border-border bg-background font-semibold hover:bg-secondary transition text-foreground"
+              >
+                <Info className="w-4 h-4 text-indigo-500" /> Email: soporte@shakerfy.com
+              </a>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* MODAL: CONFIRMACIÓN CERRAR SESIÓN */}
+      <AlertDialog open={logoutModalOpen} onOpenChange={setLogoutModalOpen}>
+        <AlertDialogContent className="rounded-3xl p-6 sm:p-8 border border-border bg-card">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-lg font-bold text-foreground flex items-center gap-2">
+              <LogOut className="w-5 h-5 text-rose-500" /> ¿Cerrar sesión?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-xs text-muted-foreground pt-1">
+              Tendrás que volver a ingresar tus credenciales para acceder a tus reservas, rutinas y el AI Coach.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="pt-4 gap-2">
+            <AlertDialogCancel className="rounded-xl font-semibold">Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleLogout} className="rounded-xl bg-rose-500 hover:bg-rose-600 font-bold text-white">
+              Sí, cerrar sesión
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* MODAL: CONFIRMACIÓN ELIMINAR CUENTA */}
+      <AlertDialog open={deleteAccountModalOpen} onOpenChange={setDeleteAccountModalOpen}>
+        <AlertDialogContent className="rounded-3xl p-6 sm:p-8 border border-rose-500/30 bg-card">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-lg font-bold text-rose-500 flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-rose-500" /> ¿Eliminar cuenta de Shakerfy?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-xs text-muted-foreground pt-1 leading-relaxed">
+              Esta acción es <strong>definitiva e irreversible</strong>. Se borrarán de manera permanente tus datos personales, historial de clases, preferencias de nutrición y registro con el AI Coach.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="pt-4 gap-2">
+            <AlertDialogCancel className="rounded-xl font-semibold">Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setDeleteAccountModalOpen(false);
+                toast.success("Tu cuenta ha sido eliminada correctamente");
+                navigate({ to: "/" });
+              }}
+              className="rounded-xl bg-rose-600 hover:bg-rose-700 font-bold text-white"
+            >
+              Sí, eliminar mi cuenta
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
@@ -2362,187 +3286,7 @@ const formatDateLabel = (dateStr: string) => {
   }
 };
 
-// Helper component to render dynamic glassmorphism badges for meals & recipes
-interface MealOrganizerBadgesProps {
-  category: string; // Momento del día (Desayuno, Almuerzo, Cena, Snack)
-  tags?: string[]; // Badges nutricionales (Alta en Proteínas, Baja en Carbohidratos, etc.)
-  className?: string;
-}
 
-function MealOrganizerBadges({
-  category,
-  tags = [],
-  className = "",
-}: MealOrganizerBadgesProps) {
-  return (
-    <div className={`flex flex-wrap gap-1.5 items-center ${className}`}>
-      {/* 1. Momento del Día */}
-      {category && (
-        <span className="inline-flex items-center backdrop-blur-md bg-secondary text-foreground text-[10px] font-bold tracking-wide px-2.5 py-0.5 rounded-full shadow-xs">
-          <span>{category}</span>
-        </span>
-      )}
-
-      {/* 2. Badges Nutricionales & Características */}
-      {tags.map((tag, idx) => (
-        <span 
-          key={idx} 
-          className="inline-flex items-center backdrop-blur-md bg-secondary/50 text-muted-foreground text-[10px] font-medium tracking-wide px-2.5 py-0.5 rounded-full"
-        >
-          <span>{tag}</span>
-        </span>
-      ))}
-    </div>
-  );
-}
-
-const RECIPES_POOL = [
-  {
-    id: "receta-1",
-    title: "Smoothie Bowl de Proteína y Berries",
-    category: "Desayuno",
-    tags: ["Alto en Proteína", "Sin Gluten", "Alto en Fibra", "Vegan"],
-    img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?auto=format&fit=crop&w=600&q=80",
-    kcal: 340,
-    protein: "22g",
-    carbs: "45g",
-    fat: "6g",
-    prepTime: "10 min",
-    difficulty: "Fácil",
-    tag: "Alto en Proteína",
-    coachFeedback: "Excelente para reponer glucógeno post-entreno y aportar antioxidantes para combatir el estrés oxidativo celular.",
-    ingredients: [
-      "1 taza de frutos rojos congelados (arándanos, frambuesas)",
-      "1 scoop de proteína de vainilla (suero o vegetal)",
-      "1/2 taza de leche de almendras sin azúcar",
-      "1 cda de granola integral sin azúcar",
-      "1 cdta de semillas de chía"
-    ],
-    instructions: [
-      "Licúa los frutos rojos, la proteína y la leche de almendras hasta obtener una consistencia cremosa y espesa.",
-      "Vierte la mezcla en un bowl profundo.",
-      "Decora por encima con la granola, las semillas de chía y algunos frutos rojos frescos.",
-      "Consumir de inmediato con cuchara."
-    ]
-  },
-  {
-    id: "receta-2",
-    title: "Bowl de Quinoa, Salmón y Aguacate",
-    category: "Almuerzo",
-    tags: ["Grasas Saludables", "Sin Lactosa", "Alto en Proteína", "Sin Gluten"],
-    img: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80",
-    kcal: 580,
-    protein: "38g",
-    carbs: "45g",
-    fat: "24g",
-    prepTime: "20 min",
-    difficulty: "Fácil",
-    tag: "Grasas Saludables",
-    coachFeedback: "Excelente combinación de grasas saludables omega-3 y carbohidratos complejos. Ideal para tu ventana metabólica post-entrenamiento.",
-    ingredients: [
-      "150g de filete de salmón fresco",
-      "1/2 taza de quinoa cocida",
-      "1/2 aguacate mediano en rebanadas",
-      "1 taza de espinacas baby limpias",
-      "1/2 taza de tomates cherry cortados al medio",
-      "1 cda de aderezo de limón y aceite de oliva"
-    ],
-    instructions: [
-      "Sazona el salmón con sal, y pimienta al gusto. Cocínalo a la plancha por 4 minutos de cada lado.",
-      "Coloca la quinoa cocida como base en un bowl.",
-      "Acomoda las hojas de espinaca baby, los tomates cherry y las rebanadas de aguacate.",
-      "Añade el salmón desmenuzado por encima y vierte el aderezo de limón."
-    ]
-  },
-  {
-    id: "receta-3",
-    title: "Pechuga de Pollo con Camote y Brócoli",
-    category: "Cena",
-    tags: ["Alto en Proteína", "Bajo en Hidratos", "Sin Gluten", "Sin Lactosa"],
-    img: "https://images.unsplash.com/photo-1532550907401-a500c9a57435?auto=format&fit=crop&w=600&q=80",
-    kcal: 460,
-    protein: "42g",
-    carbs: "35g",
-    fat: "12g",
-    prepTime: "25 min",
-    difficulty: "Fácil",
-    tag: "Alto en Proteína",
-    coachFeedback: "Una cena ligera pero rica en aminoácidos para optimizar la síntesis proteica nocturna y favorecer la recuperación muscular.",
-    ingredients: [
-      "150g de pechuga de pollo cortada en filetes",
-      "1 camote (batata) mediano",
-      "1 taza de floretes de brócoli fresco",
-      "1 diente de ajo picado fino",
-      "Jugo de 1/2 limón fresco",
-      "1 cdta de aceite de coco para cocinar"
-    ],
-    instructions: [
-      "Corta el camote en rodajas y hornéalo con un toque de sal a 200°C durante 20 minutos hasta que esté suave.",
-      "Saltea el ajo y el pollo en una sartén con aceite de coco hasta dorar.",
-      "Agrega el jugo de limón al pollo y cocina a fuego lento por 5 minutos más.",
-      "Cocina el brócoli al vapor durante 5 minutos para que quede al dente.",
-      "Sirve todo en un plato y disfruta."
-    ]
-  },
-  {
-    id: "receta-4",
-    title: "Pancakes Fit de Avena y Banano",
-    category: "Desayuno",
-    tags: ["Alto en Fibra", "Vegan", "Sin Lactosa", "Alto en Proteína"],
-    img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=600&q=80",
-    kcal: 320,
-    protein: "18g",
-    carbs: "42g",
-    fat: "6g",
-    prepTime: "15 min",
-    difficulty: "Muy Fácil",
-    tag: "Alto en Fibra",
-    coachFeedback: "Aporte rápido de carbohidratos de absorción lenta y potasio, perfecto para energía pre-entreno sin pesadez.",
-    ingredients: [
-      "1 banano mediano maduro",
-      "1 huevo entero",
-      "1/3 taza de harina de avena",
-      "1/2 scoop de proteína de vainilla",
-      "Pizca de polvo de hornear",
-      "1/4 taza de leche descremada o de almendras"
-    ],
-    instructions: [
-      "En una licuadora, mezcla el banano, el huevo, la harina de avena, la proteína, el polvo de hornear y la leche hasta lograr una pasta homogénea.",
-      "Calienta una sartén antiadherente a fuego medio y pincela con una gota de aceite.",
-      "Vierte porciones pequeñas para formar los pancakes.",
-      "Cocina hasta que aparezcan burbujas en la superficie, voltea y cocina 1 minuto del otro lado.",
-      "Sirve opcionalmente con frutos secos picados."
-    ]
-  },
-  {
-    id: "receta-5",
-    title: "Tostada de Masa Madre con Ricotta e Higos",
-    category: "Snack",
-    tags: ["Alto en Fibra", "Bajo en Hidratos", "Grasas Saludables", "Vegan"],
-    img: "https://images.unsplash.com/photo-1541532713592-79a0317b6b77?auto=format&fit=crop&w=600&q=80",
-    kcal: 290,
-    protein: "12g",
-    carbs: "38g",
-    fat: "8g",
-    prepTime: "10 min",
-    difficulty: "Muy Fácil",
-    tag: "Alto en Fibra",
-    coachFeedback: "El pan de masa madre es excelente para la digestión y la ricotta ofrece una liberación sustained de aminoácidos.",
-    ingredients: [
-      "1 rebanada gruesa de pan de masa madre tostado",
-      "3 cdas de queso ricotta descremado o cottage",
-      "2 higos frescos rebanados",
-      "1 cdta de miel de abeja pura o jarabe de agave",
-      "Hojitas de albahaca fresca para decorar"
-    ],
-    instructions: [
-      "Tuesta la rebanada de pan de masa madre al nivel deseado.",
-      "Esparce uniformemente el queso ricotta sobre la tostada caliente.",
-      "Acomoda las rebanadas de higo fresco encima.",
-      "Rocía con el hilo de miel y decora con la albahaca fresca antes de servir."
-    ]
-  }
-];
 
 function CircularProgress({
   percent,
@@ -2618,114 +3362,55 @@ function TypewriterOnce({ text, speed = 25 }: { text: string; speed?: number }) 
   );
 }
 
-interface SleepHistoryItem {
+
+
+interface ActivityHistoryItem {
   label: string;
-  hours: number;
-  qualityScore: number;
+  puntos: number;
 }
 
-const INITIAL_SLEEP_HISTORY: Record<"week" | "month" | "quarter", SleepHistoryItem[]> = {
+const INITIAL_ACTIVITY_HISTORY: Record<"week" | "month" | "quarter", ActivityHistoryItem[]> = {
   week: [
-    { label: "Lun", hours: 7.2, qualityScore: 82 },
-    { label: "Mar", hours: 7.8, qualityScore: 88 },
-    { label: "Mié", hours: 6.5, qualityScore: 74 },
-    { label: "Jue", hours: 8.0, qualityScore: 92 },
-    { label: "Vie", hours: 7.5, qualityScore: 85 },
-    { label: "Sáb", hours: 8.4, qualityScore: 95 },
-    { label: "Dom", hours: 7.75, qualityScore: 88 },
+    { label: "Lun", puntos: 180 },
+    { label: "Mar", puntos: 160 },
+    { label: "Mié", puntos: 175 },
+    { label: "Jue", puntos: 140 },
+    { label: "Vie", puntos: 155 },
+    { label: "Sáb", puntos: 190 },
+    { label: "Dom", puntos: 168 },
   ],
   month: [
-    { label: "Sem 1", hours: 7.4, qualityScore: 84 },
-    { label: "Sem 2", hours: 6.9, qualityScore: 78 },
-    { label: "Sem 3", hours: 7.9, qualityScore: 90 },
-    { label: "Sem 4", hours: 7.75, qualityScore: 88 },
+    { label: "Sem 1", puntos: 165 },
+    { label: "Sem 2", puntos: 158 },
+    { label: "Sem 3", puntos: 178 },
+    { label: "Sem 4", puntos: 170 },
   ],
   quarter: [
-    { label: "Mayo", hours: 7.3, qualityScore: 81 },
-    { label: "Junio", hours: 7.6, qualityScore: 86 },
-    { label: "Julio", hours: 7.8, qualityScore: 89 },
+    { label: "Mayo", puntos: 162 },
+    { label: "Junio", puntos: 171 },
+    { label: "Julio", puntos: 168 },
   ],
 };
 
-const sleepChartConfig = {
-  hours: {
-    label: "Horas de Sueño",
-    color: "#6366f1",
+const activityChartConfig = {
+  puntos: {
+    label: "Puntos MET",
+    color: "#f59e0b",
   },
 } satisfies ChartConfig;
 
 // Subcomponent: AI Coach Diario (Wellfooder Timeline)
 function DiarioTab() {
-  const [subTab, setSubTab] = useState<"diario" | "analisis" | "sueno" | "recuperacion" | "recetas">("diario");
-  const [nutritionMode, setNutritionMode] = useState<"qualitative" | "quantitative">("quantitative");
-  const [insightPeriod, setInsightPeriod] = useState<"day" | "week" | "month" | "quarter" | "all">("week");
-  const [sunTimes, setSunTimes] = useState({ sunrise: "06:30", sunset: "20:15" });
-  const [calMode, setCalMode] = useState<"consumed" | "remaining" | "target">("consumed");
-  const [proteinMode, setProteinMode] = useState<"consumed" | "remaining" | "target">("consumed");
-  const [carbsMode, setCarbsMode] = useState<"consumed" | "remaining" | "target">("consumed");
-  const [fatsMode, setFatsMode] = useState<"consumed" | "remaining" | "target">("consumed");
-  const [sleepData, setSleepData] = useState({
-    duration: "7h 45m",
-    hours: 7.75,
-    bedtime: "23:30",
-    wakeTime: "07:15",
-    quality: "Reparador",
-    score: 88,
-    factors: ["Magnesio", "Habitación fresca"],
-  });
-  const [sleepFilter, setSleepFilter] = useState<"week" | "month" | "quarter">("week");
-  const [sleepHistory, setSleepHistory] = useState(INITIAL_SLEEP_HISTORY);
+  const [subTab, setSubTab] = useState<"diario" | "recuperacion">("diario");
 
-  const currentSleepData = sleepHistory[sleepFilter];
-  const avgSleepHours = (currentSleepData.reduce((acc: number, curr: SleepHistoryItem) => acc + curr.hours, 0) / currentSleepData.length).toFixed(1);
-  const targetPercent = Math.round((Number(avgSleepHours) / 8) * 100);
+  const [activityFilter, setActivityFilter] = useState<"week" | "month" | "quarter">("week");
+  const [activityHistory, setActivityHistory] = useState(INITIAL_ACTIVITY_HISTORY);
 
-  useEffect(() => {
-    const getSolarTimes = (lat: number, lng: number) => {
-      try {
-        // @ts-ignore
-        const times = SunCalc.getTimes(new Date(), lat, lng);
-        const formatTime = (date: Date | null) => {
-          if (!date) return "--:--";
-          return date.toLocaleTimeString("es-AR", {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false,
-          });
-        };
-        setSunTimes({
-          sunrise: formatTime(times.sunrise),
-          sunset: formatTime(times.sunset),
-        });
-      } catch (err) {
-        console.error("Error al calcular horarios solares con SunCalc:", err);
-      }
-    };
-
-    // Coordenadas por defecto (Buenos Aires)
-    const defaultLat = -34.6037;
-    const defaultLng = -58.3816;
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          getSolarTimes(position.coords.latitude, position.coords.longitude);
-        },
-        (error) => {
-          console.warn("Error de geolocalización, usando Buenos Aires:", error);
-          getSolarTimes(defaultLat, defaultLng);
-        },
-        { enableHighAccuracy: false, timeout: 5000 }
-      );
-    } else {
-      getSolarTimes(defaultLat, defaultLng);
-    }
-  }, []);
-  const [mood, setMood] = useState(75);
-  const [hunger, setHunger] = useState(40);
-  const [energy, setEnergy] = useState(60);
-
-  const [hydrationLevel, setHydrationLevel] = useState(5);
+  const currentActivityHistory = activityHistory[activityFilter];
+  const avgActivityPoints = Math.round(
+    currentActivityHistory.reduce((acc: number, curr: ActivityHistoryItem) => acc + curr.puntos, 0) / currentActivityHistory.length
+  );
+  const activityTargetPercent = Math.round((avgActivityPoints / 150) * 100);
 
   const [activityData, setActivityData] = useState([
     { day: "Lun", puntos: 180 },
@@ -2736,169 +3421,6 @@ function DiarioTab() {
     { day: "Sáb", puntos: 190 },
     { day: "Dom", puntos: 168 }
   ]);
-
-  const [customActivities, setCustomActivities] = useState<any[]>([]);
-  const [savedRecipes, setSavedRecipes] = useState<string[]>(["receta-5"]);
-  const [cartRecipeIds, setCartRecipeIds] = useState<string[]>(["receta-5"]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [showSwipeStack, setShowSwipeStack] = useState(true);
-  const [isSwipeModalOpen, setIsSwipeModalOpen] = useState(false);
-  const [currentSwipeIndex, setCurrentSwipeIndex] = useState(0);
-  const [activeRecipeDetail, setActiveRecipeDetail] = useState<any | null>(null);
-
-  const handleOpenExplorarIdeas = () => {
-    setSubTab("diario");
-    const todayStr = new Date().toISOString().split("T")[0];
-    const newStackId = `swipe-stack-${Date.now()}`;
-    const newStackItem = {
-      id: newStackId,
-      date: todayStr,
-      time: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
-      title: "Explorar Ideas",
-      subtitle: "Explorar Ideas",
-      type: "swipe-stack",
-    };
-    setUserTimelineItems(prev => [newStackItem, ...prev]);
-
-    setTimeout(() => {
-      const el = document.getElementById(`recipe-swipe-stack-card-${newStackId}`);
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 100);
-  };
-
-  // Shake for AI State & Logic
-  const [shakeModalOpen, setShakeModalOpen] = useState(false);
-  const [shakeData, setShakeData] = useState<{
-    title: string;
-    icon: string;
-    description: string;
-    actionText: string;
-    actionType: "water" | "scan" | "recipe" | "diario";
-  } | null>(null);
-  const [isShaking, setIsShaking] = useState(false);
-  const lastShakeTimeRef = React.useRef(0);
-
-  const triggerShakeAI = React.useCallback(() => {
-    const now = Date.now();
-    if (now - lastShakeTimeRef.current < 2500) return; // 2.5s cooldown
-    lastShakeTimeRef.current = now;
-
-    if (typeof window !== "undefined" && "vibrate" in navigator) {
-      try { navigator.vibrate([40, 30, 40]); } catch (e) {}
-    }
-
-    setIsShaking(true);
-    setTimeout(() => setIsShaking(false), 500);
-
-    const hour = new Date().getHours();
-    let recommendation;
-
-    if (hour >= 6 && hour < 11) {
-      recommendation = {
-        title: "Tu Mezcla Matutina",
-        icon: "🥣",
-        description: "Aún es temprano para consolidar tu energía. Media taza de avena cocida con yogur natural y trozos de banana o arándanos te dará saciedad duradera con comida real.",
-        actionText: "Ver recetas de desayuno",
-        actionType: "recipe" as const,
-      };
-    } else if (hour >= 11 && hour < 15) {
-      recommendation = {
-        title: "Nutrición de Mediodía",
-        icon: "🍗",
-        description: "¿A punto de almorzar? Un filete de pechuga de pollo o tofu salteado (~150g) con un bowl de ensalada fresca y quinoa repondrá tus reservas sin pesadez.",
-        actionText: "Escanear mi almuerzo",
-        actionType: "scan" as const,
-      };
-    } else if (hour >= 15 && hour < 19) {
-      recommendation = {
-        title: "Recarga de Hidratación & Energía",
-        icon: "🥤",
-        description: "Es un excelente momento para hidratarte. Toma un vaso de agua fresca (250ml) y acompáñalo con un puñado de frutos secos (~30g) para mantener tu concentración.",
-        actionText: "+250ml Agua pura",
-        actionType: "water" as const,
-      };
-    } else if (hour >= 19 && hour < 22) {
-      recommendation = {
-        title: "Cena de Recuperación Muscular",
-        icon: "🥑",
-        description: "Para tu cena, una porción de salmón o huevos al plato con camote (batata) al horno repondrá el tejido muscular de tu día de forma ligera.",
-        actionText: "Explorar ideas de cena",
-        actionType: "recipe" as const,
-      };
-    } else {
-      recommendation = {
-        title: "Cierre de Jornada",
-        icon: "🌙",
-        description: "Completaste tus comidas del día con alimentos reales. Desconéctate de las pantallas e inicia tu rutina de descanso para optimizar tu melatonina.",
-        actionText: "Cerrar diario de hoy",
-        actionType: "diario" as const,
-      };
-    }
-
-    const newShakeItem = {
-      id: `shake-ai-${Date.now()}`,
-      date: new Date().toISOString().split("T")[0],
-      time: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
-      title: recommendation.title,
-      subtitle: "Shake for AI",
-      type: "shake-ai",
-      icon: recommendation.icon,
-      kcal: 0,
-      tag: "IA Contextual",
-      coachFeedback: recommendation.description,
-      actionText: recommendation.actionText,
-      actionType: recommendation.actionType,
-    };
-
-    setUserTimelineItems(prev => [newShakeItem, ...prev]);
-    toast.success("🥤 ¡Shake for AI! Se generó una recomendación en tu diario.");
-  }, []);
-
-  useEffect(() => {
-    let lastX = 0, lastY = 0, lastZ = 0;
-    let lastTime = Date.now();
-
-    const handleMotion = (e: DeviceMotionEvent) => {
-      const acc = e.accelerationIncludingGravity;
-      if (!acc || acc.x === null || acc.y === null || acc.z === null) return;
-
-      const currentTime = Date.now();
-      if (currentTime - lastTime > 100) {
-        const diffTime = currentTime - lastTime;
-        lastTime = currentTime;
-
-        const deltaX = Math.abs(acc.x - lastX);
-        const deltaY = Math.abs(acc.y - lastY);
-        const deltaZ = Math.abs(acc.z - lastZ);
-
-        const speed = ((deltaX + deltaY + deltaZ) / diffTime) * 10000;
-        if (speed > 800) {
-          triggerShakeAI();
-        }
-
-        lastX = acc.x;
-        lastY = acc.y;
-        lastZ = acc.z;
-      }
-    };
-
-    if (typeof window !== "undefined" && "DeviceMotionEvent" in window) {
-      window.addEventListener("devicemotion", handleMotion, false);
-    }
-    return () => {
-      if (typeof window !== "undefined" && "DeviceMotionEvent" in window) {
-        window.removeEventListener("devicemotion", handleMotion, false);
-      }
-    };
-  }, [triggerShakeAI]);
-
-  const toggleCartRecipe = (recipeId: string) => {
-    setCartRecipeIds(prev => 
-      prev.includes(recipeId) 
-        ? prev.filter(id => id !== recipeId)
-        : [...prev, recipeId]
-    );
-  };
 
   // States and data for page 2 (Racha de Actividad & MET Calculator)
   const MET_ACTIVITIES = [
@@ -3073,7 +3595,10 @@ function DiarioTab() {
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const validOnly = parsed.filter((item: any) => item && item.type === "activity");
+            if (validOnly.length > 0) return validOnly;
+          }
         } catch (e) {}
       }
     }
@@ -3081,117 +3606,46 @@ function DiarioTab() {
       {
         id: "1",
         date: "2026-07-15",
-        time: "12:30 PM",
-        title: "Avocado Toast & Hojas Verdes",
-        subtitle: "Almuerzo",
-        type: "food",
-        img: "https://images.unsplash.com/photo-1541532713592-79a0317b6b77?auto=format&fit=crop&w=600&q=80",
-        kcal: 420,
-        protein: "14g",
-        carbs: "48g",
-        fat: "18g",
-        tags: ["Alta en Fibra", "Grasas Saludables"],
-        tag: "Alta en Fibra",
-        coachFeedback: "Excelente balance de grasas saludables. Considerá agregar una fuente de proteína la próxima vez para prolongar la saciedad.",
+        time: "10:30 AM",
+        title: "Entrenamiento de Fuerza — Pecho & Tríceps",
+        subtitle: "Registro de Actividad",
+        type: "activity",
+        img: null,
+        kcal: 240,
+        tag: "185 Pts MET",
+        coachFeedback: "Registraste 30 min de Entrenamiento de Fuerza (intensidad Alta). Sumaste 185 puntos MET a tu curva de actividad diaria. ¡Gran trabajo!",
       },
       {
         id: "2",
-        date: "2026-07-15",
-        time: "02:00 PM",
-        title: "Registro de Hidratación",
-        subtitle: "Control de Rutina",
-        type: "hydration",
+        date: "2026-07-14",
+        time: "06:15 PM",
+        title: "Caminata Enérgica (45 min)",
+        subtitle: "Registro de Actividad",
+        type: "activity",
         img: null,
-        kcal: 0,
-        tag: "Armstrong 5",
-        coachFeedback: "Nivel 5 indica deshidratación leve. Toma 500ml de agua ahora mismo para compensar el entrenamiento o la actividad.",
+        kcal: 180,
+        tag: "135 Pts MET",
+        coachFeedback: "Registraste 45 min de Caminata (intensidad Media). Sumaste 135 puntos MET a tu curva de actividad diaria.",
       },
       {
         id: "3",
-        date: "2026-07-15",
-        time: "08:15 AM",
-        title: "Café Negro",
-        subtitle: "Desayuno",
-        type: "coffee",
-        img: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=150&q=80",
-        kcal: 2,
-        protein: "0g",
-        carbs: "0g",
-        fat: "0g",
-        tags: ["Sin Azúcar", "Cero Calorías"],
-        tag: "Sin Azúcar",
-        coachFeedback: null,
-      },
-      {
-        id: "4",
-        date: "2026-07-14",
-        time: "09:30 AM",
-        title: "Omelette de Espinacas & Queso",
-        subtitle: "Desayuno",
-        type: "food",
-        img: "https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=600&q=80",
-        kcal: 320,
-        protein: "24g",
-        carbs: "4g",
-        fat: "22g",
-        tags: ["Alta en Proteínas", "Baja en Carbohidratos"],
-        tag: "Alta en Proteínas",
-        coachFeedback: "Muy buena elección proteica por la mañana. Mantener un desayuno con bajo índice glucémico estabiliza tu energía por horas.",
-      },
-      {
-        id: "5",
-        date: "2026-07-14",
-        time: "04:15 PM",
-        title: "Snack de Nueces y Almendras",
-        subtitle: "Snack",
-        type: "food",
-        img: null,
-        kcal: 180,
-        protein: "6g",
-        carbs: "8g",
-        fat: "15g",
-        tags: ["Grasas Saludables", "Baja en Carbohidratos"],
-        tag: "Grasas Saludables",
-        coachFeedback: "El snack de frutos secos aporta ácidos grasos esenciales y saciedad antes de tu cena.",
-      },
-      {
-        id: "6",
         date: "2026-07-13",
-        time: "08:30 AM",
-        title: "Café con Leche y Tostadas de Masa Madre",
-        subtitle: "Desayuno",
-        type: "food",
+        time: "09:00 AM",
+        title: "Workout IA — Espalda & Bíceps (40 min)",
+        subtitle: "Registro de Actividad",
+        type: "activity",
         img: null,
-        kcal: 280,
-        protein: "10g",
-        carbs: "40g",
-        fat: "8g",
-        tags: ["Energía Compleja", "Microbiota Amigable"],
-        tag: "Energía Compleja",
-        coachFeedback: "La masa madre es excelente para tu microbiota digestiva. Buena combinación energética para arrancar el día.",
-      },
-      {
-        id: "7",
-        date: "2026-07-13",
-        time: "08:30 PM",
-        title: "Salmón Grillado con Espárragos",
-        subtitle: "Cena",
-        type: "food",
-        img: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=600&q=80",
-        kcal: 540,
-        protein: "44g",
-        carbs: "6g",
-        fat: "36g",
-        tags: ["Alta en Proteínas", "Baja en Carbohidratos", "Omega 3"],
-        tag: "Alta en Proteínas",
-        coachFeedback: "Excelente cena ligera y rica en grasas saludables que promueven la recuperación celular durante el sueño profundo.",
+        kcal: 310,
+        tag: "210 Pts MET",
+        coachFeedback: "Completaste tu rutina personalizada de musculación generada por IA. Excelente estímulo de hipertrofia sin sobrecargar zonas fatigadas.",
       }
     ];
   });
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      localStorage.setItem("shakerfy_user_timeline_items", JSON.stringify(userTimelineItems));
+      const validOnly = userTimelineItems.filter((item: any) => item && item.type === "activity");
+      localStorage.setItem("shakerfy_user_timeline_items", JSON.stringify(validOnly));
     }
   }, [userTimelineItems]);
 
@@ -3205,7 +3659,6 @@ function DiarioTab() {
   };
 
   const [isEditingRecovery, setIsEditingRecovery] = useState(false);
-  const [showMindfulRateInfo, setShowMindfulRateInfo] = useState(false);
 
   const handleWorkoutComplete = (exercisesTrained: any[]) => {
     setMuscleRecovery(prev => {
@@ -3253,555 +3706,64 @@ function DiarioTab() {
 
   const [isFabOpen, setIsFabOpen] = useState(false);
   const [activeModal, setActiveModal] = useState<string>("none");
-  const [foodAnalysisStep, setFoodAnalysisStep] = useState<"upload" | "analyzing" | "report" | "reason" | "breathing_prompt" | "breathing_exercise">("upload");
-  const [selectedEatReason, setSelectedEatReason] = useState<string>("hambre");
-  const [whyEatData, setWhyEatData] = useState(WHY_EAT_DATA);
+  const [isShaking, setIsShaking] = useState(false);
 
-  const [breathingPhase, setBreathingPhase] = useState<"inhale" | "hold1" | "exhale" | "hold2">("inhale");
-  const [breathingSeconds, setBreathingSeconds] = useState<number>(4);
-  const [breathingCyclesCompleted, setBreathingCyclesCompleted] = useState<number>(0);
-  const [breathingStartTime, setBreathingStartTime] = useState<number>(0);
-  const [breathingOrbScale, setBreathingOrbScale] = useState<number>(0.60);
-
-  const [mealsGoal, setMealsGoal] = useState(3);
-
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (activeModal === "food-analysis" && foodAnalysisStep === "analyzing") {
-      timer = setTimeout(() => {
-        setFoodAnalysisStep("report");
-      }, 2500);
-    }
-    return () => clearTimeout(timer);
-  }, [activeModal, foodAnalysisStep]);
-
-  // Motor de respiración guiada a 60 FPS sincronizado con reloj de tiempo real (Date.now())
-  useEffect(() => {
-    let animationFrameId: number;
-    let isCompleted = false;
-
-    if (activeModal === "food-analysis" && foodAnalysisStep === "breathing_exercise" && breathingStartTime > 0) {
-      const updateBreathing = () => {
-        const totalElapsed = Date.now() - breathingStartTime;
-        const cycleIndex = Math.floor(totalElapsed / 16000);
-
-        if (cycleIndex >= 3 && !isCompleted) {
-          isCompleted = true;
-          handleFinalizeFoodRegistration();
-          return;
-        }
-
-        const phaseMs = totalElapsed % 16000;
-
-        if (phaseMs < 4000) {
-          // 1. Inhala (0s - 4s): Expansión fluida desde 0.60 hasta 1.00
-          const progress = phaseMs / 4000;
-          setBreathingPhase("inhale");
-          setBreathingSeconds(Math.ceil((4000 - phaseMs) / 1000) || 1);
-          setBreathingOrbScale(0.60 + progress * 0.40);
-        } else if (phaseMs < 8000) {
-          // 2. Pausa Lleno (4s - 8s): Retención estática en 1.00
-          setBreathingPhase("hold1");
-          setBreathingSeconds(Math.ceil((8000 - phaseMs) / 1000) || 1);
-          setBreathingOrbScale(1.00);
-        } else if (phaseMs < 12000) {
-          // 3. Exhala (8s - 12s): Contracción fluida desde 1.00 hasta 0.60
-          const progress = (phaseMs - 8000) / 4000;
-          setBreathingPhase("exhale");
-          setBreathingSeconds(Math.ceil((12000 - phaseMs) / 1000) || 1);
-          setBreathingOrbScale(1.00 - progress * 0.40);
-        } else {
-          // 4. Pausa Vacío (12s - 16s): Retención estática en 0.60
-          setBreathingPhase("hold2");
-          setBreathingSeconds(Math.ceil((16000 - phaseMs) / 1000) || 1);
-          setBreathingOrbScale(0.60);
-        }
-
-        setBreathingCyclesCompleted(cycleIndex);
-
-        if (!isCompleted) {
-          animationFrameId = requestAnimationFrame(updateBreathing);
-        }
-      };
-
-      animationFrameId = requestAnimationFrame(updateBreathing);
-    }
-
-    return () => {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-      }
-    };
-  }, [activeModal, foodAnalysisStep, breathingStartTime]);
-
-  const handleFinalizeFoodRegistration = () => {
-    setWhyEatData((prevData) => {
-      const totalCount = prevData.reduce((acc, curr) => acc + curr.percentage, 0);
-      const newTotal = totalCount + 1;
-      return prevData.map((item) => {
-        if (item.reason === selectedEatReason) {
-          const newPct = Math.round(((item.percentage * totalCount / 100 + 1) / newTotal) * 100);
-          return { ...item, percentage: newPct };
-        } else {
-          const newPct = Math.round(((item.percentage * totalCount / 100) / newTotal) * 100);
-          return { ...item, percentage: newPct };
-        }
-      });
-    });
-
-    const newFood = {
-      id: `food-${Date.now()}`,
-      date: new Date().toISOString().split("T")[0],
-      time: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
-      title: "Chicken Phá»Ÿ con Vegetales",
-      subtitle: "Comida Registrada",
-      type: "food",
-      img: "https://images.unsplash.com/photo-1541532713592-79a0317b6b77?auto=format&fit=crop&w=600&q=80",
-      kcal: 480,
-      protein: "32g",
-      carbs: "54g",
-      fat: "12g",
-      tags: ["Mínimamente Procesado", "Score NRF 9.3"],
-      tag: "Score NRF 9.3 (88/100)",
-      coachFeedback: "Excelente balance de proteínas y fibra en la sopa. Considerá controlar el aporte de sodio del caldo para optimizar tu perfil diario.",
-    };
-    setUserTimelineItems(prev => [newFood, ...prev]);
-
-    setActiveModal("none");
-    setFoodAnalysisStep("upload");
+  const triggerShakeForAi = () => {
+    setIsShaking(true);
+    toast.info("🥤 ¡Agitando Shakerfy! Generando Tu Mezcla del Momento...");
+    setTimeout(() => {
+      setIsShaking(false);
+      setActiveModal("shake-for-ai");
+    }, 600);
   };
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const appSettings = JSON.parse(localStorage.getItem("shakerfy_app_settings") || "{}");
+    if (!appSettings.motionSensorEnabled) return;
+
+    let lastShake = 0;
+    const handleDeviceMotion = (event: DeviceMotionEvent) => {
+      const acceleration = event.accelerationIncludingGravity;
+      if (!acceleration) return;
+      const now = Date.now();
+      if (now - lastShake < 2000) return;
+
+      const acc = Math.sqrt(
+        (acceleration.x || 0) ** 2 +
+        (acceleration.y || 0) ** 2 +
+        (acceleration.z || 0) ** 2
+      );
+
+      if (acc > 22) {
+        lastShake = now;
+        triggerShakeForAi();
+      }
+    };
+
+    window.addEventListener("devicemotion", handleDeviceMotion);
+    return () => window.removeEventListener("devicemotion", handleDeviceMotion);
+  }, []);
+
   const timelineItems = React.useMemo(() => {
-    const getHydrationFeedback = (level: number) => {
-      if (level <= 2) {
-        return {
-          tag: `Armstrong ${level}`,
-          feedback: `Nivel ${level} indica hidratación óptima. ¡Excelente trabajo manteniendo tu cuerpo equilibrado!`
-        };
-      } else if (level <= 4) {
-        return {
-          tag: `Armstrong ${level}`,
-          feedback: `Nivel ${level} indica hidratación normal tirando a levemente baja. Bebe un vaso de agua (250ml) ahora para mantener el estado óptimo.`
-        };
-      } else if (level <= 6) {
-        return {
-          tag: `Armstrong ${level}`,
-          feedback: `Nivel ${level} indica deshidratación leve. Toma 500ml de agua ahora mismo para compensar el entrenamiento o la actividad.`
-        };
-      } else {
-        return {
-          tag: `Armstrong ${level}`,
-          feedback: `¡Atención! Nivel ${level} indica deshidratación severa. Consume de 750ml a 1L de agua, preferiblemente con electrolitos, y modera el esfuerzo físico.`
-        };
-      }
-    };
+    const processedUserItems = userTimelineItems.filter(item => item && (item.type === "activity" || item.type === "hydration" || item.type === "meal"));
 
-    const hydData = getHydrationFeedback(hydrationLevel);
-
-    const processedUserItems = userTimelineItems.map(item => {
-      if (item.type === "hydration") {
-        return {
-          ...item,
-          tag: hydData.tag,
-          coachFeedback: hydData.feedback
-        };
-      }
-      return item;
-    });
-
-    const formatTime12h = (time24: string) => {
-      try {
-        const parts = time24.split(":");
-        const hrs = parseInt(parts[0], 10);
-        const mins = parts[1];
-        const ampm = hrs >= 12 ? "PM" : "AM";
-        const displayHrs = hrs % 12 || 12;
-        return `${displayHrs.toString().padStart(2, "0")}:${mins} ${ampm}`;
-      } catch {
-        return time24;
-      }
-    };
-
-    const todayStr = new Date().toISOString().split("T")[0];
-    const uniqueDates = Array.from(new Set([
-      todayStr,
-      ...processedUserItems.map(item => item.date),
-      ...customActivities.map(item => item.date),
-    ]));
-    
-    const now = new Date();
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
-    const circadianEvents: any[] = [];
-    uniqueDates.forEach(d => {
-      const isToday = d === todayStr;
-      
-      const sunriseTime = formatTime12h(sunTimes.sunrise);
-      const sunriseMin = parseTimeToMinutes(sunriseTime);
-
-      const peakTime = "01:00 PM";
-      const peakMin = parseTimeToMinutes(peakTime);
-
-      const sunsetTime = formatTime12h(sunTimes.sunset);
-      const sunsetMin = parseTimeToMinutes(sunsetTime);
-
-      const showSunrise = !isToday || currentMinutes >= (sunriseMin - 60);
-      const showPeak = !isToday || currentMinutes >= (peakMin - 120);
-      const showSunset = !isToday || currentMinutes >= (sunsetMin - 120);
-
-      if (showSunrise) {
-        circadianEvents.push({
-          id: `circadian-sunrise-${d}`,
-          date: d,
-          time: sunriseTime,
-          title: "Hito Solar: Amanecer",
-          subtitle: "Ritmo Circadiano",
-          type: "sunrise",
-          img: null,
-          kcal: 0,
-          tag: "Inicio de Fase de Luz",
-          coachFeedback: "Amanecer biológico. Tu cuerpo frena la melatonina e inicia la secreción de cortisol. Momento ideal para exponerte a la luz natural y activar tu metabolismo.",
-        });
-      }
-
-      if (showPeak) {
-        circadianEvents.push({
-          id: `circadian-peak-${d}`,
-          date: d,
-          time: peakTime,
-          title: "Pico Metabólico",
-          subtitle: "Eficiencia Digestiva",
-          type: "peak",
-          img: null,
-          kcal: 0,
-          tag: "Máxima Sensibilidad",
-          coachFeedback: "Pico de sensibilidad a la insulina y temperatura corporal. Tu capacidad de asimilación de nutrientes es óptima. Excelente momento para tu comida principal.",
-        });
-      }
-
-      if (showSunset) {
-        circadianEvents.push({
-          id: `circadian-sunset-${d}`,
-          date: d,
-          time: sunsetTime,
-          title: "Hito Solar: Atardecer",
-          subtitle: "Ritmo Circadiano",
-          type: "sunset",
-          img: null,
-          kcal: 0,
-          tag: "Inicio de Fase Oscura",
-          coachFeedback: "Atardecer biológico. Comienza la transición hacia la producción de melatonina. Se recomienda cenar ligero y evitar pantallas de luz azul intensa.",
-        });
-      }
-    });
-
-    return [...processedUserItems, ...customActivities, ...circadianEvents].sort((a, b) => {
+    return [...processedUserItems].sort((a, b) => {
       if (a.date !== b.date) {
         return b.date.localeCompare(a.date);
       }
       return parseTimeToMinutes(b.time) - parseTimeToMinutes(a.time);
     });
-  }, [userTimelineItems, sunTimes, hydrationLevel, customActivities]);
-
-  const dynamicAdherence = React.useMemo(() => {
-    const foodLogsByDate: { [date: string]: number } = {};
-    const foodItems = timelineItems.filter(item => item.type === "food");
-    
-    foodItems.forEach(item => {
-      foodLogsByDate[item.date] = (foodLogsByDate[item.date] || 0) + 1;
-    });
-
-    const dates = Object.keys(foodLogsByDate);
-    if (dates.length === 0) return 0;
-
-    let totalAdherence = 0;
-    dates.forEach(d => {
-      const count = foodLogsByDate[d];
-      const dailyPct = Math.min(100, (count / mealsGoal) * 100);
-      totalAdherence += dailyPct;
-    });
-
-    return Math.round(totalAdherence / dates.length);
-  }, [timelineItems, mealsGoal]);
-
-  const handleDownloadReport = () => {
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) return;
-
-    const filteredItems = timelineItems.filter(item => {
-      try {
-        const [year, month, day] = item.date.split("-").map(Number);
-        const itemDate = new Date(year, month - 1, day);
-        
-        const today = new Date(2026, 6, 15);
-        const diffTime = Math.abs(today.getTime() - itemDate.getTime());
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        
-        if (insightPeriod === "day") {
-          return diffDays <= 1;
-        } else if (insightPeriod === "week") {
-          return diffDays <= 7;
-        } else if (insightPeriod === "month") {
-          return diffDays <= 30;
-        } else if (insightPeriod === "quarter") {
-          return diffDays <= 90;
-        } else {
-          return true;
-        }
-      } catch {
-        return true;
-      }
-    });
-
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html lang="es">
-      <head>
-        <meta charset="utf-8">
-        <title>Reporte de Bienestar y Alimentación — Shakerfy</title>
-        <style>
-          body {
-            font-family: system-ui, -apple-system, sans-serif;
-            color: #1e293b;
-            line-height: 1.5;
-            margin: 40px;
-          }
-          .header {
-            border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-          }
-          .logo {
-            font-size: 24px;
-            font-weight: 800;
-            color: #10b981;
-          }
-          .date {
-            font-size: 13px;
-            color: #475569;
-          }
-          .section-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: #0f172a;
-            margin-top: 35px;
-            margin-bottom: 15px;
-            border-left: 4px solid #10b981;
-            padding-left: 10px;
-          }
-          .grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            margin-bottom: 30px;
-          }
-          .card {
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 20px;
-            background: #f8fafc;
-          }
-          .card-title {
-            font-weight: 700;
-            font-size: 13px;
-            color: #475569;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-          }
-          .card-value {
-            font-size: 28px;
-            font-weight: 800;
-            color: #0f172a;
-          }
-          .bar-container {
-            margin-bottom: 10px;
-          }
-          .bar-label {
-            display: flex;
-            justify-content: space-between;
-            font-size: 11px;
-            font-weight: 600;
-            margin-bottom: 4px;
-            color: #334155;
-          }
-          .bar-track {
-            background-color: #e2e8f0;
-            height: 8px;
-            border-radius: 4px;
-            overflow: hidden;
-          }
-          .bar-fill {
-            height: 100%;
-            border-radius: 4px;
-          }
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            margin-bottom: 30px;
-          }
-          th, td {
-            text-align: left;
-            padding: 10px 12px;
-            border-bottom: 1px solid #e2e8f0;
-            font-size: 12px;
-          }
-          th {
-            background-color: #f1f5f9;
-            font-weight: 700;
-            color: #334155;
-          }
-          .badge {
-            display: inline-block;
-            padding: 3px 6px;
-            border-radius: 4px;
-            font-size: 9px;
-            font-weight: 700;
-            text-transform: uppercase;
-          }
-          .badge-food { background-color: #d1fae5; color: #065f46; }
-          .badge-hydration { background-color: #dbeafe; color: #1e40af; }
-          .badge-coffee { background-color: #fef3c7; color: #92400e; }
-          .badge-circadian { background-color: #f3e8ff; color: #6b21a8; }
-          .disclaimer {
-            font-size: 10px;
-            color: #64748b;
-            border-top: 1px solid #e2e8f0;
-            padding-top: 15px;
-            margin-top: 40px;
-            text-align: center;
-            line-height: 1.4;
-          }
-          @media print {
-            body { margin: 15px; }
-            button { display: none; }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <div>
-            <div class="logo">Shakerfy</div>
-            <div style="font-size: 12px; color: #64748b; margin-top: 4px;">Pulse Smart — Wellness Lab</div>
-          </div>
-          <div class="date" style="text-align: right;">
-            <div><strong>Usuario:</strong> Agustín</div>
-            <div style="margin-top: 4px;"><strong>Rango:</strong> ${insightPeriod === "day" ? "Hoy" : insightPeriod === "week" ? "Últimos 7 días" : insightPeriod === "month" ? "Último mes" : "Último trimestre"}</div>
-            <div style="margin-top: 4px;"><strong>Fecha Emisión:</strong> ${new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
-          </div>
-        </div>
-
-        <div class="grid">
-          <div class="card">
-            <div class="card-title">Adherencia Nutricional</div>
-            <div class="card-value">${dynamicAdherence}%</div>
-            <p style="font-size: 11px; color: #64748b; margin-top: 5px;">Consistencia calculada en base a tu objetivo diario de <strong>${mealsGoal} comidas</strong>.</p>
-          </div>
-          <div class="card">
-            <div class="card-title">Estabilidad de Horarios</div>
-            <div class="card-value">95%</div>
-            <p style="font-size: 11px; color: #64748b; margin-top: 5px;">Alineación de tus ingestas con tus ventanas biológicas óptimas.</p>
-          </div>
-        </div>
-
-        <div class="grid">
-          <div class="card" style="background: white;">
-            <div class="card-title" style="border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 12px;">Causas Principales de Ingesta</div>
-            ${WHY_EAT_DATA.map(d => `
-              <div class="bar-container">
-                <div class="bar-label">
-                  <span>${d.label}</span>
-                  <span>${d.percentage}%</span>
-                </div>
-                <div class="bar-track">
-                  <div class="bar-fill" style="background-color: ${(WHY_EAT_CHART_CONFIG[d.reason as keyof typeof WHY_EAT_CHART_CONFIG] as any)?.color || '#10b981'}; width: ${d.percentage}%;"></div>
-                </div>
-              </div>
-            `).join('')}
-          </div>
-
-          <div class="card" style="background: white;">
-            <div class="card-title" style="border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 12px;">Síntomas Físicos Reportados</div>
-            ${SYMPTOMS_DATA.map(d => {
-              const maxCount = Math.max(...SYMPTOMS_DATA.map(x => x.count));
-              const pct = Math.round((d.count / maxCount) * 100);
-              const label = SYMPTOMS_CHART_CONFIG[d.symptom as keyof typeof SYMPTOMS_CHART_CONFIG]?.label || d.symptom;
-              const color = SYMPTOMS_CHART_CONFIG[d.symptom as keyof typeof SYMPTOMS_CHART_CONFIG]?.color || '#cbd5e1';
-              return `
-                <div class="bar-container">
-                  <div class="bar-label">
-                    <span>${label}</span>
-                    <span>${d.count} veces</span>
-                  </div>
-                  <div class="bar-track">
-                    <div class="bar-fill" style="background-color: ${color}; width: ${pct}%;"></div>
-                  </div>
-                </div>
-              `;
-            }).join('')}
-          </div>
-        </div>
-
-        <div class="section-title">Detalle del Registro Diario de Actividad</div>
-        <table>
-          <thead>
-            <tr>
-              <th>Fecha</th>
-              <th>Hora</th>
-              <th>Categoría</th>
-              <th>Detalle / Registro</th>
-              <th>Impacto / Feedback Nutricional</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${filteredItems.map(item => `
-              <tr>
-                <td style="font-weight: 600;">${item.date}</td>
-                <td style="font-weight: 600;">${item.time}</td>
-                <td>
-                  <span class="badge badge-${item.type === 'food' ? 'food' : item.type === 'hydration' ? 'hydration' : item.type === 'coffee' ? 'coffee' : item.type === 'activity' ? 'activity' : 'circadian'}">
-                    ${item.type === 'food' ? 'Comida' : item.type === 'hydration' ? 'Hidratación' : item.type === 'coffee' ? 'Café' : item.type === 'activity' ? 'Actividad' : 'Hito Solar'}
-                  </span>
-                </td>
-                <td><strong>${item.title}</strong>${item.kcal > 0 ? ` (${item.kcal} kcal)` : ''}</td>
-                <td style="font-size: 11px; color: #475569;">${item.coachFeedback || 'N/A'}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-
-        <div class="disclaimer">
-          <strong>Aviso Médico & Disclaimer:</strong> Este documento es un resumen de registros de hábitos y estimaciones circadianas con fines informativos de autoconocimiento. No constituye un diagnóstico médico, prescripción clínica ni asesoramiento nutricional formal. Por favor, consulte con su médico, nutricionista o profesional de la salud matriculado antes de realizar cambios significativos en su dieta, rutina de ayuno o hábitos biológicos.
-        </div>
-
-        <script>
-          window.onload = function() {
-            window.print();
-          }
-        </script>
-      </body>
-      </html>
-    `;
-
-    printWindow.document.write(htmlContent);
-    printWindow.document.close();
-  };
+  }, [userTimelineItems]);
 
   return (
-    <div className={`mx-auto w-full space-y-5 sm:space-y-8 pb-20 max-w-2xl transition-transform duration-300 ${isShaking ? "animate-bounce scale-[0.98]" : ""}`}>
+    <div className="mx-auto w-full space-y-5 sm:space-y-8 pb-20 max-w-2xl transition-transform duration-300">
       {/* Header Section (Sticky Equal-Width Subtabs) */}
       <header className="sticky top-16 z-30 bg-background/80 backdrop-blur-xl border-b border-border/60 pt-3 pb-0 transition-all">
-        <div className="grid grid-cols-5 w-full select-none text-center">
+        <div className="grid grid-cols-2 w-full select-none text-center">
           {[
             { id: "diario", label: "Diario" },
-            { id: "analisis", label: "Alimentación" },
-            { id: "sueno", label: "Sueño" },
             { id: "recuperacion", label: "Recuperación" },
-            { id: "recetas", label: "Recetas" },
           ].map((tab) => {
             const isActive = subTab === tab.id;
             return (
@@ -3823,7 +3785,162 @@ function DiarioTab() {
       </header>
 
       {subTab === "diario" && (
-        <>
+        <div className="space-y-6 animate-in fade-in duration-300">
+          {/* SHAKE FOR AI (TU MEZCLA DEL MOMENTO) CARD */}
+          <div className={cn(
+            "p-5 rounded-3xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-purple-500/5 to-cyan-500/10 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all duration-300",
+            isShaking && "animate-bounce"
+          )}>
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-2xl bg-foreground text-background shrink-0 shadow-md">
+                <Zap className="w-5 h-5 text-amber-400 fill-amber-400" />
+              </div>
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-xs font-bold text-foreground">Tu Mezcla del Momento</h3>
+                  <Badge variant="outline" className="text-[10px] font-extrabold border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                    Shake for AI 🥤
+                  </Badge>
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Agita tu teléfono o presiona para generar tu recomendación inteligente usando los alimentos de tu alacena.
+                </p>
+              </div>
+            </div>
+
+            <Button
+              type="button"
+              onClick={triggerShakeForAi}
+              className="rounded-2xl font-bold text-xs bg-foreground text-background hover:opacity-90 shrink-0 w-full sm:w-auto shadow-sm flex items-center justify-center gap-2"
+            >
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              <span>Mezclar Ahora</span>
+            </Button>
+          </div>
+
+          {/* CARD 1: Racha de Actividad (Full Width, estilo Gestión del Sueño) */}
+          <div className="bg-card border border-border rounded-3xl p-5 sm:p-6 space-y-4 shadow-xs hover:-translate-y-1 hover:shadow-md transition-all flex flex-col justify-between w-full">
+            {/* Card Header */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-border/40 pb-3 gap-3">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Flame className="w-4 h-4 text-amber-500 shrink-0" />
+                <div>
+                  <span className="text-[10px] text-muted-foreground/80 font-bold uppercase tracking-wider block mb-0.5">
+                    Hábitos & Movimiento
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-foreground">Racha de Actividad</h3>
+                    <span className="inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                      <Flame className="w-3 h-3 fill-amber-500 text-amber-500" />
+                      12 días
+                    </span>
+                  </div>
+                </div>
+                <TooltipProvider>
+                  <ShadcnTooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        className="p-1 rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors shrink-0 flex items-center justify-center cursor-pointer border-0 bg-transparent"
+                      >
+                        <Info className="w-3.5 h-3.5 text-emerald-500" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" align="start" className="max-w-xs p-3.5 bg-card border border-border shadow-xl rounded-2xl text-xs space-y-2 text-left">
+                      <p className="font-bold text-foreground">Ciencia de la Racha MET</p>
+                      <p className="text-muted-foreground text-[11px] leading-relaxed">
+                        La OMS recomienda sumar al menos 150 Puntos MET diarios (Equivalentes Metabólicos). Calculamos un promedio ponderado de 7 días para mantener la constancia sin penalizar días de descanso programados.
+                      </p>
+                      <div className="pt-1.5 border-t border-border/60 text-[10px]">
+                        <Link
+                          to="/blog/$slug"
+                          params={{ slug: "la-ciencia-detras-de-la-racha-de-actividad-promedio-ponderado-de-7-dias-mets-y-adherencia-sostenible" }}
+                          className="text-amber-500 font-bold hover:underline flex items-center justify-between gap-1 group"
+                        >
+                          <span>📖 Leer evidencia sobre METs y hábitos</span>
+                          <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                        </Link>
+                      </div>
+                    </TooltipContent>
+                  </ShadcnTooltip>
+                </TooltipProvider>
+              </div>
+
+              {/* Filtros de Tiempo (Pills) */}
+              <div className="flex items-center gap-1 bg-secondary/60 p-1 rounded-2xl border border-border/60 shrink-0 self-end sm:self-center">
+                {(["week", "month", "quarter"] as const).map((period) => (
+                  <button
+                    key={period}
+                    type="button"
+                    onClick={() => setActivityFilter(period)}
+                    className={`px-2.5 py-1 rounded-xl text-[10px] font-bold transition-all cursor-pointer ${
+                      activityFilter === period
+                        ? "bg-foreground text-background shadow-xs"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {period === "week" ? "Semana" : period === "month" ? "Mes" : "Trimestre"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Stats Bar Explicativas */}
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="p-2.5 bg-secondary/30 border border-border/40 rounded-2xl flex flex-col justify-center">
+                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block mb-0.5">Promedio Diario</span>
+                <span className="text-xs sm:text-sm font-black text-foreground">{avgActivityPoints} Pts</span>
+                <span className="text-[9px] text-muted-foreground font-semibold">METs acumulados</span>
+              </div>
+              <div className="p-2.5 bg-secondary/30 border border-border/40 rounded-2xl flex flex-col justify-center">
+                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block mb-0.5">Meta OMS</span>
+                <span className="text-xs sm:text-sm font-black text-emerald-500">{activityTargetPercent}%</span>
+                <span className="text-[9px] text-muted-foreground font-semibold">de 150 Pts obj.</span>
+              </div>
+              <div className="p-2.5 bg-secondary/30 border border-border/40 rounded-2xl flex flex-col justify-center">
+                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block mb-0.5">Estado Racha</span>
+                <span className="text-xs sm:text-sm font-black text-amber-500">12 Días</span>
+                <span className="text-[9px] text-amber-500/80 font-bold">Racha Activa</span>
+              </div>
+            </div>
+
+            {/* AreaChart para la Racha de Actividad */}
+            <div className="h-44 w-full pt-1">
+              <ChartContainer config={activityChartConfig} className="h-full w-full">
+                <AreaChart data={currentActivityHistory} margin={{ top: 12, right: 10, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="activityAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.4} />
+                      <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" opacity={0.1} />
+                  <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={6} tick={{ fontSize: 10, fill: "currentColor", opacity: 0.7 }} />
+                  <YAxis domain={[100, 220]} ticks={[100, 130, 150, 180, 210]} tickLine={false} axisLine={false} tickMargin={4} tickFormatter={(v) => `${v} Pts`} tick={{ fontSize: 10, fill: "currentColor", opacity: 0.7 }} />
+                  <ReferenceLine y={150} stroke="#10b981" strokeDasharray="3 3" opacity={0.8} label={{ value: "Obj. 150 Pts", position: "insideTopRight", fill: "#10b981", fontSize: 9, fontWeight: "bold" }} />
+                  <ChartTooltip content={<ChartTooltipContent indicator="line" formatter={(value) => [`${value} Pts MET`, "Actividad"]} />} />
+                  <Area type="monotone" dataKey="puntos" stroke="#f59e0b" strokeWidth={2.5} fillOpacity={1} fill="url(#activityAreaGradient)" dot={{ r: 3.5, fill: "#f59e0b", strokeWidth: 0 }} activeDot={{ r: 5.5, strokeWidth: 0 }} />
+                </AreaChart>
+              </ChartContainer>
+            </div>
+
+            {/* Bottom Actions & Info */}
+            <div className="space-y-3 pt-1 border-t border-border/40">
+              <div className="flex flex-wrap justify-between items-center text-[10px] text-muted-foreground gap-2">
+                <span>Sumando 150 Puntos MET diarios conservas tu racha física.</span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setActiveModal("registrar-actividad")}
+                  className="h-7 text-[10px] font-bold rounded-xl px-3 border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 cursor-pointer"
+                >
+                  <Plus className="w-3 h-3 mr-1" />
+                  Registrar Actividad MET
+                </Button>
+              </div>
+            </div>
+          </div>
+
           {/* Timeline */}
           <div className="relative pl-6 md:pl-0">
             {/* Vertical Line */}
@@ -3858,174 +3975,6 @@ function DiarioTab() {
                     bg: "",
                   }
                 }[category];
-
-                if (item.type === "swipe-stack") {
-                  return (
-                    <React.Fragment key={item.id}>
-                      {showDateSeparator && (
-                        <div className="relative flex justify-center my-8 pl-6 md:pl-0 w-full select-none">
-                          <div className="absolute top-1/2 left-6 md:left-0 right-0 h-[1px] bg-border/40 -translate-y-1/2"></div>
-                          <Badge 
-                            variant="outline" 
-                            className="relative z-10 bg-background text-[11px] font-bold px-4 py-1.5 rounded-full flex items-center gap-2 border-border shadow-none"
-                          >
-                            <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
-                            <span>{formatDateLabel(item.date)}</span>
-                          </Badge>
-                        </div>
-                      )}
-
-                      <div id={`recipe-swipe-stack-card-${item.id}`} className="relative mb-12 md:grid md:grid-cols-2 md:gap-12 items-center group animate-in slide-in-from-top-4 duration-300">
-                        {/* Timeline Dot */}
-                        <div className="absolute left-0 md:left-1/2 w-4.5 h-4.5 rounded-full border-4 bg-background z-10 transform -translate-x-1/2 border-emerald-500 shadow-xs"></div>
-
-                        {/* Time Label for Desktop */}
-                        <div className={`hidden md:block ${showOnLeft ? "text-right pr-6 md:order-2" : "text-left pl-6 md:order-1"}`}>
-                          <span className="font-extrabold text-base text-foreground">{item.time}</span>
-                          <p className="text-emerald-500 font-bold text-xs mt-0.5">Explorar Ideas</p>
-                        </div>
-
-                        {/* Card Container */}
-                        <div className={`pl-6 md:pl-0 ${showOnLeft ? "md:order-1" : "md:order-2"}`}>
-                          <RecipeSwipeStack 
-                            onClose={() => handleDeleteTimelineItem(item.id)}
-                            savedRecipes={savedRecipes}
-                            setSavedRecipes={setSavedRecipes}
-                            currentSwipeIndex={currentSwipeIndex}
-                            setCurrentSwipeIndex={setCurrentSwipeIndex}
-                            onSaveRecipeTimeline={(recipe) => {
-                              const newMeal = {
-                                id: `swipe-saved-${Date.now()}`,
-                                date: new Date().toISOString().split('T')[0],
-                                time: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
-                                title: recipe.title,
-                                subtitle: recipe.category || "Receta Guardada",
-                                type: "food",
-                                img: recipe.img,
-                                kcal: recipe.kcal,
-                                tags: recipe.tags || (recipe.tag ? [recipe.tag] : []),
-                                tag: recipe.tag,
-                                coachFeedback: recipe.coachFeedback || `Guardaste "${recipe.title}" en tu diario de alimentación.`,
-                              };
-                              setUserTimelineItems(prev => [newMeal, ...prev]);
-                              toast.success(`❤️ Receta "${recipe.title}" agregada a tu diario`);
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </React.Fragment>
-                  );
-                }
-
-                if (item.type === "shake-ai") {
-                  return (
-                    <React.Fragment key={item.id}>
-                      {showDateSeparator && (
-                        <div className="relative flex justify-center my-8 pl-6 md:pl-0 w-full select-none">
-                          <div className="absolute top-1/2 left-6 md:left-0 right-0 h-[1px] bg-border/40 -translate-y-1/2"></div>
-                          <Badge 
-                            variant="outline" 
-                            className="relative z-10 bg-background text-[11px] font-bold px-4 py-1.5 rounded-full flex items-center gap-2 border-border shadow-none"
-                          >
-                            <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
-                            <span>{formatDateLabel(item.date)}</span>
-                          </Badge>
-                        </div>
-                      )}
-
-                      <div className="relative mb-12 md:grid md:grid-cols-2 md:gap-12 items-center group animate-in slide-in-from-top-5 duration-300">
-                        {/* Timeline Dot */}
-                        <div className="absolute left-0 md:left-1/2 w-4.5 h-4.5 rounded-full border-4 bg-background z-10 transform -translate-x-1/2 border-amber-500 shadow-xs"></div>
-
-                        {/* Time Label for Desktop */}
-                        <div className={`hidden md:block ${showOnLeft ? "text-right pr-6 md:order-2" : "text-left pl-6 md:order-1"}`}>
-                          <span className="font-extrabold text-base text-amber-600 dark:text-amber-400">{item.time}</span>
-                          <p className="text-amber-500/80 text-xs mt-0.5 font-bold">Shake for AI</p>
-                        </div>
-
-                        {/* Card Container */}
-                        <div className={`pl-6 md:pl-0 ${showOnLeft ? "md:order-1" : "md:order-2"}`}>
-                          <Card className="rounded-2xl overflow-hidden transition-all duration-300 border border-amber-500/40 bg-card/90 dark:bg-card/80 backdrop-blur-md shadow-sm hover:border-amber-500/60 p-5 space-y-3.5 relative">
-                            {/* Ambient Light */}
-                            <div className="pointer-events-none absolute -right-10 -top-10 w-28 h-28 bg-amber-500/15 rounded-full blur-2xl" />
-
-                            <div className="flex items-start justify-between relative z-10">
-                              <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-xl shrink-0 shadow-xs">
-                                  {item.icon || "🥤"}
-                                </div>
-                                <div>
-                                  <span className="text-[10px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-400 block mb-0.5">
-                                    SHAKE FOR AI
-                                  </span>
-                                  <h4 className="text-sm font-black text-foreground">{item.title}</h4>
-                                </div>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteTimelineItem(item.id)}
-                                className="text-muted-foreground hover:text-rose-500 transition-colors p-1 cursor-pointer"
-                                title="Eliminar recomendación"
-                              >
-                                <X className="w-4 h-4" />
-                              </button>
-                            </div>
-
-                            <div className="bg-secondary/40 border border-border/50 rounded-xl p-3.5 text-xs text-foreground leading-relaxed font-medium relative z-10">
-                              <TypewriterOnce text={item.coachFeedback || ""} speed={25} />
-                            </div>
-
-                            {item.actionText && (
-                              <Button
-                                onClick={() => {
-                                  if (item.actionType === "water") {
-                                    setHydrationLevel(prev => Math.min(8, prev + 1));
-                                    const newHydCard = {
-                                      id: `hydration-${Date.now()}`,
-                                      date: new Date().toISOString().split("T")[0],
-                                      time: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
-                                      title: "Registro de Hidratación (+250ml)",
-                                      subtitle: "Control de Rutina",
-                                      type: "hydration",
-                                      img: null,
-                                      kcal: 0,
-                                      tag: "Hidratación +250ml",
-                                      coachFeedback: "Sumaste +250ml de agua pura recomendados por tu Coach IA. Tu nivel de hidratación se mantiene en estado óptimo.",
-                                    };
-                                    setUserTimelineItems(prev => [newHydCard, ...prev]);
-                                    toast.success("✓ Registraste +250ml de agua pura");
-                                  } else if (item.actionType === "scan") {
-                                    setActiveModal("food-analysis");
-                                  } else if (item.actionType === "recipe") {
-                                    handleOpenExplorarIdeas();
-                                  } else if (item.actionType === "diario") {
-                                    const newClosureCard = {
-                                      id: `closure-${Date.now()}`,
-                                      date: new Date().toISOString().split("T")[0],
-                                      time: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
-                                      title: "Cierre de Jornada & Descanso",
-                                      subtitle: "Ritmo Circadiano",
-                                      type: "thought",
-                                      img: null,
-                                      kcal: 0,
-                                      tag: "Recuperación Nocturna",
-                                      coachFeedback: "Completaste el seguimiento de hábitos de hoy con éxito. Desconecta pantallas e inicia tu rutina de descanso para un sueño reparador.",
-                                    };
-                                    setUserTimelineItems(prev => [newClosureCard, ...prev]);
-                                    toast.success("🌙 Registraste tu cierre de jornada");
-                                  }
-                                }}
-                                className="w-full rounded-xl bg-foreground text-background font-bold text-xs h-10 hover:opacity-90 transition-opacity gap-2 relative z-10 shadow-xs cursor-pointer"
-                              >
-                                <span>{item.actionText}</span>
-                              </Button>
-                            )}
-                          </Card>
-                        </div>
-                      </div>
-                    </React.Fragment>
-                  );
-                }
 
                 return (
                   <React.Fragment key={item.id}>
@@ -4096,45 +4045,13 @@ function DiarioTab() {
                           <CardHeader className="p-5 pb-3">
                             <div className="flex items-start justify-between gap-4">
                               <div className="space-y-1">
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                  <CardTitle className="text-base font-bold leading-tight text-foreground">{item.title}</CardTitle>
-                                  {(item.type === "sunrise" || item.type === "sunset" || item.type === "peak") && (
-                                    <TooltipProvider>
-                                      <ShadcnTooltip>
-                                        <TooltipTrigger asChild>
-                                          <button
-                                            type="button"
-                                            className="p-0.5 text-muted-foreground hover:text-emerald-500 transition-colors rounded-full hover:bg-secondary/60 cursor-pointer"
-                                            aria-label="Información sobre ritmos circadianos"
-                                          >
-                                            <Info className="w-3.5 h-3.5 text-emerald-500" />
-                                          </button>
-                                        </TooltipTrigger>
-                                        <TooltipContent className="max-w-[280px] p-3 text-xs leading-relaxed space-y-2 bg-popover text-popover-foreground border border-border shadow-xl">
-                                          <p className="font-medium">
-                                            Tu cuerpo funciona en ciclos de 24 hs. Estas tarjetas te indican los momentos óptimos del día para comer, activar tu metabolismo y descansar.
-                                          </p>
-                                          <div className="pt-1.5 border-t border-border/60 flex justify-end">
-                                            <Link
-                                              to="/blog/$slug"
-                                              params={{ slug: "ritmos-circadianos-y-bienestar" }}
-                                              className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 hover:underline text-[11px]"
-                                            >
-                                              <span>Leer más</span>
-                                              <ArrowUpRight className="w-3.5 h-3.5" />
-                                            </Link>
-                                          </div>
-                                        </TooltipContent>
-                                      </ShadcnTooltip>
-                                    </TooltipProvider>
-                                  )}
-                                </div>
+                                <CardTitle className="text-base font-bold leading-tight text-foreground">{item.title}</CardTitle>
                                 <CardDescription className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                                   {item.subtitle}
                                 </CardDescription>
                               </div>
                               <div className="flex items-center gap-1.5 shrink-0">
-                                {!item.img && item.type !== "sunrise" && item.type !== "sunset" && item.type !== "peak" && (
+                                {!item.img && (
                                   <div className="flex items-center gap-1">
                                     <button
                                       type="button"
@@ -4164,78 +4081,27 @@ function DiarioTab() {
                                 )}
                                 {!item.img && (
                                   <div className="w-9 h-9 rounded-full bg-secondary text-muted-foreground flex items-center justify-center shrink-0 border border-border/40">
-                                    {item.type === "hydration" && <Droplet className="w-4.5 h-4.5" />}
-                                    {item.type === "coffee" && <Coffee className="w-4.5 h-4.5" />}
-                                    {item.type === "thought" && <Sparkles className="w-4.5 h-4.5" />}
-                                    {item.type === "sunrise" && <Sun className="w-4.5 h-4.5 text-amber-500" />}
-                                    {item.type === "sunset" && <Moon className="w-4.5 h-4.5 text-indigo-400" />}
-                                    {item.type === "peak" && <TrendingUp className="w-4.5 h-4.5 text-emerald-500" />}
-                                    {item.type === "activity" && <Activity className="w-4.5 h-4.5 text-orange-500" />}
+                                    {item.type === "hydration" ? (
+                                      <Droplet className="w-4.5 h-4.5 text-cyan-500" />
+                                    ) : (
+                                      <Activity className="w-4.5 h-4.5 text-orange-500" />
+                                    )}
                                   </div>
                                 )}
                               </div>
                             </div>
                           </CardHeader>
 
-                          {(item.type === "food" || item.type === "coffee") ? (
-                            <CardContent className="px-5 pb-4 pt-0">
-                              <MealOrganizerBadges
-                                category={item.subtitle}
-                                tags={item.tags || (item.tag ? [item.tag] : [])}
-                              />
-                            </CardContent>
-                          ) : (item.kcal > 0 || item.tag) && (
+                          {(item.kcal > 0 || item.tag) && (
                             <CardContent className="px-5 pb-4 pt-0">
                               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                 {item.kcal > 0 && (
                                   <span className="flex items-center gap-0.5 font-medium">
-                                    <Flame className="w-3.5 h-3.5" /> {item.kcal} kcal
+                                    <Flame className="w-3.5 h-3.5 text-orange-500" /> {item.kcal} kcal
                                   </span>
                                 )}
                                 {item.kcal > 0 && item.tag && <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />}
-                                {item.tag && <span className="font-medium">{item.tag}</span>}
-                              </div>
-                            </CardContent>
-                          )}
-
-                          {!item.img && item.type === "hydration" && (
-                            <CardContent className="px-5 pb-4 pt-0 space-y-2">
-                              {/* Hydration Selector */}
-                              <div className="space-y-2">
-                                <div className="flex justify-between gap-1 h-12 w-full rounded-xl overflow-hidden bg-secondary/20 p-1">
-                                  {[
-                                    { level: 1, color: "#fbfce1" },
-                                    { level: 2, color: "#f9f9cd" },
-                                    { level: 3, color: "#f6f2a9" },
-                                    { level: 4, color: "#f2e285" },
-                                    { level: 5, color: "#eec863" },
-                                    { level: 6, color: "#e8a33a" },
-                                    { level: 7, color: "#d4812f" },
-                                    { level: 8, color: "#a66a2e" }
-                                  ].map(h => (
-                                    <button
-                                      key={h.level}
-                                      type="button"
-                                      onClick={() => {
-                                        setHydrationLevel(h.level);
-                                      }}
-                                      className={`flex-1 h-full rounded-lg transition-all relative ${
-                                        hydrationLevel === h.level 
-                                          ? "border-2 border-foreground z-10" 
-                                          : "hover:opacity-90"
-                                      }`}
-                                      style={{ backgroundColor: h.color }}
-                                    >
-                                      {hydrationLevel === h.level && (
-                                        <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-foreground rounded-full"></span>
-                                      )}
-                                    </button>
-                                  ))}
-                                </div>
-                                <div className="flex justify-between text-[9px] uppercase font-bold text-muted-foreground/80 tracking-wider">
-                                  <span>Óptimo</span>
-                                  <span>Deshidratado</span>
-                                </div>
+                                {item.tag && <span className="font-medium text-foreground/80">{item.tag}</span>}
                               </div>
                             </CardContent>
                           )}
@@ -4248,12 +4114,10 @@ function DiarioTab() {
                           {/* Coach / AI Feedback Section */}
                           {item.coachFeedback && (
                             <CardFooter className="px-5 py-4 bg-secondary/20 border-t border-border flex items-start gap-2.5">
-                              {item.type === "sunrise" ? (
-                                <Sun className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                              ) : item.type === "sunset" ? (
-                                <Moon className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
-                              ) : item.type === "peak" ? (
-                                <TrendingUp className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                              {item.type === "hydration" ? (
+                                <Droplet className="w-4 h-4 text-cyan-500 shrink-0 mt-0.5" />
+                              ) : item.type === "meal" ? (
+                                <Camera className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                               ) : item.type === "activity" ? (
                                 <Activity className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
                               ) : (
@@ -4271,631 +4135,6 @@ function DiarioTab() {
                 );
               });
             })()}
-          </div>
-        </>
-      )}
-
-      {subTab === "analisis" && (
-        <div className="space-y-6 animate-in fade-in duration-300">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <p className="text-sm text-muted-foreground">Perspectivas detalladas de tu alimentación y bienestar.</p>
-            
-            <Select 
-              value={insightPeriod} 
-              onValueChange={(val: any) => setInsightPeriod(val)}
-            >
-              <SelectTrigger className="w-full sm:w-48 bg-card border border-border text-xs font-bold h-9">
-                <SelectValue placeholder="Seleccionar período" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem className="text-xs font-bold" value="day">Día</SelectItem>
-                <SelectItem className="text-xs font-bold" value="week">Semana</SelectItem>
-                <SelectItem className="text-xs font-bold" value="month">Mes</SelectItem>
-                <SelectItem className="text-xs font-bold" value="quarter">Trimestre</SelectItem>
-                <SelectItem className="text-xs font-bold" value="all">Desde siempre</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Alimentación Consciente */}
-            <Card className="col-span-1 flex flex-col justify-between">
-              <CardHeader className="pb-0 flex flex-row items-start justify-between space-y-0">
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <CardTitle className="text-lg font-bold text-foreground tracking-tight leading-none">Alimentación consciente</CardTitle>
-                    <TooltipProvider>
-                      <ShadcnTooltip>
-                        <TooltipTrigger asChild>
-                          <button type="button" className="text-muted-foreground hover:text-emerald-500 transition-colors cursor-pointer" aria-label="Información de alimentación consciente">
-                            <Info className="w-3.5 h-3.5 text-emerald-500" />
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-[280px] p-3 text-xs leading-relaxed space-y-2 bg-popover text-popover-foreground border border-border shadow-xl">
-                          <p className="font-medium">
-                            El porcentaje de consistencia calculado en base a tu objetivo diario de comidas registradas versus las comidas reales cargadas en tu diario.
-                          </p>
-                          <div className="pt-1.5 border-t border-border/60 flex justify-end">
-                            <Link
-                              to="/blog/$slug"
-                              params={{ slug: "alimentacion-consciente-y-adherencia" }}
-                              className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 hover:underline text-[11px]"
-                            >
-                              <span>Leer más</span>
-                              <ArrowUpRight className="w-3.5 h-3.5" />
-                            </Link>
-                          </div>
-                        </TooltipContent>
-                      </ShadcnTooltip>
-                    </TooltipProvider>
-                  </div>
-                  <CardDescription className="text-xs text-muted-foreground mt-1">Consistencia de tu diario</CardDescription>
-                </div>
-              </CardHeader>
-              
-              <CardContent className="flex-1 flex flex-col items-center justify-center pb-0 pt-4">
-                <ChartContainer
-                  config={ADHERENCE_CHART_CONFIG}
-                  className="mx-auto aspect-square w-full max-h-[170px] select-none"
-                >
-                  <RadialBarChart
-                    data={[{ name: "adherencia", value: dynamicAdherence, fill: "var(--color-adherencia)" }]}
-                    startAngle={90}
-                    endAngle={-270}
-                    innerRadius={70}
-                    outerRadius={85}
-                  >
-                    <PolarAngleAxis
-                      type="number"
-                      domain={[0, 100]}
-                      angleAxisId={0}
-                      tick={false}
-                    />
-                    <RadialBar 
-                      dataKey="value" 
-                      background={{ fill: "var(--muted)" }} 
-                      cornerRadius={10} 
-                      {...({ barSize: 15 } as any)}
-                    />
-                    <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
-                      <Label
-                        content={({ viewBox }) => {
-                          if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                            return (
-                              <text
-                                x={viewBox.cx}
-                                y={viewBox.cy}
-                                textAnchor="middle"
-                                dominantBaseline="middle"
-                              >
-                                <tspan
-                                  x={viewBox.cx}
-                                  y={viewBox.cy}
-                                  className="fill-foreground text-3xl font-black"
-                                >
-                                  {dynamicAdherence}%
-                                </tspan>
-                                <tspan
-                                  x={viewBox.cx}
-                                  y={(viewBox.cy || 0) + 20}
-                                  className="fill-muted-foreground text-[10px] font-bold uppercase tracking-wider"
-                                >
-                                  Registro
-                                </tspan>
-                              </text>
-                            )
-                          }
-                        }}
-                      />
-                    </PolarRadiusAxis>
-                  </RadialBarChart>
-                </ChartContainer>
-              </CardContent>
-
-              <CardFooter className="border-t border-border/40 pt-3 pb-3 flex justify-between items-center text-xs">
-                <span className="text-muted-foreground font-bold uppercase tracking-wider text-[9px]">Objetivo diario:</span>
-                <div className="flex items-center gap-2">
-                  <button 
-                    type="button"
-                    onClick={() => setMealsGoal(prev => Math.max(1, prev - 1))}
-                    className="w-5 h-5 rounded bg-secondary hover:bg-secondary/80 flex items-center justify-center font-bold text-foreground transition"
-                  >
-                    -
-                  </button>
-                  <span className="font-extrabold text-foreground w-20 text-center">{mealsGoal} {mealsGoal === 1 ? "comida" : "comidas"}</span>
-                  <button 
-                    type="button"
-                    onClick={() => setMealsGoal(prev => Math.min(8, prev + 1))}
-                    className="w-5 h-5 rounded bg-secondary hover:bg-secondary/80 flex items-center justify-center font-bold text-foreground transition"
-                  >
-                    +
-                  </button>
-                </div>
-              </CardFooter>
-            </Card>
-
-            {/* ¿Por qué comiste? */}
-            <Card className="col-span-1 flex flex-col justify-between">
-              <CardHeader className="pb-0 flex flex-row items-start justify-between space-y-0">
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <CardTitle className="text-lg font-bold text-foreground tracking-tight leading-none">¿Por qué comiste?</CardTitle>
-                    <TooltipProvider>
-                      <ShadcnTooltip>
-                        <TooltipTrigger asChild>
-                          <button type="button" className="text-muted-foreground hover:text-emerald-500 transition-colors cursor-pointer" aria-label="Información de causas de ingesta">
-                            <Info className="w-3.5 h-3.5 text-emerald-500" />
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-[280px] p-3 text-xs leading-relaxed space-y-2 bg-popover text-popover-foreground border border-border shadow-xl">
-                          <p className="font-medium">
-                            Clasificar tus ingestas te ayuda a distinguir el hambre fisiológica real de los desencadenantes de hambre emocional (como aburrimiento, estrés o hábitos sociales).
-                          </p>
-                          <div className="pt-1.5 border-t border-border/60 flex justify-end">
-                            <Link
-                              to="/blog/$slug"
-                              params={{ slug: "hambre-emocional-vs-fisiologica" }}
-                              className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 hover:underline text-[11px]"
-                            >
-                              <span>Leer más</span>
-                              <ArrowUpRight className="w-3.5 h-3.5" />
-                            </Link>
-                          </div>
-                        </TooltipContent>
-                      </ShadcnTooltip>
-                    </TooltipProvider>
-                  </div>
-                  <CardDescription className="text-xs text-muted-foreground mt-1">Causas principales de tus comidas</CardDescription>
-                </div>
-              </CardHeader>
-              
-              <CardContent className="flex-1 flex flex-col items-center justify-center pb-2 pt-4">
-                <ChartContainer
-                  config={WHY_EAT_CHART_CONFIG}
-                  className="mx-auto aspect-square w-full max-h-[220px] select-none"
-                >
-                  <PieChart>
-                    <ChartTooltip
-                      cursor={false}
-                      content={<ChartTooltipContent hideLabel />}
-                    />
-                    <Pie
-                      data={whyEatData}
-                      dataKey="percentage"
-                      nameKey="reason"
-                      innerRadius={35}
-                      outerRadius={55}
-                      strokeWidth={3}
-                    />
-                    <ChartLegend
-                      content={<ChartLegendContent nameKey="reason" />}
-                      className="flex-wrap gap-2 *:basis-1/4 *:justify-center"
-                    />
-                  </PieChart>
-                </ChartContainer>
-              </CardContent>
-            </Card>
-
-            {/* Síntomas Físicos */}
-            <Card className="col-span-1 flex flex-col justify-between">
-              <CardHeader className="pb-2 flex flex-row items-start justify-between space-y-0">
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <CardTitle className="text-lg font-bold text-foreground tracking-tight leading-none">Síntomas Físicos</CardTitle>
-                    <TooltipProvider>
-                      <ShadcnTooltip>
-                        <TooltipTrigger asChild>
-                          <button type="button" className="text-muted-foreground hover:text-emerald-500 transition-colors cursor-pointer" aria-label="Información de síntomas físicos">
-                            <Info className="w-3.5 h-3.5 text-emerald-500" />
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-[280px] p-3 text-xs leading-relaxed space-y-2 bg-popover text-popover-foreground border border-border shadow-xl">
-                          <p className="font-medium">
-                            Registrar molestias corporales post-ingesta ayuda a identificar intolerancias alimentarias ocultas y a comprender cómo reacciona tu digestión ante diferentes tipos de nutrientes.
-                          </p>
-                          <div className="pt-1.5 border-t border-border/60 flex justify-end">
-                            <Link
-                              to="/blog/$slug"
-                              params={{ slug: "sintomas-fisicos-salud-digestiva" }}
-                              className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 hover:underline text-[11px]"
-                            >
-                              <span>Leer más</span>
-                              <ArrowUpRight className="w-3.5 h-3.5" />
-                            </Link>
-                          </div>
-                        </TooltipContent>
-                      </ShadcnTooltip>
-                    </TooltipProvider>
-                  </div>
-                  <CardDescription className="text-xs text-muted-foreground mt-1">Frecuencia de síntomas reportados</CardDescription>
-                </div>
-              </CardHeader>
-              
-              <CardContent className="flex-1 flex flex-col justify-center pb-6 pt-4">
-                <ChartContainer config={SYMPTOMS_CHART_CONFIG} className="w-full select-none">
-                  <BarChart
-                    accessibilityLayer
-                    data={SYMPTOMS_DATA}
-                    layout="vertical"
-                    margin={{
-                      left: 0,
-                    }}
-                  >
-                    <YAxis
-                      dataKey="symptom"
-                      type="category"
-                      tickLine={false}
-                      tickMargin={10}
-                      axisLine={false}
-                      width={125}
-                      tickFormatter={(value) =>
-                        SYMPTOMS_CHART_CONFIG[value as keyof typeof SYMPTOMS_CHART_CONFIG]?.label || value
-                      }
-                      className="text-[11px] font-normal fill-muted-foreground"
-                    />
-                    <XAxis dataKey="count" type="number" hide />
-                    <ChartTooltip
-                      cursor={false}
-                      content={<ChartTooltipContent hideLabel />}
-                    />
-                    <Bar dataKey="count" radius={5} />
-                  </BarChart>
-                </ChartContainer>
-              </CardContent>
-            </Card>
-
-            {/* Balance Alimentario */}
-            <Card className="col-span-1 flex flex-col justify-between p-5 space-y-4">
-              <CardHeader className="p-0 flex flex-row items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <CardTitle className="text-base font-bold text-foreground tracking-tight">Balance Alimentario</CardTitle>
-                  <TooltipProvider>
-                    <ShadcnTooltip>
-                      <TooltipTrigger asChild>
-                        <button type="button" className="text-muted-foreground hover:text-emerald-500 transition-colors cursor-pointer" aria-label="Información del Balance Alimentario">
-                          <Info className="w-3.5 h-3.5 text-emerald-500" />
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent className="max-w-[280px] p-3 text-xs leading-relaxed space-y-2 bg-popover text-popover-foreground border border-border shadow-xl">
-                        <p className="font-medium">
-                          Evaluación multidimensional de tus hábitos: calidad nutricional, densidad de comida real, hidratación, sincronía con tus horarios y escucha corporal (Body Awareness).
-                        </p>
-                        <div className="pt-1.5 border-t border-border/60 flex justify-end">
-                          <Link
-                            to="/blog/$slug"
-                            params={{ slug: "por-que-no-contar-calorias-nutricion-consciente" }}
-                            className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 hover:underline text-[11px]"
-                          >
-                            <span>Leer más</span>
-                            <ArrowUpRight className="w-3.5 h-3.5" />
-                          </Link>
-                        </div>
-                      </TooltipContent>
-                    </ShadcnTooltip>
-                  </TooltipProvider>
-                </div>
-                <div className="flex items-baseline gap-1 bg-secondary/40 px-2.5 py-1 rounded-xl border border-border/40">
-                  <span className="text-xs font-black text-foreground">85</span>
-                  <span className="text-[10px] text-muted-foreground font-bold">/100 Pts</span>
-                </div>
-              </CardHeader>
-
-              <CardContent className="p-0 pt-2 flex-1 flex items-center justify-center">
-                <ChartContainer
-                  config={HOLISTIC_RADAR_CONFIG}
-                  className="mx-auto aspect-square w-full max-h-[195px] select-none"
-                >
-                  <RadarChart data={HOLISTIC_RADAR_DATA} margin={{ top: 10, right: 15, bottom: 10, left: 15 }}>
-                    <ChartTooltip
-                      cursor={false}
-                      content={<ChartTooltipContent hideLabel />}
-                    />
-                    <PolarGrid strokeWidth={1} stroke="var(--border)" />
-                    <PolarAngleAxis
-                      dataKey="subject"
-                      tick={{ fill: "var(--muted-foreground)", fontSize: 8.5, fontWeight: 700 }}
-                    />
-                    <Radar
-                      name="Nivel"
-                      dataKey="value"
-                      fill="var(--color-value)"
-                      fillOpacity={0.25}
-                      stroke="var(--color-value)"
-                      strokeWidth={2}
-                    />
-                  </RadarChart>
-                </ChartContainer>
-              </CardContent>
-            </Card>
-
-            {/* Color Plate Trend */}
-            <Card className="col-span-1 flex flex-col justify-between">
-              <CardHeader className="pb-0 flex flex-row items-start justify-between space-y-0">
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <CardTitle className="text-lg font-bold text-foreground tracking-tight leading-none">Tendencia del Plato</CardTitle>
-                    <TooltipProvider>
-                      <ShadcnTooltip>
-                        <TooltipTrigger asChild>
-                          <button type="button" className="text-muted-foreground hover:text-emerald-500 transition-colors cursor-pointer" aria-label="Información de tendencia del plato colorido">
-                            <Info className="w-3.5 h-3.5 text-emerald-500" />
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-[280px] p-3 text-xs leading-relaxed space-y-2 bg-popover text-popover-foreground border border-border shadow-xl">
-                          <p className="font-medium">
-                            Este gráfico categoriza tus comidas según su color dominante, reflejando el aporte de fitonutrientes y antioxidantes en tu dieta para asegurar un plato balanceado.
-                          </p>
-                          <div className="pt-1.5 border-t border-border/60 flex justify-end">
-                            <Link
-                              to="/blog/$slug"
-                              params={{ slug: "platodelbienestar-fitonutrientes-colores" }}
-                              className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 hover:underline text-[11px]"
-                            >
-                              <span>Leer más</span>
-                              <ArrowUpRight className="w-3.5 h-3.5" />
-                            </Link>
-                          </div>
-                        </TooltipContent>
-                      </ShadcnTooltip>
-                    </TooltipProvider>
-                  </div>
-                  <CardDescription className="text-xs text-muted-foreground mt-1">Diversidad de fitonutrientes</CardDescription>
-                </div>
-              </CardHeader>
-              
-              <CardContent className="flex-1 flex flex-col items-center justify-center pb-2 pt-4">
-                <ChartContainer
-                  config={COLOR_PLATE_CHART_CONFIG}
-                  className="mx-auto aspect-square w-full max-h-[220px] select-none"
-                >
-                  <PieChart>
-                    <ChartTooltip
-                      cursor={false}
-                      content={<ChartTooltipContent hideLabel />}
-                    />
-                    <Pie
-                      data={COLOR_PLATE_DATA}
-                      dataKey="percentage"
-                      nameKey="colorKey"
-                      innerRadius={35}
-                      outerRadius={55}
-                      strokeWidth={3}
-                    />
-                    <ChartLegend
-                      content={<ChartLegendContent nameKey="colorKey" />}
-                      className="flex-wrap gap-x-2 gap-y-1 text-[10px] justify-center mt-2"
-                    />
-                  </PieChart>
-                </ChartContainer>
-              </CardContent>
-            </Card>
-
-            {/* Alineación Circadiana Card */}
-            <Card className="col-span-1 flex flex-col justify-between">
-              <CardHeader className="pb-0 flex flex-row items-start justify-between space-y-0">
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <CardTitle className="text-lg font-bold text-foreground tracking-tight leading-none">Alineación Circadiana</CardTitle>
-                    <TooltipProvider>
-                      <ShadcnTooltip>
-                        <TooltipTrigger asChild>
-                          <button type="button" className="text-muted-foreground hover:text-emerald-500 transition-colors cursor-pointer" aria-label="Información de alineación circadiana">
-                            <Info className="w-3.5 h-3.5 text-emerald-500" />
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-[280px] p-3 text-xs leading-relaxed space-y-2 bg-popover text-popover-foreground border border-border shadow-xl">
-                          <p className="font-medium">
-                            Mantener tu ventana de alimentación sincronizada con tu ritmo circadiano optimiza la sensibilidad a la insulina y favorece la digestión antes de tu descanso.
-                          </p>
-                          <div className="pt-1.5 border-t border-border/60 flex justify-end">
-                            <Link
-                              to="/blog/$slug"
-                              params={{ slug: "ritmos-circadianos-y-bienestar" }}
-                              className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 hover:underline text-[11px]"
-                            >
-                              <span>Leer más</span>
-                              <ArrowUpRight className="w-3.5 h-3.5" />
-                            </Link>
-                          </div>
-                        </TooltipContent>
-                      </ShadcnTooltip>
-                    </TooltipProvider>
-                  </div>
-                  <CardDescription className="text-xs text-muted-foreground mt-1">Reloj biológico vs. Ingestas</CardDescription>
-                </div>
-              </CardHeader>
-              
-              <CardContent className="pt-6 pb-4 flex-1 flex flex-col justify-center">
-                {/* Dial Chart */}
-                <div className="flex items-center justify-center relative py-1">
-                  <div className="relative w-44 h-44 select-none">
-                    {/* Outer Ring (Day/Night) */}
-                    <svg className="w-full h-full transform -rotate-90 overflow-visible" viewBox="0 0 100 100">
-                      <circle cx="50" cy="50" fill="none" r="45" className="stroke-muted" strokeWidth="6"></circle>
-                      <circle cx="50" cy="50" fill="none" r="45" className="stroke-muted-foreground/20" strokeDasharray="180 282" strokeDashoffset="0" strokeLinecap="round" strokeWidth="6"></circle>
-                      <circle cx="50" cy="50" fill="none" r="35" className="stroke-violet-600 dark:stroke-violet-400" strokeDasharray="10 210" strokeDashoffset="-40" strokeLinecap="round" strokeWidth="4"></circle>
-                      <circle cx="50" cy="50" fill="none" r="35" className="stroke-violet-600 dark:stroke-violet-400" strokeDasharray="15 205" strokeDashoffset="-90" strokeLinecap="round" strokeWidth="4"></circle>
-                      <circle cx="50" cy="50" fill="none" r="35" className="stroke-violet-600 dark:stroke-violet-400" strokeDasharray="12 208" strokeDashoffset="-150" strokeLinecap="round" strokeWidth="4"></circle>
-                      <circle cx="50" cy="5" className="fill-foreground" r="2.5"></circle>
-                    </svg>
-                    {/* Center Info */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <Clock className="w-5 h-5 text-muted-foreground/30 mb-0.5" />
-                      <span className="text-foreground text-lg font-black tracking-widest">
-                        {insightPeriod === "day" ? "14:02" : "13:58"}
-                      </span>
-                      <span className="text-[8px] font-bold text-muted-foreground mt-0.5 uppercase tracking-wider">
-                        {insightPeriod === "day" ? "Pico" : "Pico Prom."}
-                      </span>
-                    </div>
-                    {/* Labels */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-4 text-[8px] font-bold text-muted-foreground/60">00:00</div>
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-4 text-[8px] font-bold text-muted-foreground/60">12:00</div>
-                    <div className="absolute left-0 top-1/2 -translate-x-4 -translate-y-1/2 text-[8px] font-bold text-muted-foreground/60">18:00</div>
-                    <div className="absolute right-0 top-1/2 translate-x-4 -translate-y-1/2 text-[8px] font-bold text-muted-foreground/60">06:00</div>
-                  </div>
-                </div>
-              </CardContent>
-
-              <CardFooter className="grid grid-cols-3 gap-1 border-t border-border/40 pt-3 pb-3 text-center text-xs">
-                <div className="border-r border-border/40 pr-1 flex flex-col justify-center">
-                  <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">Melatonina</p>
-                  <p className="text-[10px] font-extrabold text-foreground">
-                    {insightPeriod === "day" ? "~ 21:30" : "~ 21:42 (Prom.)"}
-                  </p>
-                </div>
-                <div className="border-r border-border/40 px-1 flex flex-col justify-center">
-                  <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">Ventana Ingesta</p>
-                  <p className="text-[10px] font-extrabold text-foreground leading-none">
-                    {insightPeriod === "day" ? (
-                      <>10:00 <span className="text-[8px] text-muted-foreground font-semibold">AM</span> - 06:00 <span className="text-[8px] text-muted-foreground font-semibold">PM</span></>
-                    ) : (
-                      <>10:15 <span className="text-[8px] text-muted-foreground font-semibold">AM</span> - 06:12 <span className="text-[8px] text-muted-foreground font-semibold">PM</span> <span className="text-[7px] text-muted-foreground font-bold">(Prom.)</span></>
-                    )}
-                  </p>
-                </div>
-                <div className="pl-1 flex flex-col justify-center">
-                  <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">Cortisol</p>
-                  <p className="text-[10px] font-extrabold text-foreground">
-                    {insightPeriod === "day" ? "~ 06:45" : "~ 06:38 (Prom.)"}
-                  </p>
-                </div>
-              </CardFooter>
-            </Card>
-
-          </div>
-
-        </div>
-      )}
-
-      {/* Dedicated Pestaña: Sueño & Ritmo Circadiano */}
-      {subTab === "sueno" && (
-        <div className="space-y-6 animate-in fade-in duration-300">
-          {/* CARD 1: Gestión y Seguimiento del Sueño con Filtros (Full Width) */}
-          <div className="bg-card border border-border rounded-3xl p-5 sm:p-6 space-y-4 shadow-xs hover:-translate-y-1 hover:shadow-md transition-all flex flex-col justify-between w-full">
-            {/* Card Header */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-border/40 pb-3 gap-3">
-              <div className="flex items-center gap-2">
-                <Moon className="w-4 h-4 text-indigo-400 shrink-0" />
-                <div>
-                  <span className="text-[10px] text-muted-foreground/80 font-bold uppercase tracking-wider block mb-0.5">
-                    Fisiología & Descanso
-                  </span>
-                  <h3 className="text-sm font-bold text-foreground">Gestión & Seguimiento del Sueño</h3>
-                </div>
-                <TooltipProvider>
-                  <ShadcnTooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        type="button"
-                        className="p-1 rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors shrink-0 flex items-center justify-center cursor-pointer border-0 bg-transparent"
-                      >
-                        <Info className="w-3.5 h-3.5 text-emerald-500" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" align="start" className="max-w-xs p-3.5 bg-card border border-border shadow-xl rounded-2xl text-xs space-y-2 text-left">
-                      <p className="font-bold text-foreground">Evidencia Científica del Sueño</p>
-                      <p className="text-muted-foreground text-[11px] leading-relaxed">
-                        La fase de sueño de onda lenta (SWS) secreta el 60-70% de la hormona de crecimiento (hGH) para reparar tejidos musculares. Dormir menos de 8 horas duplica (1.7x) el riesgo de lesiones.
-                      </p>
-                      <div className="pt-1.5 border-t border-border/60 text-[10px]">
-                        <Link
-                          to="/blog/$slug"
-                          params={{ slug: "fisiologia-del-sueno-y-recuperacion-muscular" }}
-                          className="text-emerald-500 font-bold hover:underline flex items-center justify-between gap-1 group"
-                        >
-                          <span>📖 Leer evidencia sobre hGH, cortisol y lesiones</span>
-                          <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                        </Link>
-                      </div>
-                    </TooltipContent>
-                  </ShadcnTooltip>
-                </TooltipProvider>
-              </div>
-
-              {/* Filtros de Tiempo (Pills) Alineados */}
-              <div className="flex items-center gap-1 bg-secondary/60 p-1 rounded-2xl border border-border/60 shrink-0 self-end sm:self-center">
-                {(["week", "month", "quarter"] as const).map((period) => (
-                  <button
-                    key={period}
-                    onClick={() => setSleepFilter(period)}
-                    className={`px-2.5 py-1 rounded-xl text-[10px] font-bold transition-all cursor-pointer ${
-                      sleepFilter === period
-                        ? "bg-foreground text-background shadow-xs"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {period === "week" ? "Semana" : period === "month" ? "Mes" : "Trimestre"}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Stats Bar Explicativas */}
-            <div className="grid grid-cols-3 gap-2 text-center">
-              <div className="p-2.5 bg-secondary/30 border border-border/40 rounded-2xl flex flex-col justify-center">
-                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block mb-0.5">Promedio Noche</span>
-                <span className="text-xs sm:text-sm font-black text-foreground">{avgSleepHours}h</span>
-                <span className="text-[9px] text-muted-foreground font-semibold">por descanso</span>
-              </div>
-              <div className="p-2.5 bg-secondary/30 border border-border/40 rounded-2xl flex flex-col justify-center">
-                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block mb-0.5">Meta Circadiana</span>
-                <span className="text-xs sm:text-sm font-black text-indigo-500">{targetPercent}%</span>
-                <span className="text-[9px] text-muted-foreground font-semibold">de 8h objetivo</span>
-              </div>
-              <div className="p-2.5 bg-secondary/30 border border-border/40 rounded-2xl flex flex-col justify-center">
-                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block mb-0.5">Calidad (SWS)</span>
-                <span className="text-xs sm:text-sm font-black text-emerald-500">{sleepData.score} Pts</span>
-                <span className="text-[9px] text-emerald-500/80 font-bold">{sleepData.quality}</span>
-              </div>
-            </div>
-
-            {/* AreaChart para el Seguimiento del Sueño */}
-            <div className="h-44 w-full pt-1">
-              <ChartContainer config={sleepChartConfig} className="h-full w-full">
-                <AreaChart data={sleepHistory[sleepFilter]} margin={{ top: 12, right: 10, left: -20, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="sleepAreaGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4} />
-                      <stop offset="95%" stopColor="#6366f1" stopOpacity={0.0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" opacity={0.1} />
-                  <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={6} tick={{ fontSize: 10, fill: "currentColor", opacity: 0.7 }} />
-                  <YAxis domain={[4, 10]} ticks={[4, 6, 8, 10]} tickLine={false} axisLine={false} tickMargin={4} tickFormatter={(v) => `${v}h`} tick={{ fontSize: 10, fill: "currentColor", opacity: 0.7 }} />
-                  <ReferenceLine y={8} stroke="#6366f1" strokeDasharray="3 3" opacity={0.6} label={{ value: "Obj. 8h", position: "insideTopRight", fill: "#6366f1", fontSize: 9, fontWeight: "bold" }} />
-                  <ChartTooltip content={<ChartTooltipContent indicator="line" formatter={(value) => [`${value} hrs`, "Sueño"]} />} />
-                  <Area type="monotone" dataKey="hours" stroke="#6366f1" strokeWidth={2.5} fillOpacity={1} fill="url(#sleepAreaGradient)" dot={{ r: 3.5, fill: "#6366f1", strokeWidth: 0 }} activeDot={{ r: 5.5, strokeWidth: 0 }} />
-                </AreaChart>
-              </ChartContainer>
-            </div>
-
-            {/* Bottom Info & Register Action */}
-            <div className="space-y-3 pt-1 border-t border-border/40">
-              <div className="flex flex-wrap justify-between items-center text-[10px] text-muted-foreground gap-1">
-                <span>Horario habitual ({sleepData.bedtime} - {sleepData.wakeTime})</span>
-                <span className="text-indigo-400 font-semibold">Atardecer: {sunTimes.sunset}</span>
-              </div>
-
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex flex-wrap gap-1">
-                  {sleepData.factors.map((factor) => (
-                    <span key={factor} className="px-2 py-0.5 rounded-md bg-secondary/40 text-muted-foreground text-[10px] font-semibold">
-                      ✓ {factor}
-                    </span>
-                  ))}
-                </div>
-
-                <Button
-                  onClick={() => setActiveModal("registrar-sueno")}
-                  size="sm"
-                  className="h-8 px-3 rounded-xl font-bold bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] flex items-center gap-1.5 shrink-0 cursor-pointer"
-                >
-                  <Moon className="w-3.5 h-3.5" />
-                  <span>Registrar</span>
-                </Button>
-              </div>
-            </div>
           </div>
         </div>
       )}
@@ -5026,90 +4265,7 @@ function DiarioTab() {
         </div>
       )}
 
-      {/* Disclaimer and Download Report Section */}
-      {subTab === "analisis" && (
-        <div className="mt-12 pt-8 border-t border-border/60 space-y-6">
-          <div className="bg-secondary/15 rounded-xl border border-border/40 p-4 flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
-            <div className="space-y-1">
-              <h5 className="text-xs font-bold text-foreground">Aviso de Uso de Datos</h5>
-              <p className="text-[11px] leading-relaxed text-muted-foreground font-medium">
-                Este reporte es un resumen de registros de hábitos y estimaciones circadianas con fines meramente informativos y de autoconocimiento. No constituye un diagnóstico médico, prescripción clínica ni asesoramiento nutricional profesional. Consulta con un profesional de la salud matriculado antes de realizar cambios significativos en tu alimentación o estilo de vida.
-              </p>
-            </div>
-          </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-card border border-border rounded-xl p-4 shadow-sm">
-            <div className="space-y-0.5 text-center sm:text-left">
-              <h4 className="text-sm font-bold text-foreground">Compartir con tu Profesional</h4>
-              <p className="text-xs text-muted-foreground font-medium">
-                Exporta un reporte clínico en PDF {insightPeriod === "day" ? "de hoy" : insightPeriod === "week" ? "de los últimos 7 días" : insightPeriod === "month" ? "del último mes" : "del último trimestre"} con tu adherencia, estabilidad conductual y registros circadianos.
-              </p>
-            </div>
-            <Button 
-              onClick={handleDownloadReport} 
-              className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90 font-bold flex items-center justify-center gap-2"
-            >
-              <FileDown className="w-4 h-4" />
-              Descargar Reporte PDF
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {subTab === "recetas" && (
-        <RecipesGridTab 
-          savedRecipes={savedRecipes} 
-          setSavedRecipes={setSavedRecipes}
-          cartRecipeIds={cartRecipeIds}
-          onToggleCart={toggleCartRecipe}
-          onOpenCart={() => setIsCartOpen(true)}
-          onExploreClick={handleOpenExplorarIdeas}
-          onOpenDetail={(recipe) => setActiveRecipeDetail(recipe)}
-        />
-      )}
-
-      {activeRecipeDetail && (
-        <RecipeDetailModal 
-          recipe={activeRecipeDetail}
-          onClose={() => setActiveRecipeDetail(null)}
-          isInCart={cartRecipeIds.includes(activeRecipeDetail.id)}
-          onToggleCart={toggleCartRecipe}
-          onLog={(recipe) => {
-            const newMeal = {
-              id: `custom-recipe-${Date.now()}`,
-              date: new Date().toISOString().split('T')[0],
-              time: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
-              title: recipe.title,
-              subtitle: recipe.category,
-              type: "food",
-              img: recipe.img,
-              kcal: recipe.kcal,
-              tags: recipe.tags || (recipe.tag ? [recipe.tag] : []),
-              tag: recipe.tag,
-              coachFeedback: recipe.coachFeedback,
-            };
-            setUserTimelineItems(prev => [newMeal, ...prev]);
-            setActiveRecipeDetail(null);
-            setSubTab("diario");
-            alert(`¡Registrado! Se añadió "${recipe.title}" a tu diario de hoy.`);
-          }}
-          onRemove={(recipeId) => {
-            setSavedRecipes(prev => prev.filter(id => id !== recipeId));
-            setCartRecipeIds(prev => prev.filter(id => id !== recipeId));
-            setActiveRecipeDetail(null);
-          }}
-        />
-      )}
-
-      {isCartOpen && (
-        <ShoppingCartModal 
-          cartRecipeIds={cartRecipeIds}
-          onClose={() => setIsCartOpen(false)}
-          onToggleCart={toggleCartRecipe}
-          onClearCart={() => setCartRecipeIds([])}
-        />
-      )}
 
 
 
@@ -5125,52 +4281,6 @@ function DiarioTab() {
       <div className="fixed bottom-24 right-6 md:bottom-8 md:right-8 z-50 flex flex-col items-end gap-3">
         {isFabOpen && (
           <div className="bg-card/95 border border-border/80 rounded-3xl p-2 sm:p-2.5 shadow-2xl min-w-[260px] sm:min-w-[280px] max-w-[310px] animate-in slide-in-from-bottom-4 fade-in duration-200 space-y-0.5 backdrop-blur-xl">
-            {/* Group 1: Registros Diarios */}
-            <button 
-              onClick={() => {
-                setIsFabOpen(false);
-                setActiveModal("registrar-sueno");
-              }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-secondary/70 transition-colors text-left group cursor-pointer"
-            >
-              <Moon className="w-4 h-4 text-indigo-400 group-hover:scale-110 transition-transform shrink-0" />
-              <span className="text-xs font-semibold text-foreground flex-1">Registrar sueño & descanso</span>
-            </button>
-
-            <button 
-              onClick={() => {
-                setIsFabOpen(false);
-                setActiveModal("estado-actual");
-              }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-secondary/70 transition-colors text-left group cursor-pointer"
-            >
-              <Heart className="w-4 h-4 text-rose-500 group-hover:scale-110 transition-transform shrink-0" />
-              <span className="text-xs font-semibold text-foreground flex-1">Registrar estado actual</span>
-            </button>
-
-            <button 
-              onClick={() => {
-                setIsFabOpen(false);
-                setActiveModal("registrar-hidratacion");
-              }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-secondary/70 transition-colors text-left group cursor-pointer"
-            >
-              <Droplet className="w-4 h-4 text-blue-500 group-hover:scale-110 transition-transform shrink-0" />
-              <span className="text-xs font-semibold text-foreground flex-1">Registrar hidratación</span>
-            </button>
-
-            <button 
-              onClick={() => {
-                setIsFabOpen(false);
-                setActiveModal("food-analysis");
-                setFoodAnalysisStep("upload");
-              }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-secondary/70 transition-colors text-left group cursor-pointer"
-            >
-              <Camera className="w-4 h-4 text-emerald-500 group-hover:scale-110 transition-transform shrink-0" />
-              <span className="text-xs font-semibold text-foreground flex-1">Registrar comida</span>
-            </button>
-
             <button 
               onClick={() => {
                 setIsFabOpen(false);
@@ -5182,10 +4292,6 @@ function DiarioTab() {
               <span className="text-xs font-semibold text-foreground flex-1">Registrar actividad</span>
             </button>
 
-            {/* Separator Line */}
-            <div className="h-[1px] bg-border/50 my-1 mx-2" />
-
-            {/* Group 2: Herramientas IA & Exploración */}
             <button 
               onClick={() => {
                 setIsFabOpen(false);
@@ -5200,23 +4306,23 @@ function DiarioTab() {
             <button 
               onClick={() => {
                 setIsFabOpen(false);
-                handleOpenExplorarIdeas();
+                setActiveModal("hydration-armstrong");
               }}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-secondary/70 transition-colors text-left group cursor-pointer"
             >
-              <Utensils className="w-4 h-4 text-amber-500 group-hover:scale-110 transition-transform shrink-0" />
-              <span className="text-xs font-semibold text-foreground flex-1">Explorar ideas</span>
+              <Droplet className="w-4 h-4 text-cyan-500 group-hover:scale-110 transition-transform shrink-0" />
+              <span className="text-xs font-semibold text-foreground flex-1">Registrar Hidratación (Armstrong)</span>
             </button>
 
             <button 
               onClick={() => {
                 setIsFabOpen(false);
-                triggerShakeAI();
+                setActiveModal("photo-meal-analysis");
               }}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-secondary/70 transition-colors text-left group cursor-pointer"
             >
-              <span className="text-base leading-none shrink-0 group-hover:scale-110 transition-transform">🥤</span>
-              <span className="text-xs font-semibold text-foreground flex-1">Shake for AI (Sugerencia)</span>
+              <Camera className="w-4 h-4 text-emerald-500 group-hover:scale-110 transition-transform shrink-0" />
+              <span className="text-xs font-semibold text-foreground flex-1">Analizar Foto de Plato (IA)</span>
             </button>
           </div>
         )}
@@ -5230,328 +4336,61 @@ function DiarioTab() {
         </button>
       </div>
 
-      {/* Food Analysis Modal */}
-      {activeModal === "food-analysis" && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-sm bg-card border border-border rounded-[2rem] shadow-2xl flex flex-col overflow-hidden max-h-[90vh]">
-            {/* Header */}
-            <div className="px-6 pt-8 pb-4 flex justify-between items-center bg-card">
-              <h3 className="text-sm font-bold tracking-widest uppercase text-muted-foreground">Nutrition Report</h3>
-              <button 
-                onClick={() => { setActiveModal("none"); setFoodAnalysisStep("upload"); }} 
-                className="p-2 rounded-full bg-secondary/50 hover:bg-secondary transition-colors"
-              >
-                <X className="w-5 h-5 text-muted-foreground" />
-              </button>
-            </div>
+      {/* Photo Meal Analysis Modal */}
+      {activeModal === "photo-meal-analysis" && (
+        <PhotoMealAnalysisModal
+          onClose={() => setActiveModal("none")}
+          onSave={(mealData) => {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+            const dateStr = now.toISOString().split("T")[0];
 
-            {foodAnalysisStep === "upload" && (
-              <div className="p-8 flex flex-col items-center justify-center gap-6 min-h-[400px]">
-                <div className="w-24 h-24 rounded-full bg-secondary flex items-center justify-center">
-                  <Camera className="w-10 h-10 text-muted-foreground" />
-                </div>
-                <p className="text-center text-sm font-medium text-muted-foreground">Toma una foto de tu comida para analizar sus macros y valor nutricional con IA.</p>
-                <Button 
-                  onClick={() => setFoodAnalysisStep("analyzing")} 
-                  className="w-full rounded-xl h-12 text-base font-bold bg-foreground text-background hover:opacity-90 mt-4"
-                >
-                  Tomar Fotografía
-                </Button>
-              </div>
-            )}
+            const newMealItem = {
+              id: `meal-${Date.now()}`,
+              type: "meal",
+              time: timeStr,
+              date: dateStr,
+              title: mealData.title,
+              subtitle: "Análisis Cualitativo AI Coach",
+              img: mealData.img,
+              desc: mealData.desc,
+              coachFeedback: mealData.coachFeedback,
+              tag: mealData.tag
+            };
 
-            {foodAnalysisStep === "analyzing" && (
-              <div className="p-8 flex flex-col items-center justify-center gap-6 min-h-[400px]">
-                <Loader2 className="w-12 h-12 text-foreground animate-spin" />
-                <p className="text-center text-sm font-bold text-foreground">Procesando y analizando...</p>
-              </div>
-            )}
-
-            {foodAnalysisStep === "report" && (
-              <div className="px-6 pb-8 overflow-y-auto animate-in slide-in-from-bottom-4 fade-in duration-300">
-                {/* Encabezado Principal de la Comida */}
-                <div className="mb-4">
-                  <h2 className="text-lg font-black text-foreground tracking-tight leading-snug">Chicken Phở con Vegetales</h2>
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">ANÁLISIS DE CALIDAD NUTRICIONAL</p>
-                </div>
-
-                {/* Score de Calidad Nutricional basado en evidencia */}
-                <div className="bg-card border border-border rounded-2xl p-4 mb-6 shadow-xs">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">SCORE NRF 9.3</span>
-                      <TooltipProvider>
-                        <ShadcnTooltip>
-                          <TooltipTrigger asChild>
-                            <Link
-                              to="/blog/$slug"
-                              params={{ slug: "score-calidad-nutricional-evidencia" }}
-                              className="w-5 h-5 rounded-full bg-secondary border border-border/60 text-muted-foreground hover:text-foreground hover:bg-secondary/80 flex items-center justify-center transition-colors cursor-pointer"
-                              aria-label="Información del Score Nutricional"
-                            >
-                              <Info className="w-3.5 h-3.5" />
-                            </Link>
-                          </TooltipTrigger>
-                          <TooltipContent className="max-w-[260px] p-3 text-xs leading-relaxed space-y-2 bg-popover text-popover-foreground border border-border shadow-xl">
-                            <p className="font-medium">
-                              Score basado en el <strong>Nutrient Rich Foods Index (NRF 9.3)</strong> y la escala <strong>NOVA</strong> de procesamiento.
-                            </p>
-                            <div className="pt-1.5 border-t border-border/60 flex justify-end">
-                              <Link
-                                to="/blog/$slug"
-                                params={{ slug: "score-calidad-nutricional-evidencia" }}
-                                className="inline-flex items-center gap-1 font-bold text-foreground hover:underline text-[11px]"
-                              >
-                                <span>Leer más</span>
-                                <ArrowUpRight className="w-3.5 h-3.5" />
-                              </Link>
-                            </div>
-                          </TooltipContent>
-                        </ShadcnTooltip>
-                      </TooltipProvider>
-                    </div>
-                    <span className="bg-secondary text-foreground text-xs font-bold px-3 py-1 rounded-full">
-                      Excelente
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-baseline gap-2 mb-3">
-                    <span className="text-4xl font-black text-foreground tracking-tight">88</span>
-                    <span className="text-xs font-bold text-muted-foreground">/ 100 pts</span>
-                  </div>
-
-                  {/* Barra de progreso */}
-                  <div className="w-full bg-secondary h-2.5 rounded-full overflow-hidden flex p-0.5 border border-border/60">
-                    <div className="h-full bg-foreground rounded-full transition-all duration-1000" style={{ width: "88%" }}></div>
-                  </div>
-                  <div className="flex justify-between text-[10px] font-bold text-muted-foreground mt-1.5 px-0.5">
-                    <span>0 (Bajo)</span>
-                    <span>50 (Moderado)</span>
-                    <span>100 (Excelente)</span>
-                  </div>
-                </div>
-                
-                {/* Vectores completos de Calidad Nutricional NRF 9.3 & LIM3 */}
-                <div className="space-y-6">
-                  {/* 1. Matriz de Procesamiento Industrial (NOVA) */}
-                  <div>
-                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">MATRIZ INDUSTRIAL</h4>
-                    <div className="flex items-center justify-between py-1">
-                      <span className="text-xs font-bold text-foreground">Grado de Procesamiento</span>
-                      <span className="bg-secondary text-foreground text-xs font-bold px-3 py-1 rounded-full">
-                        Mínimamente Procesado
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* 2. 9 Nutrientes a Promover (NR9) */}
-                  <div>
-                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">NUTRIENTES A PROMOVER (NR9)</h4>
-                    <div className="space-y-2.5">
-                      {[
-                        { label: "Proteína Magra", value: "Alta Calidad", isPrimary: true },
-                        { label: "Fibra Dietética", value: "Buena Fuente", isPrimary: true },
-                        { label: "Hierro", value: "Buena Fuente", isPrimary: true },
-                        { label: "Magnesio", value: "Buena Fuente", isPrimary: true },
-                        { label: "Calcio", value: "Aporte Moderado", isPrimary: false },
-                        { label: "Potasio", value: "Buena Fuente", isPrimary: true },
-                        { label: "Vitamina C", value: "Buena Fuente", isPrimary: true },
-                        { label: "Vitamina A", value: "Aporte Moderado", isPrimary: false },
-                        { label: "Vitamina E", value: "Aporte Moderado", isPrimary: false },
-                      ].map((item, i) => (
-                        <div key={i} className="flex items-center justify-between py-0.5">
-                          <span className="text-xs font-bold text-foreground">{item.label}</span>
-                          <span className={`${item.isPrimary ? "bg-secondary text-foreground font-bold" : "bg-secondary/60 text-muted-foreground font-medium"} text-xs px-3 py-1 rounded-full`}>
-                            {item.value}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* 3. 3 Componentes a Moderar / Limitar (LIM3) */}
-                  <div>
-                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">COMPONENTES A LIMITAR (LIM3)</h4>
-                    <div className="space-y-2.5">
-                      {[
-                        { label: "Azúcares Añadidos", value: "Sin Añadidos", isPrimary: true },
-                        { label: "Grasas Saturadas / Trans", value: "Bajo", isPrimary: true },
-                        { label: "Sodio", value: "Elevado", isPrimary: false },
-                      ].map((item, i) => (
-                        <div key={i} className="flex items-center justify-between py-0.5">
-                          <span className="text-xs font-bold text-foreground">{item.label}</span>
-                          <span className={`${item.isPrimary ? "bg-secondary text-foreground font-bold" : "bg-secondary/60 text-muted-foreground font-medium"} text-xs px-3 py-1 rounded-full`}>
-                            {item.value}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <Button 
-                  onClick={() => setFoodAnalysisStep("reason")} 
-                  className="w-full rounded-xl h-12 text-sm font-bold bg-foreground text-background hover:opacity-90 mt-6 shadow-md"
-                >
-                  Continuar a Registro
-                </Button>
-
-                {/* Caja de Insight del AI Coach (Copiado idéntico al pie de card de timeline de la imagen) */}
-                <div className="mt-6 pt-4 border-t border-border/60 flex items-start gap-3">
-                  <Sparkles className="w-4 h-4 text-foreground/80 shrink-0 mt-0.5" />
-                  <p className="text-xs font-medium text-foreground/80 leading-relaxed">
-                    Excelente balance de proteínas y fibra en la sopa. Considerá controlar el aporte de sodio del caldo para optimizar tu perfil diario.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Paso 4: ¿Por qué comiste? */}
-            {foodAnalysisStep === "reason" && (
-              <div className="px-6 pb-8 overflow-y-auto animate-in slide-in-from-right-4 fade-in duration-300">
-                <h3 className="text-lg font-black text-foreground tracking-tight mb-1">¿Por qué comiste?</h3>
-                <p className="text-xs text-muted-foreground font-medium mb-5">Selecciona el motivo o desencadenante principal de esta ingesta para tu diario de alimentación.</p>
-                
-                <div className="grid grid-cols-2 gap-2.5 mb-6">
-                  {[
-                    { id: "hambre", label: "Hambre", icon: "🌱", color: "hover:border-emerald-500/50 hover:bg-emerald-500/5" },
-                    { id: "estres", label: "Estrés", icon: "⚡", color: "hover:border-rose-500/50 hover:bg-rose-500/5" },
-                    { id: "sabor", label: "Sabor", icon: "😋", color: "hover:border-amber-500/50 hover:bg-amber-500/5" },
-                    { id: "social", label: "Social", icon: "👥", color: "hover:border-sky-500/50 hover:bg-sky-500/5" },
-                    { id: "habito", label: "Hábito", icon: "🔄", color: "hover:border-indigo-500/50 hover:bg-indigo-500/5" },
-                    { id: "emocional", label: "Emocional", icon: "💖", color: "hover:border-pink-500/50 hover:bg-pink-500/5" },
-                    { id: "aburrimiento", label: "Aburrimiento", icon: "🥱", color: "hover:border-purple-500/50 hover:bg-purple-500/5" },
-                    { id: "otro", label: "Otro", icon: "❓", color: "hover:border-slate-500/50 hover:bg-slate-500/5" },
-                  ].map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => setSelectedEatReason(item.id)}
-                      className={`flex items-center gap-2.5 p-3 rounded-xl border transition-all text-left ${
-                        selectedEatReason === item.id 
-                          ? "border-foreground bg-secondary/90 font-bold shadow-sm" 
-                          : `border-border bg-card font-medium ${item.color}`
-                      }`}
-                    >
-                      <span className="text-lg">{item.icon}</span>
-                      <span className="text-xs text-foreground font-semibold">{item.label}</span>
-                    </button>
-                  ))}
-                </div>
-
-                <div className="flex gap-2.5">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setFoodAnalysisStep("report")}
-                    className="rounded-xl h-11 text-xs font-bold border-border"
-                  >
-                    Atrás
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      const isNegativeTrigger = ["estres", "emocional", "aburrimiento"].includes(selectedEatReason);
-                      if (isNegativeTrigger) {
-                        setFoodAnalysisStep("breathing_prompt");
-                      } else {
-                        handleFinalizeFoodRegistration();
-                      }
-                    }}
-                    className="flex-1 rounded-xl h-11 text-sm font-bold bg-foreground text-background hover:opacity-90 shadow-md"
-                  >
-                    Guardar Registro
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Paso 5: Sugerencia de Respiración Guiada para emociones negativas */}
-            {foodAnalysisStep === "breathing_prompt" && (
-              <div className="px-6 pb-8 flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-300">
-                <div className="w-14 h-14 rounded-full bg-secondary border border-border/80 text-foreground flex items-center justify-center mb-4 mt-4 shadow-xs">
-                  <Brain className="w-7 h-7" />
-                </div>
-                <h3 className="text-lg font-black text-foreground mb-2 tracking-tight">Pausa Reguladora</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed mb-6 max-w-[280px] font-medium">
-                  Detectamos que el motivo de tu comida fue <strong>{WHY_EAT_CHART_CONFIG[selectedEatReason as keyof typeof WHY_EAT_CHART_CONFIG]?.label || selectedEatReason}</strong>. ¿Te gustaría hacer 1 minuto de respiración guiada para autorregular tu sistema nervioso?
-                </p>
-                
-                <div className="w-full space-y-2.5">
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      setBreathingStartTime(Date.now());
-                      setBreathingPhase("inhale");
-                      setBreathingSeconds(4);
-                      setBreathingCyclesCompleted(0);
-                      setBreathingOrbScale(0.60);
-                      setFoodAnalysisStep("breathing_exercise");
-                    }}
-                    className="w-full rounded-xl h-12 text-sm font-bold bg-foreground text-background hover:opacity-90 shadow-md"
-                  >
-                    Iniciar Respiración Guiada
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => handleFinalizeFoodRegistration()}
-                    className="w-full rounded-xl h-10 text-xs font-bold text-muted-foreground hover:text-foreground"
-                  >
-                    Omitir e ir a guardar
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Paso 6: Ejercicio Interactivo de Respiración Guiada */}
-            {foodAnalysisStep === "breathing_exercise" && (
-              <div className="px-6 pb-8 flex flex-col items-center text-center animate-in fade-in duration-300">
-                <div className="flex justify-between items-center w-full mb-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">RESPIRACIÓN CUADRADA</span>
-                  <span className="bg-secondary text-foreground text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-border/60">
-                    Ciclos completados: {breathingCyclesCompleted}
-                  </span>
-                </div>
-                
-                {/* Círculo animado interactivo: Expansión y contracción continua a 60 FPS sincronizado en tiempo real */}
-                <div className="relative w-44 h-44 my-6 flex items-center justify-center">
-                  <div 
-                    style={{ 
-                      transform: `scale(${breathingOrbScale})`
-                    }}
-                    className="absolute inset-0 rounded-full border-2 bg-secondary/80 border-foreground/60 shadow-md"
-                  />
-                  <div className="relative z-10 flex flex-col items-center">
-                    <span className="text-base font-black tracking-wider uppercase text-foreground">
-                      {breathingPhase === "inhale" && "Inhala"}
-                      {breathingPhase === "hold1" && "Pausa (Lleno)"}
-                      {breathingPhase === "exhale" && "Exhala"}
-                      {breathingPhase === "hold2" && "Pausa (Vacío)"}
-                    </span>
-                    <span className="text-3xl font-black text-foreground tracking-tight mt-1">{breathingSeconds}s</span>
-                  </div>
-                </div>
-
-                <p className="text-xs text-muted-foreground mb-6 font-medium max-w-[260px] h-8 flex items-center justify-center">
-                  {breathingPhase === "inhale" && "Inhala profundamente por la nariz expandiendo el abdomen."}
-                  {breathingPhase === "hold1" && "Sostén el aire con serenidad en la caja torácica."}
-                  {breathingPhase === "exhale" && "Exhala lentamente por la boca liberando toda la tensión."}
-                  {breathingPhase === "hold2" && "Mantén los pulmones vacíos en profunda calma."}
-                </p>
-
-                <Button
-                  type="button"
-                  onClick={() => handleFinalizeFoodRegistration()}
-                  className="w-full rounded-xl h-11 text-xs font-bold bg-foreground text-background hover:opacity-90 shadow-md"
-                >
-                  Finalizar y Guardar
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
+            setUserTimelineItems(prev => [newMealItem, ...prev]);
+            toast.success("✓ Plato analizado y registrado en tu diario");
+          }}
+        />
       )}
+
+      {/* Hydration Armstrong Modal */}
+      {activeModal === "hydration-armstrong" && (
+        <HydrationArmstrongModal
+          onClose={() => setActiveModal("none")}
+          onSave={(level, label, feedback) => {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+            const dateStr = now.toISOString().split("T")[0];
+
+            const newHydrationItem = {
+              id: `hydration-${Date.now()}`,
+              type: "hydration",
+              time: timeStr,
+              date: dateStr,
+              title: "Registro de Hidratación (Armstrong)",
+              desc: label,
+              coachFeedback: `💧 Consejo Fisiológico: ${feedback}`,
+              tag: `Nivel ${level} Armstrong`
+            };
+
+            setUserTimelineItems(prev => [newHydrationItem, ...prev]);
+            toast.success(`✓ Hidratación registrada: Nivel ${level} (Armstrong)`);
+          }}
+        />
+      )}
+
+
 
       {/* Workout Generator Modal */}
       {activeModal === "generate-workout" && (
@@ -5583,119 +4422,7 @@ function DiarioTab() {
 
 
 
-      {/* Registrar Hidratación Modal */}
-      {activeModal === "registrar-hidratacion" && (
-        <HydrationLogModal 
-          onClose={() => setActiveModal("none")} 
-          currentLevel={hydrationLevel}
-          onSave={(level) => {
-            setHydrationLevel(level);
-            const newHyd = {
-              id: `hydration-log-${Date.now()}`,
-              date: new Date().toISOString().split("T")[0],
-              time: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
-              title: `Registro de Hidratación (Nivel ${level})`,
-              subtitle: "Control de Rutina",
-              type: "hydration",
-              img: null,
-              kcal: 0,
-              tag: `Nivel ${level}`,
-              coachFeedback: `Actualizaste tu nivel de hidratación a ${level}/8. Mantener una ingesta sostenida de agua optimiza la oxigenación celular y previene la fatiga muscular.`
-            };
-            setUserTimelineItems(prev => [newHyd, ...prev]);
-            toast.success(`✓ Registraste tu nivel de hidratación: ${level}/8`);
-          }}
-        />
-      )}
 
-      {/* Modal Registrar Estado Actual */}
-      {activeModal === "estado-actual" && (
-        <StateLogModal 
-          onClose={() => setActiveModal("none")}
-          mood={mood}
-          setMood={setMood}
-          hunger={hunger}
-          setHunger={setHunger}
-          energy={energy}
-          setEnergy={setEnergy}
-          onSave={() => {
-            const newStatusCard = {
-              id: `status-log-${Date.now()}`,
-              date: new Date().toISOString().split("T")[0],
-              time: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
-              title: "Registro de Estado Actual",
-              subtitle: "Autoconocimiento & Bienestar",
-              type: "thought",
-              img: null,
-              kcal: 0,
-              tag: `Ánimo: ${mood}% • Apetito: ${hunger}% • Energía: ${energy}%`,
-              coachFeedback: `Registraste tu estado de bienestar de hoy. Ánimo: ${mood >= 60 ? "Calmo" : "Ansioso"}, Apetito: ${hunger >= 60 ? "Saciado" : "Hambriento"}, Energía: ${energy >= 60 ? "Enérgico" : "Cansado"}. Este monitoreo regular optimiza tu autorregulación conductual.`
-            };
-            setUserTimelineItems(prev => [newStatusCard, ...prev]);
-            setActiveModal("none");
-            toast.success("✓ Registro de estado actual guardado en tu diario");
-          }}
-        />
-      )}
-
-      {/* Modal Registrar Sueño & Descanso */}
-      {activeModal === "registrar-sueno" && (
-        <SleepLogModal
-          onClose={() => setActiveModal("none")}
-          onSave={(data) => {
-            const totalHours = data.hours + data.minutes / 60;
-            setSleepData({
-              duration: `${data.hours}h ${data.minutes}m`,
-              hours: totalHours,
-              bedtime: data.bedtime,
-              wakeTime: data.wakeTime,
-              quality: data.quality,
-              score: data.score,
-              factors: data.factors,
-            });
-
-            if (totalHours < 6) {
-              setMuscleRecovery((prev) => {
-                const updated: Record<string, number> = {};
-                Object.keys(prev).forEach((key) => {
-                  updated[key] = Math.max(20, prev[key] - 15);
-                });
-                return updated;
-              });
-            }
-
-            // Update real-time sleep history chart
-            setSleepHistory((prev: typeof INITIAL_SLEEP_HISTORY) => {
-              const updatedWeek = [...prev.week];
-              updatedWeek[updatedWeek.length - 1] = {
-                ...updatedWeek[updatedWeek.length - 1],
-                hours: Number(totalHours.toFixed(1)),
-                qualityScore: data.score,
-              };
-              return { ...prev, week: updatedWeek };
-            });
-
-            const newSleepItem = {
-              id: `sleep-${Date.now()}`,
-              date: new Date().toISOString().split("T")[0],
-              time: data.wakeTime,
-              title: `Descanso Nocturno (${data.hours}h ${data.minutes}m)`,
-              subtitle: `Calidad: ${data.quality}`,
-              type: "thought",
-              kcal: 0,
-              tag: "Sueño & Circadiano",
-              coachFeedback:
-                totalHours < 6
-                  ? `Registraste un descanso de ${data.hours}h. El déficit de sueño eleva el cortisol matutino y desacelera la síntesis proteica miofibrilar. Se incrementó la fatiga estimada muscular en +15% para prevenir lesiones.`
-                  : `Excelente descanso de ${data.hours}h ${data.minutes}m. La fase de sueño profundo (SWS) optimizó la secreción de hGH para la reparación de microlesiones musculares.`,
-            };
-
-            setUserTimelineItems((prev) => [newSleepItem, ...prev]);
-            setActiveModal("none");
-            toast.success("🌙 Descanso nocturno registrado en tu diario");
-          }}
-        />
-      )}
 
       {/* Registrar Actividad Modal */}
       {activeModal === "registrar-actividad" && (
@@ -5705,10 +4432,16 @@ function DiarioTab() {
             const dayLabels = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
             const todayLabel = dayLabels[new Date().getDay()];
             
-            // 1. Update activityData points
+            // 1. Update activityData & activityHistory points
             setActivityData(prev => prev.map(item => 
               item.day === todayLabel ? { ...item, puntos: item.puntos + metPoints } : item
             ));
+            setActivityHistory(prev => ({
+              ...prev,
+              week: prev.week.map(item =>
+                item.label === todayLabel ? { ...item, puntos: item.puntos + metPoints } : item
+              )
+            }));
 
             // 2. Append timeline log
             const newAct = {
@@ -5836,212 +4569,7 @@ function EditTimelineItemModal({
   );
 }
 
-interface HydrationLogModalProps {
-  onClose: () => void;
-  currentLevel: number;
-  onSave: (level: number) => void;
-}
 
-function HydrationLogModal({ onClose, currentLevel, onSave }: HydrationLogModalProps) {
-  const [localLevel, setLocalLevel] = useState(currentLevel);
-
-  const colors = [
-    { level: 1, color: "#fbfce1" },
-    { level: 2, color: "#f9f9cd" },
-    { level: 3, color: "#f6f2a9" },
-    { level: 4, color: "#f2e285" },
-    { level: 5, color: "#eec863" },
-    { level: 6, color: "#e8a33a" },
-    { level: 7, color: "#d4812f" },
-    { level: 8, color: "#a66a2e" }
-  ];
-
-  const getHydrationAdvice = (level: number) => {
-    if (level <= 2) {
-      return `Nivel ${level} indica hidratación óptima. ¡Excelente trabajo manteniendo tu cuerpo equilibrado!`;
-    } else if (level <= 4) {
-      return `Nivel ${level} indica hidratación normal tirando a levemente baja. Bebe un vaso de agua (250ml) ahora para mantener el estado óptimo.`;
-    } else if (level <= 6) {
-      return `Nivel ${level} indica deshidratación leve. Toma 500ml de agua ahora mismo para compensar el entrenamiento de la mañana.`;
-    } else {
-      return `¡Atención! Nivel ${level} indica deshidratación severa. Consume de 750ml a 1L de agua, preferiblemente con electrolitos, y modera el esfuerzo físico.`;
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[80] flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="w-full max-w-md bg-card border border-border rounded-[2rem] shadow-2xl flex flex-col overflow-hidden max-h-[90vh] animate-in zoom-in-95 duration-200">
-        {/* Header */}
-        <div className="px-6 pt-8 pb-4 flex justify-between items-start bg-card">
-          <div className="space-y-1">
-            <span className="text-[10px] uppercase font-black tracking-widest text-muted-foreground text-left block">Control de Rutina</span>
-            <h3 className="text-xl font-black text-foreground text-left">Registro de Hidratación</h3>
-          </div>
-          <button 
-            onClick={onClose} 
-            className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-foreground hover:bg-border transition-colors shrink-0"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="px-6 py-4 space-y-6 overflow-y-auto">
-          {/* Display Level */}
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-foreground">Escala de Armstrong</span>
-              <TooltipProvider>
-                <ShadcnTooltip>
-                  <TooltipTrigger asChild>
-                    <button 
-                      type="button"
-                      className="p-1 rounded-full hover:bg-secondary/40 text-muted-foreground hover:text-foreground transition-colors shrink-0 flex items-center justify-center cursor-pointer border-0 bg-transparent"
-                    >
-                      <Info className="w-3.5 h-3.5" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" align="start" className="max-w-xs sm:max-w-sm p-4 bg-card border border-border shadow-2xl rounded-2xl text-xs space-y-3 text-left">
-                    <div className="flex items-center gap-2 font-bold text-foreground border-b border-border/50 pb-2">
-                      <Droplet className="w-4 h-4 text-blue-500 fill-blue-500" />
-                      <span>Evaluación de Hidratación (Armstrong)</span>
-                    </div>
-                    
-                    <div className="space-y-2 text-[11px] leading-relaxed text-muted-foreground">
-                      <p>
-                        <strong className="text-foreground">Estándar Clínico (Ucol):</strong> Desarrollado por el Dr. Lawrence Armstrong (UCONN) para medir la osmolalidad urinaria sin requerir laboratorios.
-                      </p>
-                      <p>
-                        <strong className="text-foreground">Rango Objetivo:</strong> Mantenerse en Niveles 1, 2 y 3. Perder un 2% de agua corporal reduce la fuerza y resistencia hasta un 15%.
-                      </p>
-                    </div>
-
-                    <div className="pt-2 border-t border-border/60 text-[10px]">
-                      <Link 
-                        to="/blog/$slug"
-                        params={{ slug: "escala-de-armstrong-y-fisiologia-de-la-hidratacion" }}
-                        className="text-emerald-500 font-bold hover:underline flex items-center justify-between gap-1 group"
-                      >
-                        <span>🛡️ Leer artículo completo sobre la Escala de Armstrong y la Hidratación</span>
-                        <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                      </Link>
-                    </div>
-                  </TooltipContent>
-                </ShadcnTooltip>
-              </TooltipProvider>
-            </div>
-            <Badge variant="secondary" className="px-3 py-1 text-xs font-black uppercase bg-secondary text-foreground">
-              Armstrong {localLevel}
-            </Badge>
-          </div>
-
-          {/* Color Scale */}
-          <div className="space-y-2">
-            <div className="flex justify-between gap-1.5 h-12 w-full rounded-2xl overflow-hidden bg-secondary/15 p-1 border border-border/40 relative">
-              {colors.map(h => {
-                const isActive = localLevel === h.level;
-                return (
-                  <button
-                    key={h.level}
-                    type="button"
-                    onClick={() => setLocalLevel(h.level)}
-                    className={`flex-1 h-full rounded-lg transition-all relative ${
-                      isActive 
-                        ? "border-2 border-foreground z-10 scale-105 shadow-md" 
-                        : "hover:opacity-90"
-                    }`}
-                    style={{ backgroundColor: h.color }}
-                  >
-                    {isActive && (
-                      <div className="absolute -bottom-[8px] left-1/2 -translate-x-1/2 w-2 h-2 bg-foreground rotate-45 transform origin-center border-r border-b border-background z-20" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-            <div className="flex justify-between text-[9px] uppercase font-black text-muted-foreground/80 tracking-widest px-1">
-              <span>Óptimo</span>
-              <span>Deshidratado</span>
-            </div>
-          </div>
-
-          {/* Coach / AI Feedback dynamic banner */}
-          <div className="p-4 bg-secondary/35 border border-border/40 rounded-2xl flex items-start gap-3">
-            <Sparkles className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-            <p className="text-xs text-muted-foreground font-semibold leading-relaxed text-left">
-              {getHydrationAdvice(localLevel)}
-            </p>
-          </div>
-
-          {/* Symptoms of Dehydration grid */}
-          <div className="space-y-2.5">
-            <span className="text-[9px] text-muted-foreground font-black uppercase tracking-widest block text-left">
-              Síntomas de Deshidratación a vigilar
-            </span>
-            <div className="grid grid-cols-2 gap-2.5">
-              <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-secondary/20 border border-border/20">
-                <Droplet className="w-4.5 h-4.5 text-blue-400 shrink-0" />
-                <div className="min-w-0 text-left">
-                  <p className="text-xs font-bold text-foreground leading-tight">Boca Seca</p>
-                  <p className="text-[10px] text-muted-foreground leading-none">Falta de saliva</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-secondary/20 border border-border/20">
-                <Coffee className="w-4.5 h-4.5 text-amber-500 shrink-0" />
-                <div className="min-w-0 text-left">
-                  <p className="text-xs font-bold text-foreground leading-tight">Fatiga</p>
-                  <p className="text-[10px] text-muted-foreground leading-none">Cansancio general</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-secondary/20 border border-border/20">
-                <Brain className="w-4.5 h-4.5 text-purple-400 shrink-0" />
-                <div className="min-w-0 text-left">
-                  <p className="text-xs font-bold text-foreground leading-tight">Cefalea</p>
-                  <p className="text-[10px] text-muted-foreground leading-none">Dolor de cabeza</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-secondary/20 border border-border/20">
-                <AlertCircle className="w-4.5 h-4.5 text-rose-400 shrink-0" />
-                <div className="min-w-0 text-left">
-                  <p className="text-xs font-bold text-foreground leading-tight">Mareos</p>
-                  <p className="text-[10px] text-muted-foreground leading-none">Pérdida de balance</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Explanation disclaimer footnote */}
-          <div className="text-[10px] text-muted-foreground leading-relaxed flex items-start gap-2 bg-secondary/10 p-3 rounded-2xl border border-border/10">
-            <Info className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
-            <p className="text-left">
-              <span className="font-bold text-foreground">Aviso sobre coloración:</span> Ciertos suplementos (como el complejo de vitamina B) y alimentos (como la remolacha) pueden intensificar temporalmente el color de la orina, sin representar deshidratación real.
-            </p>
-          </div>
-        </div>
-
-        {/* Footer actions */}
-        <div className="px-6 py-6 border-t border-border flex justify-end gap-2 bg-card">
-          <Button 
-            variant="outline" 
-            onClick={onClose} 
-            className="rounded-xl px-4 py-2 font-bold text-xs uppercase tracking-wider text-foreground hover:bg-secondary"
-          >
-            Cancelar
-          </Button>
-          <Button 
-            onClick={() => {
-              onSave(localLevel);
-              onClose();
-            }} 
-            className="rounded-xl px-5 py-2 font-bold text-xs uppercase tracking-wider bg-foreground text-background hover:opacity-90"
-          >
-            Guardar Registro
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 interface ActivityLogModalProps {
   onClose: () => void;
@@ -6345,1407 +4873,564 @@ function ActivityLogModal({ onClose, onSave, activities }: ActivityLogModalProps
   );
 }
 
-// ==========================================
-// RECIPE IA FEATURES (Tinder Swipe & Grid)
-// ==========================================
+// Subcomponent: Hydration Armstrong Modal (Escala 1-8 de Osmolalidad Urinaria)
+const ARMSTRONG_LEVELS = [
+  { level: 1, color: "bg-cyan-50 border-cyan-200 text-cyan-900 dark:bg-cyan-950/40 dark:border-cyan-800 dark:text-cyan-200", dot: "bg-cyan-100 border-cyan-300", title: "Nivel 1 — Transparente", usg: "< 1.010 g/cm³", state: "Euhidratación Óptima", advice: "Excelente balance celular. Mantén pequeños sorbos de agua potable a lo largo del día." },
+  { level: 2, color: "bg-yellow-50 border-yellow-200 text-yellow-900 dark:bg-yellow-950/40 dark:border-yellow-800 dark:text-yellow-200", dot: "bg-yellow-200 border-yellow-300", title: "Nivel 2 — Amarillo Pálido", usg: "1.010 g/cm³", state: "Hidratación Saludable", advice: "Estado hídrico ideal para el rendimiento físico y deportivo continuo." },
+  { level: 3, color: "bg-amber-50 border-amber-200 text-amber-900 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-200", dot: "bg-amber-300 border-amber-400", title: "Nivel 3 — Amarillo Claro", usg: "1.015 g/cm³", state: "Bien Hidratado", advice: "Buen estado hídrico para afrontar tus entrenamientos." },
+  { level: 4, color: "bg-amber-100 border-amber-300 text-amber-950 dark:bg-amber-900/40 dark:border-amber-700 dark:text-amber-200", dot: "bg-amber-400 border-amber-500", title: "Nivel 4 — Amarillo Dorado", usg: "1.020 g/cm³", state: "Deshidratación Leve", advice: "Ingiere 1 a 2 vasos de agua pura (300 - 400 ml) para evitar fatiga." },
+  { level: 5, color: "bg-amber-200 border-amber-400 text-amber-950 dark:bg-amber-800/40 dark:border-amber-600 dark:text-amber-100", dot: "bg-amber-500 border-amber-600", title: "Nivel 5 — Miel / Ámbar Claro", usg: "1.025 g/cm³", state: "Deshidratación Moderada", advice: "Bebe 500 ml de agua acompañada de una pizca de sodio o electrolitos." },
+  { level: 6, color: "bg-amber-300 border-amber-500 text-amber-950 dark:bg-amber-700/50 dark:border-amber-500 dark:text-amber-100", dot: "bg-amber-700 border-amber-800", title: "Nivel 6 — Ámbar Oscuro", usg: "1.028 g/cm³", state: "Deshidratación Significativa", advice: "Ingiere 750 ml de solución electrolítica isotónica inmediatamente." },
+  { level: 7, color: "bg-amber-700/20 border-amber-700 text-amber-900 dark:bg-amber-950/80 dark:border-amber-700 dark:text-amber-200", dot: "bg-amber-800 border-amber-900", title: "Nivel 7 — Té Oscuro", usg: "1.030 g/cm³", state: "Deshidratación Elevada", advice: "Evita el calor excesivo y bebe 1 Litro de suero oral isotónico." },
+  { level: 8, color: "bg-stone-800/20 border-stone-800 text-stone-900 dark:bg-stone-900 dark:border-stone-700 dark:text-stone-100", dot: "bg-stone-900 border-stone-950", title: "Nivel 8 — Café / Marrón", usg: "> 1.030 g/cm³", state: "Deshidratación Severa (Alerta)", advice: "Prioriza reposo e hidratación médica antes de realizar actividad física." }
+];
 
-interface RecipeSwipeStackProps {
-  onClose?: () => void;
-  savedRecipes: string[];
-  setSavedRecipes: React.Dispatch<React.SetStateAction<string[]>>;
-  currentSwipeIndex: number;
-  setCurrentSwipeIndex: React.Dispatch<React.SetStateAction<number>>;
-  onSaveRecipeTimeline?: (recipe: any) => void;
-}
-
-function RecipeSwipeStack({
-  onClose,
-  savedRecipes,
-  setSavedRecipes,
-  currentSwipeIndex,
-  setCurrentSwipeIndex,
-  onSaveRecipeTimeline,
-}: RecipeSwipeStackProps) {
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [swipeDir, setSwipeDir] = useState<"left" | "right" | null>(null);
-  const [showInfo, setShowInfo] = useState(false);
-
-  const hasCards = currentSwipeIndex < RECIPES_POOL.length;
-  const currentRecipe = hasCards ? RECIPES_POOL[currentSwipeIndex] : null;
-  const nextRecipe = currentSwipeIndex + 1 < RECIPES_POOL.length ? RECIPES_POOL[currentSwipeIndex + 1] : null;
-
-  const handleSwipe = (direction: "left" | "right") => {
-    if (swipeDir) return;
-    setSwipeDir(direction);
-    setShowInfo(false);
-    setTimeout(() => {
-      if (direction === "right" && currentRecipe) {
-        if (!savedRecipes.includes(currentRecipe.id)) {
-          setSavedRecipes(prev => [...prev, currentRecipe.id]);
-        }
-        if (onSaveRecipeTimeline) {
-          onSaveRecipeTimeline(currentRecipe);
-        }
-      }
-      setCurrentSwipeIndex(prev => prev + 1);
-      setSwipeDir(null);
-      setDragOffset({ x: 0, y: 0 });
-    }, 300);
-  };
-
-  const handleDragStart = (clientX: number, clientY: number) => {
-    if (!hasCards || swipeDir) return;
-    setIsDragging(true);
-    setDragStart({ x: clientX, y: clientY });
-  };
-
-  const handleDragMove = (clientX: number, clientY: number) => {
-    if (!isDragging) return;
-    const dx = clientX - dragStart.x;
-    const dy = clientY - dragStart.y;
-    setDragOffset({ x: dx, y: dy * 0.2 });
-  };
-
-  const handleDragEnd = () => {
-    if (!isDragging) return;
-    setIsDragging(false);
-    if (dragOffset.x > 120) {
-      handleSwipe("right");
-    } else if (dragOffset.x < -120) {
-      handleSwipe("left");
-    } else {
-      setDragOffset({ x: 0, y: 0 });
-    }
-  };
-
-  return (
-    <Card className="w-full bg-card border border-border shadow-none rounded-[2rem] p-5 overflow-hidden animate-in slide-in-from-top-4 duration-300 flex flex-col text-left hover:-translate-y-1.5 hover:shadow-xl hover:shadow-foreground/5 hover:border-border/80 transition-all">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-foreground border border-border/40 shrink-0">
-            <Sparkles className="w-4 h-4 text-foreground" />
-          </div>
-          <div>
-            <h3 className="text-xs font-extrabold text-foreground leading-tight">Explorar Recetas IA</h3>
-            <p className="text-[10px] text-muted-foreground font-semibold">Desliza para guardar o pasar</p>
-          </div>
-        </div>
-
-        {onClose && (
-          <button 
-            onClick={onClose}
-            className="w-7 h-7 rounded-full bg-secondary/80 hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer border-0"
-            title="Cerrar exploration"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
-        )}
-      </div>
-
-      {/* Content */}
-      <div className="w-full">
-        {hasCards && currentRecipe ? (
-          <div className="flex flex-col items-center gap-4">
-            {/* Card Stack Area */}
-            <div className="relative w-full h-[270px] select-none touch-none">
-              {/* Background Card */}
-              {nextRecipe && (
-                <div 
-                  className="absolute inset-0 rounded-2xl border border-border bg-card overflow-hidden shadow-sm scale-95 translate-y-2 opacity-60 transition-all duration-300 pointer-events-none"
-                  style={{ zIndex: 10 }}
-                >
-                  <img 
-                    src={nextRecipe.img} 
-                    alt={nextRecipe.title} 
-                    className="w-full h-full object-cover grayscale-[20%]" 
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                  <div className="absolute bottom-3 left-3 right-3 text-left">
-                    <h4 className="text-xs font-bold text-white leading-tight line-clamp-1">{nextRecipe.title}</h4>
-                  </div>
-                </div>
-              )}
-
-              {/* Top Card */}
-              <div
-                className="absolute inset-0 rounded-2xl border border-border bg-card overflow-hidden shadow-md select-none cursor-grab active:cursor-grabbing"
-                style={{
-                  zIndex: 20,
-                  transform: swipeDir 
-                    ? `translate3d(${swipeDir === "right" ? 400 : -400}px, ${dragOffset.y}px, 0) rotate(${swipeDir === "right" ? 10 : -10}deg)`
-                    : `translate3d(${dragOffset.x}px, ${dragOffset.y}px, 0) rotate(${dragOffset.x * 0.05}deg)`,
-                  transition: isDragging ? "none" : "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
-                  touchAction: "none"
-                }}
-                onMouseDown={(e) => handleDragStart(e.clientX, e.clientY)}
-                onMouseMove={(e) => handleDragMove(e.clientX, e.clientY)}
-                onMouseUp={handleDragEnd}
-                onMouseLeave={handleDragEnd}
-                onTouchStart={(e) => handleDragStart(e.touches[0].clientX, e.touches[0].clientY)}
-                onTouchMove={(e) => handleDragMove(e.touches[0].clientX, e.touches[0].clientY)}
-                onTouchEnd={handleDragEnd}
-              >
-                <img 
-                  src={currentRecipe.img} 
-                  alt={currentRecipe.title} 
-                  className="w-full h-full object-cover pointer-events-none" 
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/10 pointer-events-none" />
-
-                {/* Status Badges */}
-                {dragOffset.x > 40 && (
-                  <div className="absolute top-4 left-4 border border-foreground text-white font-black text-[10px] uppercase tracking-widest px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md pointer-events-none">
-                    GUARDAR ❤️
-                  </div>
-                )}
-                {dragOffset.x < -40 && (
-                  <div className="absolute top-4 right-4 border border-rose-500 text-rose-400 font-black text-[10px] uppercase tracking-widest px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md pointer-events-none">
-                    PASAR ❌
-                  </div>
-                )}
-
-                {/* Card Contents */}
-                <div className="absolute inset-0 p-4 flex flex-col justify-between pointer-events-none">
-                  <div className="flex justify-between items-start gap-1 flex-wrap">
-                    <span className="backdrop-blur-md bg-black/50 text-white text-[9px] font-extrabold tracking-wider uppercase px-2.5 py-1 rounded-full shadow-xs">
-                      {currentRecipe.category}
-                    </span>
-                    <span className="backdrop-blur-md bg-black/50 text-white/90 text-[9px] font-bold px-2.5 py-1 rounded-full shrink-0">
-                      {currentRecipe.prepTime}
-                    </span>
-                  </div>
-
-                  <div className="text-left space-y-2 pointer-events-auto">
-                    <h4 className="text-sm font-extrabold text-white leading-tight drop-shadow-sm line-clamp-2">
-                      {currentRecipe.title}
-                    </h4>
-                    
-                    <div className="flex flex-wrap gap-1.5 text-white/90 text-[9px] font-semibold">
-                      {(currentRecipe.tags || [currentRecipe.tag]).map((t: string, idx: number) => (
-                        <span key={idx} className="backdrop-blur-md bg-white/15 text-white px-2.5 py-0.5 rounded-full shadow-xs">
-                          {t}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Info Overlay */}
-                {showInfo && (
-                  <div className="absolute inset-0 bg-card/95 backdrop-blur-md p-4 flex flex-col justify-between overflow-y-auto animate-in fade-in duration-200" style={{ zIndex: 30 }}>
-                    <div className="text-left space-y-3">
-                      <div className="flex justify-between items-center border-b border-border pb-1.5">
-                        <h4 className="font-extrabold text-foreground text-xs uppercase tracking-wider">Ingredientes</h4>
-                        <button 
-                          onClick={() => setShowInfo(false)}
-                          className="text-[10px] text-muted-foreground hover:text-foreground font-bold border-0 bg-transparent cursor-pointer"
-                        >
-                          Cerrar
-                        </button>
-                      </div>
-                      <ul className="space-y-1.5">
-                        {currentRecipe.ingredients.slice(0, 5).map((ing: string, i: number) => (
-                          <li key={i} className="text-[10px] font-semibold text-muted-foreground flex items-start gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-foreground mt-1.5 shrink-0" />
-                            <span className="line-clamp-1">{ing}</span>
-                          </li>
-                        ))}
-                        {currentRecipe.ingredients.length > 5 && (
-                          <li className="text-[9px] text-muted-foreground/70 italic font-bold">
-                            + {currentRecipe.ingredients.length - 5} ingredientes más
-                          </li>
-                        )}
-                      </ul>
-                    </div>
-                    <Button 
-                      onClick={() => setShowInfo(false)}
-                      variant="outline" 
-                      className="w-full text-[10px] h-8 font-bold rounded-xl mt-2"
-                    >
-                      Volver
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex gap-4 items-center justify-center pt-1">
-              <button 
-                onClick={() => handleSwipe("left")}
-                className="w-10 h-10 rounded-full bg-secondary/80 hover:bg-secondary active:scale-95 text-muted-foreground hover:text-rose-500 border border-border flex items-center justify-center shadow-xs transition-all cursor-pointer"
-                title="Pasar"
-              >
-                <X className="w-4 h-4 stroke-[3]" />
-              </button>
-              
-              <button 
-                onClick={() => setShowInfo(!showInfo)}
-                className={`w-9 h-9 rounded-full border flex items-center justify-center shadow-xs transition-all cursor-pointer ${
-                  showInfo 
-                    ? "bg-foreground text-background border-foreground" 
-                    : "bg-secondary/40 hover:bg-secondary text-muted-foreground border-border"
-                }`}
-                title="Ver info"
-              >
-                <Info className="w-4 h-4" />
-              </button>
-
-              <button 
-                onClick={() => handleSwipe("right")}
-                className="w-10 h-10 rounded-full bg-foreground text-background hover:opacity-90 active:scale-95 border border-foreground flex items-center justify-center shadow-xs transition-all cursor-pointer"
-                title="Guardar receta"
-              >
-                <Heart className="w-4 h-4 fill-current" />
-              </button>
-            </div>
-
-            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-              Receta {currentSwipeIndex + 1} de {RECIPES_POOL.length}
-            </div>
-          </div>
-        ) : (
-          <div className="p-6 flex flex-col items-center justify-center gap-3 text-center animate-in fade-in duration-300">
-            <div className="w-10 h-10 rounded-full bg-secondary/60 flex items-center justify-center text-foreground mb-1">
-              <Check className="w-5 h-5 stroke-[3]" />
-            </div>
-            <div>
-              <h4 className="text-xs font-bold text-foreground">¡Todo explorado!</h4>
-              <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">
-                Revisa tus platos guardados en <strong>Mis recetas</strong> o inicia una nueva ronda.
-              </p>
-            </div>
-            <div className="w-full mt-1">
-              <Button 
-                onClick={() => setCurrentSwipeIndex(0)} 
-                className="w-full text-[10px] h-8 font-bold rounded-xl bg-foreground text-background"
-              >
-                Reiniciar exploración
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
-    </Card>
-  );
-}
-
-// Recipes Grid Tab Component
-interface RecipesGridTabProps {
-  savedRecipes: string[];
-  setSavedRecipes: React.Dispatch<React.SetStateAction<string[]>>;
-  cartRecipeIds: string[];
-  onToggleCart: (recipeId: string) => void;
-  onOpenCart: () => void;
-  onExploreClick: () => void;
-  onOpenDetail: (recipe: any) => void;
-}
-
-function RecipesGridTab({
-  savedRecipes,
-  setSavedRecipes,
-  cartRecipeIds,
-  onToggleCart,
-  onOpenCart,
-  onExploreClick,
-  onOpenDetail,
-}: RecipesGridTabProps) {
-  const [filterText, setFilterText] = useState("");
-  const [selectedChips, setSelectedChips] = useState<string[]>([]);
-
-  const choiceChips = [
-    "Desayuno", "Almuerzo", "Cena", "Snack",
-    "Alto en Proteína", "Alto en Fibra", "Bajo en Hidratos",
-    "Sin Gluten", "Vegan", "Grasas Saludables", "Sin Lactosa"
-  ];
-
-  const list = RECIPES_POOL.filter(r => savedRecipes.includes(r.id));
-
-  const recipeMatchesChip = (r: any, chipId: string): boolean => {
-    const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    const target = norm(chipId);
-    if (norm(r.category || "") === target) return true;
-    const allTags = [...(r.tags || []), r.tag].filter(Boolean);
-    return allTags.some(t => {
-      const nTag = norm(t);
-      if (nTag === target) return true;
-      if (target.includes("proteina") && (nTag.includes("proteina") || nTag.includes("protein"))) return true;
-      if (target.includes("fibra") && nTag.includes("fibra")) return true;
-      if (target.includes("hidrato") && (nTag.includes("hidrato") || nTag.includes("carbohidrat"))) return true;
-      if (target.includes("gluten") && nTag.includes("gluten")) return true;
-      if (target.includes("vegan") && (nTag.includes("vegan") || nTag.includes("vegetar"))) return true;
-      if (target.includes("grasa") && nTag.includes("grasa")) return true;
-      if (target.includes("lactosa") && nTag.includes("lactosa")) return true;
-      return false;
-    });
-  };
-
-  const toggleChip = (chipId: string) => {
-    if (chipId === "Todas") {
-      setSelectedChips([]);
-      return;
-    }
-    setSelectedChips(prev => 
-      prev.includes(chipId)
-        ? prev.filter(c => c !== chipId)
-        : [...prev, chipId]
-    );
-  };
-
-  const filteredList = list.filter(r => {
-    const matchesText = r.title.toLowerCase().includes(filterText.toLowerCase()) || 
-                        r.coachFeedback.toLowerCase().includes(filterText.toLowerCase());
-    const matchesChips = selectedChips.length === 0 || selectedChips.every(chip => recipeMatchesChip(r, chip));
-    return matchesText && matchesChips;
-  });
-
-  return (
-    <div className="space-y-6 animate-in fade-in duration-300 text-left px-6 py-6 pb-24 max-w-6xl mx-auto">
-      <div className="flex flex-col gap-4">
-        {/* Title & Cart Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-[22px] font-black text-foreground leading-tight tracking-tight">Mis Recetas Guardadas</h2>
-            <p className="text-xs text-muted-foreground mt-1 font-medium">
-              Platos recomendados por tu Coach IA que has guardado durante la exploración.
-            </p>
-          </div>
-
-          <Button
-            onClick={onOpenCart}
-            className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl px-4 py-2.5 flex items-center gap-2 transition-all shadow-md shrink-0 cursor-pointer self-start sm:self-auto"
-          >
-            <ShoppingCart className="w-4 h-4" />
-            <span>Lista de Compras</span>
-            <span className="bg-white/20 text-white text-[10px] font-black px-2 py-0.5 rounded-full ml-0.5">
-              {cartRecipeIds.length}
-            </span>
-          </Button>
-        </div>
-
-        {/* Search & Multi-Select Choice Chips */}
-        {list.length > 0 && (
-          <div className="space-y-3">
-            <div className="relative">
-              <Search className="absolute left-3.5 top-3.5 w-4 h-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Buscar recetas por nombre o ingrediente..."
-                value={filterText}
-                onChange={(e) => setFilterText(e.target.value)}
-                className="w-full bg-secondary/35 border border-border rounded-xl pl-10 pr-4 py-3 text-xs font-semibold focus:outline-none focus:border-foreground/30 transition-colors"
-              />
-            </div>
-            
-            {/* Multi-Select Choice Chips */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
-                  Filtros de Comida {selectedChips.length > 0 && `(${selectedChips.length} activos)`}
-                </span>
-                {selectedChips.length > 0 && (
-                  <button
-                    onClick={() => setSelectedChips([])}
-                    className="text-[11px] font-bold text-rose-500 hover:underline cursor-pointer"
-                  >
-                    Limpiar filtros
-                  </button>
-                )}
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {choiceChips.map(chip => {
-                  const isSelected = selectedChips.includes(chip);
-                  return (
-                    <button
-                      key={chip}
-                      onClick={() => toggleChip(chip)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition cursor-pointer select-none flex items-center gap-1.5 ${
-                        isSelected
-                          ? "border-foreground bg-foreground text-background shadow-xs font-bold"
-                          : "border-border/80 bg-secondary/30 text-muted-foreground hover:border-foreground/30 hover:text-foreground"
-                      }`}
-                    >
-                      {isSelected && <Check className="w-3 h-3 text-background" />}
-                      <span>{chip}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {list.length === 0 ? (
-        <div className="border border-dashed border-border rounded-[2rem] p-10 flex flex-col items-center justify-center text-center gap-4 bg-card/40 min-h-[300px]">
-          <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500">
-            <Heart className="w-7 h-7 fill-emerald-500/20" />
-          </div>
-          <div>
-            <h4 className="text-sm font-bold text-foreground">Aún no tienes recetas guardadas</h4>
-            <p className="text-xs text-muted-foreground mt-1.5 max-w-xs mx-auto leading-relaxed font-medium">
-              Descubre platos saludables recomendados por tu Coach IA en la herramienta "Explorar ideas".
-            </p>
-          </div>
-          <Button 
-            onClick={onExploreClick}
-            className="rounded-xl text-xs font-bold bg-foreground text-background px-5 py-2.5 hover:opacity-90 mt-2 transition-opacity"
-          >
-            Explorar ideas ahora
-          </Button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {filteredList.map(recipe => {
-            const isInCart = cartRecipeIds.includes(recipe.id);
-            return (
-              <Card 
-                key={recipe.id}
-                onClick={() => onOpenDetail(recipe)}
-                className="group rounded-2xl overflow-hidden transition-all duration-300 border border-border/80 bg-card hover:border-foreground/20 hover:shadow-md flex flex-col h-full cursor-pointer select-none"
-              >
-                {/* Image Banner */}
-                <div className="relative h-44 w-full overflow-hidden shrink-0 bg-secondary/30">
-                  <img 
-                    src={recipe.img} 
-                    alt={recipe.title} 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                  
-                  {/* Category Pill */}
-                  <span className="absolute top-3 left-3 bg-black/60 backdrop-blur-md text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full">
-                    {recipe.category}
-                  </span>
-
-                  {/* Cart Button */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onToggleCart(recipe.id);
-                    }}
-                    className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-md border transition-all cursor-pointer ${
-                      isInCart 
-                        ? "bg-foreground text-background border-foreground shadow-md scale-105"
-                        : "bg-black/50 hover:bg-black/70 text-white/80 hover:text-white border-white/20"
-                    }`}
-                    title={isInCart ? "Quitar de lista de compras" : "Añadir a lista de compras"}
-                  >
-                    <ShoppingCart className="w-3.5 h-3.5" />
-                  </button>
-
-                  {/* Prep Time & Quick Info Overlay */}
-                  <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-[10px] font-bold">
-                    <span className="bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full">
-                      {recipe.prepTime}
-                    </span>
-                    <span className="bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full">
-                      350 kcal
-                    </span>
-                  </div>
-                </div>
-
-                {/* Header */}
-                <CardHeader className="p-4 pb-2 text-left">
-                  <CardDescription className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
-                    Receta IA • {recipe.category}
-                  </CardDescription>
-                  <CardTitle className="text-sm font-extrabold leading-snug text-foreground group-hover:text-emerald-500 transition-colors line-clamp-2">
-                    {recipe.title}
-                  </CardTitle>
-                </CardHeader>
-
-                {/* Content */}
-                <CardContent className="px-4 pb-4 pt-1 flex-1 flex flex-col justify-end text-left">
-                  <div className="pt-2 border-t border-border/40 space-y-2">
-                    <MealOrganizerBadges
-                      category={recipe.category}
-                      tags={recipe.tags || (recipe.tag ? [recipe.tag] : [])}
-                    />
-                  </div>
-                </CardContent>
-
-                {/* Footer */}
-                <CardFooter className="px-4 py-3 bg-secondary/20 border-t border-border flex items-center justify-between shrink-0">
-                  <span className="text-[11px] font-bold text-muted-foreground group-hover:text-foreground transition-colors">
-                    Ver preparación
-                  </span>
-                  <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-muted-foreground group-hover:text-foreground group-hover:bg-foreground group-hover:text-background transition-colors">
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </div>
-                </CardFooter>
-              </Card>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// Recipe Detail Modal Component
-interface RecipeDetailModalProps {
-  recipe: any;
+interface HydrationArmstrongModalProps {
   onClose: () => void;
-  onLog: (recipe: any) => void;
-  onRemove: (recipeId: string) => void;
-  isInCart: boolean;
-  onToggleCart: (recipeId: string) => void;
+  onSave: (level: number, label: string, feedback: string) => void;
 }
 
-function RecipeDetailModal({
-  recipe,
-  onClose,
-  onLog,
-  onRemove,
-  isInCart,
-  onToggleCart,
-}: RecipeDetailModalProps) {
-  const [checkedIngredients, setCheckedIngredients] = useState<Record<number, boolean>>({});
+function HydrationArmstrongModal({ onClose, onSave }: HydrationArmstrongModalProps) {
+  const [selectedLevel, setSelectedLevel] = useState<number>(2);
+  const currentLevelObj = ARMSTRONG_LEVELS.find(l => l.level === selectedLevel) || ARMSTRONG_LEVELS[1];
 
-  const toggleIngredient = (idx: number) => {
-    setCheckedIngredients(prev => ({
-      ...prev,
-      [idx]: !prev[idx]
-    }));
+  const handleConfirm = () => {
+    onSave(
+      currentLevelObj.level,
+      `${currentLevelObj.title} (${currentLevelObj.state})`,
+      currentLevelObj.advice
+    );
+    onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-background/95 backdrop-blur-2xl animate-in fade-in duration-250">
-      <div className="w-full max-w-lg bg-card border border-border rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden max-h-[85vh] animate-in zoom-in-95 duration-200 text-left">
-        {/* Hero image header */}
-        <div className="h-56 relative overflow-hidden shrink-0">
-          <img 
-            src={recipe.img} 
-            alt={recipe.title} 
-            className="w-full h-full object-cover" 
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-          
-          <button 
-            onClick={onClose}
-            className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/60 border border-white/10 hover:bg-black/80 flex items-center justify-center text-white transition-colors cursor-pointer"
-          >
-            <X className="w-4 h-4" />
-          </button>
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-lg rounded-3xl p-6 sm:p-8 border border-border bg-card max-h-[90vh] overflow-y-auto custom-scrollbar">
+        <DialogHeader className="pb-3 border-b border-border/40">
+          <DialogTitle className="text-base font-bold flex items-center justify-between text-foreground">
+            <div className="flex items-center gap-2">
+              <Droplet className="w-5 h-5 text-cyan-500" />
+              <span>Registro de Hidratación</span>
+            </div>
+            <Link
+              to="/blog/$slug"
+              params={{ slug: "escala-de-armstrong-y-fisiologia-de-la-hidratacion" }}
+              className="text-[11px] font-semibold text-emerald-500 hover:underline flex items-center gap-1"
+            >
+              <span>Escala Armstrong</span>
+              <ArrowUpRight className="w-3 h-3" />
+            </Link>
+          </DialogTitle>
+          <DialogDescription className="text-xs text-muted-foreground pt-1">
+            Selecciona el nivel colorimétrico de osmolalidad urinaria (Dr. Lawrence Armstrong, ACSM).
+          </DialogDescription>
+        </DialogHeader>
 
-          <div className="absolute bottom-4 left-6 right-6 text-left">
-            <span className="bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md inline-block mb-2">
-              {recipe.category}
-            </span>
-            <h2 className="text-xl font-black text-white leading-tight tracking-tight drop-shadow-md">
-              {recipe.title}
-            </h2>
+        <div className="py-4 space-y-4">
+          {/* Level Selector Grid */}
+          <div className="grid grid-cols-4 gap-2 sm:gap-2.5">
+            {ARMSTRONG_LEVELS.map((item) => {
+              const isSelected = selectedLevel === item.level;
+              return (
+                <button
+                  type="button"
+                  key={item.level}
+                  onClick={() => setSelectedLevel(item.level)}
+                  className={cn(
+                    "p-2.5 sm:p-3 rounded-2xl border text-center transition cursor-pointer flex flex-col items-center justify-center space-y-1.5",
+                    isSelected ? "border-foreground bg-accent ring-2 ring-foreground/20 font-bold scale-105 shadow-sm" : "border-border/60 hover:border-border text-muted-foreground"
+                  )}
+                >
+                  <div className={cn("w-5 h-5 rounded-full border shadow-xs", item.dot)} />
+                  <span className="text-xs font-bold text-foreground">Nivel {item.level}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Selected Level Info Box */}
+          <div className={cn("p-4 rounded-2xl border transition-all space-y-1.5", currentLevelObj.color)}>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold">{currentLevelObj.title}</span>
+              <Badge variant="outline" className="text-[10px] font-bold bg-background/80">
+                Usg: {currentLevelObj.usg}
+              </Badge>
+            </div>
+            <div className="text-xs font-semibold">{currentLevelObj.state}</div>
+            <p className="text-[11px] leading-relaxed opacity-90">{currentLevelObj.advice}</p>
+          </div>
+
+          {/* Riboflavin warning note */}
+          <div className="p-3 rounded-2xl border border-amber-500/20 bg-amber-500/5 text-[11px] text-muted-foreground leading-relaxed">
+            💡 <strong>Nota clínica:</strong> Suplementos de Vitamina B2 (Riboflavina) o multivitamínicos pueden pigmentar la orina de amarillo neón sin significar deshidratación real.
           </div>
         </div>
 
-        {/* Scrollable contents */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 text-left">
-          {/* Quick info row */}
-          <div className="grid grid-cols-4 gap-2 text-center bg-secondary/35 rounded-2xl p-3 border border-border/50">
-            <div>
-              <span className="block text-[9px] uppercase font-black text-muted-foreground tracking-wider">Calorías</span>
-              <span className="text-xs font-extrabold text-foreground">{recipe.kcal} kcal</span>
+        <div className="pt-3 border-t border-border/40 flex items-center justify-end gap-2">
+          <Button variant="outline" onClick={onClose} className="rounded-xl font-semibold">
+            Cancelar
+          </Button>
+          <Button onClick={handleConfirm} className="rounded-xl font-bold bg-cyan-600 hover:bg-cyan-700 text-white">
+            Registrar Estado Hídrico
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Subcomponent: Photo Meal Analysis Modal (Análisis Cualitativo Sin Conteo de Calorías)
+const SAMPLE_MEAL_PHOTOS = [
+  {
+    id: "sample-1",
+    title: "Bowl de Pollo, Camote y Palta",
+    img: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80",
+    desc: "Pollo a la plancha (1 palma), Camote horneado (1 puño) y Palta en lonchas (1 pulgar).",
+    coachFeedback: "🌱 Aporte Biológico: Excelente matriz proteica para la síntesis muscular sin picos glucémicos.",
+    tag: "Proteína Magra & Carbos Complejos"
+  },
+  {
+    id: "sample-2",
+    title: "Omelette de Huevos con Avena y Banano",
+    img: "https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=600&q=80",
+    desc: "3 Huevos enteros (1 palma), Avena integral en copos (1 taza) y Banano maduro.",
+    coachFeedback: "⚡ Aporte Biológico: Recarga rápida de glucógeno y colina para la salud neuronal y energía sostenida.",
+    tag: "Desayuno Nutritivo & Energía"
+  },
+  {
+    id: "sample-3",
+    title: "Ensalada de Atún con Quinoa y Espinacas",
+    img: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=600&q=80",
+    desc: "Lomo de Atún al agua (1 palma), Quinoa cocida (1 puño) y Aceite de oliva virgen extra (1 cucharada).",
+    coachFeedback: "🛡️ Aporte Biológico: Alto contenido de Omega 3 y antioxidantes para reducir la inflamación pos-entrenamiento.",
+    tag: "Omega 3 & Antioxidantes"
+  },
+  {
+    id: "sample-4",
+    title: "Filete de Merluza con Arroz Integral",
+    img: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=600&q=80",
+    desc: "Filete de pescado blanco (1 palma), Arroz integral (1 puño) y Ensalada de vegetales verdes.",
+    coachFeedback: "💧 Aporte Biológico: Digestión ligera de alta absorción biológica, ideal para cenas o entrenos tardíos.",
+    tag: "Proteína Ligera & Saciedad"
+  }
+];
+
+interface PhotoMealAnalysisModalProps {
+  onClose: () => void;
+  onSave: (mealData: { title: string; img: string; desc: string; coachFeedback: string; tag: string }) => void;
+}
+
+function PhotoMealAnalysisModal({ onClose, onSave }: PhotoMealAnalysisModalProps) {
+  const [selectedSample, setSelectedSample] = useState(SAMPLE_MEAL_PHOTOS[0]);
+  const [customImage, setCustomImage] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analyzed, setAnalyzed] = useState(false);
+
+  const activeImage = customImage || selectedSample.img;
+  const activeTitle = customImage ? "Plato de Comida Real" : selectedSample.title;
+  const activeDesc = customImage ? "Proteína Magra (1 palma), Carbohidratos Complejos (1 puño) y Grasas Saludables (1 pulgar)." : selectedSample.desc;
+  const activeFeedback = customImage ? "🌱 Aporte Biológico: Excelente balance cualitativo de nutrientes para recuperación muscular y energía celular." : selectedSample.coachFeedback;
+  const activeTag = customImage ? "Nutrición Consciente & Real" : selectedSample.tag;
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setCustomImage(event.target?.result as string);
+        setAnalyzed(false);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRunAnalysis = () => {
+    setIsAnalyzing(true);
+    setTimeout(() => {
+      setIsAnalyzing(false);
+      setAnalyzed(true);
+      toast.success("Análisis de visión IA completado");
+    }, 1400);
+  };
+
+  const handleConfirmSave = () => {
+    onSave({
+      title: activeTitle,
+      img: activeImage,
+      desc: activeDesc,
+      coachFeedback: activeFeedback,
+      tag: activeTag
+    });
+    onClose();
+  };
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-lg rounded-3xl p-6 sm:p-8 border border-border bg-card max-h-[90vh] overflow-y-auto custom-scrollbar">
+        <DialogHeader className="pb-3 border-b border-border/40">
+          <DialogTitle className="text-base font-bold flex items-center justify-between text-foreground">
+            <div className="flex items-center gap-2">
+              <Camera className="w-5 h-5 text-emerald-500" />
+              <span>Análisis Cualitativo de Plato</span>
             </div>
-            <div>
-              <span className="block text-[9px] uppercase font-black text-muted-foreground tracking-wider">Proteínas</span>
-              <span className="text-xs font-extrabold text-foreground">{recipe.protein}</span>
-            </div>
-            <div>
-              <span className="block text-[9px] uppercase font-black text-muted-foreground tracking-wider">Grasas</span>
-              <span className="text-xs font-extrabold text-foreground">{recipe.fat}</span>
-            </div>
-            <div>
-              <span className="block text-[9px] uppercase font-black text-muted-foreground tracking-wider">Prep</span>
-              <span className="text-xs font-extrabold text-foreground">{recipe.prepTime}</span>
+            <Badge variant="outline" className="text-[10px] font-extrabold border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              Cero Calorías / Énfasis Biológico
+            </Badge>
+          </DialogTitle>
+          <DialogDescription className="text-xs text-muted-foreground pt-1">
+            Sube o toma una foto de tu comida. El AI Coach analizará el aporte de nutrición real y porciones visuales.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="py-4 space-y-4">
+          {/* Main Image Preview / Dropzone */}
+          <div className="relative h-48 w-full rounded-2xl overflow-hidden border border-border/80 bg-muted/20 flex flex-col items-center justify-center group">
+            <img src={activeImage} alt="Preview del plato" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-background/40 backdrop-blur-xs opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
+              <label className="p-2.5 rounded-xl bg-foreground text-background font-bold text-xs cursor-pointer shadow-lg flex items-center gap-1.5 hover:scale-105 transition">
+                <Camera className="w-4 h-4" />
+                <span>Cambiar Foto</span>
+                <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+              </label>
             </div>
           </div>
 
-          {/* Características Nutricionales Badges */}
-          <div className="bg-secondary/20 rounded-2xl p-3.5 border border-border/60 space-y-2">
-            <h5 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
-              Características Nutricionales
-            </h5>
-            <MealOrganizerBadges
-              category={recipe.category}
-              tags={recipe.tags || (recipe.tag ? [recipe.tag] : [])}
-            />
-          </div>
-
-          {/* Coach Advice */}
-          <div className="bg-emerald-500/5 dark:bg-emerald-500/[0.02] border border-emerald-500/10 rounded-2xl p-4 flex items-start gap-3">
-            <Sparkles className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-            <div>
-              <h5 className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-0.5">Consejo del Coach IA</h5>
-              <p className="text-[11px] font-medium text-foreground/80 leading-relaxed">
-                {recipe.coachFeedback}
-              </p>
-            </div>
-          </div>
-
-          {/* Ingredients list */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground border-b border-border pb-1.5">
-              Ingredientes ({recipe.ingredients.length})
-            </h4>
-            <div className="space-y-2">
-              {recipe.ingredients.map((ing: string, i: number) => {
-                const isChecked = checkedIngredients[i] || false;
+          {/* Sample Photos Selector */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-foreground block">Fotos de Muestra o Sube la Tuya:</label>
+            <div className="grid grid-cols-4 gap-2">
+              {SAMPLE_MEAL_PHOTOS.map((sample) => {
+                const isSelected = !customImage && selectedSample.id === sample.id;
                 return (
-                  <div 
-                    key={i} 
-                    onClick={() => toggleIngredient(i)}
-                    className={`flex items-center gap-3 p-2.5 rounded-xl border transition-all cursor-pointer ${
-                      isChecked 
-                        ? "bg-emerald-500/[0.02] border-emerald-500/20 text-muted-foreground line-through" 
-                        : "bg-card border-border/70 hover:border-foreground/20 text-foreground"
-                    }`}
+                  <button
+                    type="button"
+                    key={sample.id}
+                    onClick={() => {
+                      setCustomImage(null);
+                      setSelectedSample(sample);
+                      setAnalyzed(false);
+                    }}
+                    className={cn(
+                      "relative h-16 rounded-xl overflow-hidden border transition cursor-pointer",
+                      isSelected ? "border-emerald-500 ring-2 ring-emerald-500/30 font-bold" : "border-border/60 hover:border-border opacity-70 hover:opacity-100"
+                    )}
                   >
-                    <div className={`w-4 h-4 rounded-md border flex items-center justify-center shrink-0 transition-colors ${
-                      isChecked ? "bg-emerald-500 border-emerald-500 text-white" : "border-border"
-                    }`}>
-                      {isChecked && <Check className="w-2.5 h-2.5 stroke-[3]" />}
-                    </div>
-                    <span className="text-xs font-semibold leading-none">{ing}</span>
-                  </div>
+                    <img src={sample.img} alt={sample.title} className="w-full h-full object-cover" />
+                  </button>
                 );
               })}
             </div>
           </div>
 
-          {/* Steps */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground border-b border-border pb-1.5">
-              Preparación
-            </h4>
-            <ol className="space-y-3">
-              {recipe.instructions.map((step: string, i: number) => (
-                <li key={i} className="flex gap-3 items-start">
-                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-secondary text-[10px] font-black text-muted-foreground shrink-0 mt-0.5">
-                    {i + 1}
-                  </span>
-                  <p className="text-xs text-foreground/90 leading-relaxed font-semibold">
-                    {step}
-                  </p>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </div>
-
-        {/* Footer actions */}
-        <div className="px-6 py-6 border-t border-border flex flex-col sm:flex-row gap-3 bg-card justify-between items-center shrink-0">
-          <button
-            onClick={() => onRemove(recipe.id)}
-            className="text-[10px] text-rose-500 font-bold uppercase tracking-widest hover:underline p-1 border-0 bg-transparent cursor-pointer"
-          >
-            Quitar de mis recetas
-          </button>
-          
-          <div className="flex gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
+          {/* Analyze Button */}
+          {!analyzed && (
             <Button
-              onClick={() => onToggleCart(recipe.id)}
-              variant="outline"
-              className={`rounded-xl px-3 py-2 font-bold text-xs gap-1.5 flex-1 sm:flex-initial ${
-                isInCart 
-                  ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                  : "border-border hover:bg-secondary text-foreground"
-              }`}
+              onClick={handleRunAnalysis}
+              disabled={isAnalyzing}
+              className="w-full rounded-xl h-11 font-bold bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center gap-2 shadow-xs"
             >
-              <ShoppingCart className="w-3.5 h-3.5" />
-              {isInCart ? "En Compras" : "Añadir a Compras"}
+              {isAnalyzing ? (
+                <>
+                  <Sparkles className="w-4 h-4 animate-spin text-white" />
+                  <span>Analizando densidad y porciones...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4" />
+                  <span>Analizar Plato con IA</span>
+                </>
+              )}
             </Button>
+          )}
 
-            <Button 
-              variant="outline" 
-              onClick={onClose} 
-              className="rounded-xl px-3 py-2 font-bold text-xs text-foreground hover:bg-secondary flex-1 sm:flex-initial"
-            >
-              Cerrar
-            </Button>
-            
-            <Button 
-              onClick={() => onLog(recipe)}
-              className="rounded-xl px-4 py-2 font-bold text-xs uppercase tracking-wider bg-foreground text-background hover:opacity-90 flex-1 sm:flex-initial"
-            >
-              Registrar
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Shopping Cart Modal Component
-interface ShoppingCartModalProps {
-  cartRecipeIds: string[];
-  onClose: () => void;
-  onToggleCart: (recipeId: string) => void;
-  onClearCart: () => void;
-}
-
-function ShoppingCartModal({
-  cartRecipeIds,
-  onClose,
-  onToggleCart,
-  onClearCart,
-}: ShoppingCartModalProps) {
-  const selectedRecipes = RECIPES_POOL.filter(r => cartRecipeIds.includes(r.id));
-  
-  // Combine ingredients across selected recipes
-  const allIngredients = selectedRecipes.flatMap(r => r.ingredients);
-  const uniqueIngredients = Array.from(new Set(allIngredients));
-
-  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
-  const [copied, setCopied] = useState(false);
-
-  const toggleItem = (item: string) => {
-    setCheckedItems(prev => ({ ...prev, [item]: !prev[item] }));
-  };
-
-  const getFormattedList = () => {
-    return `ðŸ›’ LISTA DE COMPRAS (Shakerfy)\n\n` +
-      `Recetas (${selectedRecipes.length}):\n` +
-      selectedRecipes.map(r => `- ${r.title}`).join('\n') +
-      `\n\nIngredientes:\n` +
-      uniqueIngredients.map(ing => `${checkedItems[ing] ? '✓' : 'â˜'} ${ing}`).join('\n');
-  };
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(getFormattedList());
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleShare = async () => {
-    const text = getFormattedList();
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: "Lista de Compras - Shakerfy",
-          text: text,
-        });
-      } catch (e) {
-        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, "_blank");
-      }
-    } else {
-      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, "_blank");
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-background/95 backdrop-blur-2xl animate-in fade-in duration-250">
-      <div className="w-full max-w-lg bg-card border border-border rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden max-h-[85vh] animate-in zoom-in-95 duration-200 text-left">
-        {/* Header */}
-        <div className="p-6 border-b border-border flex justify-between items-center bg-secondary/20">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500">
-              <ShoppingCart className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="text-base font-extrabold text-foreground leading-tight">Lista de Compras</h3>
-              <p className="text-[11px] text-muted-foreground font-semibold">
-                {selectedRecipes.length} {selectedRecipes.length === 1 ? "receta seleccionada" : "recetas seleccionadas"}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-secondary hover:bg-secondary/80 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer border-0"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {selectedRecipes.length === 0 ? (
-            <div className="p-10 text-center space-y-3">
-              <div className="w-12 h-12 rounded-full bg-secondary/50 flex items-center justify-center mx-auto text-muted-foreground">
-                <ShoppingCart className="w-6 h-6" />
-              </div>
-              <p className="text-xs font-bold text-foreground">Tu lista de compras está vacía</p>
-              <p className="text-[11px] text-muted-foreground max-w-xs mx-auto leading-relaxed font-medium">
-                Presiona el icono de carrito en tus recetas guardadas para generar la lista de compras automáticamente.
-              </p>
-            </div>
-          ) : (
-            <>
-              {/* Selected Recipes Pills */}
-              <div className="space-y-2">
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
-                  Recetas incluidas ({selectedRecipes.length})
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {selectedRecipes.map(r => (
-                    <div 
-                      key={r.id}
-                      className="bg-secondary/40 border border-border rounded-xl px-3 py-1.5 flex items-center gap-2 text-xs font-bold text-foreground"
-                    >
-                      <span className="line-clamp-1 max-w-[180px]">{r.title}</span>
-                      <button 
-                        onClick={() => onToggleCart(r.id)}
-                        className="text-muted-foreground hover:text-rose-500 cursor-pointer border-0 bg-transparent p-0"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
+          {/* Analysis Results */}
+          {analyzed && (
+            <div className="p-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 space-y-3 animate-in fade-in duration-300">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold text-foreground">{activeTitle}</h4>
+                <Badge className="bg-emerald-500 text-white text-[10px] font-extrabold">{activeTag}</Badge>
               </div>
 
-              {/* Consolidated Ingredients Checklist */}
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
-                    Ingredientes Necesarios ({uniqueIngredients.length})
-                  </span>
-                  <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-                    {Object.values(checkedItems).filter(Boolean).length} / {uniqueIngredients.length} listos
-                  </span>
+              {/* Hand Portions */}
+              <div className="p-3 rounded-xl bg-card border border-border/60 text-xs space-y-1">
+                <div className="font-bold text-foreground flex items-center gap-1.5">
+                  🖐️ Porciones Visuales de Mano:
                 </div>
-
-                <div className="space-y-1.5 max-h-[300px] overflow-y-auto pr-1">
-                  {uniqueIngredients.map((ing, idx) => {
-                    const isChecked = !!checkedItems[ing];
-                    return (
-                      <div
-                        key={idx}
-                        onClick={() => toggleItem(ing)}
-                        className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center gap-3 select-none ${
-                          isChecked 
-                            ? "bg-emerald-500/[0.04] border-emerald-500/20 text-muted-foreground line-through" 
-                            : "bg-card border-border hover:border-foreground/20 text-foreground font-semibold"
-                        }`}
-                      >
-                        <div className={`w-4 h-4 rounded-md border flex items-center justify-center shrink-0 transition-colors ${
-                          isChecked ? "bg-emerald-500 border-emerald-500 text-white" : "border-muted-foreground/40 bg-background"
-                        }`}>
-                          {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
-                        </div>
-                        <span className="text-xs">{ing}</span>
-                      </div>
-                    );
-                  })}
-                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">{activeDesc}</p>
               </div>
-            </>
+
+              {/* Biological Contribution */}
+              <div className="text-xs space-y-1">
+                <div className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5" /> Aporte Biológico Positivo:
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">{activeFeedback}</p>
+              </div>
+            </div>
           )}
         </div>
 
-        {/* Footer */}
-        {selectedRecipes.length > 0 && (
-          <div className="p-4 border-t border-border bg-secondary/10 flex items-center justify-between gap-2 shrink-0">
-            <Button
-              onClick={onClearCart}
-              variant="outline"
-              className="text-xs font-bold text-rose-500 border-rose-500/20 hover:bg-rose-500/10 rounded-xl px-3"
-            >
-              Vaciar
-            </Button>
-            <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-              <Button
-                onClick={handleShare}
-                className="text-xs font-bold rounded-xl gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white"
-              >
-                <Share2 className="w-3.5 h-3.5" />
-                Compartir
-              </Button>
-              <Button
-                onClick={handleCopy}
-                variant="outline"
-                className="text-xs font-bold rounded-xl gap-1.5"
-              >
-                {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-                {copied ? "¡Copiado!" : "Copiar"}
-              </Button>
-              <Button
-                onClick={onClose}
-                className="text-xs font-bold rounded-xl bg-foreground text-background px-4"
-              >
-                Listo
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// Subcomponent: State Log Modal (Registrar estado actual)
-function StateLogModal({
-  onClose,
-  mood,
-  setMood,
-  hunger,
-  setHunger,
-  energy,
-  setEnergy,
-  onSave,
-}: {
-  onClose: () => void;
-  mood: number;
-  setMood: (val: number) => void;
-  hunger: number;
-  setHunger: (val: number) => void;
-  energy: number;
-  setEnergy: (val: number) => void;
-  onSave: () => void;
-}) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="w-full max-w-sm bg-card border border-border rounded-[2rem] shadow-2xl flex flex-col overflow-hidden relative">
-        <div className="px-6 pt-6 pb-4 flex justify-between items-center bg-card border-b border-border/40">
-          <div>
-            <span className="text-[10px] text-muted-foreground/80 font-bold uppercase tracking-wider block mb-0.5">
-              Autoconocimiento & Salud
-            </span>
-            <h3 className="text-base font-bold text-foreground flex items-center gap-2">
-              <span>Registrar Estado Actual</span>
-              <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
-            </h3>
-          </div>
-          <button 
-            onClick={onClose} 
-            className="p-2 rounded-full bg-secondary/50 hover:bg-secondary transition-colors cursor-pointer"
-          >
-            <X className="w-4 h-4 text-muted-foreground" />
-          </button>
-        </div>
-
-        <div className="p-6 space-y-6">
-          <p className="text-xs text-muted-foreground font-medium">Ajusta los indicadores para registrar tu nivel de calma, saciedad y energía de hoy.</p>
-          
-          <div className="space-y-4">
-            <CustomSlider
-              value={mood}
-              onChange={setMood}
-              labelLeft="Ansioso"
-              labelRight="Calmo"
-              colorClass="from-[#46e8f5]/30 via-[#46e8f5]/70 to-[#46e8f5]"
-            />
-            <CustomSlider
-              value={hunger}
-              onChange={setHunger}
-              labelLeft="Hambriento"
-              labelRight="Saciado"
-              colorClass="from-[#8ee853]/30 via-[#8ee853]/70 to-[#8ee853]"
-            />
-            <CustomSlider
-              value={energy}
-              onChange={setEnergy}
-              labelLeft="Cansado"
-              labelRight="Enérgico"
-              colorClass="from-[#ff7b7c]/30 via-[#ff7b7c]/70 to-[#ff7b7c]"
-            />
-          </div>
-
+        <div className="pt-3 border-t border-border/40 flex items-center justify-end gap-2">
+          <Button variant="outline" onClick={onClose} className="rounded-xl font-semibold">
+            Cancelar
+          </Button>
           <Button
-            onClick={onSave}
-            className="w-full rounded-xl h-12 text-sm font-bold bg-foreground text-background hover:opacity-90 transition-all shadow-md cursor-pointer mt-2"
+            onClick={handleConfirmSave}
+            disabled={!analyzed}
+            className="rounded-xl font-bold bg-foreground text-background hover:opacity-90 disabled:opacity-50"
           >
-            Guardar Registro
+            Guardar en mi Diario
           </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
-// Subcomponent: Custom Slider
-function CustomSlider({ value, onChange, labelLeft, labelRight, colorClass }: any) {
-  const handleSliderClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const pct = Math.round((x / rect.width) * 100);
-    onChange(Math.max(0, Math.min(100, pct)));
-  };
-
-  return (
-    <div className="space-y-2">
-      <div className="flex justify-between text-xs text-muted-foreground tracking-wide font-bold uppercase select-none">
-        <span>{labelLeft}</span>
-        <span className="text-foreground">{labelRight}</span>
-      </div>
-      <div 
-        onClick={handleSliderClick}
-        className="relative h-12 bg-slate-100 dark:bg-slate-900/60 rounded-xl overflow-hidden group cursor-pointer border border-border select-none flex items-center"
-      >
-        <div 
-          className={`absolute top-0 left-0 h-full bg-gradient-to-r ${colorClass} rounded-xl transition-all duration-300`} 
-          style={{ width: `${value}%` }}
-        />
-        <div 
-          className="absolute top-1/2 -translate-y-1/2 w-1.5 h-6 bg-white border border-slate-300 dark:border-slate-700 rounded-full transform -translate-x-1/2 transition-all duration-300 cursor-col-resize shadow-sm"
-          style={{ left: `${value}%` }}
-        />
-      </div>
-    </div>
-  );
-}
-
-// Subcomponent: Sleep Log Modal (Diseño fiel a la referencia)
-function SleepLogModal({
-  onClose,
-  onSave,
-}: {
+// Subcomponent: Shake For AI Modal (Asistente Multimodal 🥤)
+interface ShakeForAiModalProps {
   onClose: () => void;
-  onSave: (data: {
-    hours: number;
-    minutes: number;
-    bedtime: string;
-    wakeTime: string;
-    quality: string;
-    score: number;
-    factors: string[];
-  }) => void;
-}) {
-  const [bedtime, setBedtime] = useState("23:00");
-  const [wakeTime, setWakeTime] = useState("09:00");
-  const [is24h, setIs24h] = useState(false);
-  const [quality, setQuality] = useState("Reparador");
-  const [selectedFactors, setSelectedFactors] = useState<string[]>(["Magnesio", "Habitación fresca"]);
+  onSave: (blendData: { title: string; img: string; desc: string; coachFeedback: string; tag: string }) => void;
+}
 
-  const calculateDuration = () => {
-    try {
-      const [bH, bM] = bedtime.split(":").map(Number);
-      const [wH, wM] = wakeTime.split(":").map(Number);
-      let bMins = bH * 60 + bM;
-      let wMins = wH * 60 + wM;
-      if (wMins <= bMins) wMins += 24 * 60;
-      const diffMins = wMins - bMins;
-      const h = Math.floor(diffMins / 60);
-      const m = diffMins % 60;
-      return { hours: h, minutes: m, diffMins };
-    } catch (e) {
-      return { hours: 10, minutes: 0, diffMins: 600 };
+function ShakeForAiModal({ onClose, onSave }: ShakeForAiModalProps) {
+  const [activeShakeTab, setActiveShakeTab] = useState<"nutricion" | "workout" | "clases" | "chat">("nutricion");
+  const [profileData, setProfileData] = useState<any>(null);
+  const [dietData, setDietData] = useState<any>(null);
+  const [chatPrompt, setChatPrompt] = useState("");
+  const [chatResponse, setChatResponse] = useState<string | null>(null);
+  const [isThinking, setIsThinking] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const p = JSON.parse(localStorage.getItem("shakerfy_user_profile_edit") || "{}");
+      const d = JSON.parse(localStorage.getItem("shakerfy_diet_preferences") || "{}");
+      setProfileData(p);
+      setDietData(d);
     }
+  }, []);
+
+  const suggestionStyle = dietData?.suggestionStyle || "recetas";
+  const userFoods: string[] = dietData?.selectedFoods || ["Pollo", "Camote", "Aguacate", "Huevos", "Avena", "Banano", "Atún", "Arroz integral"];
+
+  const proteinItem = userFoods.find(f => f.toLowerCase().includes("pollo") || f.toLowerCase().includes("huevo") || f.toLowerCase().includes("atún") || f.toLowerCase().includes("pescado") || f.toLowerCase().includes("carne")) || "Pechuga de Pollo";
+  const carbItem = userFoods.find(f => f.toLowerCase().includes("camote") || f.toLowerCase().includes("arroz") || f.toLowerCase().includes("avena") || f.toLowerCase().includes("papa") || f.toLowerCase().includes("quinoa")) || "Camote horneado";
+  const fatItem = userFoods.find(f => f.toLowerCase().includes("aguacate") || f.toLowerCase().includes("palta") || f.toLowerCase().includes("nueces") || f.toLowerCase().includes("aceite") || f.toLowerCase().includes("maní")) || "Aguacate / Palta";
+
+  const goalText = profileData?.goal === "musculo" ? "Hipertrofia & Síntesis Proteica" : profileData?.goal === "perder_peso" ? "Perder Grasa & Saciedad Sostenida" : "Forma Física & Balance Biológico";
+
+  const isRecipe = suggestionStyle === "recetas";
+  const title = isRecipe ? `Bowl Proteico de ${proteinItem} con ${carbItem}` : `Recarga Nutricional de Alacena`;
+  const img = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80";
+
+  const desc = isRecipe
+    ? `Ingredientes de tu alacena: ${proteinItem}, ${carbItem} y ${fatItem}. Receta rápida en 10 min.`
+    : `1 Palma de ${proteinItem}, 1 Puño de ${carbItem} y 1 Pulgar de ${fatItem}.`;
+
+  const coachFeedback = isRecipe
+    ? `⚡ AI Coach: Triangulación perfecta para tu objetivo (${goalText}). Pasos rápidos: 1. Sellar ${proteinItem} a la plancha. 2. Acompañar con ${carbItem} al vapor. 3. Añadir lonchas de ${fatItem}.`
+    : `⚡ AI Coach: Proporciones de mano ideales para tu objetivo (${goalText}). Combina ${proteinItem} (proteína magra) con ${carbItem} (glucógeno celular) y ${fatItem} (grasas saludables).`;
+
+  const tag = isRecipe ? "Receta Rápida de Alacena" : "Solo Ingredientes (Porciones de Mano)";
+
+  const handleSave = () => {
+    onSave({ title, img, desc, coachFeedback, tag });
+    onClose();
   };
 
-  const { hours, minutes, diffMins } = calculateDuration();
-
-  const computeTrackPositions = () => {
-    try {
-      const [bH, bM] = bedtime.split(":").map(Number);
-      const startMins = bH * 60 + bM;
-      const startTimelineMins = 20 * 60; // 8 PM (20:00)
-      let offsetMins = startMins - startTimelineMins;
-      if (offsetMins < 0) offsetMins += 24 * 60;
-      const leftPct = Math.max(0, Math.min(95, (offsetMins / (24 * 60)) * 100));
-      const widthPct = Math.max(5, Math.min(100 - leftPct, (diffMins / (24 * 60)) * 100));
-      return { leftPct, widthPct };
-    } catch (e) {
-      return { leftPct: 12.5, widthPct: 41.6 };
-    }
-  };
-
-  const { leftPct, widthPct } = computeTrackPositions();
-
-  const trackRef = React.useRef<HTMLDivElement>(null);
-  const [activeDrag, setActiveDrag] = useState<"start" | "end" | null>(null);
-
-  const pctToTimeStr = (pct: number) => {
-    const clamped = Math.max(0, Math.min(100, pct));
-    const offsetMins = (clamped / 100) * 1440;
-    const snappedOffset = Math.round(offsetMins / 15) * 15;
-    const actualMins = (20 * 60 + snappedOffset) % 1440;
-    const h = Math.floor(actualMins / 60) % 24;
-    const m = actualMins % 60;
-    return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
-  };
-
-  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>, handle?: "start" | "end") => {
-    if (!trackRef.current) return;
-    const rect = trackRef.current.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const clickPct = (clickX / rect.width) * 100;
-
-    let target = handle;
-    if (!target) {
-      const distStart = Math.abs(clickPct - leftPct);
-      const distEnd = Math.abs(clickPct - (leftPct + widthPct));
-      target = distStart <= distEnd ? "start" : "end";
-    }
-
-    setActiveDrag(target);
-    const newTime = pctToTimeStr(clickPct);
-    if (target === "start") setBedtime(newTime);
-    else setWakeTime(newTime);
-    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
-  };
-
-  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!activeDrag || !trackRef.current) return;
-    const rect = trackRef.current.getBoundingClientRect();
-    const moveX = e.clientX - rect.left;
-    const movePct = (moveX / rect.width) * 100;
-    const newTime = pctToTimeStr(movePct);
-    if (activeDrag === "start") setBedtime(newTime);
-    else setWakeTime(newTime);
-  };
-
-  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (activeDrag) {
-      (e.target as HTMLElement).releasePointerCapture?.(e.pointerId);
-      setActiveDrag(null);
-    }
-  };
-
-  const formatDisplayTime = (timeStr: string) => {
-    if (!timeStr) return { num: "11", ampm: "PM" };
-    const [h, m] = timeStr.split(":").map(Number);
-    if (is24h) {
-      return { num: `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`, ampm: "HRS" };
-    }
-    const ampm = h >= 12 ? "PM" : "AM";
-    let hour12 = h % 12;
-    if (hour12 === 0) hour12 = 12;
-    const num = m > 0 ? `${hour12}:${m.toString().padStart(2, "0")}` : `${hour12}`;
-    return { num, ampm };
-  };
-
-  const bedDisplay = formatDisplayTime(bedtime);
-  const wakeDisplay = formatDisplayTime(wakeTime);
-
-  const handleToggleFactor = (factor: string) => {
-    setSelectedFactors((prev) =>
-      prev.includes(factor) ? prev.filter((f) => f !== factor) : [...prev, factor]
-    );
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleAskAi = (e: React.FormEvent) => {
     e.preventDefault();
-    const totalH = hours + minutes / 60;
-    const score = Math.min(
-      100,
-      Math.max(
-        40,
-        Math.round((totalH / 8) * 90 + (quality === "Reparador" ? 10 : quality === "Levemente fragmentado" ? 0 : -15))
-      )
-    );
-    onSave({
-      hours,
-      minutes,
-      bedtime,
-      wakeTime,
-      quality,
-      score,
-      factors: selectedFactors,
-    });
+    if (!chatPrompt.trim()) return;
+    setIsThinking(true);
+    setTimeout(() => {
+      setIsThinking(false);
+      setChatResponse(`💡 AI Coach: Para tu consulta sobre "${chatPrompt}", te recomendamos enfocar en descanso activo, mantener la hidratación en Nivel 1-2 (Armstrong) y priorizar alimentos con proteína de alto valor biológico de tu alacena activa (${proteinItem}, ${carbItem}).`);
+    }, 1000);
   };
-
-  const factorOptions = [
-    "Magnesio",
-    "Habitación fresca",
-    "Sin pantallas pre-sueño",
-    "Cafeína tardía",
-    "Cena abundante",
-  ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="w-full max-w-md bg-card border border-border rounded-[2.2rem] shadow-2xl flex flex-col overflow-hidden relative max-h-[92vh] text-foreground">
-        
-        {/* Top Sheet Handle */}
-        <div className="w-12 h-1 bg-secondary/80 rounded-full mx-auto mt-3" />
-
-        {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 pt-3 pb-4 border-b border-border/40">
-          <div className="flex items-center gap-2">
-            <div className="flex items-baseline gap-1">
-              <span className="text-lg font-black tracking-tight text-foreground">sleep</span>
-              <span className="text-xs font-bold text-muted-foreground/80">timings</span>
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-lg rounded-3xl p-6 sm:p-8 border border-border bg-card max-h-[90vh] overflow-y-auto custom-scrollbar">
+        <DialogHeader className="pb-3 border-b border-border/40">
+          <DialogTitle className="text-lg font-bold flex items-center justify-between text-foreground">
+            <div className="flex items-center gap-2">
+              <Zap className="w-5 h-5 text-amber-500 fill-amber-500" />
+              <span>Shake AI — Asistente Inteligente 🥤</span>
             </div>
-            <span className="text-muted-foreground/30 font-light">|</span>
-            <span className="text-xs font-semibold text-muted-foreground">when did you sleep last night?</span>
-          </div>
+            <Badge variant="outline" className="text-[10px] font-extrabold border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400">
+              Multimodal 4 en 1
+            </Badge>
+          </DialogTitle>
+          <DialogDescription className="text-xs text-muted-foreground pt-1">
+            Triangulación instantánea de nutrición, rutina muscular, clases en gimnasio y consulta directa.
+          </DialogDescription>
+        </DialogHeader>
+
+        {/* Sub-tab Navigation */}
+        <div className="grid grid-cols-4 gap-1 p-1 rounded-2xl bg-secondary/60 border border-border/60 text-[11px] font-bold text-center">
           <button
             type="button"
-            onClick={onClose}
-            className="w-7 h-7 rounded-full border border-border/60 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors cursor-pointer"
+            onClick={() => setActiveShakeTab("nutricion")}
+            className={cn("py-2 rounded-xl transition cursor-pointer", activeShakeTab === "nutricion" ? "bg-card text-foreground shadow-xs font-black" : "text-muted-foreground hover:text-foreground")}
           >
-            <X className="w-4 h-4" />
+            🥤 Nutrición
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveShakeTab("workout")}
+            className={cn("py-2 rounded-xl transition cursor-pointer", activeShakeTab === "workout" ? "bg-card text-foreground shadow-xs font-black" : "text-muted-foreground hover:text-foreground")}
+          >
+            🏋️ Workout
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveShakeTab("clases")}
+            className={cn("py-2 rounded-xl transition cursor-pointer", activeShakeTab === "clases" ? "bg-card text-foreground shadow-xs font-black" : "text-muted-foreground hover:text-foreground")}
+          >
+            📅 Clases
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveShakeTab("chat")}
+            className={cn("py-2 rounded-xl transition cursor-pointer", activeShakeTab === "chat" ? "bg-card text-foreground shadow-xs font-black" : "text-muted-foreground hover:text-foreground")}
+          >
+            💬 Consultar
           </button>
         </div>
 
-        {/* Scrollable Content */}
-        <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar">
-
-          {/* Dual Readout Section (Sleep time | Wake time) */}
-          <div className="grid grid-cols-2 gap-4 items-center relative py-1">
-            {/* Left: Sleep Time */}
-            <div className="text-center space-y-1">
-              <div className="flex items-center justify-center gap-1.5 text-muted-foreground/80 text-[11px] font-bold">
-                <Bed className="w-3.5 h-3.5" />
-                <span>Sleep time</span>
-              </div>
-              <div className="flex items-baseline justify-center gap-1">
-                <span className="text-4xl font-black tracking-tight text-foreground">{bedDisplay.num}</span>
-                <span className="text-xs font-bold uppercase text-muted-foreground">{bedDisplay.ampm}</span>
-              </div>
-            </div>
-
-            {/* Vertical Divider */}
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-12 w-[1px] bg-border/60" />
-
-            {/* Right: Wake Time */}
-            <div className="text-center space-y-1">
-              <div className="flex items-center justify-center gap-1.5 text-muted-foreground/80 text-[11px] font-bold">
-                <AlarmClock className="w-3.5 h-3.5" />
-                <span>Wake time</span>
-              </div>
-              <div className="flex items-baseline justify-center gap-1">
-                <span className="text-4xl font-black tracking-tight text-foreground">{wakeDisplay.num}</span>
-                <span className="text-xs font-bold uppercase text-muted-foreground">{wakeDisplay.ampm}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Dynamic Duration Label */}
-          <div className="text-center">
-            <span className="text-xs font-bold text-muted-foreground/80">
-              ~{hours} hours {minutes > 0 ? `and ${minutes} mins ` : ""}of sleep
-            </span>
-          </div>
-
-          {/* Visual 24-Hour Interactive Timeline Bar */}
-          <div className="space-y-2 pt-2">
-            <div
-              ref={trackRef}
-              onPointerDown={(e) => handlePointerDown(e)}
-              onPointerMove={handlePointerMove}
-              onPointerUp={handlePointerUp}
-              className="relative h-12 bg-secondary/40 rounded-xl border border-border/60 p-1 flex items-center overflow-hidden select-none cursor-pointer touch-none"
-            >
-              {/* Background Tick Marks */}
-              <div className="absolute inset-x-3 top-0 bottom-0 flex justify-between items-center pointer-events-none opacity-30">
-                {[0, 1, 2, 3, 4, 5, 6].map((i) => (
-                  <div key={i} className="h-3 w-[1px] bg-foreground/60" />
-                ))}
+        <div className="py-3 space-y-4">
+          {/* TAB 1: NUTRICIÓN & ALACENA */}
+          {activeShakeTab === "nutricion" && (
+            <div className="space-y-3 animate-in fade-in duration-200">
+              <div className="grid grid-cols-2 gap-2 text-[11px]">
+                <div className="p-2.5 rounded-xl bg-secondary/60 border border-border/50">
+                  <span className="text-muted-foreground block text-[10px] uppercase font-bold">Objetivo Biológico:</span>
+                  <span className="font-bold text-foreground">{goalText}</span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-secondary/60 border border-border/50">
+                  <span className="text-muted-foreground block text-[10px] uppercase font-bold">Formato Elegido:</span>
+                  <span className="font-bold text-foreground">{isRecipe ? "📖 Recetas Paso a Paso" : "🖐️ Solo Ingredientes (Mano)"}</span>
+                </div>
               </div>
 
-              {/* Active Sleep Range Bar */}
-              <div
-                className="absolute top-1 bottom-1 rounded-lg bg-gradient-to-r from-indigo-400 via-indigo-500 to-purple-400 dark:from-indigo-500 dark:to-purple-600 shadow-sm flex items-center justify-between border border-indigo-400/40 transition-all duration-75"
-                style={{
-                  left: `${leftPct}%`,
-                  width: `${widthPct}%`,
-                }}
-              >
-                {/* Left Start Handle */}
-                <div
-                  onPointerDown={(e) => {
-                    e.stopPropagation();
-                    handlePointerDown(e, "start");
-                  }}
-                  className="w-3 h-full flex items-center justify-center cursor-col-resize group z-20"
-                >
-                  <div className="w-1.5 h-6 bg-white border border-slate-300 dark:border-slate-700 rounded-full shadow-sm group-hover:scale-110 transition-all" />
+              <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 overflow-hidden space-y-3 p-4">
+                <div className="relative h-36 w-full rounded-xl overflow-hidden">
+                  <img src={img} alt={title} className="w-full h-full object-cover" />
+                  <div className="absolute top-2 right-2">
+                    <Badge className="bg-amber-500 text-white text-[10px] font-extrabold">{tag}</Badge>
+                  </div>
                 </div>
 
-                {/* Right End Handle */}
-                <div
-                  onPointerDown={(e) => {
-                    e.stopPropagation();
-                    handlePointerDown(e, "end");
-                  }}
-                  className="w-3 h-full flex items-center justify-center cursor-col-resize group z-20"
-                >
-                  <div className="w-1.5 h-6 bg-white border border-slate-300 dark:border-slate-700 rounded-full shadow-sm group-hover:scale-110 transition-all" />
+                <div className="space-y-1">
+                  <h4 className="text-sm font-bold text-foreground">{title}</h4>
+                  <p className="text-xs text-muted-foreground">{desc}</p>
+                </div>
+
+                <div className="p-3 rounded-xl bg-card border border-border/60 text-xs space-y-1">
+                  <div className="font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5" /> Sugerencia AI Coach:
+                  </div>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">{coachFeedback}</p>
                 </div>
               </div>
             </div>
+          )}
 
-            {/* Timeline Tick Labels */}
-            <div className="flex justify-between text-[9px] font-bold text-muted-foreground/60 px-2 uppercase select-none">
-              <span>8 PM</span>
-              <span>12 AM</span>
-              <span>4 AM</span>
-              <span>8 AM</span>
-              <span>12 PM</span>
-              <span>4 PM</span>
-              <span>8 PM</span>
-            </div>
-          </div>
+          {/* TAB 2: WORKOUT & MÚSCULOS */}
+          {activeShakeTab === "workout" && (
+            <div className="space-y-3 animate-in fade-in duration-200">
+              <div className="p-4 rounded-2xl border border-indigo-500/30 bg-indigo-500/5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <Activity className="w-4 h-4 text-indigo-500" /> Triangulación Muscular de Hoy
+                  </h4>
+                  <Badge className="bg-indigo-500 text-white text-[10px] font-extrabold">Listos para Entrenar</Badge>
+                </div>
 
-          {/* Quality & Factors Selectors */}
-          <div className="space-y-3 pt-1">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Calidad Percibida</span>
-              <div className="flex gap-1.5">
-                {[
-                  { label: "Reparador", val: "Reparador" },
-                  { label: "Fragmentado", val: "Levemente fragmentado" },
-                  { label: "Insuficiente", val: "Insuficiente" },
-                ].map((q) => (
-                  <button
-                    key={q.val}
-                    type="button"
-                    onClick={() => setQuality(q.val)}
-                    className={`px-2.5 py-1 rounded-xl text-[10px] font-bold border transition-all cursor-pointer ${
-                      quality === q.val
-                        ? "bg-indigo-500/15 border-indigo-500/40 text-foreground"
-                        : "bg-secondary/30 border-border/40 text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {q.label}
-                  </button>
-                ))}
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="p-2.5 rounded-xl bg-card border border-emerald-500/30">
+                    <span className="text-[10px] text-emerald-600 font-bold uppercase block">100% Recuperados</span>
+                    <span className="font-bold text-foreground">Deltoides, Pecho, Bíceps</span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-card border border-rose-500/30">
+                    <span className="text-[10px] text-rose-500 font-bold uppercase block">En Descanso (35%)</span>
+                    <span className="font-bold text-foreground">Cuádriceps, Gemelos</span>
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  💡 <strong>Recomendación Shake AI:</strong> Entrenamiento enfocado en <strong>Tren Superior (Empuje / Jalón)</strong> durante 45 minutos. Excluimos piernas hoy para prevenir sobrecarga tisular.
+                </p>
               </div>
             </div>
+          )}
 
-            <div className="space-y-1.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">Factores del Descanso</span>
-              <div className="flex flex-wrap gap-1.5">
-                {factorOptions.map((factor) => {
-                  const isSelected = selectedFactors.includes(factor);
-                  return (
-                    <button
-                      key={factor}
-                      type="button"
-                      onClick={() => handleToggleFactor(factor)}
-                      className={`px-2.5 py-1 rounded-full text-[10px] font-bold border transition-all cursor-pointer ${
-                        isSelected
-                          ? "bg-foreground text-background border-foreground"
-                          : "bg-secondary/30 border-border/60 text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      {isSelected ? "✓ " : ""}{factor}
-                    </button>
-                  );
-                })}
+          {/* TAB 3: CLASES RECOMENDADAS */}
+          {activeShakeTab === "clases" && (
+            <div className="space-y-3 animate-in fade-in duration-200">
+              <div className="p-4 rounded-2xl border border-purple-500/30 bg-purple-500/5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <QrCode className="w-4 h-4 text-purple-500" /> Clase Recomendada en Gimnasios
+                  </h4>
+                  <Badge className="bg-purple-500 text-white text-[10px] font-extrabold">Cupos Disponibles</Badge>
+                </div>
+
+                <div className="p-3 rounded-xl bg-card border border-border/60 space-y-1 text-xs">
+                  <div className="font-bold text-foreground">Calistenia & Movilidad Funcional</div>
+                  <div className="text-[11px] text-muted-foreground">Studio Pulse Belgrano • Hoy 18:30 hs (Prof. Lucas)</div>
+                </div>
+
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  💡 Ideal para tu ventana horaria de la tarde previa al corte solar de cafeína.
+                </p>
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Footer Bar: Format Toggle & Action Button */}
-          <div className="flex items-center justify-between pt-3 border-t border-border/40">
-            <button
-              type="button"
-              onClick={() => setIs24h(!is24h)}
-              className="px-3.5 py-2.5 rounded-2xl bg-secondary/50 hover:bg-secondary text-[11px] font-bold text-muted-foreground hover:text-foreground border border-border/60 transition-all cursor-pointer"
-            >
-              {is24h ? "Formato 12h" : "Formato 24h"}
-            </button>
+          {/* TAB 4: CHAT DIRECTO AL AI COACH */}
+          {activeShakeTab === "chat" && (
+            <div className="space-y-3 animate-in fade-in duration-200">
+              <form onSubmit={handleAskAi} className="space-y-3">
+                <label className="text-xs font-bold text-foreground block">Consulta lo que necesites a tu AI Coach:</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={chatPrompt}
+                    onChange={(e) => setChatPrompt(e.target.value)}
+                    placeholder="Ej. ¿Qué comer después de entrenar pesas?"
+                    className="flex-1 rounded-xl h-10 border border-border bg-background px-3 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                  <Button type="submit" disabled={isThinking} className="rounded-xl font-bold bg-foreground text-background text-xs px-4">
+                    {isThinking ? "..." : "Preguntar"}
+                  </Button>
+                </div>
+              </form>
 
-            <button
-              type="submit"
-              onClick={handleSubmit}
-              className="h-11 px-6 rounded-2xl bg-foreground text-background hover:opacity-90 font-extrabold text-xs flex items-center gap-2 shadow-lg transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <ArrowUp className="w-4 h-4 stroke-[2.5]" />
-              <span>Guardar descanso</span>
-            </button>
-          </div>
-
+              {chatResponse && (
+                <div className="p-3.5 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 text-xs text-foreground leading-relaxed animate-in fade-in">
+                  {chatResponse}
+                </div>
+              )}
+            </div>
+          )}
         </div>
-      </div>
-    </div>
+
+        <div className="pt-3 border-t border-border/40 flex items-center justify-end gap-2">
+          <Button variant="outline" onClick={onClose} className="rounded-xl font-semibold">
+            Cerrar
+          </Button>
+          {activeShakeTab === "nutricion" && (
+            <Button onClick={handleSave} className="rounded-xl font-bold bg-amber-500 hover:bg-amber-600 text-white flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4" />
+              <span>Guardar en mi Diario</span>
+            </Button>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
+
+
+
