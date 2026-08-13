@@ -44,3 +44,11 @@
 ## 7. 📜 Scrollbars Personalizadas (`custom-scrollbar`)
 * Utilizar la clase `.custom-scrollbar` (barra de 7px, redondeada *pill radius* `9999px`, pista transparente) y `overflow-hidden` en el contenedor para evitar scrollbars toscas del navegador.
 
+## 8. 🧠 Reglas de IA Ética, Responsable y Nutricional (Shakerfy AI)
+* **Reconocimiento Exclusivo de "Shake for AI":** La acción de agitar el dispositivo (*Shake for AI*) está reservada **exclusivamente** para generar sugerencias nutricionales contextuales del momento.
+* **Integración del Perfil Biométrico:** Los algoritmos deben calcular los requerimientos basales tomando estrictamente las variables del perfil (Edad, Sexo, Altura, Peso, Nivel de Actividad y Objetivo Biológico).
+* **Contexto Temporal e Hitos Solares (Latitud/Longitud):** Las sugerencias calculan astronómicamente la declinación solar y el ángulo horario según la latitud y longitud del usuario (posicionando con precisión la fase solar: *Pre-Amanecer, Post-Amanecer, Cenit/Mediodía Solar, Ocaso con Corte de Cafeína, y Ventana Regenerativa Nocturna*).
+* **Respeto a la Alacena y Preferencias Reales (Zero-Waste):** La IA únicamente sugiere combinaciones basadas en los alimentos marcados como activos en la alacena del usuario y bajo el formato de su elección (Recetas paso a paso o Porciones de mano).
+* **Nutrición Consciente sin Caloric-Counting Punitivo:** La IA jamás muestra números calóricos restrictivos ni genera ansiedad alimentaria; comunica la recomendación a través de **Porciones de Mano (Palma, Puño, Pulgar, Cuenco)** y los **7 Vectores Nutricionales** (Procesamiento, Fibra, Proteína, Azúcar, Grasas, Granos, Sodio).
+
+

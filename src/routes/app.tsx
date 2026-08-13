@@ -3596,13 +3596,27 @@ function DiarioTab() {
         try {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            const validOnly = parsed.filter((item: any) => item && item.type === "activity");
+            const validOnly = parsed
+              .map((item: any) => item.type === "activity" ? { ...item, kcal: 0 } : item)
+              .filter((item: any) => item && (item.type === "activity" || item.type === "hydration" || item.type === "meal" || item.type === "shake_ai"));
             if (validOnly.length > 0) return validOnly;
           }
         } catch (e) {}
       }
     }
     return [
+      {
+        id: "hydration-demo",
+        date: "2026-07-15",
+        time: "08:15 AM",
+        title: "Registro de Hidratación (Armstrong)",
+        subtitle: "Chequeo Matutino / Hidratación",
+        type: "hydration",
+        level: 2,
+        desc: "Nivel 2 — Amarillo Pálido (Hidratación Saludable)",
+        tag: "Nivel 2 Armstrong",
+        coachFeedback: "💧 Consejo Fisiológico: Estado hídrico ideal para el rendimiento físico y deportivo continuo. Mantén sorbos constantes.",
+      },
       {
         id: "1",
         date: "2026-07-15",
@@ -3611,7 +3625,7 @@ function DiarioTab() {
         subtitle: "Registro de Actividad",
         type: "activity",
         img: null,
-        kcal: 240,
+        kcal: 0,
         tag: "185 Pts MET",
         coachFeedback: "Registraste 30 min de Entrenamiento de Fuerza (intensidad Alta). Sumaste 185 puntos MET a tu curva de actividad diaria. ¡Gran trabajo!",
       },
@@ -3623,7 +3637,7 @@ function DiarioTab() {
         subtitle: "Registro de Actividad",
         type: "activity",
         img: null,
-        kcal: 180,
+        kcal: 0,
         tag: "135 Pts MET",
         coachFeedback: "Registraste 45 min de Caminata (intensidad Media). Sumaste 135 puntos MET a tu curva de actividad diaria.",
       },
@@ -3635,7 +3649,7 @@ function DiarioTab() {
         subtitle: "Registro de Actividad",
         type: "activity",
         img: null,
-        kcal: 310,
+        kcal: 0,
         tag: "210 Pts MET",
         coachFeedback: "Completaste tu rutina personalizada de musculación generada por IA. Excelente estímulo de hipertrofia sin sobrecargar zonas fatigadas.",
       }
@@ -3695,7 +3709,7 @@ function DiarioTab() {
       subtitle: "Rutina Inteligente",
       type: "activity",
       img: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=600&q=80",
-      kcal: 380,
+      kcal: 0,
       tag: "185 Pts MET",
       coachFeedback: "Completaste tu rutina personalizada de musculación generada por la IA. Excelente técnica y volumen de trabajo. Tus niveles de recuperación muscular se han actualizado."
     };
@@ -3707,6 +3721,34 @@ function DiarioTab() {
   const [isFabOpen, setIsFabOpen] = useState(false);
   const [activeModal, setActiveModal] = useState<string>("none");
   const [isShaking, setIsShaking] = useState(false);
+  const [activeHeaderSlide, setActiveHeaderSlide] = useState<0 | 1>(0);
+  const [dailyCardMode, setDailyCardMode] = useState<"consumido" | "objetivo" | "faltante">("consumido");
+
+  const todayStr = useMemo(() => new Date().toISOString().split("T")[0], []);
+
+  const todayMeals = useMemo(() => {
+    return userTimelineItems.filter(item => item && item.type === "meal" && item.date === todayStr);
+  }, [userTimelineItems, todayStr]);
+
+  const consumedCalories = useMemo(() => {
+    if (todayMeals.length === 0) return 1850;
+    return todayMeals.reduce((acc, m) => acc + (m.overallScore ? m.overallScore * 350 : 450), 450);
+  }, [todayMeals]);
+
+  const consumedProtein = useMemo(() => {
+    if (todayMeals.length === 0) return 48;
+    return Math.round(consumedCalories * 0.12);
+  }, [consumedCalories, todayMeals]);
+
+  const consumedCarbs = useMemo(() => {
+    if (todayMeals.length === 0) return 210;
+    return Math.round((consumedCalories * 0.45) / 4);
+  }, [consumedCalories, todayMeals]);
+
+  const consumedFats = useMemo(() => {
+    if (todayMeals.length === 0) return 62;
+    return Math.round((consumedCalories * 0.25) / 9);
+  }, [consumedCalories, todayMeals]);
 
   const triggerShakeForAi = () => {
     setIsShaking(true);
@@ -3746,7 +3788,7 @@ function DiarioTab() {
   }, []);
 
   const timelineItems = React.useMemo(() => {
-    const processedUserItems = userTimelineItems.filter(item => item && (item.type === "activity" || item.type === "hydration" || item.type === "meal"));
+    const processedUserItems = userTimelineItems.filter(item => item && (item.type === "activity" || item.type === "hydration" || item.type === "meal" || item.type === "shake_ai"));
 
     return [...processedUserItems].sort((a, b) => {
       if (a.date !== b.date) {
@@ -3786,126 +3828,245 @@ function DiarioTab() {
 
       {subTab === "diario" && (
         <div className="space-y-6 animate-in fade-in duration-300">
-          {/* CARD 1: Racha de Actividad (Full Width, estilo Gestión del Sueño) */}
-          <div className="bg-card border border-border rounded-3xl p-5 sm:p-6 space-y-4 shadow-xs hover:-translate-y-1 hover:shadow-md transition-all flex flex-col justify-between w-full">
-            {/* Card Header */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-border/40 pb-3 gap-3">
-              <div className="flex items-center gap-2 flex-wrap">
-                <Flame className="w-4 h-4 text-amber-500 shrink-0" />
-                <div>
-                  <span className="text-[10px] text-muted-foreground/80 font-bold uppercase tracking-wider block mb-0.5">
-                    Hábitos & Movimiento
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-bold text-foreground">Racha de Actividad</h3>
-                    <span className="inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                      <Flame className="w-3 h-3 fill-amber-500 text-amber-500" />
-                      12 días
-                    </span>
+          {/* SLIDER CAROUSEL: CARD 1 (HOY - VENTANA ENERGÉTICA & MACROS) vs CARD 2 (7 DÍAS - RACHA METS) */}
+          <div className="space-y-3">
+            <div className="relative min-h-[260px] w-full">
+              {activeHeaderSlide === 0 ? (
+                /* CARD 1: VENTANA ENERGÉTICA & MACRONUTRIENTES DIARIA */
+                <div className="bg-card border border-border rounded-3xl p-5 sm:p-6 space-y-4 shadow-xs hover:-translate-y-1 hover:shadow-md transition-all flex flex-col justify-between w-full h-full animate-in fade-in slide-in-from-left-4 duration-300">
+                  {/* Main Energy Section (Calories + SVG Ring Gauge) */}
+                  <div 
+                    onClick={() => {
+                      setDailyCardMode(prev => prev === "consumido" ? "objetivo" : prev === "objetivo" ? "faltante" : "consumido");
+                    }}
+                    className="p-4 sm:p-5 rounded-2xl bg-secondary/30 border border-border/50 flex items-center justify-between gap-4 cursor-pointer hover:bg-secondary/40 transition-colors group"
+                  >
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground/80 block">
+                        {dailyCardMode === "consumido" ? "Calorías Consumidas Hoy" : dailyCardMode === "objetivo" ? "Rango Calórico Objetivo" : "Margen Faltante en Ventana"}
+                      </span>
+                      <div className="flex items-baseline gap-1.5">
+                        <h2 className="text-3xl sm:text-4xl font-black text-foreground tracking-tight">
+                          {dailyCardMode === "consumido" 
+                            ? `${consumedCalories}` 
+                            : dailyCardMode === "objetivo" 
+                            ? "2,100 — 2,400" 
+                            : `${Math.max(0, 2100 - consumedCalories)} — ${Math.max(0, 2400 - consumedCalories)}`}
+                        </h2>
+                        <span className="text-xs font-bold text-muted-foreground">kcal</span>
+                      </div>
+                    </div>
+
+                    {/* SVG Circular Ring Gauge for Calories */}
+                    <div className="relative w-20 h-20 shrink-0 flex items-center justify-center">
+                      <svg className="w-full h-full transform -rotate-90" viewBox="0 0 80 80">
+                        <circle cx="40" cy="40" r="34" className="stroke-secondary/80" strokeWidth="7" fill="transparent" />
+                        <circle
+                          cx="40"
+                          cy="40"
+                          r="34"
+                          className="stroke-amber-500 transition-all duration-700 ease-out"
+                          strokeWidth="7"
+                          strokeDasharray="213.6"
+                          strokeDashoffset={213.6 - (213.6 * Math.min(consumedCalories / 2250, 1))}
+                          strokeLinecap="round"
+                          fill="transparent"
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Flame className="w-6 h-6 text-amber-500 fill-amber-500/20" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3 Sub-Cards Grid: Proteína, Carbos, Grasas (Inspirado en la Imagen de Referencia) */}
+                  <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
+                    {/* Sub-card 1: Proteínas */}
+                    <div 
+                      onClick={() => setDailyCardMode(prev => prev === "consumido" ? "objetivo" : prev === "objetivo" ? "faltante" : "consumido")}
+                      className="p-3 sm:p-3.5 rounded-2xl bg-secondary/30 border border-border/50 flex flex-col justify-between items-center text-center space-y-2 cursor-pointer hover:bg-secondary/40 transition-colors group"
+                    >
+                      <div className="space-y-0.5 w-full">
+                        <span className="text-[14px] sm:text-base font-black text-foreground block">
+                          {dailyCardMode === "consumido" 
+                            ? `${consumedProtein}g` 
+                            : dailyCardMode === "objetivo" 
+                            ? "55-65g" 
+                            : `${Math.max(0, 55 - consumedProtein)}-${Math.max(0, 65 - consumedProtein)}g`}
+                        </span>
+                        <span className="text-[10px] font-bold text-muted-foreground/80 uppercase tracking-wider block">
+                          Proteínas
+                        </span>
+                      </div>
+
+                      {/* Ring Gauge for Protein */}
+                      <div className="relative w-11 h-11 shrink-0 flex items-center justify-center">
+                        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 48 48">
+                          <circle cx="24" cy="24" r="20" className="stroke-secondary/80" strokeWidth="5" fill="transparent" />
+                          <circle
+                            cx="24"
+                            cy="24"
+                            r="20"
+                            className="stroke-rose-500 transition-all duration-700 ease-out"
+                            strokeWidth="5"
+                            strokeDasharray="125.6"
+                            strokeDashoffset={125.6 - (125.6 * Math.min(consumedProtein / 60, 1))}
+                            strokeLinecap="round"
+                            fill="transparent"
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <Zap className="w-3.5 h-3.5 text-rose-500 fill-rose-500/20" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Sub-card 2: Carbohidratos */}
+                    <div 
+                      onClick={() => setDailyCardMode(prev => prev === "consumido" ? "objetivo" : prev === "objetivo" ? "faltante" : "consumido")}
+                      className="p-3 sm:p-3.5 rounded-2xl bg-secondary/30 border border-border/50 flex flex-col justify-between items-center text-center space-y-2 cursor-pointer hover:bg-secondary/40 transition-colors group"
+                    >
+                      <div className="space-y-0.5 w-full">
+                        <span className="text-[14px] sm:text-base font-black text-foreground block">
+                          {dailyCardMode === "consumido" 
+                            ? `${consumedCarbs}g` 
+                            : dailyCardMode === "objetivo" 
+                            ? "240-280g" 
+                            : `${Math.max(0, 240 - consumedCarbs)}-${Math.max(0, 280 - consumedCarbs)}g`}
+                        </span>
+                        <span className="text-[10px] font-bold text-muted-foreground/80 uppercase tracking-wider block">
+                          Carbos
+                        </span>
+                      </div>
+
+                      {/* Ring Gauge for Carbs */}
+                      <div className="relative w-11 h-11 shrink-0 flex items-center justify-center">
+                        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 48 48">
+                          <circle cx="24" cy="24" r="20" className="stroke-secondary/80" strokeWidth="5" fill="transparent" />
+                          <circle
+                            cx="24"
+                            cy="24"
+                            r="20"
+                            className="stroke-amber-500 transition-all duration-700 ease-out"
+                            strokeWidth="5"
+                            strokeDasharray="125.6"
+                            strokeDashoffset={125.6 - (125.6 * Math.min(consumedCarbs / 260, 1))}
+                            strokeLinecap="round"
+                            fill="transparent"
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <Wheat className="w-3.5 h-3.5 text-amber-500" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Sub-card 3: Grasas */}
+                    <div 
+                      onClick={() => setDailyCardMode(prev => prev === "consumido" ? "objetivo" : prev === "objetivo" ? "faltante" : "consumido")}
+                      className="p-3 sm:p-3.5 rounded-2xl bg-secondary/30 border border-border/50 flex flex-col justify-between items-center text-center space-y-2 cursor-pointer hover:bg-secondary/40 transition-colors group"
+                    >
+                      <div className="space-y-0.5 w-full">
+                        <span className="text-[14px] sm:text-base font-black text-foreground block">
+                          {dailyCardMode === "consumido" 
+                            ? `${consumedFats}g` 
+                            : dailyCardMode === "objetivo" 
+                            ? "70-80g" 
+                            : `${Math.max(0, 70 - consumedFats)}-${Math.max(0, 80 - consumedFats)}g`}
+                        </span>
+                        <span className="text-[10px] font-bold text-muted-foreground/80 uppercase tracking-wider block">
+                          Grasas
+                        </span>
+                      </div>
+
+                      {/* Ring Gauge for Fats */}
+                      <div className="relative w-11 h-11 shrink-0 flex items-center justify-center">
+                        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 48 48">
+                          <circle cx="24" cy="24" r="20" className="stroke-secondary/80" strokeWidth="5" fill="transparent" />
+                          <circle
+                            cx="24"
+                            cy="24"
+                            r="20"
+                            className="stroke-cyan-500 transition-all duration-700 ease-out"
+                            strokeWidth="5"
+                            strokeDasharray="125.6"
+                            strokeDashoffset={125.6 - (125.6 * Math.min(consumedFats / 75, 1))}
+                            strokeLinecap="round"
+                            fill="transparent"
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <Droplet className="w-3.5 h-3.5 text-cyan-500 fill-cyan-500/20" />
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <TooltipProvider>
-                  <ShadcnTooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        type="button"
-                        className="p-1 rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors shrink-0 flex items-center justify-center cursor-pointer border-0 bg-transparent"
-                      >
-                        <Info className="w-3.5 h-3.5 text-emerald-500" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" align="start" className="max-w-xs p-3.5 bg-card border border-border shadow-xl rounded-2xl text-xs space-y-2 text-left">
-                      <p className="font-bold text-foreground">Ciencia de la Racha MET</p>
-                      <p className="text-muted-foreground text-[11px] leading-relaxed">
-                        La OMS recomienda sumar al menos 150 Puntos MET diarios (Equivalentes Metabólicos). Calculamos un promedio ponderado de 7 días para mantener la constancia sin penalizar días de descanso programados.
-                      </p>
-                      <div className="pt-1.5 border-t border-border/60 text-[10px]">
-                        <Link
-                          to="/blog/$slug"
-                          params={{ slug: "la-ciencia-detras-de-la-racha-de-actividad-promedio-ponderado-de-7-dias-mets-y-adherencia-sostenible" }}
-                          className="text-amber-500 font-bold hover:underline flex items-center justify-between gap-1 group"
-                        >
-                          <span>📖 Leer evidencia sobre METs y hábitos</span>
-                          <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                        </Link>
-                      </div>
-                    </TooltipContent>
-                  </ShadcnTooltip>
-                </TooltipProvider>
-              </div>
+              ) : (
+                /* CARD 2: RACHA SEMANAL DE ACTIVIDAD METS (7 DÍAS) */
+                <div className="bg-card border border-border rounded-3xl p-5 sm:p-6 space-y-4 shadow-xs hover:-translate-y-1 hover:shadow-md transition-all flex flex-col justify-between w-full h-full animate-in fade-in slide-in-from-right-4 duration-300">
+                  {/* Stats Bar Explicativas */}
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="p-2.5 bg-secondary/30 border border-border/40 rounded-2xl flex flex-col justify-center">
+                      <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block mb-0.5">Promedio Diario</span>
+                      <span className="text-xs sm:text-sm font-black text-foreground">{avgActivityPoints} Pts</span>
+                      <span className="text-[9px] text-muted-foreground font-semibold">METs acumulados</span>
+                    </div>
+                    <div className="p-2.5 bg-secondary/30 border border-border/40 rounded-2xl flex flex-col justify-center">
+                      <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block mb-0.5">Meta OMS</span>
+                      <span className="text-xs sm:text-sm font-black text-emerald-500">{activityTargetPercent}%</span>
+                      <span className="text-[9px] text-muted-foreground font-semibold">de 150 Pts obj.</span>
+                    </div>
+                    <div className="p-2.5 bg-secondary/30 border border-border/40 rounded-2xl flex flex-col justify-center">
+                      <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block mb-0.5">Estado Racha</span>
+                      <span className="text-xs sm:text-sm font-black text-amber-500">12 Días</span>
+                      <span className="text-[9px] text-amber-500/80 font-bold">Racha Activa</span>
+                    </div>
+                  </div>
 
-              {/* Filtros de Tiempo (Pills) */}
-              <div className="flex items-center gap-1 bg-secondary/60 p-1 rounded-2xl border border-border/60 shrink-0 self-end sm:self-center">
-                {(["week", "month", "quarter"] as const).map((period) => (
-                  <button
-                    key={period}
-                    type="button"
-                    onClick={() => setActivityFilter(period)}
-                    className={`px-2.5 py-1 rounded-xl text-[10px] font-bold transition-all cursor-pointer ${
-                      activityFilter === period
-                        ? "bg-foreground text-background shadow-xs"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {period === "week" ? "Semana" : period === "month" ? "Mes" : "Trimestre"}
-                  </button>
-                ))}
-              </div>
+                  {/* AreaChart para la Racha de Actividad */}
+                  <div className="h-44 w-full pt-1">
+                    <ChartContainer config={activityChartConfig} className="h-full w-full">
+                      <AreaChart data={currentActivityHistory} margin={{ top: 12, right: 10, left: -20, bottom: 0 }}>
+                        <defs>
+                          <linearGradient id="activityAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.4} />
+                            <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" opacity={0.1} />
+                        <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={6} tick={{ fontSize: 10, fill: "currentColor", opacity: 0.7 }} />
+                        <YAxis domain={[100, 220]} ticks={[100, 130, 150, 180, 210]} tickLine={false} axisLine={false} tickMargin={4} tickFormatter={(v) => `${v} Pts`} tick={{ fontSize: 10, fill: "currentColor", opacity: 0.7 }} />
+                        <ReferenceLine y={150} stroke="#10b981" strokeDasharray="3 3" opacity={0.8} label={{ value: "Obj. 150 Pts", position: "insideTopRight", fill: "#10b981", fontSize: 9, fontWeight: "bold" }} />
+                        <ChartTooltip content={<ChartTooltipContent indicator="line" formatter={(value) => [`${value} Pts MET`, "Actividad"]} />} />
+                        <Area type="monotone" dataKey="puntos" stroke="#f59e0b" strokeWidth={2.5} fillOpacity={1} fill="url(#activityAreaGradient)" dot={{ r: 3.5, fill: "#f59e0b", strokeWidth: 0 }} activeDot={{ r: 5.5, strokeWidth: 0 }} />
+                      </AreaChart>
+                    </ChartContainer>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Stats Bar Explicativas */}
-            <div className="grid grid-cols-3 gap-2 text-center">
-              <div className="p-2.5 bg-secondary/30 border border-border/40 rounded-2xl flex flex-col justify-center">
-                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block mb-0.5">Promedio Diario</span>
-                <span className="text-xs sm:text-sm font-black text-foreground">{avgActivityPoints} Pts</span>
-                <span className="text-[9px] text-muted-foreground font-semibold">METs acumulados</span>
-              </div>
-              <div className="p-2.5 bg-secondary/30 border border-border/40 rounded-2xl flex flex-col justify-center">
-                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block mb-0.5">Meta OMS</span>
-                <span className="text-xs sm:text-sm font-black text-emerald-500">{activityTargetPercent}%</span>
-                <span className="text-[9px] text-muted-foreground font-semibold">de 150 Pts obj.</span>
-              </div>
-              <div className="p-2.5 bg-secondary/30 border border-border/40 rounded-2xl flex flex-col justify-center">
-                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block mb-0.5">Estado Racha</span>
-                <span className="text-xs sm:text-sm font-black text-amber-500">12 Días</span>
-                <span className="text-[9px] text-amber-500/80 font-bold">Racha Activa</span>
-              </div>
-            </div>
-
-            {/* AreaChart para la Racha de Actividad */}
-            <div className="h-44 w-full pt-1">
-              <ChartContainer config={activityChartConfig} className="h-full w-full">
-                <AreaChart data={currentActivityHistory} margin={{ top: 12, right: 10, left: -20, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="activityAreaGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.4} />
-                      <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" opacity={0.1} />
-                  <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={6} tick={{ fontSize: 10, fill: "currentColor", opacity: 0.7 }} />
-                  <YAxis domain={[100, 220]} ticks={[100, 130, 150, 180, 210]} tickLine={false} axisLine={false} tickMargin={4} tickFormatter={(v) => `${v} Pts`} tick={{ fontSize: 10, fill: "currentColor", opacity: 0.7 }} />
-                  <ReferenceLine y={150} stroke="#10b981" strokeDasharray="3 3" opacity={0.8} label={{ value: "Obj. 150 Pts", position: "insideTopRight", fill: "#10b981", fontSize: 9, fontWeight: "bold" }} />
-                  <ChartTooltip content={<ChartTooltipContent indicator="line" formatter={(value) => [`${value} Pts MET`, "Actividad"]} />} />
-                  <Area type="monotone" dataKey="puntos" stroke="#f59e0b" strokeWidth={2.5} fillOpacity={1} fill="url(#activityAreaGradient)" dot={{ r: 3.5, fill: "#f59e0b", strokeWidth: 0 }} activeDot={{ r: 5.5, strokeWidth: 0 }} />
-                </AreaChart>
-              </ChartContainer>
-            </div>
-
-            {/* Bottom Actions & Info */}
-            <div className="space-y-3 pt-1 border-t border-border/40">
-              <div className="flex flex-wrap justify-between items-center text-[10px] text-muted-foreground gap-2">
-                <span>Sumando 150 Puntos MET diarios conservas tu racha física.</span>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setActiveModal("registrar-actividad")}
-                  className="h-7 text-[10px] font-bold rounded-xl px-3 border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 cursor-pointer"
-                >
-                  <Plus className="w-3 h-3 mr-1" />
-                  Registrar Actividad MET
-                </Button>
-              </div>
+            {/* Slider Navigation Dots */}
+            <div className="flex items-center justify-center gap-2 pt-1 pb-0.5">
+              <button
+                type="button"
+                onClick={() => setActiveHeaderSlide(0)}
+                className={cn(
+                  "h-2 rounded-full transition-all duration-300 cursor-pointer",
+                  activeHeaderSlide === 0 ? "w-6 bg-foreground" : "w-2 bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                )}
+                title="Ver Resumen Diario de Hoy (24h)"
+              />
+              <button
+                type="button"
+                onClick={() => setActiveHeaderSlide(1)}
+                className={cn(
+                  "h-2 rounded-full transition-all duration-300 cursor-pointer",
+                  activeHeaderSlide === 1 ? "w-6 bg-amber-500" : "w-2 bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                )}
+                title="Ver Tendencia Semanal de METs (7d)"
+              />
             </div>
           </div>
 
@@ -3980,25 +4141,6 @@ function DiarioTab() {
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                               />
                               
-                              {/* GLASSMORPHISM BADGES ON TOP OF IMAGE (NEUTRAL STYLING) */}
-                              {(item.highlightBadges || (item.type === "meal" && item.metrics)) && (
-                                <div className="absolute bottom-3 left-3 right-3 flex flex-wrap gap-1.5 z-10">
-                                  {(item.highlightBadges || [
-                                    { text: "Mínimamente Procesado" },
-                                    { text: "Alto en Proteína Magra" },
-                                    { text: "Alto en Fibra" },
-                                    { text: "Cero Azúcar Añadido" }
-                                  ]).map((b: any, idx: number) => (
-                                    <Badge
-                                      key={idx}
-                                      className="border border-white/40 dark:border-white/20 bg-background/70 dark:bg-card/80 text-foreground backdrop-blur-md text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-md transition-all hover:scale-105"
-                                    >
-                                      {b.text}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              )}
-
                               {item.type !== "sunrise" && item.type !== "sunset" && item.type !== "peak" && (
                                 <div className="absolute top-3 right-3 z-10 flex items-center gap-1 bg-background/80 backdrop-blur-md px-2 py-1 rounded-full border border-border/60 shadow-sm">
                                   <button
@@ -4030,26 +4172,22 @@ function DiarioTab() {
                             </div>
                           )}
 
-                          <CardHeader className="p-5 pb-3">
-                            <div className="flex items-start justify-between gap-4">
-                              <div className="space-y-1">
-                                <CardTitle className="text-base font-bold leading-tight text-foreground">{item.title}</CardTitle>
-                                {item.type !== "meal" && item.subtitle && (
-                                  <CardDescription className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                                    {item.subtitle}
-                                  </CardDescription>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-1.5 shrink-0">
-                                {!item.img && (
-                                  <div className="flex items-center gap-1">
+                          {item.type === "hydration" ? (
+                            <div className="p-5 sm:p-6">
+                              <ArmstrongUrineScaleVisual
+                                selectedLevel={item.level || (parseInt(String(item.tag || "").replace(/\D/g, "")) || 2)}
+                                readOnly={true}
+                                title="Hydration Check"
+                                subtitle={item.desc || "Armstrong Scale Input"}
+                                actions={
+                                  <div className="flex items-center gap-1 bg-secondary/80 backdrop-blur-md px-2.5 py-1 rounded-full border border-border/60 shadow-xs shrink-0">
                                     <button
                                       type="button"
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         setEditingTimelineItem(item);
                                       }}
-                                      className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition cursor-pointer"
+                                      className="p-1 text-muted-foreground hover:text-foreground transition cursor-pointer"
                                       title="Editar registro"
                                     >
                                       <Edit className="w-3.5 h-3.5" />
@@ -4062,75 +4200,117 @@ function DiarioTab() {
                                           handleDeleteTimelineItem(item.id);
                                         }
                                       }}
-                                      className="p-1.5 rounded-lg hover:bg-rose-500/10 text-muted-foreground hover:text-rose-500 transition cursor-pointer"
+                                      className="p-1 text-muted-foreground hover:text-rose-500 transition cursor-pointer"
                                       title="Eliminar registro"
                                     >
                                       <Trash2 className="w-3.5 h-3.5" />
                                     </button>
                                   </div>
-                                )}
-                                {!item.img && (
-                                  <div className="w-9 h-9 rounded-full bg-secondary text-muted-foreground flex items-center justify-center shrink-0 border border-border/40">
-                                    {item.type === "hydration" ? (
-                                      <Droplet className="w-4.5 h-4.5 text-cyan-500" />
-                                    ) : (
-                                      <Activity className="w-4.5 h-4.5 text-orange-500" />
+                                }
+                              />
+                            </div>
+                          ) : (
+                            <>
+                              <CardHeader className="p-5 pb-3">
+                                <div className="flex items-start justify-between gap-4">
+                                  <div className="space-y-1">
+                                    <CardTitle className="text-base font-bold leading-tight text-foreground">{item.title}</CardTitle>
+                                    {item.type !== "meal" && item.subtitle && (
+                                      <CardDescription className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                        {item.subtitle}
+                                      </CardDescription>
                                     )}
                                   </div>
-                                )}
-                              </div>
-                            </div>
-                          </CardHeader>
-
-                          {item.type === "meal" ? (
-                            <CardContent className="px-5 pb-5 pt-0 space-y-3">
-                              {/* Qualitative Summary Paragraph */}
-                              {item.summary && (
-                                <p className="text-xs text-muted-foreground leading-relaxed">
-                                  {item.summary}
-                                </p>
-                              )}
-
-                              {/* Footer Disclaimer Label (matching image exact footnote) */}
-                              <p className="text-[10px] text-muted-foreground/70 leading-relaxed text-left italic pt-2 border-t border-border/30">
-                                Visual identification may be inaccurate. Always check important details.
-                              </p>
-                            </CardContent>
-                          ) : (
-                            (item.kcal > 0 || item.tag) && (
-                              <CardContent className="px-5 pb-4 pt-0">
-                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                  {item.kcal > 0 && (
-                                    <span className="flex items-center gap-0.5 font-medium">
-                                      <Flame className="w-3.5 h-3.5 text-orange-500" /> {item.kcal} kcal
-                                    </span>
+                                  {!item.img && (
+                                    <div className="flex items-center gap-1 bg-secondary/80 backdrop-blur-md px-2.5 py-1 rounded-full border border-border/60 shadow-xs shrink-0">
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setEditingTimelineItem(item);
+                                        }}
+                                        className="p-1 text-muted-foreground hover:text-foreground transition cursor-pointer"
+                                        title="Editar registro"
+                                      >
+                                        <Edit className="w-3.5 h-3.5" />
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (confirm(`¿Deseas eliminar "${item.title}" de tu diario?`)) {
+                                            handleDeleteTimelineItem(item.id);
+                                          }
+                                        }}
+                                        className="p-1 text-muted-foreground hover:text-rose-500 transition cursor-pointer"
+                                        title="Eliminar registro"
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </button>
+                                    </div>
                                   )}
-                                  {item.kcal > 0 && item.tag && <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />}
-                                  {item.tag && <span className="font-medium text-foreground/80">{item.tag}</span>}
                                 </div>
-                              </CardContent>
-                            )
-                          )}
+                              </CardHeader>
 
-                          {/* Mobile-only Time Stamp */}
-                          <div className="md:hidden px-5 pb-4 text-xs font-semibold text-muted-foreground">
-                            <span>{item.time}</span>
-                          </div>
-
-                          {/* Coach / AI Feedback Section (para actividades e hidratación) */}
-                          {item.coachFeedback && item.type !== "meal" && (
-                            <CardFooter className="px-5 py-4 bg-secondary/20 border-t border-border flex items-start gap-2.5">
-                              {item.type === "hydration" ? (
-                                <Droplet className="w-4 h-4 text-cyan-500 shrink-0 mt-0.5" />
-                              ) : item.type === "activity" ? (
-                                <Activity className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
+                              {item.type === "meal" || item.type === "shake_ai" ? (
+                                <CardContent className="px-5 pb-4 pt-0 space-y-3">
+                                  {item.summary && (
+                                    <p className="text-xs text-muted-foreground leading-relaxed">
+                                      {item.summary}
+                                    </p>
+                                  )}
+                                  
+                                  {/* Clean Badges under summary */}
+                                  {(item.highlightBadges || (item.metrics || item.title)) && (
+                                    <div className="flex flex-wrap gap-1.5 pt-1">
+                                      {(item.highlightBadges || [
+                                        { text: "Mínimamente Procesado" },
+                                        { text: "Alto en Proteína Magra" },
+                                        { text: "Alto en Fibra" },
+                                        { text: "Cero Azúcar Añadido" }
+                                      ]).map((b: any, idx: number) => (
+                                        <Badge
+                                          key={idx}
+                                          variant="outline"
+                                          className="border-border/60 bg-secondary/50 text-foreground text-[10px] font-bold px-2.5 py-0.5 rounded-full"
+                                        >
+                                          {b.text}
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                  )}
+                                </CardContent>
                               ) : (
-                                <Sparkles className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
+                                item.tag && (
+                                  <CardContent className="px-5 pb-4 pt-0">
+                                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                      <span className="font-medium text-foreground/80">{item.tag}</span>
+                                    </div>
+                                  </CardContent>
+                                )
                               )}
-                              <p className="text-xs text-muted-foreground leading-relaxed font-medium">
-                                {item.coachFeedback}
-                              </p>
-                            </CardFooter>
+
+                              <div className="md:hidden px-5 pb-4 text-xs font-semibold text-muted-foreground">
+                                <span>{item.time}</span>
+                              </div>
+
+                              {item.coachFeedback && (
+                                <CardFooter className="px-5 py-4 bg-secondary/20 border-t border-border flex items-start gap-2.5">
+                                  <Sparkles className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                                  <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+                                    {item.coachFeedback.replace(/^(🌱|🍲|⚡|🛡️|💬|💧)?\s*(Aporte Biológico\s*(&|\+)?\s*Consejo:|Aporte Biológico:|Consejo Fisiológico:)?\s*/i, "").trim()}
+                                  </p>
+                                </CardFooter>
+                              )}
+
+                              {item.type === "meal" && (
+                                <div className="px-5 py-2.5 bg-secondary/30 border-t border-border/40 text-left">
+                                  <p className="text-[10px] text-muted-foreground/60 leading-relaxed italic">
+                                    Visual identification may be inaccurate. Always check important details.
+                                  </p>
+                                </div>
+                              )}
+                            </>
                           )}
                         </Card>
                       </div>
@@ -4384,6 +4564,41 @@ function DiarioTab() {
         />
       )}
 
+      {/* Shake For AI Modal */}
+      {activeModal === "shake-for-ai" && (
+        <ShakeForAiModal
+          onClose={() => setActiveModal("none")}
+          onSave={(blendData) => {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+            const dateStr = now.toISOString().split("T")[0];
+
+            const newShakeAiItem = {
+              id: `shake-ai-${Date.now()}`,
+              type: "shake_ai",
+              time: timeStr,
+              date: dateStr,
+              title: blendData.title,
+              subtitle: "SUGERENCIA NUTRICIONAL",
+              img: null,
+              desc: blendData.desc,
+              summary: blendData.desc,
+              highlightBadges: [
+                { text: "Mínimamente Procesado", type: "success" },
+                { text: "Alto en Proteína Magra", type: "success" },
+                { text: "Alto en Fibra", type: "success" },
+                { text: "Cero Azúcar Añadido", type: "success" }
+              ],
+              coachFeedback: blendData.coachFeedback,
+              tag: blendData.tag
+            };
+
+            setUserTimelineItems(prev => [newShakeAiItem, ...prev]);
+            toast.success("✓ Sugerencia Shake AI guardada en tu diario");
+          }}
+        />
+      )}
+
       {/* Hydration Armstrong Modal */}
       {activeModal === "hydration-armstrong" && (
         <HydrationArmstrongModal
@@ -4399,7 +4614,9 @@ function DiarioTab() {
               time: timeStr,
               date: dateStr,
               title: "Registro de Hidratación (Armstrong)",
+              subtitle: "Chequeo Matutino / Hidratación",
               desc: label,
+              level: level,
               coachFeedback: `💧 Consejo Fisiológico: ${feedback}`,
               tag: `Nivel ${level} Armstrong`
             };
@@ -4507,22 +4724,36 @@ function EditTimelineItemModal({
   const [title, setTitle] = useState(item.title || "");
   const [subtitle, setSubtitle] = useState(item.subtitle || "");
   const [kcal, setKcal] = useState(item.kcal || 0);
+  const [level, setLevel] = useState<number>(item.level || 2);
   const [coachFeedback, setCoachFeedback] = useState(item.coachFeedback || "");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({
-      ...item,
-      title,
-      subtitle,
-      kcal: Number(kcal),
-      coachFeedback,
-    });
+    if (item.type === "hydration") {
+      const currentLevelObj = ARMSTRONG_LEVELS.find(l => l.level === level) || ARMSTRONG_LEVELS[1];
+      onSave({
+        ...item,
+        title,
+        subtitle,
+        level,
+        desc: `${currentLevelObj.title} (${currentLevelObj.state})`,
+        tag: `Nivel ${level} Armstrong`,
+        coachFeedback: coachFeedback || `💧 Consejo Fisiológico: ${currentLevelObj.advice}`,
+      });
+    } else {
+      onSave({
+        ...item,
+        title,
+        subtitle,
+        kcal: Number(kcal),
+        coachFeedback,
+      });
+    }
   };
 
   return (
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md p-6 bg-card border border-border rounded-3xl">
+      <DialogContent className="max-w-md p-6 bg-card border border-border rounded-3xl max-h-[90vh] overflow-y-auto custom-scrollbar">
         <DialogHeader className="mb-4">
           <DialogTitle className="text-lg font-bold text-foreground">Editar Registro del Diario</DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
@@ -4530,6 +4761,19 @@ function EditTimelineItemModal({
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {item.type === "hydration" && (
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground block mb-1">Nivel Colorimétrico Armstrong</label>
+              <ArmstrongUrineScaleVisual
+                selectedLevel={level}
+                onSelectLevel={(l) => setLevel(l)}
+                readOnly={false}
+                title="Hydration Check"
+                subtitle="Selecciona el nivel de la escala"
+              />
+            </div>
+          )}
+
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-muted-foreground">Título</label>
             <input
@@ -4552,16 +4796,18 @@ function EditTimelineItemModal({
                 className="flex w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-foreground font-semibold"
               />
             </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">Calorías (kcal)</label>
-              <input
-                type="number"
-                min="0"
-                value={kcal}
-                onChange={(e) => setKcal(Number(e.target.value))}
-                className="flex w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-foreground font-semibold"
-              />
-            </div>
+            {item.type !== "hydration" && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground">Calorías (kcal)</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={kcal}
+                  onChange={(e) => setKcal(Number(e.target.value))}
+                  className="flex w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-foreground font-semibold"
+                />
+              </div>
+            )}
           </div>
 
           <div className="space-y-1.5">
@@ -4893,17 +5139,99 @@ function ActivityLogModal({ onClose, onSave, activities }: ActivityLogModalProps
   );
 }
 
-// Subcomponent: Hydration Armstrong Modal (Escala 1-8 de Osmolalidad Urinaria)
+// Subcomponent: Armstrong Urine Color Scale (Visual component matching exact reference HTML design)
 const ARMSTRONG_LEVELS = [
-  { level: 1, color: "bg-cyan-50 border-cyan-200 text-cyan-900 dark:bg-cyan-950/40 dark:border-cyan-800 dark:text-cyan-200", dot: "bg-cyan-100 border-cyan-300", title: "Nivel 1 — Transparente", usg: "< 1.010 g/cm³", state: "Euhidratación Óptima", advice: "Excelente balance celular. Mantén pequeños sorbos de agua potable a lo largo del día." },
-  { level: 2, color: "bg-yellow-50 border-yellow-200 text-yellow-900 dark:bg-yellow-950/40 dark:border-yellow-800 dark:text-yellow-200", dot: "bg-yellow-200 border-yellow-300", title: "Nivel 2 — Amarillo Pálido", usg: "1.010 g/cm³", state: "Hidratación Saludable", advice: "Estado hídrico ideal para el rendimiento físico y deportivo continuo." },
-  { level: 3, color: "bg-amber-50 border-amber-200 text-amber-900 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-200", dot: "bg-amber-300 border-amber-400", title: "Nivel 3 — Amarillo Claro", usg: "1.015 g/cm³", state: "Bien Hidratado", advice: "Buen estado hídrico para afrontar tus entrenamientos." },
-  { level: 4, color: "bg-amber-100 border-amber-300 text-amber-950 dark:bg-amber-900/40 dark:border-amber-700 dark:text-amber-200", dot: "bg-amber-400 border-amber-500", title: "Nivel 4 — Amarillo Dorado", usg: "1.020 g/cm³", state: "Deshidratación Leve", advice: "Ingiere 1 a 2 vasos de agua pura (300 - 400 ml) para evitar fatiga." },
-  { level: 5, color: "bg-amber-200 border-amber-400 text-amber-950 dark:bg-amber-800/40 dark:border-amber-600 dark:text-amber-100", dot: "bg-amber-500 border-amber-600", title: "Nivel 5 — Miel / Ámbar Claro", usg: "1.025 g/cm³", state: "Deshidratación Moderada", advice: "Bebe 500 ml de agua acompañada de una pizca de sodio o electrolitos." },
-  { level: 6, color: "bg-amber-300 border-amber-500 text-amber-950 dark:bg-amber-700/50 dark:border-amber-500 dark:text-amber-100", dot: "bg-amber-700 border-amber-800", title: "Nivel 6 — Ámbar Oscuro", usg: "1.028 g/cm³", state: "Deshidratación Significativa", advice: "Ingiere 750 ml de solución electrolítica isotónica inmediatamente." },
-  { level: 7, color: "bg-amber-700/20 border-amber-700 text-amber-900 dark:bg-amber-950/80 dark:border-amber-700 dark:text-amber-200", dot: "bg-amber-800 border-amber-900", title: "Nivel 7 — Té Oscuro", usg: "1.030 g/cm³", state: "Deshidratación Elevada", advice: "Evita el calor excesivo y bebe 1 Litro de suero oral isotónico." },
-  { level: 8, color: "bg-stone-800/20 border-stone-800 text-stone-900 dark:bg-stone-900 dark:border-stone-700 dark:text-stone-100", dot: "bg-stone-900 border-stone-950", title: "Nivel 8 — Café / Marrón", usg: "> 1.030 g/cm³", state: "Deshidratación Severa (Alerta)", advice: "Prioriza reposo e hidratación médica antes de realizar actividad física." }
+  { level: 1, hex: "#fbfce1", color: "bg-cyan-50 border-cyan-200 text-cyan-900 dark:bg-cyan-950/40 dark:border-cyan-800 dark:text-cyan-200", dot: "bg-cyan-100 border-cyan-300", title: "Nivel 1 — Transparente", usg: "< 1.010 g/cm³", state: "Euhidratación Óptima", advice: "Excelente balance celular. Mantén pequeños sorbos de agua potable a lo largo del día." },
+  { level: 2, hex: "#f9f9cd", color: "bg-yellow-50 border-yellow-200 text-yellow-900 dark:bg-yellow-950/40 dark:border-yellow-800 dark:text-yellow-200", dot: "bg-yellow-200 border-yellow-300", title: "Nivel 2 — Amarillo Pálido", usg: "1.010 g/cm³", state: "Hidratación Saludable", advice: "Estado hídrico ideal para el rendimiento físico y deportivo continuo." },
+  { level: 3, hex: "#f6f2a9", color: "bg-amber-50 border-amber-200 text-amber-900 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-200", dot: "bg-amber-300 border-amber-400", title: "Nivel 3 — Amarillo Claro", usg: "1.015 g/cm³", state: "Bien Hidratado", advice: "Buen estado hídrico para afrontar tus entrenamientos." },
+  { level: 4, hex: "#f2e285", color: "bg-amber-100 border-amber-300 text-amber-950 dark:bg-amber-900/40 dark:border-amber-700 dark:text-amber-200", dot: "bg-amber-400 border-amber-500", title: "Nivel 4 — Amarillo Dorado", usg: "1.020 g/cm³", state: "Deshidratación Leve", advice: "Ingiere 1 a 2 vasos de agua pura (300 - 400 ml) para evitar fatiga." },
+  { level: 5, hex: "#eec863", color: "bg-amber-200 border-amber-400 text-amber-950 dark:bg-amber-800/40 dark:border-amber-600 dark:text-amber-100", dot: "bg-amber-500 border-amber-600", title: "Nivel 5 — Miel / Ámbar Claro", usg: "1.025 g/cm³", state: "Deshidratación Moderada", advice: "Bebe 500 ml de agua acompañada de una pizca de sodio o electrolitos." },
+  { level: 6, hex: "#e8a33a", color: "bg-amber-300 border-amber-500 text-amber-950 dark:bg-amber-700/50 dark:border-amber-500 dark:text-amber-100", dot: "bg-amber-700 border-amber-800", title: "Nivel 6 — Ámbar Oscuro", usg: "1.028 g/cm³", state: "Deshidratación Significativa", advice: "Ingiere 750 ml de solución electrolítica isotónica inmediatamente." },
+  { level: 7, hex: "#d4812f", color: "bg-amber-700/20 border-amber-700 text-amber-900 dark:bg-amber-950/80 dark:border-amber-700 dark:text-amber-200", dot: "bg-amber-800 border-amber-900", title: "Nivel 7 — Té Oscuro", usg: "1.030 g/cm³", state: "Deshidratación Elevada", advice: "Evita el calor excesivo y bebe 1 Litro de suero oral isotónico." },
+  { level: 8, hex: "#a66a2e", color: "bg-stone-800/20 border-stone-800 text-stone-900 dark:bg-stone-900 dark:border-stone-700 dark:text-stone-100", dot: "bg-stone-900 border-stone-950", title: "Nivel 8 — Café / Marrón", usg: "> 1.030 g/cm³", state: "Deshidratación Severa (Alerta)", advice: "Prioriza reposo e hidratación médica antes de realizar actividad física." }
 ];
+
+interface ArmstrongUrineScaleVisualProps {
+  selectedLevel: number;
+  onSelectLevel?: (level: number) => void;
+  readOnly?: boolean;
+  className?: string;
+  title?: string;
+  subtitle?: string;
+  actions?: React.ReactNode;
+}
+
+function ArmstrongUrineScaleVisual({
+  selectedLevel,
+  onSelectLevel,
+  readOnly = false,
+  className,
+  title = "Hydration Check",
+  subtitle,
+  actions
+}: ArmstrongUrineScaleVisualProps) {
+  const currentObj = ARMSTRONG_LEVELS.find(l => l.level === selectedLevel) || ARMSTRONG_LEVELS[1];
+  const displaySubtitle = subtitle || `${currentObj.title} (${currentObj.state})`;
+
+  return (
+    <div className={cn("space-y-5 text-left w-full", className)}>
+      {/* Header section with flex alignment */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="space-y-0.5 text-left">
+          <h3 className="text-lg font-bold text-foreground tracking-tight">{title}</h3>
+          <p className="text-xs text-muted-foreground font-medium">{displaySubtitle}</p>
+        </div>
+        {actions}
+      </div>
+
+      {/* 8 Color Scale Bar */}
+      <div className="space-y-2 pt-1">
+        <div className="flex justify-between gap-1.5 h-16 w-full rounded-2xl bg-secondary/50 dark:bg-black/40 p-1.5 border border-border/40">
+          {ARMSTRONG_LEVELS.map((item) => {
+            const isSelected = selectedLevel === item.level;
+            return (
+              <button
+                key={item.level}
+                type="button"
+                disabled={readOnly}
+                onClick={() => onSelectLevel?.(item.level)}
+                style={{ backgroundColor: item.hex }}
+                className={cn(
+                  "flex-1 h-full rounded-xl transition-all duration-200 relative cursor-pointer border border-black/10 focus:outline-none",
+                  isSelected
+                    ? "scale-110 shadow-lg ring-2 ring-foreground z-10 opacity-100"
+                    : readOnly
+                      ? "opacity-75"
+                      : "opacity-80 hover:opacity-100 hover:scale-105"
+                )}
+                title={`${item.title} — ${item.state}`}
+              >
+                {/* Active indicator dot at the bottom */}
+                {isSelected && (
+                  <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-foreground rounded-full shadow-xs" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Footnote Labels under the scale */}
+        <div className="flex items-center justify-between text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground/80 px-1 pt-1">
+          <span className="text-emerald-600 dark:text-emerald-400">OPTIMAL</span>
+          <span className="text-amber-600 dark:text-amber-400">DEHYDRATED</span>
+        </div>
+      </div>
+
+      {/* AI Feedback Section with generous top padding */}
+      <div className="pt-5 mt-2 border-t border-border/70 flex items-start gap-3">
+        <Sparkles className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+        <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+          {currentObj.advice}
+        </p>
+      </div>
+    </div>
+  );
+}
 
 interface HydrationArmstrongModalProps {
   onClose: () => void;
@@ -4946,42 +5274,17 @@ function HydrationArmstrongModal({ onClose, onSave }: HydrationArmstrongModalPro
           </DialogDescription>
         </DialogHeader>
 
-        <div className="py-4 space-y-4">
-          {/* Level Selector Grid */}
-          <div className="grid grid-cols-4 gap-2 sm:gap-2.5">
-            {ARMSTRONG_LEVELS.map((item) => {
-              const isSelected = selectedLevel === item.level;
-              return (
-                <button
-                  type="button"
-                  key={item.level}
-                  onClick={() => setSelectedLevel(item.level)}
-                  className={cn(
-                    "p-2.5 sm:p-3 rounded-2xl border text-center transition cursor-pointer flex flex-col items-center justify-center space-y-1.5",
-                    isSelected ? "border-foreground bg-accent ring-2 ring-foreground/20 font-bold scale-105 shadow-sm" : "border-border/60 hover:border-border text-muted-foreground"
-                  )}
-                >
-                  <div className={cn("w-5 h-5 rounded-full border shadow-xs", item.dot)} />
-                  <span className="text-xs font-bold text-foreground">Nivel {item.level}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Selected Level Info Box */}
-          <div className={cn("p-4 rounded-2xl border transition-all space-y-1.5", currentLevelObj.color)}>
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold">{currentLevelObj.title}</span>
-              <Badge variant="outline" className="text-[10px] font-bold bg-background/80">
-                Usg: {currentLevelObj.usg}
-              </Badge>
-            </div>
-            <div className="text-xs font-semibold">{currentLevelObj.state}</div>
-            <p className="text-[11px] leading-relaxed opacity-90">{currentLevelObj.advice}</p>
-          </div>
+        <div className="py-2 space-y-4">
+          <ArmstrongUrineScaleVisual
+            selectedLevel={selectedLevel}
+            onSelectLevel={(lvl) => setSelectedLevel(lvl)}
+            readOnly={false}
+            title="Hydration Check"
+            subtitle="Haz clic en la cápsula de color para seleccionar tu nivel"
+          />
 
           {/* Riboflavin warning note */}
-          <div className="p-3 rounded-2xl border border-amber-500/20 bg-amber-500/5 text-[11px] text-muted-foreground leading-relaxed">
+          <div className="p-3.5 rounded-2xl border border-amber-500/20 bg-amber-500/5 text-[11px] text-muted-foreground leading-relaxed">
             💡 <strong>Nota clínica:</strong> Suplementos de Vitamina B2 (Riboflavina) o multivitamínicos pueden pigmentar la orina de amarillo neón sin significar deshidratación real.
           </div>
         </div>
@@ -5416,19 +5719,16 @@ function PhotoMealAnalysisModal({ onClose, onSave }: PhotoMealAnalysisModalProps
   );
 }
 
-// Subcomponent: Shake For AI Modal (Asistente Multimodal 🥤)
+// Subcomponent: Shake For AI Modal (Sugerencia Nutricional Inteligente Exclusiva 🥤)
 interface ShakeForAiModalProps {
   onClose: () => void;
   onSave: (blendData: { title: string; img: string; desc: string; coachFeedback: string; tag: string }) => void;
 }
 
 function ShakeForAiModal({ onClose, onSave }: ShakeForAiModalProps) {
-  const [activeShakeTab, setActiveShakeTab] = useState<"nutricion" | "workout" | "clases" | "chat">("nutricion");
   const [profileData, setProfileData] = useState<any>(null);
   const [dietData, setDietData] = useState<any>(null);
-  const [chatPrompt, setChatPrompt] = useState("");
-  const [chatResponse, setChatResponse] = useState<string | null>(null);
-  const [isThinking, setIsThinking] = useState(false);
+  const [solarApiData, setSolarApiData] = useState<{ sunrise?: string; sunset?: string } | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -5436,6 +5736,24 @@ function ShakeForAiModal({ onClose, onSave }: ShakeForAiModalProps) {
       const d = JSON.parse(localStorage.getItem("shakerfy_diet_preferences") || "{}");
       setProfileData(p);
       setDietData(d);
+
+      const lat = p.latitude || -34.6037;
+      const lng = p.longitude || -58.3816;
+
+      // ponytail: Query Sunrise-Sunset API with instant local fallback
+      fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&formatted=0`)
+        .then(res => res.json())
+        .then(resData => {
+          if (resData && resData.results) {
+            setSolarApiData({
+              sunrise: resData.results.sunrise,
+              sunset: resData.results.sunset
+            });
+          }
+        })
+        .catch(() => {
+          // Silent fallback to local astronomical formula
+        });
     }
   }, []);
 
@@ -5446,35 +5764,90 @@ function ShakeForAiModal({ onClose, onSave }: ShakeForAiModalProps) {
   const carbItem = userFoods.find(f => f.toLowerCase().includes("camote") || f.toLowerCase().includes("arroz") || f.toLowerCase().includes("avena") || f.toLowerCase().includes("papa") || f.toLowerCase().includes("quinoa")) || "Camote horneado";
   const fatItem = userFoods.find(f => f.toLowerCase().includes("aguacate") || f.toLowerCase().includes("palta") || f.toLowerCase().includes("nueces") || f.toLowerCase().includes("aceite") || f.toLowerCase().includes("maní")) || "Aguacate / Palta";
 
-  const goalText = profileData?.goal === "musculo" ? "Hipertrofia & Síntesis Proteica" : profileData?.goal === "perder_peso" ? "Perder Grasa & Saciedad Sostenida" : "Forma Física & Balance Biológico";
+  // Biometric calculation summary
+  const age = profileData?.age || 28;
+  const sex = profileData?.sex || "Hombre";
+  const weight = profileData?.weight || 74;
+  const height = profileData?.height || 178;
+  const lat = profileData?.latitude || -34.6037;
+  const lng = profileData?.longitude || -58.3816;
+  const goalText = profileData?.goal === "musculo" ? "Hipertrofia & Síntesis Proteica" : profileData?.goal === "perder_peso" ? "Perder Grasa & Saciedad Sostenida" : "Balance Biológico & Salud";
+
+  // Astronomical Solar Calculation (API Data or Local Fallback)
+  const now = new Date();
+  const currentHourNum = now.getHours() + now.getMinutes() / 60;
+  
+  let approxSunrise = 6.5;
+  let approxSunset = 18.5;
+
+  if (solarApiData?.sunrise && solarApiData?.sunset) {
+    const sRiseDate = new Date(solarApiData.sunrise);
+    const sSetDate = new Date(solarApiData.sunset);
+    approxSunrise = sRiseDate.getHours() + sRiseDate.getMinutes() / 60;
+    approxSunset = sSetDate.getHours() + sSetDate.getMinutes() / 60;
+  } else {
+    // Local astronomical formula fallback
+    const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 86400000);
+    const declination = 23.45 * Math.sin((2 * Math.PI / 365) * (dayOfYear - 81)) * (Math.PI / 180);
+    const latRad = lat * (Math.PI / 180);
+    const hourAngleCos = Math.max(-1, Math.min(1, -Math.tan(latRad) * Math.tan(declination)));
+    const hourAngleDeg = Math.acos(hourAngleCos) * (180 / Math.PI);
+    approxSunrise = 12 - (hourAngleDeg / 15);
+    approxSunset = 12 + (hourAngleDeg / 15);
+  }
+
+  let solarPhase: { label: string; tag: string; prefix: string; advice: string };
+  if (currentHourNum < approxSunrise) {
+    solarPhase = {
+      label: "Mañana Temprano",
+      tag: "Activar el Día",
+      prefix: "Desayuno Nutritivo de",
+      advice: "Energía limpia para comenzar la mañana. Acompaña tu comida con un buen vaso de agua fresca para hidratar tu cuerpo tras el descanso nocturno."
+    };
+  } else if (currentHourNum >= approxSunrise && currentHourNum < 12) {
+    solarPhase = {
+      label: "Mañana",
+      tag: "Energía Matutina",
+      prefix: "Desayuno Completo de",
+      advice: "Combinación ideal para mantenerte con energía y saciedad toda la mañana sin picos de cansancio."
+    };
+  } else if (currentHourNum >= 12 && currentHourNum < approxSunset - 2.5) {
+    solarPhase = {
+      label: "Mediodía",
+      tag: "Almuerzo Principal",
+      prefix: "Almuerzo Proteico de",
+      advice: "Comida principal de tu alacena, pensada para darte fuerza y rendir al máximo durante la tarde."
+    };
+  } else if (currentHourNum >= approxSunset - 2.5 && currentHourNum < approxSunset + 1) {
+    solarPhase = {
+      label: "Tarde",
+      tag: "Merienda & Recarga",
+      prefix: "Merienda Funcional de",
+      advice: "Recarga perfecta para la tarde. Excelente para recuperar energías y mantener la saciedad antes de la cena."
+    };
+  } else {
+    solarPhase = {
+      label: "Noche",
+      tag: "Cena Regenerativa",
+      prefix: "Cena de Recuperación con",
+      advice: "Cena ligera y fácil de digerir. Ayuda a tus músculos a recuperarse mientras disfrutas de un descanso profundo."
+    };
+  }
 
   const isRecipe = suggestionStyle === "recetas";
-  const title = isRecipe ? `Bowl Proteico de ${proteinItem} con ${carbItem}` : `Recarga Nutricional de Alacena`;
-  const img = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80";
+  const title = `${solarPhase.prefix} ${proteinItem} con ${carbItem}`;
 
   const desc = isRecipe
-    ? `Ingredientes de tu alacena: ${proteinItem}, ${carbItem} y ${fatItem}. Receta rápida en 10 min.`
-    : `1 Palma de ${proteinItem}, 1 Puño de ${carbItem} y 1 Pulgar de ${fatItem}.`;
+    ? `Receta fácil con ingredientes de tu alacena: ${proteinItem}, ${carbItem} y lonchas de ${fatItem}.`
+    : `Porciones de mano recomendadas: 1 Palma de ${proteinItem}, 1 Puño de ${carbItem} y 1 Pulgar de ${fatItem}.`;
 
-  const coachFeedback = isRecipe
-    ? `⚡ AI Coach: Triangulación perfecta para tu objetivo (${goalText}). Pasos rápidos: 1. Sellar ${proteinItem} a la plancha. 2. Acompañar con ${carbItem} al vapor. 3. Añadir lonchas de ${fatItem}.`
-    : `⚡ AI Coach: Proporciones de mano ideales para tu objetivo (${goalText}). Combina ${proteinItem} (proteína magra) con ${carbItem} (glucógeno celular) y ${fatItem} (grasas saludables).`;
+  const coachFeedback = solarPhase.advice;
 
-  const tag = isRecipe ? "Receta Rápida de Alacena" : "Solo Ingredientes (Porciones de Mano)";
+  const tag = solarPhase.tag;
 
   const handleSave = () => {
-    onSave({ title, img, desc, coachFeedback, tag });
+    onSave({ title, img: "", desc, coachFeedback, tag });
     onClose();
-  };
-
-  const handleAskAi = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!chatPrompt.trim()) return;
-    setIsThinking(true);
-    setTimeout(() => {
-      setIsThinking(false);
-      setChatResponse(`💡 AI Coach: Para tu consulta sobre "${chatPrompt}", te recomendamos enfocar en descanso activo, mantener la hidratación en Nivel 1-2 (Armstrong) y priorizar alimentos con proteína de alto valor biológico de tu alacena activa (${proteinItem}, ${carbItem}).`);
-    }, 1000);
   };
 
   return (
@@ -5484,177 +5857,86 @@ function ShakeForAiModal({ onClose, onSave }: ShakeForAiModalProps) {
           <DialogTitle className="text-lg font-bold flex items-center justify-between text-foreground">
             <div className="flex items-center gap-2">
               <Zap className="w-5 h-5 text-amber-500 fill-amber-500" />
-              <span>Shake AI — Asistente Inteligente 🥤</span>
+              <span>Shake AI — Sugerencia Nutricional 🥤</span>
             </div>
             <Badge variant="outline" className="text-[10px] font-extrabold border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400">
-              Multimodal 4 en 1
+              Contexto Nutricional Activo
             </Badge>
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground pt-1">
-            Triangulación instantánea de nutrición, rutina muscular, clases en gimnasio y consulta directa.
+            Sugerencia calculada para tu perfil ({weight}kg, {sex}) e hito solar actual ({solarPhase.tag}) según coordenadas ({lat.toFixed(2)}°, {lng.toFixed(2)}°).
           </DialogDescription>
         </DialogHeader>
 
-        {/* Sub-tab Navigation */}
-        <div className="grid grid-cols-4 gap-1 p-1 rounded-2xl bg-secondary/60 border border-border/60 text-[11px] font-bold text-center">
-          <button
-            type="button"
-            onClick={() => setActiveShakeTab("nutricion")}
-            className={cn("py-2 rounded-xl transition cursor-pointer", activeShakeTab === "nutricion" ? "bg-card text-foreground shadow-xs font-black" : "text-muted-foreground hover:text-foreground")}
-          >
-            🥤 Nutrición
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveShakeTab("workout")}
-            className={cn("py-2 rounded-xl transition cursor-pointer", activeShakeTab === "workout" ? "bg-card text-foreground shadow-xs font-black" : "text-muted-foreground hover:text-foreground")}
-          >
-            🏋️ Workout
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveShakeTab("clases")}
-            className={cn("py-2 rounded-xl transition cursor-pointer", activeShakeTab === "clases" ? "bg-card text-foreground shadow-xs font-black" : "text-muted-foreground hover:text-foreground")}
-          >
-            📅 Clases
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveShakeTab("chat")}
-            className={cn("py-2 rounded-xl transition cursor-pointer", activeShakeTab === "chat" ? "bg-card text-foreground shadow-xs font-black" : "text-muted-foreground hover:text-foreground")}
-          >
-            💬 Consultar
-          </button>
+        <div className="py-2 space-y-4">
+          {/* Biometric Context Cards */}
+          <div className="grid grid-cols-2 gap-2 text-[11px]">
+            <div className="p-3 rounded-2xl bg-secondary/50 border border-border/50 space-y-0.5 text-left">
+              <span className="text-muted-foreground block text-[10px] uppercase font-bold tracking-wider">Perfil Biométrico:</span>
+              <span className="font-bold text-foreground">{weight}kg • {height}cm • {sex} ({age} a)</span>
+            </div>
+            <div className="p-3 rounded-2xl bg-secondary/50 border border-border/50 space-y-0.5 text-left">
+              <span className="text-muted-foreground block text-[10px] uppercase font-bold tracking-wider">Hito Solar Activo:</span>
+              <span className="font-bold text-amber-600 dark:text-amber-400">{solarPhase.tag}</span>
+            </div>
+          </div>
+
+          {/* AI Recommended Meal Container */}
+          <div className="rounded-3xl border border-amber-500/30 bg-amber-500/5 overflow-hidden space-y-3 p-4">
+            <div className="flex items-center justify-between gap-2 border-b border-amber-500/20 pb-2">
+              <Badge className="bg-amber-500 text-white text-[10px] font-extrabold shadow-xs">{tag}</Badge>
+              <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">Alacena & Perfil</span>
+            </div>
+
+            <div className="space-y-1 text-left">
+              <h4 className="text-base font-bold text-foreground tracking-tight">{title}</h4>
+              <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
+            </div>
+
+            {/* Standard 7-Vector Badges */}
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              <Badge variant="outline" className="border-border/60 bg-background/80 text-foreground text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Mínimamente Procesado
+              </Badge>
+              <Badge variant="outline" className="border-border/60 bg-background/80 text-foreground text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Alto en Proteína Magra
+              </Badge>
+              <Badge variant="outline" className="border-border/60 bg-background/80 text-foreground text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Alto en Fibra
+              </Badge>
+              <Badge variant="outline" className="border-border/60 bg-background/80 text-foreground text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Cero Azúcar Añadido
+              </Badge>
+            </div>
+
+            {/* AI Physiological Rationale */}
+            <div className="pt-3 border-t border-border/40 flex items-start gap-2.5 text-left">
+              <Sparkles className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+              <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+                {coachFeedback}
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="py-3 space-y-4">
-          {/* TAB 1: NUTRICIÓN & ALACENA */}
-          {activeShakeTab === "nutricion" && (
-            <div className="space-y-3 animate-in fade-in duration-200">
-              <div className="grid grid-cols-2 gap-2 text-[11px]">
-                <div className="p-2.5 rounded-xl bg-secondary/60 border border-border/50">
-                  <span className="text-muted-foreground block text-[10px] uppercase font-bold">Objetivo Biológico:</span>
-                  <span className="font-bold text-foreground">{goalText}</span>
-                </div>
-                <div className="p-2.5 rounded-xl bg-secondary/60 border border-border/50">
-                  <span className="text-muted-foreground block text-[10px] uppercase font-bold">Formato Elegido:</span>
-                  <span className="font-bold text-foreground">{isRecipe ? "📖 Recetas Paso a Paso" : "🖐️ Solo Ingredientes (Mano)"}</span>
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 overflow-hidden space-y-3 p-4">
-                <div className="relative h-36 w-full rounded-xl overflow-hidden">
-                  <img src={img} alt={title} className="w-full h-full object-cover" />
-                  <div className="absolute top-2 right-2">
-                    <Badge className="bg-amber-500 text-white text-[10px] font-extrabold">{tag}</Badge>
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <h4 className="text-sm font-bold text-foreground">{title}</h4>
-                  <p className="text-xs text-muted-foreground">{desc}</p>
-                </div>
-
-                <div className="p-3 rounded-xl bg-card border border-border/60 text-xs space-y-1">
-                  <div className="font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5" /> Sugerencia AI Coach:
-                  </div>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">{coachFeedback}</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 2: WORKOUT & MÚSCULOS */}
-          {activeShakeTab === "workout" && (
-            <div className="space-y-3 animate-in fade-in duration-200">
-              <div className="p-4 rounded-2xl border border-indigo-500/30 bg-indigo-500/5 space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                    <Activity className="w-4 h-4 text-indigo-500" /> Triangulación Muscular de Hoy
-                  </h4>
-                  <Badge className="bg-indigo-500 text-white text-[10px] font-extrabold">Listos para Entrenar</Badge>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="p-2.5 rounded-xl bg-card border border-emerald-500/30">
-                    <span className="text-[10px] text-emerald-600 font-bold uppercase block">100% Recuperados</span>
-                    <span className="font-bold text-foreground">Deltoides, Pecho, Bíceps</span>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-card border border-rose-500/30">
-                    <span className="text-[10px] text-rose-500 font-bold uppercase block">En Descanso (35%)</span>
-                    <span className="font-bold text-foreground">Cuádriceps, Gemelos</span>
-                  </div>
-                </div>
-
-                <p className="text-[11px] text-muted-foreground leading-relaxed">
-                  💡 <strong>Recomendación Shake AI:</strong> Entrenamiento enfocado en <strong>Tren Superior (Empuje / Jalón)</strong> durante 45 minutos. Excluimos piernas hoy para prevenir sobrecarga tisular.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 3: CLASES RECOMENDADAS */}
-          {activeShakeTab === "clases" && (
-            <div className="space-y-3 animate-in fade-in duration-200">
-              <div className="p-4 rounded-2xl border border-purple-500/30 bg-purple-500/5 space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                    <QrCode className="w-4 h-4 text-purple-500" /> Clase Recomendada en Gimnasios
-                  </h4>
-                  <Badge className="bg-purple-500 text-white text-[10px] font-extrabold">Cupos Disponibles</Badge>
-                </div>
-
-                <div className="p-3 rounded-xl bg-card border border-border/60 space-y-1 text-xs">
-                  <div className="font-bold text-foreground">Calistenia & Movilidad Funcional</div>
-                  <div className="text-[11px] text-muted-foreground">Studio Pulse Belgrano • Hoy 18:30 hs (Prof. Lucas)</div>
-                </div>
-
-                <p className="text-[11px] text-muted-foreground leading-relaxed">
-                  💡 Ideal para tu ventana horaria de la tarde previa al corte solar de cafeína.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 4: CHAT DIRECTO AL AI COACH */}
-          {activeShakeTab === "chat" && (
-            <div className="space-y-3 animate-in fade-in duration-200">
-              <form onSubmit={handleAskAi} className="space-y-3">
-                <label className="text-xs font-bold text-foreground block">Consulta lo que necesites a tu AI Coach:</label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={chatPrompt}
-                    onChange={(e) => setChatPrompt(e.target.value)}
-                    placeholder="Ej. ¿Qué comer después de entrenar pesas?"
-                    className="flex-1 rounded-xl h-10 border border-border bg-background px-3 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  />
-                  <Button type="submit" disabled={isThinking} className="rounded-xl font-bold bg-foreground text-background text-xs px-4">
-                    {isThinking ? "..." : "Preguntar"}
-                  </Button>
-                </div>
-              </form>
-
-              {chatResponse && (
-                <div className="p-3.5 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 text-xs text-foreground leading-relaxed animate-in fade-in">
-                  {chatResponse}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div className="pt-3 border-t border-border/40 flex items-center justify-end gap-2">
-          <Button variant="outline" onClick={onClose} className="rounded-xl font-semibold">
-            Cerrar
+        {/* Modal Actions */}
+        <div className="pt-3 flex items-center justify-end gap-3 border-t border-border/40">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onClose}
+            className="rounded-xl text-xs font-semibold text-muted-foreground hover:text-foreground"
+          >
+            Cancelar
           </Button>
-          {activeShakeTab === "nutricion" && (
-            <Button onClick={handleSave} className="rounded-xl font-bold bg-amber-500 hover:bg-amber-600 text-white flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4" />
-              <span>Guardar en mi Diario</span>
-            </Button>
-          )}
+          <Button
+            type="button"
+            onClick={handleSave}
+            className="rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-sm flex items-center gap-1.5"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>Guardar Sugerencia en Mi Diario</span>
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
