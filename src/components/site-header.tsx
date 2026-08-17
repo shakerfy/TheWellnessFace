@@ -77,8 +77,17 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 relative">
-        {/* Left: Navigation links */}
-        <div className="flex items-center flex-1 justify-start">
+        {/* Left: User Profile Photo avatar on mobile, Nav links on desktop */}
+        <div className="flex items-center flex-1 justify-start gap-3">
+          {isLoggedIn && (
+            <div className="md:hidden w-8 h-8 rounded-full border border-border/80 overflow-hidden bg-secondary shrink-0 shadow-2xs select-none">
+              <img
+                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80"
+                alt="Foto de Perfil"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
           <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
             <a href="/#como-funciona" className="transition hover:text-foreground">
               Cómo funciona
@@ -92,7 +101,7 @@ export function SiteHeader() {
           </nav>
         </div>
 
-        {/* Center: Logo (Gymshark style) */}
+        {/* Center: Logo (Bebas Neue) */}
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
           <Link
             to="/"
@@ -103,8 +112,8 @@ export function SiteHeader() {
           </Link>
         </div>
 
-        {/* Right: Actions */}
-        <div className="flex items-center flex-1 justify-end gap-2.5">
+        {/* Right: Actions (Racha de Actividad & Desktop Profile Menu) */}
+        <div className="flex items-center flex-1 justify-end gap-2">
           {isLoggedIn ? (
             <>
               {/* Badge Racha de Actividad */}
@@ -115,11 +124,12 @@ export function SiteHeader() {
                 title="Ver Racha de Actividad"
               >
                 <Flame className="w-3.5 h-3.5 fill-amber-500 text-amber-500 animate-pulse" />
-                <span className="font-extrabold tracking-tight">12 días</span>
+                <span className="font-extrabold tracking-tight">12 Días</span>
               </button>
 
+              {/* Desktop Only User Profile Dropdown Menu */}
               <div
-                className="relative inline-block"
+                className="hidden md:inline-block relative"
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
               >
@@ -127,10 +137,15 @@ export function SiteHeader() {
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
-                      className="flex items-center gap-2 rounded-full pl-2 pr-3 py-1.5 hover:bg-secondary border border-border/50"
+                      className="flex items-center gap-2 rounded-full pl-1.5 pr-2.5 py-1 hover:bg-secondary border border-border/50"
                     >
-                      <div className="w-7 h-7 rounded-full bg-emerald-500 text-white font-bold text-xs flex items-center justify-center shadow-sm">
-                        A
+                      {/* User Profile Photo (replaced green circle with letter A) */}
+                      <div className="w-7 h-7 rounded-full overflow-hidden bg-secondary shrink-0 shadow-2xs border border-white/50">
+                        <img
+                          src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80"
+                          alt="Foto de Perfil"
+                          className="w-full h-full object-cover"
+                        />
                       </div>
                       <span className="text-xs font-bold text-foreground hidden sm:inline-block">
                         Agustín

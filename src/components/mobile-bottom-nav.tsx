@@ -40,8 +40,8 @@ export function MobileBottomNav() {
     };
   }, []);
 
-  // Hide mobile bottom nav on gym admin dashboard
-  if (pathname.startsWith("/dashboard")) {
+  // Hide mobile bottom nav on gym admin dashboard and standalone full-screen camera scanner flow
+  if (pathname.startsWith("/dashboard") || pathname.startsWith("/scan")) {
     return null;
   }
 

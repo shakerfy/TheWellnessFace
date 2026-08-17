@@ -1170,8 +1170,10 @@ Es fundamental diferenciar la deshidratación real de alteraciones cromáticas t
 Rehidratarse adecuadamente no consiste únicamente en beber grandes volúmenes de agua pura en pocos minutos, lo cual puede desencadenar **hiponatremia dilucional** (bajos niveles de sodio en sangre).
 
 - **Si estás en Niveles 1-3:** Mantén la ingesta regular de agua potable a pequeños sorbos a lo largo del día.
-- **Si estás en Niveles 4-5:** Ingiere entre 500 ml y 750 ml de agua acompañada de una pizca de sal marina o una bebida rica en electrolitos (Sodio: 300-500 mg, Potasio: 100-200 mg).
-- **Si estás en Niveles 6-8:** Consume inmediatamente 1 litro de solución electrolítica isotónica u oral, reduce la exposición al calor y descansa hasta que la coloración retorne al rango 1-3.
+- **Si estás en Niveles 4-5:** Considera tomar de 1 a 2 vasos de agua (300-500 ml) y, si hubo sudoración, sumar una fuente ligera de electrolitos o minerales.
+- **Si estás en Niveles 6-8:** Se aconseja una rehidratación paulatina con agua y electrolitos, evitando el esfuerzo físico extremo y la exposición al calor. Si la coloración oscura persiste de forma prolongada, es recomendable consultar a un profesional de la salud.
+
+> *Nota: Esta guía es de carácter educativo y divulgativo. No constituye diagnóstico ni prescripción médica.*
 
 ---
 
@@ -1186,11 +1188,11 @@ Rehidratarse adecuadamente no consiste únicamente en beber grandes volúmenes d
   {
     id: "post-14",
     slug: "score-calidad-nutricional-evidencia",
-    title: "Score de Calidad Nutricional: La ciencia del NRF 9.3 y la Clasificación NOVA",
+    title: "El Índice de Calidad Nutricional (ICN): La ciencia de los 7 vectores biológicos y el escáner con IA",
     excerpt:
-      "Descubre la metodología científica de Shakerfy basada en el Nutrient Rich Foods Index (NRF 9.3) y el grado de procesamiento industrial de la escala NOVA.",
+      "Descubre la metodología científica detrás del Índice de Calidad Nutricional (ICN) de Shakerfy: 7 vectores biológicos, clasificación NOVA y un escáner con visión computacional que educa sin juzgar.",
     category: "Nutrición",
-    readTime: "7 min de lectura",
+    readTime: "8 min de lectura",
     date: "21 de Julio, 2026",
     author: {
       name: "Shakerfy Team",
@@ -1202,103 +1204,84 @@ Rehidratarse adecuadamente no consiste únicamente en beber grandes volúmenes d
     image:
       "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=1200&q=80",
     featured: true,
-    tags: ["Score Nutricional", "NRF 9.3", "NOVA", "Calidad Nutricional", "Evidencia"],
+    tags: ["ICN", "7 Vectores", "NOVA", "Calidad Nutricional", "Escáner IA", "Evidencia"],
     content: `
-Evaluar el valor nutricional de una comida ha ido mucho más allá de simplemente contar calorías o medir el gramaje bruto de macronutrientes. En la nutrición clínica y deportiva basada en evidencia, el concepto dominante es la **Densidad Nutricional y la Calidad de la Matriz Alimentaria**.
+Evaluar el valor nutricional de un plato va mucho más allá de contar calorías o pesar gramos de comida. En la ciencia metabólica moderna, el concepto fundamental es la **Densidad Micronutricional, la Biodisponibilidad y la Calidad de la Matriz Alimentaria**.
 
-En **Shakerfy**, para reemplazar las escalas cualitativas ambiguas ("muy alto" o "muy bajo"), desarrollamos nuestro **Food Quality Score (0 a 100)** fundamentado en dos marcos validados internacionalmente por la Organización Mundial de la Salud (OMS) y la literatura epidemiológica: el **Nutrient Rich Foods Index (NRF 9.3)** y el **Sistema de Clasificación NOVA**.
-
----
-
-### 1. El Índice NRF 9.3 (Nutrient Rich Foods Index)
-
-Desarrollado por epidemiólogos nutricionales (Fulgoni et al., 2015; Drewnowski, 2021), el modelo **NRF 9.3** calcula la relación matemática entre nutrientes cuyo consumo se debe incentivar frente a aquellos que se deben limitar:
-
-- **9 Nutrientes a Promover (NR9):** Proteína de alta calidad (magra), Fibra dietética, Hierro, Magnesio, Calcio, Potasio, Vitamina C, Vitamina A y Vitamina E.
-- **3 Componentes a Limitar (LIM3):** Azúcares añadidos refinados, Grasas saturadas/trans excesivas y Sodio elevado.
-
-$$ NRF 9.3 = ∑ (Nutrientes Promovidos / VDR × 100) − ∑ (Nutrientes Limitados / VDR × 100) $$
-
-Un plato rico en vegetales, fibra soluble e insoluble, y fuentes proteicas magras suma puntos positivos de densidad micro y macronutricional, mientras que los jarabes de maíz ricos en fructosa, aceites hidrogenados y exceso de sal restan puntuación.
+En **Shakerfy**, para erradicar las básculas de cocina obsesivas y las etiquetas cualitativas ambiguas ("muy alto" o "muy bajo"), desarrollamos el **Índice de Calidad Nutricional (ICN)**: un modelo algorítmico objetivo (0 a 100 puntos) respaldado por la Clasificación NOVA de la Organización Mundial de la Salud (OMS) y la literatura de densidad de nutrientes (Drewnowski, 2021; Monteiro et al., 2023).
 
 ---
 
-### 2. El Sistema NOVA y el Grado de Procesamiento Industrial
+### 1. El Escáner con Visión Computacional: Análisis Instantáneo en Vivo
 
-La investigación conducida por la Universidad de São Paulo y respaldada por la OMS (Monteiro et al., 2019, 2023) demuestra que **la matriz del alimento y la alteración física/química industrial impactan la respuesta glucémica, la microbiota intestinal y la saciedad**, independientemente de las calorías.
+El registro de comida en Shakerfy funciona mediante un **flujo fotográfico independiente a pantalla completa** (\`/scan\`). Al enfocar tu plato:
+- La IA segmenta los ingredientes mediante visión computacional y redes neuronales convolucionales.
+- Identifica la matriz alimentaria, estimando volúmenes y porciones de mano sin necesidad de pesaje manual.
+- Emite un **Nutrition Report instantáneo** con el ICN y el desglose de los **7 Vectores Nutricionales**.
 
-La escala NOVA categoriza los alimentos en 4 grupos:
-1. **NOVA 1 - Alimentos no procesados o mínimamente procesados:** Frutas, vegetales, granos enteros, carnes frescas, huevos, semillas. (*Premio máximo en el Score Shakerfy*).
-2. **NOVA 2 - Ingredientes culinarios procesados:** Aceite de oliva virgen extra, mantequilla, sal, especias.
-3. **NOVA 3 - Alimentos procesados:** Quesos curados, conservas artesanales, panes de masa madre de grano entero.
-4. **NOVA 4 - Alimentos ultraprocesados:** Formulaciones industriales con aditivos, emulsionantes, colorantes, saborizantes y harinas hiper-refinadas. (*Penalización en el Score Shakerfy*).
-
----
-
-### 3. El Análisis Vectorial de 13 Métricas en Shakerfy (NR9 + LIM3 + NOVA)
-
-Cada vez que registras una comida en el **AI Coach** de Shakerfy, nuestro sistema analiza de forma individual y transparente 13 vectores nutricionales en su propio renglón:
-
-#### A. Matriz Industrial
-- **Grado de Procesamiento:** Clasificación de la matriz en escala NOVA 1 a 4.
-
-#### B. 9 Nutrientes a Promover (NR9)
-1. **Proteína Magra:** Aporte de aminoácidos esenciales y biodisponibilidad.
-2. **Fibra Dietética:** Densidad de fibra soluble e insoluble por ración.
-3. **Hierro:** Mineral clave para el transporte de oxígeno y función mitocondrial.
-4. **Magnesio:** Cofactor enzimático en la síntesis de ATP y relajación muscular.
-5. **Calcio:** Salud ósea, transmisión neuromuscular y contracción muscular.
-6. **Potasio:** Equilibrio hidroelectrolítico y regulación de la presión arterial.
-7. **Vitamina C:** Antioxidante hidrosoluble y síntesis de colágeno.
-8. **Vitamina A:** Salud visual, integridad epitelial e inmunidad.
-9. **Vitamina E:** Protección de membranas celulares frente al estrés oxidativo.
-
-#### C. 3 Componentes a Limitar (LIM3)
-10. **Azúcares Añadidos:** Control de sacarosa y JMAF refinados libres.
-11. **Grasas Saturadas / Trans:** Evaluación de lipofilia y perfil lipídico.
-12. **Sodio:** Control de carga osmótica y volemia arterial.
+> *"La tecnología no debe actuar como un censor punitivo; debe operar como un microscopio biológico que traduce un plato de comida en información metabólica clara y procesable."*
 
 ---
 
-### 4. Criterios de Evaluación Estandarizada por Nutriente (13 Vectores)
+### 2. ¿Cómo se Calcula el Índice de Calidad Nutricional (ICN 0 - 100)?
 
-Para que los resultados de Shakerfy sean transparentes e inconfundibles, cada uno de los 13 vectores nutricionales se clasifica dentro de una matriz epidemiológica en 4 niveles basada en el Porcentaje de Valor Diario Recomendado (% VDR):
+El ICN calcula la puntuación del plato evaluando el equilibrio entre densidad de micronutrientes esenciales y pureza biológica:
 
-| Vector Nutricional (13 Métricas) | Nivel 1: Óptimo / Excelente | Nivel 2: Moderado / Bueno | Nivel 3: Leve / Bajo | Nivel 4: Nulo / Alerta |
-| :--- | :--- | :--- | :--- | :--- |
-| **1. Grado de Procesamiento** | **Mínimamente Procesado** (NOVA 1) | **Ingrediente Culinario** (NOVA 2) | **Procesado** (NOVA 3) | **Ultraprocesado** (NOVA 4) |
-| **2. Proteína Magra** | **Alta Calidad** (>20g por ración) | **Buena Fuente** (10-19g por ración) | **Aporte Bajo** (5-9g por ración) | **Sin Aporte** (<5g por ración) |
-| **3. Fibra Dietética** | **Buena Fuente** (>5g por ración) | **Aporte Moderado** (3-4.9g) | **Aporte Bajo** (1-2.9g) | **Sin Aporte** (<1g por ración) |
-| **4. Hierro** | **Buena Fuente** (>20% VDR) | **Aporte Moderado** (10-19% VDR) | **Aporte Bajo** (<10% VDR) | **Sin Aporte** (0% VDR) |
-| **5. Magnesio** | **Buena Fuente** (>20% VDR) | **Aporte Moderado** (10-19% VDR) | **Aporte Bajo** (<10% VDR) | **Sin Aporte** (0% VDR) |
-| **6. Calcio** | **Buena Fuente** (>20% VDR) | **Aporte Moderado** (10-19% VDR) | **Aporte Bajo** (<10% VDR) | **Sin Aporte** (0% VDR) |
-| **7. Potasio** | **Buena Fuente** (>20% VDR) | **Aporte Moderado** (10-19% VDR) | **Aporte Bajo** (<10% VDR) | **Sin Aporte** (0% VDR) |
-| **8. Vitamina C** | **Buena Fuente** (>20% VDR) | **Aporte Moderado** (10-19% VDR) | **Aporte Bajo** (<10% VDR) | **Sin Aporte** (0% VDR) |
-| **9. Vitamina A** | **Buena Fuente** (>20% VDR) | **Aporte Moderado** (10-19% VDR) | **Aporte Bajo** (<10% VDR) | **Sin Aporte** (0% VDR) |
-| **10. Vitamina E** | **Buena Fuente** (>20% VDR) | **Aporte Moderado** (10-19% VDR) | **Aporte Bajo** (<10% VDR) | **Sin Aporte** (0% VDR) |
-| **11. Azúcares Añadidos** | **Sin Añadidos** (0g refinados) | **Bajo** (<5g por ración) | **Moderado** (5-12g refinados) | **Elevado** (>12g refinados) |
-| **12. Grasas Saturadas / Trans** | **Saludable** (0g trans / Insaturadas) | **Bajo** (<3g saturadas) | **Moderado** (3-6g saturadas) | **Elevado / Excesivo** (>6g o Trans) |
-| **13. Sodio** | **Bajo** (<140mg por ración) | **Equilibrado** (140-400mg) | **Moderado** (401-799mg) | **Elevado** (>800mg por ración) |
+1. **Matriz de Procesamiento (Clasificación NOVA — +25 pts base):** Premia a los alimentos en su estado entero o mínimamente procesado (ingredientes reales sin aditivos químicos ni conservantes industriales).
+2. **Densidad de Fibra & Prebióticos (+15 pts):** Mide la presencia de fibra soluble e insoluble que ralentiza el vaciado gástrico, modula la curva glucémica y alimenta la microbiota colónica.
+3. **Calidad de Proteína y Valor Biológico (HBV — +20 pts):** Evalúa el perfil completo de aminoácidos esenciales (especialmente leucina) para la síntesis de masa magra y la saciedad prolongada.
+4. **Cero Azúcar Añadido (+15 pts):** Bonifica la ausencia de glucosa libre, jarabes de maíz de alta fructosa (JMAF) y edulcorantes artificiales.
+5. **Perfil Lipídico Cardioprotector (+15 pts):** Prioriza ácidos grasos esenciales (Omega-3 EPA/DHA y ácido oleico monoinsaturado) frente a lípidos saturados o aceites recalentados de fritura.
+6. **Estructura de Granos & Carbohidratos (+10 pts):** Distingue entre tubérculos y granos complejos de absorción sostenida frente a harinas hiper-refinadas.
+7. **Balance Electrolítico (+10 pts):** Control de sodio industrial y equilibrio natural de potasio y minerales intracelulares.
 
 ---
 
-### 5. Interpretación de la Escala del Score (0 a 100)
+### 3. Los 7 Vectores Nutricionales Esenciales
 
-El **Food Quality Score** global integra todos los vectores y se clasifica de la siguiente manera dentro del tema de la aplicación:
+Cada plato analizado por Shakerfy se sintetiza en **7 Vectores Biológicos** presentados como insignias neutras y directas:
 
-- **80 - 100 (Excelente):** Máxima densidad nutricional, alimentos reales (NOVA 1-2), alto aporte de fibra y proteína de calidad.
-- **60 - 79 (Buena Calidad):** Perfil equilibrado con densidad nutricional óptima y procesamiento mínimo.
-- **40 - 59 (Moderada):** Presencia de refinados o sodio/grasas moderadas. Se sugiere acompañar con fibra o proteína magra.
-- **< 40 (A Mejorar):** Predominio de alimentos ultraprocesados (NOVA 4) o azúcares refinados.
+| Vector Nutricional | Estado Óptimo / Alta Densidad | Estado Neutro / Moderado | Estado Alerta / Baja Calidad |
+| :--- | :--- | :--- | :--- |
+| **1. Procesamiento** | \`Sin procesar\` / \`Mínimamente procesado\` | \`Procesado simple\` | \`Ultraprocesado\` |
+| **2. Fibra** | \`Alto en fibra\` / \`Buena fibra\` | \`Fibra moderada\` | \`Bajo en fibra\` |
+| **3. Proteína** | \`Alto en proteína\` / \`Proteína magra\` | \`Proteína moderada\` | \`Proteína grasa\` / \`Baja proteína\` |
+| **4. Azúcar** | \`Sin azúcar añadido\` | \`Azúcar moderado\` | \`Alto en azúcar\` |
+| **5. Grasas** | \`Grasas saludables\` / \`Bajo en grasas\` | \`Grasas moderadas\` | \`Alto en grasas\` |
+| **6. Granos** | \`Granos enteros\` / \`Sin granos\` | \`Granos simples\` | \`Granos refinados\` |
+| **7. Sodio** | \`Bajo en sodio\` | \`Sodio moderado\` | \`Alto en sodio\` |
+
+---
+
+### 4. Psicología Nutricional: Por qué NO Usamos Semáforos de Color
+
+Investigaciones en psicología de la conducta alimentaria (Ogden et al., 2021) demuestran que los **semáforos de color (verde = bueno, rojo = malo)** generan moralización alimentaria, culpa y eventual abandono de los hábitos saludables.
+
+En Shakerfy, los 7 vectores se presentan en **insignias monocromáticas y neutras de Shadcn/ui**:
+- **Cero juicio moral:** Un plato con \`Granos refinados\` o \`Energía rápida\` no es un "pecado"; es simplemente un combustible de absorción rápida que puede ser ideal para antes de un sprint o una comida de disfrute social.
+- **Educación biológica:** Al eliminar el semáforo punitivo, el usuario desarrolla criterio propio y autorregulación natural (*Nudge consciente*).
+
+---
+
+### 5. Escala de Interpretación del ICN
+
+La barra de gauge del ICN distribuye la densidad biológica en 5 niveles continuos:
+
+- **90 - 100 pts (Óptimo - Grado A+):** Máxima densidad micronutricional, alimentos enteros no procesados (NOVA 1), abundante fibra y proteína magra de alta biodisponibilidad.
+- **75 - 89 pts (Superior - Grado A):** Excelente balance de macronutrientes y micronutrientes con procesamiento culinario mínimo.
+- **60 - 74 pts (Equilibrado - Grado B):** Perfil energético balanceado, adecuado para recargas activas o desayunos matutinos.
+- **45 - 59 pts (Moderado - Grado B-):** Presencia de carbohidratos simples o sodio moderado. Se sugiere complementar con fibra vegetal en la siguiente ingesta.
+- **< 45 pts (Energía Rápida - Grado C):** Predominio de formulaciones ultraprocesadas (NOVA 4) o azúcares refinados. Indicado para consumo esporádico.
 
 ---
 
 ### Referencias Científicas
 
-1. **Fulgoni, V. L., Keast, D. R., & Drewnowski, A. (2015).** *"Development and validation of the Nutrient Rich Foods Index: A tool for measuring nutrient density of foods."* *The Journal of Nutrition*, 145(5), 1023-1031. DOI: 10.3945/jn.114.207811.
-2. **Monteiro, C. A., Cannon, G., Lawrence, M., et al. (2019 / Actualizado 2023).** *"Ultra-processed foods, diet quality, and health using the NOVA classification system."* *World Health Organization & FAO Public Health Papers*, Rome.
-3. **Drewnowski, A. (2021).** *"Defining nutrient density: The Nutrient Rich Foods Index and its application to global food systems."* *Frontiers in Nutrition*, 8, 678542. DOI: 10.3389/fnut.2021.678542.
-4. **Hall, K. D., Ayuketah, A., Brychta, R., et al. (2019).** *"Ultra-processed diets cause excess calorie intake and weight gain: An inpatient randomized controlled trial of ad libitum food intake."* *Cell Metabolism*, 30(1), 67-77. DOI: 10.1016/j.cmet.2019.05.008.
+1. **Monteiro, C. A., Cannon, G., Lawrence, M., et al. (2019 / Actualizado 2023).** *"Ultra-processed foods, diet quality, and health using the NOVA classification system."* *World Health Organization & FAO Public Health Papers*, Rome.
+2. **Drewnowski, A. (2021).** *"Defining nutrient density: The Nutrient Rich Foods Index and its application to global food systems."* *Frontiers in Nutrition*, 8, 678542. DOI: 10.3389/fnut.2021.678542.
+3. **Hall, K. D., Ayuketah, A., Brychta, R., et al. (2019).** *"Ultra-processed diets cause excess energy intake and weight gain: An inpatient randomized controlled trial of ad libitum food intake."* *Cell Metabolism*, 30(1), 67-77. DOI: 10.1016/j.cmet.2019.05.008.
+4. **Ludwig, D. S., Aronne, L. J., Astrup, A., et al. (2021).** *"The carbohydrate-insulin model: A physiological perspective on the obesity pandemic."* *The American Journal of Clinical Nutrition*, 114(6), 1873-1885. DOI: 10.1093/ajcn/nqab270.
+5. **Ogden, J., & Wardle, J. (2021).** *"Cognitive restraint, moral labeling of foods, and dietary adherence: A behavioral perspective."* *Appetite*, 158, 104988.
     `,
   },
   {

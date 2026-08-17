@@ -293,3 +293,23 @@ select {
   --typeset-leading: 1.75;
   --typeset-flow: 1.25em;
 }
+
+@keyframes laserSweep {
+  0% {
+    top: 2%;
+    opacity: 0.9;
+  }
+  50% {
+    top: 95%;
+    opacity: 1;
+  }
+  100% {
+    top: 2%;
+    opacity: 0.9;
+  }
+}
+
+.animate-laser-scan {
+  animation: laserSweep 2.2s ease-in-out infinite;
+}
+
