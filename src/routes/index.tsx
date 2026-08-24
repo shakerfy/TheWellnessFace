@@ -675,7 +675,8 @@ function Hero({
           Encuentra donde entrenar como te lo imaginas
         </h1>
         <p className="mt-4 w-full max-w-5xl mx-auto text-center text-[14px] text-muted-foreground/85 dark:text-slate-200 sm:text-[15px] md:text-[16px] lg:whitespace-nowrap">
-          Busca, compara, reserva y gestiona tu entrenamiento en los mejores gimnasios, fitness centers y studios con IA.
+          Busca, compara, reserva y gestiona tu entrenamiento en los mejores gimnasios, fitness
+          centers y studios con IA.
         </p>
 
         <PromptBox onSearch={handleSearch} isSearching={isSearching} />

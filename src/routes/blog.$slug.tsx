@@ -58,24 +58,32 @@ function renderBlogMarkdown(content: string) {
 
     // 1. Markdown Table (| Col | Col |)
     if (trimmed.startsWith("|") && trimmed.includes("|")) {
-      const lines = trimmed.split("\n").map(l => l.trim()).filter(l => l.startsWith("|"));
+      const lines = trimmed
+        .split("\n")
+        .map((l) => l.trim())
+        .filter((l) => l.startsWith("|"));
       if (lines.length >= 2) {
         // Line 0: Header
         const headerCols = lines[0]
           .split("|")
-          .map(c => c.trim())
+          .map((c) => c.trim())
           .filter((_, i, arr) => i > 0 && i < arr.length - 1);
 
         // Filter out delimiter line (|---|---|)
-        const bodyLines = lines.slice(1).filter(l => !l.includes(":---") && !l.includes("---"));
+        const bodyLines = lines.slice(1).filter((l) => !l.includes(":---") && !l.includes("---"));
 
         return (
-          <div key={idx} className="my-8 overflow-x-auto rounded-2xl border border-border bg-card shadow-sm">
+          <div
+            key={idx}
+            className="my-8 overflow-x-auto rounded-2xl border border-border bg-card shadow-sm"
+          >
             <table className="w-full text-left text-xs sm:text-sm">
               <thead className="bg-secondary/40 text-muted-foreground uppercase tracking-wider font-bold border-b border-border">
                 <tr>
                   {headerCols.map((col, i) => (
-                    <th key={i} className="px-4 py-3 font-extrabold text-foreground">{parseInlineMarkdown(col)}</th>
+                    <th key={i} className="px-4 py-3 font-extrabold text-foreground">
+                      {parseInlineMarkdown(col)}
+                    </th>
                   ))}
                 </tr>
               </thead>
@@ -83,12 +91,14 @@ function renderBlogMarkdown(content: string) {
                 {bodyLines.map((rowLine, rIdx) => {
                   const cells = rowLine
                     .split("|")
-                    .map(c => c.trim())
+                    .map((c) => c.trim())
                     .filter((_, i, arr) => i > 0 && i < arr.length - 1);
                   return (
                     <tr key={rIdx} className="hover:bg-muted/30 transition-colors">
                       {cells.map((cell, cIdx) => (
-                        <td key={cIdx} className="px-4 py-3 align-top font-medium">{parseInlineMarkdown(cell)}</td>
+                        <td key={cIdx} className="px-4 py-3 align-top font-medium">
+                          {parseInlineMarkdown(cell)}
+                        </td>
                       ))}
                     </tr>
                   );
@@ -120,7 +130,10 @@ function renderBlogMarkdown(content: string) {
     if (trimmed.startsWith("> ")) {
       const quoteText = trimmed.replace(/^>\s*/gm, "").replace(/"/g, "").trim();
       return (
-        <blockquote key={idx} className="my-6 border-l-4 border-emerald-500 bg-emerald-500/5 dark:bg-emerald-500/10 p-4 rounded-r-2xl italic text-foreground font-medium">
+        <blockquote
+          key={idx}
+          className="my-6 border-l-4 border-emerald-500 bg-emerald-500/5 dark:bg-emerald-500/10 p-4 rounded-r-2xl italic text-foreground font-medium"
+        >
           {parseInlineMarkdown(quoteText)}
         </blockquote>
       );
@@ -134,7 +147,10 @@ function renderBlogMarkdown(content: string) {
     // 4b. Formula / Math Block ($$ ... $$)
     if (trimmed.startsWith("$$") || trimmed.includes("NRF 9.3 =")) {
       return (
-        <div key={idx} className="my-8 p-6 rounded-3xl border border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-500/10 flex flex-col items-center justify-center text-center space-y-3 shadow-sm">
+        <div
+          key={idx}
+          className="my-8 p-6 rounded-3xl border border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-500/10 flex flex-col items-center justify-center text-center space-y-3 shadow-sm"
+        >
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-xs font-bold uppercase tracking-wider border border-emerald-500/30">
             <Sparkles className="w-3.5 h-3.5" />
             <span>Fórmula Algorítmica NRF 9.3</span>
@@ -143,7 +159,9 @@ function renderBlogMarkdown(content: string) {
             NRF 9.3 = ∑ (Nutrientes Promovidos / VDR × 100) − ∑ (Nutrientes Limitados / VDR × 100)
           </div>
           <p className="text-xs text-muted-foreground font-medium max-w-lg leading-relaxed">
-            Suma del % de Valor Diario Recomendado (VDR) de 9 nutrientes esenciales (Fibra, Proteína, Vit. A, C, E, Ca, Fe, Mg, K) menos el % acumulado de 3 nutrientes a moderar (Grasas Saturadas, Azúcar Añadido, Sodio).
+            Suma del % de Valor Diario Recomendado (VDR) de 9 nutrientes esenciales (Fibra,
+            Proteína, Vit. A, C, E, Ca, Fe, Mg, K) menos el % acumulado de 3 nutrientes a moderar
+            (Grasas Saturadas, Azúcar Añadido, Sodio).
           </p>
         </div>
       );
@@ -151,11 +169,13 @@ function renderBlogMarkdown(content: string) {
 
     // 5. Unordered List (- item)
     if (trimmed.startsWith("- ")) {
-      const items = trimmed.split("\n").map(li => li.replace(/^-\s*/, "").trim());
+      const items = trimmed.split("\n").map((li) => li.replace(/^-\s*/, "").trim());
       return (
         <ul key={idx} className="my-4 space-y-2 list-disc list-inside text-foreground">
           {items.map((it, i) => (
-            <li key={i} className="leading-relaxed">{parseInlineMarkdown(it)}</li>
+            <li key={i} className="leading-relaxed">
+              {parseInlineMarkdown(it)}
+            </li>
           ))}
         </ul>
       );
@@ -163,11 +183,13 @@ function renderBlogMarkdown(content: string) {
 
     // 6. Ordered List (1. item)
     if (/^\d+\.\s/.test(trimmed)) {
-      const items = trimmed.split("\n").map(li => li.replace(/^\d+\.\s*/, "").trim());
+      const items = trimmed.split("\n").map((li) => li.replace(/^\d+\.\s*/, "").trim());
       return (
         <ol key={idx} className="my-4 space-y-2 list-decimal list-inside text-foreground">
           {items.map((it, i) => (
-            <li key={i} className="leading-relaxed">{parseInlineMarkdown(it)}</li>
+            <li key={i} className="leading-relaxed">
+              {parseInlineMarkdown(it)}
+            </li>
           ))}
         </ol>
       );

@@ -1,6 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import {
+  Sun,
+  Coffee,
+  Dumbbell,
+  Apple,
   ArrowLeft,
   ArrowRight,
   MoreHorizontal,
@@ -22,7 +26,16 @@ import {
   Info,
   ShieldCheck,
   Award,
-  Wind
+  Wind,
+  HeartPulse,
+  Clock,
+  Users,
+  Timer,
+  Moon,
+  Flame,
+  Activity,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -34,9 +47,17 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { MindfulBreathingModal } from "@/components/mindful-breathing-modal";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { calculateTimingFit } from "@/lib/timing-fit";
 
 export const Route = createFileRoute("/scan")({
   component: ScanMealPage,
@@ -122,48 +143,56 @@ export const CAL_AI_SAMPLE_MEALS: SampleMealModel[] = [
         id: "v-proc",
         category: "processing",
         badgeText: "Mínimamente procesado",
-        description: "Ingredientes enteros cocidos sin aditivos ultraprocesados."
+        description: "Ingredientes enteros cocidos sin aditivos ultraprocesados.",
       },
       {
         id: "v-fib",
         category: "fiber",
         badgeText: "Alto en fibra",
-        description: "Aporte prebiótico de brotes de soja frescos y hierbas digestivas."
+        description: "Aporte prebiótico de brotes de soja frescos y hierbas digestivas.",
       },
       {
         id: "v-prot",
         category: "protein",
         badgeText: "Proteína magra",
-        description: "Pollo hervido con perfil completo de aminoácidos esenciales."
+        description: "Pollo hervido con perfil completo de aminoácidos esenciales.",
       },
       {
         id: "v-sug",
         category: "sugar",
         badgeText: "Sin azúcar añadido",
-        description: "Sin glucosa refinada ni endulzantes industriales."
+        description: "Sin glucosa refinada ni endulzantes industriales.",
       },
       {
         id: "v-fat",
         category: "fat",
         badgeText: "Grasas moderadas",
-        description: "Contenido graso bajo que facilita una rápida asimilación."
+        description: "Contenido graso bajo que facilita una rápida asimilación.",
       },
       {
         id: "v-grain",
         category: "grains",
         badgeText: "Granos simples",
-        description: "Fideos de arroz bánh phở como combustible glucogénico limpio."
+        description: "Fideos de arroz bánh phở como combustible glucogénico limpio.",
       },
       {
         id: "v-sod",
         category: "sodium",
         badgeText: "Sodio moderado",
-        description: "Caldo de huesos sazonado con anís estrellado y salsa de pescado tradicional."
-      }
+        description: "Caldo de huesos sazonado con anís estrellado y salsa de pescado tradicional.",
+      },
     ],
     phytoColors: [
-      { name: "Verde", bgClass: "bg-emerald-500", phytochemical: "Clorofila y Folatos (brotes y hierbas)" },
-      { name: "Blanco", bgClass: "bg-stone-300 dark:bg-stone-400", phytochemical: "Alicina y almidón digestible (arroz y caldo)" }
+      {
+        name: "Verde",
+        bgClass: "bg-emerald-500",
+        phytochemical: "Clorofila y Folatos (brotes y hierbas)",
+      },
+      {
+        name: "Blanco",
+        bgClass: "bg-stone-300 dark:bg-stone-400",
+        phytochemical: "Alicina y almidón digestible (arroz y caldo)",
+      },
     ],
     calloutPins: [
       { name: "Fideos de Arroz", calories: 230, topPct: 45, leftPct: 20 },
@@ -241,48 +270,56 @@ export const CAL_AI_SAMPLE_MEALS: SampleMealModel[] = [
         id: "v-proc",
         category: "processing",
         badgeText: "Sin procesar",
-        description: "Cero refinamiento, ingredientes directos en su estado biológico natural."
+        description: "Cero refinamiento, ingredientes directos en su estado biológico natural.",
       },
       {
         id: "v-fib",
         category: "fiber",
         badgeText: "Alto en fibra",
-        description: "Brócoli entero con fibra vegetal que optimiza la flora intestinal."
+        description: "Brócoli entero con fibra vegetal que optimiza la flora intestinal.",
       },
       {
         id: "v-prot",
         category: "protein",
         badgeText: "Alto en proteína",
-        description: "Salmón del Atlántico con máxima biodisponibilidad proteica."
+        description: "Salmón del Atlántico con máxima biodisponibilidad proteica.",
       },
       {
         id: "v-sug",
         category: "sugar",
         badgeText: "Sin azúcar añadido",
-        description: "Impacto glucémico neutro."
+        description: "Impacto glucémico neutro.",
       },
       {
         id: "v-fat",
         category: "fat",
         badgeText: "Grasas saludables",
-        description: "Lípidos cardioprotectores Omega-3."
+        description: "Lípidos cardioprotectores Omega-3.",
       },
       {
         id: "v-grain",
         category: "grains",
         badgeText: "Sin granos",
-        description: "Comida cetogénica / paleo limpia."
+        description: "Comida cetogénica / paleo limpia.",
       },
       {
         id: "v-sod",
         category: "sodium",
         badgeText: "Bajo en sodio",
-        description: "Sin adición excesiva de sal marina."
-      }
+        description: "Sin adición excesiva de sal marina.",
+      },
     ],
     phytoColors: [
-      { name: "Verde", bgClass: "bg-emerald-500", phytochemical: "Sulforafano y Clorofila (brócoli al vapor)" },
-      { name: "Naranja", bgClass: "bg-amber-500", phytochemical: "Astaxantina y Omega-3 (salmón del Atlántico)" }
+      {
+        name: "Verde",
+        bgClass: "bg-emerald-500",
+        phytochemical: "Sulforafano y Clorofila (brócoli al vapor)",
+      },
+      {
+        name: "Naranja",
+        bgClass: "bg-amber-500",
+        phytochemical: "Astaxantina y Omega-3 (salmón del Atlántico)",
+      },
     ],
     calloutPins: [
       { name: "Salmón del Atlántico", calories: 380, topPct: 35, leftPct: 22 },
@@ -343,49 +380,57 @@ export const CAL_AI_SAMPLE_MEALS: SampleMealModel[] = [
         id: "v-proc",
         category: "processing",
         badgeText: "Mínimamente procesado",
-        description: "Cocción al horno y plancha sin ultraprocesados."
+        description: "Cocción al horno y plancha sin ultraprocesados.",
       },
       {
         id: "v-fib",
         category: "fiber",
         badgeText: "Alto en fibra",
-        description: "Batata con piel y vegetales verdes ricos en fibra soluble."
+        description: "Batata con piel y vegetales verdes ricos en fibra soluble.",
       },
       {
         id: "v-prot",
         category: "protein",
         badgeText: "Alto en proteína",
-        description: "42g de proteína magra de alta digestibilidad."
+        description: "42g de proteína magra de alta digestibilidad.",
       },
       {
         id: "v-sug",
         category: "sugar",
         badgeText: "Sin azúcar añadido",
-        description: "Dulzura natural de la batata asada."
+        description: "Dulzura natural de la batata asada.",
       },
       {
         id: "v-fat",
         category: "fat",
         badgeText: "Grasas saludables",
-        description: "Palta Hass rica en ácido oleico monoinsaturado."
+        description: "Palta Hass rica en ácido oleico monoinsaturado.",
       },
       {
         id: "v-grain",
         category: "grains",
         badgeText: "Granos enteros",
-        description: "Carbohidratos complejos de absorción sostenida."
+        description: "Carbohidratos complejos de absorción sostenida.",
       },
       {
         id: "v-sod",
         category: "sodium",
         badgeText: "Bajo en sodio",
-        description: "Minerales electrolíticos balanceados."
-      }
+        description: "Minerales electrolíticos balanceados.",
+      },
     ],
     phytoColors: [
-      { name: "Verde", bgClass: "bg-emerald-500", phytochemical: "Luteína y Ácido Oleico (palta y hojas verdes)" },
+      {
+        name: "Verde",
+        bgClass: "bg-emerald-500",
+        phytochemical: "Luteína y Ácido Oleico (palta y hojas verdes)",
+      },
       { name: "Naranja", bgClass: "bg-amber-500", phytochemical: "Beta-carotenos (batata asada)" },
-      { name: "Blanco", bgClass: "bg-stone-300 dark:bg-stone-400", phytochemical: "Proteína magra y fibra (pechuga y granos)" }
+      {
+        name: "Blanco",
+        bgClass: "bg-stone-300 dark:bg-stone-400",
+        phytochemical: "Proteína magra y fibra (pechuga y granos)",
+      },
     ],
     calloutPins: [
       { name: "Pechuga de Pollo", calories: 290, topPct: 30, leftPct: 25 },
@@ -463,48 +508,56 @@ export const CAL_AI_SAMPLE_MEALS: SampleMealModel[] = [
         id: "v-proc",
         category: "processing",
         badgeText: "Mínimamente procesado",
-        description: "Cocción casera con fruta entera fresca."
+        description: "Cocción casera con fruta entera fresca.",
       },
       {
         id: "v-fib",
         category: "fiber",
         badgeText: "Buena fibra",
-        description: "Polifenoles y fibra de arándanos enteros."
+        description: "Polifenoles y fibra de arándanos enteros.",
       },
       {
         id: "v-prot",
         category: "protein",
         badgeText: "Proteína moderada",
-        description: "Aporte proteico complementario de huevo y leche."
+        description: "Aporte proteico complementario de huevo y leche.",
       },
       {
         id: "v-sug",
         category: "sugar",
         badgeText: "Azúcar moderado",
-        description: "Sirope de arce puro en porción moderada."
+        description: "Sirope de arce puro en porción moderada.",
       },
       {
         id: "v-fat",
         category: "fat",
         badgeText: "Bajo en grasas",
-        description: "Carga lipídica ligera."
+        description: "Carga lipídica ligera.",
       },
       {
         id: "v-grain",
         category: "grains",
         badgeText: "Granos simples",
-        description: "Combustible glucídico matutino."
+        description: "Combustible glucídico matutino.",
       },
       {
         id: "v-sod",
         category: "sodium",
         badgeText: "Bajo en sodio",
-        description: "Sin exceso de sal añadida."
-      }
+        description: "Sin exceso de sal añadida.",
+      },
     ],
     phytoColors: [
-      { name: "Morado", bgClass: "bg-purple-500", phytochemical: "Antocianinas y Resveratrol (arándanos frescos)" },
-      { name: "Dorado/Blanco", bgClass: "bg-amber-400", phytochemical: "Polifenoles y glucosa rápida (sirope puro)" }
+      {
+        name: "Morado",
+        bgClass: "bg-purple-500",
+        phytochemical: "Antocianinas y Resveratrol (arándanos frescos)",
+      },
+      {
+        name: "Dorado/Blanco",
+        bgClass: "bg-amber-400",
+        phytochemical: "Polifenoles y glucosa rápida (sirope puro)",
+      },
     ],
     calloutPins: [
       { name: "Arándanos Frescos", calories: 8, topPct: 22, leftPct: 28 },
@@ -582,48 +635,56 @@ export const CAL_AI_SAMPLE_MEALS: SampleMealModel[] = [
         id: "v-proc",
         category: "processing",
         badgeText: "Ultraprocesado",
-        description: "Matriz con aditivos, pan industrial y carnes reconstituidas."
+        description: "Matriz con aditivos, pan industrial y carnes reconstituidas.",
       },
       {
         id: "v-fib",
         category: "fiber",
         badgeText: "Bajo en fibra",
-        description: "Carencia de fibra vegetal prebiótica, absorción glucémica acelerada."
+        description: "Carencia de fibra vegetal prebiótica, absorción glucémica acelerada.",
       },
       {
         id: "v-prot",
         category: "protein",
         badgeText: "Proteína grasa",
-        description: "Aporte proteico acompañado de elevada fracción lipídica."
+        description: "Aporte proteico acompañado de elevada fracción lipídica.",
       },
       {
         id: "v-sug",
         category: "sugar",
         badgeText: "Alto en azúcar",
-        description: "Jarabes de alta fructosa en aderezos y panificado."
+        description: "Jarabes de alta fructosa en aderezos y panificado.",
       },
       {
         id: "v-fat",
         category: "fat",
         badgeText: "Alto en grasas",
-        description: "Lípidos saturados y aceites reutilizados en fritura profunda."
+        description: "Lípidos saturados y aceites reutilizados en fritura profunda.",
       },
       {
         id: "v-grain",
         category: "grains",
         badgeText: "Granos refinados",
-        description: "Pan de hamburguesa desprovisto de salvado, rápida conversión en glucosa."
+        description: "Pan de hamburguesa desprovisto de salvado, rápida conversión en glucosa.",
       },
       {
         id: "v-sod",
         category: "sodium",
         badgeText: "Alto en sodio",
-        description: "Supera el 50% del requerimiento diario sugerido por la OMS."
-      }
+        description: "Supera el 50% del requerimiento diario sugerido por la OMS.",
+      },
     ],
     phytoColors: [
-      { name: "Rojo", bgClass: "bg-rose-500", phytochemical: "Licopeno procesado (salsa de tomate)" },
-      { name: "Blanco/Dorado", bgClass: "bg-stone-300 dark:bg-stone-400", phytochemical: "Carbohidratos refinados (pan y patatas)" }
+      {
+        name: "Rojo",
+        bgClass: "bg-rose-500",
+        phytochemical: "Licopeno procesado (salsa de tomate)",
+      },
+      {
+        name: "Blanco/Dorado",
+        bgClass: "bg-stone-300 dark:bg-stone-400",
+        phytochemical: "Carbohidratos refinados (pan y patatas)",
+      },
     ],
     calloutPins: [
       { name: "Medallones de Carne", calories: 480, topPct: 40, leftPct: 30 },
@@ -684,45 +745,322 @@ export const CAL_AI_SAMPLE_MEALS: SampleMealModel[] = [
 ];
 
 export const COMMON_FOODS_DATABASE = [
-  { name: "Pancakes (Caseros)", calPer100g: 270, pPer100g: 4.5, cPer100g: 38.6, fPer100g: 9.1, fiberPer100g: 1.1, category: "carbs" as const },
-  { name: "Sirope de Maple", calPer100g: 260, pPer100g: 0, cPer100g: 67, fPer100g: 0, fiberPer100g: 0, category: "carbs" as const },
-  { name: "Arándanos Frescos", calPer100g: 57, pPer100g: 0.7, cPer100g: 14.5, fPer100g: 0.3, fiberPer100g: 2.4, category: "fruits" as const },
-  { name: "Huevo Entero (Hervido / Pochado)", calPer100g: 155, pPer100g: 13, cPer100g: 1.1, fPer100g: 11, fiberPer100g: 0, category: "protein" as const },
-  { name: "Pechuga de Pollo (Grill)", calPer100g: 165, pPer100g: 31, cPer100g: 0, fPer100g: 3.6, fiberPer100g: 0, category: "protein" as const },
-  { name: "Salmón Fresco (Grill)", calPer100g: 208, pPer100g: 20, cPer100g: 0, fPer100g: 12, fiberPer100g: 0, category: "protein" as const },
-  { name: "Batata Asada (Al Horno)", calPer100g: 86, pPer100g: 1.6, cPer100g: 20, fPer100g: 0.1, fiberPer100g: 3, category: "carbs" as const },
-  { name: "Arroz Blanco Cocido", calPer100g: 130, pPer100g: 2.7, cPer100g: 28, fPer100g: 0.3, fiberPer100g: 0.4, category: "carbs" as const },
-  { name: "Palta Hass Fresca", calPer100g: 160, pPer100g: 2, cPer100g: 8.5, fPer100g: 14.7, fiberPer100g: 6.7, category: "fats" as const },
-  { name: "Brócoli al Vapor", calPer100g: 34, pPer100g: 2.8, cPer100g: 6.6, fPer100g: 0.4, fiberPer100g: 2.6, category: "veggies" as const },
-  { name: "Yogur Griego Natural", calPer100g: 59, pPer100g: 10, cPer100g: 3.6, fPer100g: 0.4, fiberPer100g: 0, category: "dairy" as const },
-  { name: "Aceite de Oliva Extra Virgen", calPer100g: 884, pPer100g: 0, cPer100g: 0, fPer100g: 100, fiberPer100g: 0, category: "fats" as const },
+  {
+    name: "Pancakes (Caseros)",
+    calPer100g: 270,
+    pPer100g: 4.5,
+    cPer100g: 38.6,
+    fPer100g: 9.1,
+    fiberPer100g: 1.1,
+    category: "carbs" as const,
+  },
+  {
+    name: "Sirope de Maple",
+    calPer100g: 260,
+    pPer100g: 0,
+    cPer100g: 67,
+    fPer100g: 0,
+    fiberPer100g: 0,
+    category: "carbs" as const,
+  },
+  {
+    name: "Arándanos Frescos",
+    calPer100g: 57,
+    pPer100g: 0.7,
+    cPer100g: 14.5,
+    fPer100g: 0.3,
+    fiberPer100g: 2.4,
+    category: "fruits" as const,
+  },
+  {
+    name: "Huevo Entero (Hervido / Pochado)",
+    calPer100g: 155,
+    pPer100g: 13,
+    cPer100g: 1.1,
+    fPer100g: 11,
+    fiberPer100g: 0,
+    category: "protein" as const,
+  },
+  {
+    name: "Pechuga de Pollo (Grill)",
+    calPer100g: 165,
+    pPer100g: 31,
+    cPer100g: 0,
+    fPer100g: 3.6,
+    fiberPer100g: 0,
+    category: "protein" as const,
+  },
+  {
+    name: "Salmón Fresco (Grill)",
+    calPer100g: 208,
+    pPer100g: 20,
+    cPer100g: 0,
+    fPer100g: 12,
+    fiberPer100g: 0,
+    category: "protein" as const,
+  },
+  {
+    name: "Batata Asada (Al Horno)",
+    calPer100g: 86,
+    pPer100g: 1.6,
+    cPer100g: 20,
+    fPer100g: 0.1,
+    fiberPer100g: 3,
+    category: "carbs" as const,
+  },
+  {
+    name: "Arroz Blanco Cocido",
+    calPer100g: 130,
+    pPer100g: 2.7,
+    cPer100g: 28,
+    fPer100g: 0.3,
+    fiberPer100g: 0.4,
+    category: "carbs" as const,
+  },
+  {
+    name: "Palta Hass Fresca",
+    calPer100g: 160,
+    pPer100g: 2,
+    cPer100g: 8.5,
+    fPer100g: 14.7,
+    fiberPer100g: 6.7,
+    category: "fats" as const,
+  },
+  {
+    name: "Brócoli al Vapor",
+    calPer100g: 34,
+    pPer100g: 2.8,
+    cPer100g: 6.6,
+    fPer100g: 0.4,
+    fiberPer100g: 2.6,
+    category: "veggies" as const,
+  },
+  {
+    name: "Yogur Griego Natural",
+    calPer100g: 59,
+    pPer100g: 10,
+    cPer100g: 3.6,
+    fPer100g: 0.4,
+    fiberPer100g: 0,
+    category: "dairy" as const,
+  },
+  {
+    name: "Aceite de Oliva Extra Virgen",
+    calPer100g: 884,
+    pPer100g: 0,
+    cPer100g: 0,
+    fPer100g: 100,
+    fiberPer100g: 0,
+    category: "fats" as const,
+  },
 ];
 
 export const MEAL_TYPES = [
   "Desayuno",
   "Almuerzo",
-  "Snack 1",
   "Merienda",
-  "Snack 2",
   "Cena",
   "Pre-entreno",
   "Post-entreno",
+  "Snack",
 ];
 
-export const EATING_REASONS = [
-  { id: "hunger", label: "Hambre física" },
-  { id: "schedule", label: "Horario habitual" },
-  { id: "social", label: "Social / Compartir" },
-  { id: "craving", label: "Antojo / Placer" },
-  { id: "stress", label: "Estrés / Emocional" },
-  { id: "convenience", label: "Prisa / Rutina" },
+export const EATING_REASONS_CONFIG = [
+  { id: "hunger", label: "Hambre física", icon: HeartPulse, desc: "Señal somática real de necesidad energética" },
+  { id: "schedule", label: "Horario habitual", icon: Clock, desc: "Pauta biológica o rutina horaria del día" },
+  { id: "social", label: "Social / Compartir", icon: Users, desc: "Comensalidad, amigos, familia o evento social" },
+  { id: "craving", label: "Antojo / Placer", icon: Sparkles, desc: "Disfrute sensorial o deseo puntual consciente" },
+  { id: "stress", label: "Estrés / Emocional", icon: Wind, desc: "Tensión, sobrecarga o búsqueda de calma" },
+  { id: "convenience", label: "Prisa / Rutina", icon: Timer, desc: "Poco tiempo, practicidad o resolución rápida" },
 ];
+
+export const POSTPRANDIAL_SYMPTOMS = [
+  { id: "energia", label: "Con energía", icon: Zap },
+  { id: "ligero", label: "Ligero / Óptimo", icon: Sparkles },
+  { id: "somnolencia", label: "Somnolencia", icon: Moon },
+  { id: "pesadez", label: "Pesadez / Hinchazón", icon: Activity },
+  { id: "reflujo", label: "Reflujo / Acidez", icon: Flame },
+];
+
+// Helper: Contextual Meal Type and Timing Inference
+function inferContextualMealType(timelineItems?: any[]): {
+  mealType: string;
+  contextTag: string;
+  isPreWorkout: boolean;
+  isPostWorkout: boolean;
+  isNightWindow: boolean;
+} {
+  const now = new Date();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const dateStr = now.toISOString().split("T")[0];
+
+  let isPreWorkout = false;
+  let isPostWorkout = false;
+
+  // 1. Check recent activity in timeline (within past 150 min)
+  if (timelineItems && Array.isArray(timelineItems)) {
+    for (const item of timelineItems) {
+      if (item && item.date === dateStr) {
+        const isActivity =
+          item.type === "activity" || item.type === "gym_session" || item.type === "class_session";
+        if (isActivity && item.time) {
+          const match = item.time.match(/(\d{1,2}):(\d{2})/);
+          if (match) {
+            const itemMin = parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
+            const diff = currentMinutes - itemMin;
+            if (diff >= 0 && diff <= 150) {
+              isPostWorkout = true;
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // 2. Check scheduled upcoming class (within next 120 min)
+  if (typeof window !== "undefined") {
+    try {
+      const res = JSON.parse(localStorage.getItem("shakerfy_user_reservations") || "[]");
+      if (Array.isArray(res)) {
+        for (const r of res) {
+          if (r && r.time) {
+            const match = r.time.match(/(\d{1,2}):(\d{2})/);
+            if (match) {
+              const resMin = parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
+              const untilClass = resMin - currentMinutes;
+              if (untilClass >= 0 && untilClass <= 120) {
+                isPreWorkout = true;
+                break;
+              }
+            }
+          }
+        }
+      }
+    } catch (_) {}
+  }
+
+  const isNightWindow = currentMinutes >= 21 * 60 + 30 || currentMinutes < 5 * 60;
+
+  if (isPreWorkout) {
+    return {
+      mealType: "Pre-entreno",
+      contextTag: "Ventana Pre-Entreno",
+      isPreWorkout: true,
+      isPostWorkout: false,
+      isNightWindow,
+    };
+  }
+
+  if (isPostWorkout) {
+    return {
+      mealType: "Post-entreno",
+      contextTag: "Ventana Post-Entreno",
+      isPreWorkout: false,
+      isPostWorkout: true,
+      isNightWindow,
+    };
+  }
+
+  // Solar & Circadian Windows
+  if (currentMinutes >= 5 * 60 && currentMinutes < 11 * 60 + 30) {
+    return {
+      mealType: "Desayuno",
+      contextTag: "Activación Matutina",
+      isPreWorkout: false,
+      isPostWorkout: false,
+      isNightWindow: false,
+    };
+  }
+  if (currentMinutes >= 11 * 60 + 30 && currentMinutes < 15 * 60 + 30) {
+    return {
+      mealType: "Almuerzo",
+      contextTag: "Cenit / Mediodía Solar",
+      isPreWorkout: false,
+      isPostWorkout: false,
+      isNightWindow: false,
+    };
+  }
+  if (currentMinutes >= 15 * 60 + 30 && currentMinutes < 19 * 60 + 30) {
+    return {
+      mealType: "Merienda",
+      contextTag: "Recarga Vespertina",
+      isPreWorkout: false,
+      isPostWorkout: false,
+      isNightWindow: false,
+    };
+  }
+  if (currentMinutes >= 19 * 60 + 30 && currentMinutes < 23 * 60 + 30) {
+    return {
+      mealType: "Cena",
+      contextTag: "Ventana Nocturna",
+      isPreWorkout: false,
+      isPostWorkout: false,
+      isNightWindow: true,
+    };
+  }
+
+  return {
+    mealType: "Snack",
+    contextTag: "Colación Nocturna",
+    isPreWorkout: false,
+    isPostWorkout: false,
+    isNightWindow: true,
+  };
+}
+
+// Helper: Contextual Natural Language AI Insight
+function generateContextualAiInsight(params: {
+  baseNarrative?: string;
+  selectedReason: string;
+  isPreWorkout: boolean;
+  isPostWorkout: boolean;
+  isNightWindow: boolean;
+  bioScore: number;
+}): string {
+  const { baseNarrative, selectedReason, isPreWorkout, isPostWorkout, isNightWindow } = params;
+
+  // Pre-workout with upcoming class (~90 min)
+  if (isPreWorkout) {
+    return `Detectamos una clase o sesión de entrenamiento próxima en tu agenda. Este plato aporta una base sólida; para optimizar tu reserva de glucógeno y disponibilidad energética, puedes sumar una porción de carbohidratos nobles de fácil asimilación (ej. papas al vapor, arroz o fruta fresca).`;
+  }
+
+  // Post-workout recovery
+  if (isPostWorkout) {
+    return `Ventana post-esfuerzo: la combinación de aminoácidos y micronutrientes de este plato apoya la recuperación muscular y reposición de glucógeno. Acompaña con hidratación de apoyo para favorecer el balance celular.`;
+  }
+
+  // Stress / Emotional eating reason
+  if (selectedReason === "Estrés / Emocional") {
+    return `Reconocer la ingesta emocional es un acto valioso de autoconciencia. Disfruta tu comida con calma y presencia, saboreando cada bocado sin culpa. Si sientes tensión, puedes realizar una breve pausa de respiración diafragmática para optimizar la digestión.`;
+  }
+
+  // Craving / Pleasure
+  if (selectedReason === "Antojo / Placer") {
+    return `El disfrute sensorial consciente forma parte integral del bienestar. Conectarte con los sabores y texturas de tu plato envía señales biológicas genuinas de saciedad al sistema nervioso.`;
+  }
+
+  // Routine / Convenience
+  if (selectedReason === "Prisa / Rutina") {
+    return `Resolución práctica para tu rutina. Aun con poco tiempo, masticar pausadamente y acompañar con agua antes de comer mejorará tu confort digestivo.`;
+  }
+
+  // Night window
+  if (isNightWindow) {
+    return `Ventana nocturna: una ingesta de digestión ligera preserva la secreción de melatonina y favorece el descanso reparador. Una infusión tibia al finalizar potenciará tu confort.`;
+  }
+
+  return (
+    baseNarrative ||
+    `Plato con balance de micronutrientes y fibra activa para una energía metabólica estable y confort digestivo sostenido.`
+  );
+}
 
 function ScanMealPage() {
   const navigate = useNavigate();
 
-  // Screen State: "scanner" (Live Camera Viewfinder) | "nutrition" (Step 1: Bio Report) | "checkin" (Step 2: Mindful Check-in) | "fix" (AI Correction)
-  const [currentScreen, setCurrentScreen] = useState<"scanner" | "nutrition" | "checkin" | "fix">("scanner");
+  // Screen State: "scanner" (Live Camera Viewfinder) | "nutrition" (Unified Bio Report & Choice Chips) | "fix" (AI Correction)
+  const [currentScreen, setCurrentScreen] = useState<"scanner" | "nutrition" | "fix">("scanner");
 
   // Video Ref & Stream State (Native MediaStream)
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -742,7 +1080,9 @@ function ScanMealPage() {
   const activeImage = customImage || initialSample.img;
 
   // Scanner UI States
-  const [activeTab, setActiveTab] = useState<"scan" | "barcode" | "gallery" | "saved" | "manual">("scan");
+  const [activeTab, setActiveTab] = useState<"scan" | "barcode" | "gallery" | "saved" | "manual">(
+    "scan",
+  );
   const [flashlightOn, setFlashlightOn] = useState(false);
   const [isScanningLaser, setIsScanningLaser] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
@@ -756,7 +1096,9 @@ function ScanMealPage() {
   const [bioGrade, setBioGrade] = useState(initialSample.bioGrade);
   const [bioQualityLabel, setBioQualityLabel] = useState(initialSample.bioQualityLabel);
   const [bioGaugeIndex, setBioGaugeIndex] = useState(initialSample.bioGaugeIndex);
-  const [vectorBadges, setVectorBadges] = useState<NutritionVectorBadge[]>(initialSample.vectorBadges);
+  const [vectorBadges, setVectorBadges] = useState<NutritionVectorBadge[]>(
+    initialSample.vectorBadges,
+  );
   const [phytoColors, setPhytoColors] = useState<PhytoColorItem[]>(initialSample.phytoColors || []);
 
   // ICN Theme Helper with dynamic biological color accents
@@ -764,7 +1106,8 @@ function ScanMealPage() {
     if (score >= 85) {
       return {
         scoreText: "text-emerald-500 dark:text-emerald-400",
-        gradeBadge: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
+        gradeBadge:
+          "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
         cardBorder: "border-emerald-500/20",
         iconColor: "text-emerald-500",
         gaugeColor: "bg-emerald-500",
@@ -796,19 +1139,24 @@ function ScanMealPage() {
       gaugeColor: "bg-rose-500",
     };
   };
-  const [mealType, setMealType] = useState(initialSample.mealType);
+  const [mealType, setMealType] = useState(initialSample.mealType || "Almuerzo");
   const [servings, setServings] = useState(initialSample.servings);
   const [healthScore, setHealthScore] = useState(initialSample.healthScore);
   const [calloutPins, setCalloutPins] = useState<MealCalloutPin[]>(initialSample.calloutPins);
   const [ingredients, setIngredients] = useState<MealIngredientItem[]>(initialSample.ingredients);
+  const [selectedReason, setSelectedReason] = useState<string>("Hambre física");
   const [selectedReasons, setSelectedReasons] = useState<string[]>(["Hambre física"]);
+  const [selectedSymptom, setSelectedSymptom] = useState<string | null>(null);
   const [showBreathingModal, setShowBreathingModal] = useState(false);
 
   const handleToggleReason = (reasonLabel: string) => {
+    setSelectedReason(reasonLabel);
     setSelectedReasons((prev) =>
       prev.includes(reasonLabel)
-        ? prev.filter((r) => r !== reasonLabel)
-        : [...prev, reasonLabel]
+        ? prev.length > 1
+          ? prev.filter((r) => r !== reasonLabel)
+          : [reasonLabel]
+        : [...prev, reasonLabel],
     );
   };
 
@@ -849,20 +1197,32 @@ function ScanMealPage() {
     // 1. If specific device selected
     if (selectedCameraId) {
       constraintsToTry.push({
-        video: { deviceId: { ideal: selectedCameraId }, width: { ideal: 1920 }, height: { ideal: 1080 } },
+        video: {
+          deviceId: { ideal: selectedCameraId },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+        },
         audio: false,
       });
     }
 
     // 2. Ideal facing mode
     constraintsToTry.push({
-      video: { facingMode: { ideal: cameraFacing }, width: { ideal: 1920 }, height: { ideal: 1080 } },
+      video: {
+        facingMode: { ideal: cameraFacing },
+        width: { ideal: 1920 },
+        height: { ideal: 1080 },
+      },
       audio: false,
     });
 
     // 3. Fallback opposite facing mode
     constraintsToTry.push({
-      video: { facingMode: { ideal: cameraFacing === "environment" ? "user" : "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } },
+      video: {
+        facingMode: { ideal: cameraFacing === "environment" ? "user" : "environment" },
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+      },
       audio: false,
     });
 
@@ -1043,8 +1403,14 @@ function ScanMealPage() {
   };
 
   // Base Nutrient Calculations
-  const baseCalories = useMemo(() => ingredients.reduce((acc, i) => acc + i.calories, 0), [ingredients]);
-  const baseProtein = useMemo(() => ingredients.reduce((acc, i) => acc + i.protein, 0), [ingredients]);
+  const baseCalories = useMemo(
+    () => ingredients.reduce((acc, i) => acc + i.calories, 0),
+    [ingredients],
+  );
+  const baseProtein = useMemo(
+    () => ingredients.reduce((acc, i) => acc + i.protein, 0),
+    [ingredients],
+  );
   const baseCarbs = useMemo(() => ingredients.reduce((acc, i) => acc + i.carbs, 0), [ingredients]);
   const baseFat = useMemo(() => ingredients.reduce((acc, i) => acc + i.fat, 0), [ingredients]);
   const baseFiber = useMemo(() => ingredients.reduce((acc, i) => acc + i.fiber, 0), [ingredients]);
@@ -1071,7 +1437,7 @@ function ScanMealPage() {
           fat: Math.round(item.fPer100g * factor * 10) / 10,
           fiber: Math.round(item.fiberPer100g * factor * 10) / 10,
         };
-      })
+      }),
     );
   };
 
@@ -1121,7 +1487,11 @@ function ScanMealPage() {
         setServings((s) => Math.max(0.5, s / 2));
       } else if (lower.includes("extra") || lower.includes("mas") || lower.includes("arandanos")) {
         setIngredients((prev) =>
-          prev.map((i) => (i.name.toLowerCase().includes("blueberr") ? { ...i, grams: i.grams + 30, calories: i.calories + 18 } : i))
+          prev.map((i) =>
+            i.name.toLowerCase().includes("blueberr")
+              ? { ...i, grams: i.grams + 30, calories: i.calories + 18 }
+              : i,
+          ),
         );
       } else {
         const newItem: MealIngredientItem = {
@@ -1155,13 +1525,32 @@ function ScanMealPage() {
     const timeStr = now.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
     const dateStr = now.toISOString().split("T")[0];
 
+    const stored =
+      typeof window !== "undefined"
+        ? JSON.parse(localStorage.getItem("shakerfy_user_timeline_items") || "[]")
+        : [];
+
+    const context = inferContextualMealType(stored);
+    const resolvedMealType = context.mealType || mealType || "Almuerzo";
+    const reasonsList = selectedReason ? [selectedReason] : selectedReasons;
+
+    const dynamicInsight = generateContextualAiInsight({
+      baseNarrative: narrative,
+      selectedReason: selectedReason || reasonsList[0] || "Hambre física",
+      isPreWorkout: context.isPreWorkout,
+      isPostWorkout: context.isPostWorkout,
+      isNightWindow: context.isNightWindow,
+      bioScore: bioScore,
+    });
+
     const newMealItem = {
       id: `meal-${Date.now()}`,
       type: "meal",
+      mealType: resolvedMealType,
       time: timeStr,
       date: dateStr,
       title: reportTitle || title,
-      subtitle: `${mealType || "Comida"} • Bio-Report (ICN ${bioScore})`,
+      subtitle: `${resolvedMealType} • Reporte Nutricional`,
       img: activeImage,
       calories: totalCalories,
       kcal: totalCalories,
@@ -1178,13 +1567,35 @@ function ScanMealPage() {
       bioQualityLabel: bioQualityLabel,
       bioGaugeIndex: bioGaugeIndex,
       ingredients: ingredients,
-      desc: narrative || ingredients.map((i) => `${i.name} (${Math.round(i.grams * servings)}g)`).join(", "),
-      summary: narrative || `${title} with ${totalCalories} kcal, ${totalProtein}g protein, ${totalCarbs}g carbs and ${totalFat}g fats.`,
-      coachFeedback: narrative || `Índice de Calidad Nutricional (ICN): ${bioScore}/100 — ${bioQualityLabel}.`,
-      tag: `ICN ${bioScore}/100 • ${bioQualityLabel}`,
+      narrative:
+        narrative ||
+        ingredients.map((i) => `${i.name} (${Math.round(i.grams * servings)}g)`).join(", "),
+      desc:
+        narrative ||
+        ingredients.map((i) => `${i.name} (${Math.round(i.grams * servings)}g)`).join(", "),
+      summary:
+        narrative ||
+        `${title} with ${totalCalories} kcal, ${totalProtein}g protein, ${totalCarbs}g carbs and ${totalFat}g fats.`,
+      coachFeedback: dynamicInsight,
+      tag: bioQualityLabel || "Valor Nutricional",
       vectorBadges: vectorBadges,
       phytoColors: phytoColors,
-      reasons: selectedReasons
+      reasons: reasonsList,
+      eatingReasons: reasonsList,
+      selectedReasons: reasonsList,
+      symptom: selectedSymptom || undefined,
+      symptoms: selectedSymptom ? [selectedSymptom] : [],
+      timingFit: calculateTimingFit(
+        {
+          time: timeStr,
+          date: dateStr,
+          bioScore,
+          vectorBadges,
+          reasons: reasonsList,
+          title: reportTitle || title,
+        },
+        stored,
+      ),
     };
 
     if (typeof window !== "undefined") {
@@ -1192,6 +1603,7 @@ function ScanMealPage() {
         const stored = JSON.parse(localStorage.getItem("shakerfy_user_timeline_items") || "[]");
         const updated = [newMealItem, ...stored];
         localStorage.setItem("shakerfy_user_timeline_items", JSON.stringify(updated));
+        window.dispatchEvent(new CustomEvent("shakerfy:timeline-update"));
       } catch (err) {
         console.error("Error saving timeline meal item:", err);
       }
@@ -1202,18 +1614,16 @@ function ScanMealPage() {
   };
 
   const filteredFoods = COMMON_FOODS_DATABASE.filter((f) =>
-    f.name.toLowerCase().includes(foodSearchQuery.toLowerCase())
+    f.name.toLowerCase().includes(foodSearchQuery.toLowerCase()),
   );
 
   return (
     <div className="fixed inset-0 z-50 w-screen h-[100dvh] bg-slate-950 text-foreground overflow-hidden flex flex-col justify-between select-none">
-      
       {/* ========================================================================= */}
       {/* SCREEN 1: SCANNER FULL SCREEN (React-Webcam Live Camera Viewfinder)       */}
       {/* ========================================================================= */}
       {currentScreen === "scanner" && (
         <div className="relative w-full h-full flex flex-col justify-between overflow-hidden">
-          
           {/* Full Screen Viewfinder: HTML5 Video Stream or Custom Loaded Image */}
           <div className="absolute inset-0 z-0 bg-black flex items-center justify-center overflow-hidden">
             {!customImage ? (
@@ -1227,22 +1637,20 @@ function ScanMealPage() {
                 }}
                 className={cn(
                   "w-full h-full object-cover",
-                  cameraFacing === "user" && !selectedCameraId && "-scale-x-100"
+                  cameraFacing === "user" && !selectedCameraId && "-scale-x-100",
                 )}
               />
             ) : (
-              <img 
-                src={activeImage} 
-                alt="Scanner Viewfinder" 
-                className="w-full h-full object-cover" 
+              <img
+                src={activeImage}
+                alt="Scanner Viewfinder"
+                className="w-full h-full object-cover"
               />
             )}
             <div className="absolute inset-0 bg-black/25 pointer-events-none" />
-            
+
             {/* Flashlight overlay effect */}
-            {flashlightOn && (
-              <div className="absolute inset-0 bg-white/20 pointer-events-none" />
-            )}
+            {flashlightOn && <div className="absolute inset-0 bg-white/20 pointer-events-none" />}
 
             {/* Dynamic Laser Scanning Beam */}
             {isScanningLaser && (
@@ -1336,11 +1744,13 @@ function ScanMealPage() {
                         "w-full text-left text-xs font-semibold px-2.5 py-1.5 rounded-xl transition cursor-pointer flex items-center justify-between",
                         selectedCameraId === cam.deviceId
                           ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/30"
-                          : "hover:bg-secondary text-foreground"
+                          : "hover:bg-secondary text-foreground",
                       )}
                     >
                       <span className="truncate">{cam.label || `Cámara ${idx + 1}`}</span>
-                      {selectedCameraId === cam.deviceId && <Check className="w-3.5 h-3.5 shrink-0 ml-1 text-emerald-500" />}
+                      {selectedCameraId === cam.deviceId && (
+                        <Check className="w-3.5 h-3.5 shrink-0 ml-1 text-emerald-500" />
+                      )}
                     </button>
                   ))}
                 </div>
@@ -1358,11 +1768,13 @@ function ScanMealPage() {
                     "w-full text-left text-xs font-semibold px-2.5 py-2 rounded-xl transition cursor-pointer flex items-center justify-between",
                     selectedSampleIndex === idx && !customImage
                       ? "bg-foreground text-background font-bold"
-                      : "hover:bg-secondary text-foreground"
+                      : "hover:bg-secondary text-foreground",
                   )}
                 >
                   <span className="truncate">{sample.title}</span>
-                  <span className="text-[10px] opacity-80 ml-1 shrink-0 font-mono font-bold text-muted-foreground">{sample.bioScore} pts</span>
+                  <span className="text-[10px] opacity-80 ml-1 shrink-0 font-medium text-muted-foreground">
+                    {sample.bioGaugeIndex >= 4 ? "Óptimo" : sample.bioGaugeIndex >= 3 ? "Alto" : "Equilibrado"}
+                  </span>
                 </button>
               ))}
 
@@ -1396,10 +1808,8 @@ function ScanMealPage() {
 
           {/* Bottom Dock Navigation & Capture Area */}
           <div className="relative z-20 pb-8 sm:pb-12 px-6 max-w-md mx-auto w-full space-y-6">
-            
             {/* Floating Dock Bar */}
             <div className="bg-white/85 dark:bg-black/75 backdrop-blur-xl rounded-full p-1.5 flex items-center justify-between shadow-2xl border border-white/30">
-              
               {/* Scan food mode */}
               <button
                 type="button"
@@ -1411,7 +1821,7 @@ function ScanMealPage() {
                   "px-4 py-2 rounded-full text-xs font-bold flex items-center gap-1.5 transition cursor-pointer",
                   activeTab === "scan"
                     ? "bg-white text-black shadow-md font-extrabold"
-                    : "text-foreground hover:bg-white/40"
+                    : "text-foreground hover:bg-white/40",
                 )}
               >
                 <Utensils className="w-4 h-4" />
@@ -1434,7 +1844,12 @@ function ScanMealPage() {
               {/* Gallery Image Upload */}
               <label className="p-2.5 text-foreground/80 hover:text-foreground hover:bg-white/40 rounded-full transition cursor-pointer">
                 <ImageIcon className="w-4 h-4" />
-                <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
               </label>
 
               {/* Bookmark Button */}
@@ -1463,14 +1878,13 @@ function ScanMealPage() {
 
             {/* Shutter Capture Row */}
             <div className="flex items-center justify-between px-4">
-              
               {/* Flashlight toggle */}
               <button
                 type="button"
                 onClick={handleToggleFlashlight}
                 className={cn(
                   "w-12 h-12 rounded-full backdrop-blur-md flex items-center justify-center transition cursor-pointer border border-white/10 shadow-lg",
-                  flashlightOn ? "bg-white text-black shadow-lg" : "bg-black/40 text-white"
+                  flashlightOn ? "bg-white text-black shadow-lg" : "bg-black/40 text-white",
                 )}
                 aria-label="Flashlight"
               >
@@ -1498,469 +1912,375 @@ function ScanMealPage() {
               >
                 <RefreshCw className="w-5 h-5" />
               </button>
-
             </div>
-
           </div>
-
         </div>
       )}
 
       {/* ========================================================================= */}
-      {/* SCREEN 2: STEP 1 - BIO-REPORTE NUTRICIONAL DE LA IA                      */}
+      {/* SCREEN 2: BIO-REPORTE NUTRICIONAL DE LA IA (PANTALLA ÚNICA CON CHIPS)    */}
       {/* ========================================================================= */}
-      {currentScreen === "nutrition" && (() => {
-        const icnTheme = getIcnTheme(bioScore);
-        return (
-          <div className="min-h-screen w-full bg-background text-foreground flex flex-col justify-between overflow-x-hidden animate-in fade-in duration-300">
-            
-            {/* Top Bar */}
-            <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-md border-b border-border/60 px-4 sm:px-6 py-3.5 flex items-center justify-between max-w-xl mx-auto w-full">
-              <button
-                type="button"
-                onClick={() => setCurrentScreen("scanner")}
-                className="w-9 h-9 rounded-full bg-secondary text-foreground flex items-center justify-center hover:bg-secondary/80 active:scale-95 transition cursor-pointer border border-border/50 shadow-xs"
-                aria-label="Volver al escáner"
-              >
-                <ArrowLeft className="w-4 h-4" />
-              </button>
+      {currentScreen === "nutrition" &&
+        (() => {
+          const icnTheme = getIcnTheme(bioScore);
+          const storedTimeline =
+            typeof window !== "undefined"
+              ? JSON.parse(localStorage.getItem("shakerfy_user_timeline_items") || "[]")
+              : [];
+          const currentContext = inferContextualMealType(storedTimeline);
+          const dynamicInsight = generateContextualAiInsight({
+            baseNarrative: narrative,
+            selectedReason: selectedReason || "Hambre física",
+            isPreWorkout: currentContext.isPreWorkout,
+            isPostWorkout: currentContext.isPostWorkout,
+            isNightWindow: currentContext.isNightWindow,
+            bioScore: bioScore,
+          });
 
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-muted-foreground">
-                  PASO 1 DE 2
-                </span>
-                <span className="text-xs font-bold text-foreground">
-                  Reporte Biológico
-                </span>
-              </div>
+          return (
+            <div className="min-h-screen w-full bg-background text-foreground flex flex-col justify-between overflow-x-hidden animate-in fade-in duration-300">
+              {/* Top Bar */}
+              <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-md border-b border-border/60 px-4 sm:px-6 py-3.5 flex items-center justify-between max-w-xl mx-auto w-full">
+                <button
+                  type="button"
+                  onClick={() => setCurrentScreen("scanner")}
+                  className="w-9 h-9 rounded-full bg-secondary text-foreground flex items-center justify-center hover:bg-secondary/80 active:scale-95 transition cursor-pointer border border-border/50 shadow-xs"
+                  aria-label="Volver al escáner"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                </button>
 
-              <button
-                type="button"
-                onClick={() => setShowOptions(!showOptions)}
-                className="w-9 h-9 rounded-full bg-secondary text-foreground flex items-center justify-center hover:bg-secondary/80 active:scale-95 transition cursor-pointer border border-border/50 shadow-xs"
-                aria-label="Opciones"
-              >
-                <MoreHorizontal className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Main Content Body */}
-            <div className="flex-1 max-w-xl mx-auto w-full px-4 sm:px-6 py-5 space-y-5 text-left">
-              
-              {/* Sample Dish Selector (if toggled) */}
-              {showOptions && (
-                <div className="bg-card border border-border rounded-2xl p-3 shadow-xl space-y-2 animate-in fade-in zoom-in-95 text-left">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1 block">
-                    Seleccionar Muestra de Análisis:
-                  </span>
-                  {CAL_AI_SAMPLE_MEALS.map((sample, idx) => (
-                    <button
-                      key={sample.id}
-                      type="button"
-                      onClick={() => handleSelectSample(idx)}
-                      className={cn(
-                        "w-full text-left text-xs font-semibold px-3 py-2 rounded-xl transition cursor-pointer flex items-center justify-between",
-                        selectedSampleIndex === idx && !customImage
-                          ? "bg-foreground text-background font-bold"
-                          : "hover:bg-secondary text-foreground"
-                      )}
-                    >
-                      <span className="truncate">{sample.title}</span>
-                      <span className="text-[10px] opacity-80 ml-1 shrink-0 font-mono font-bold">{sample.bioScore} pts</span>
-                    </button>
-                  ))}
+                <div className="flex flex-col items-center">
+                  <span className="text-xs font-bold text-foreground">Reporte Biológico IA</span>
                 </div>
-              )}
 
-              {/* Meal Photo Card - Clean Image */}
-              <div className="relative h-60 sm:h-72 w-full rounded-3xl overflow-hidden border border-border shadow-xs bg-muted group">
-                <img 
-                  src={activeImage} 
-                  alt="Foto del plato" 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
-                />
+                <button
+                  type="button"
+                  onClick={() => setShowOptions(!showOptions)}
+                  className="w-9 h-9 rounded-full bg-secondary text-foreground flex items-center justify-center hover:bg-secondary/80 active:scale-95 transition cursor-pointer border border-border/50 shadow-xs"
+                  aria-label="Opciones"
+                >
+                  <MoreHorizontal className="w-4 h-4" />
+                </button>
               </div>
 
-              {/* Meal Title & AI Narrative */}
-              <div className="space-y-1.5 pt-1">
-                <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground leading-snug">
-                  {reportTitle || title}
-                </h1>
-                <p className="text-xs sm:text-[13px] text-muted-foreground leading-relaxed font-normal">
-                  {narrative}
-                </p>
-              </div>
-
-              {/* ========================================================================= */}
-              {/* PROPRIETARY SCORE: ÍNDICE DE CALIDAD NUTRICIONAL SHAKERFY (ICN) - COLOR   */}
-              {/* ========================================================================= */}
-              <Card className={cn("rounded-3xl border bg-card shadow-xs p-5 sm:p-6 space-y-4 text-left transition-all", icnTheme.cardBorder)}>
-                <CardContent className="p-0 space-y-3.5">
-                  
-                  {/* Card Header with Info Button */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <ShieldCheck className={cn("w-4 h-4", icnTheme.iconColor)} />
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                        Índice de Calidad Nutricional (ICN)
-                      </span>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => setShowBioScoreExplanation(!showBioScoreExplanation)}
-                      className={cn(
-                        "text-muted-foreground hover:text-foreground transition p-1.5 rounded-full hover:bg-secondary cursor-pointer",
-                        showBioScoreExplanation && "bg-secondary text-foreground"
-                      )}
-                      title="¿Cómo se calcula el ICN?"
-                    >
-                      <Info className="w-4 h-4" />
-                    </button>
-                  </div>
-
-                  {/* Main Score Hero Row */}
-                  <div className="flex items-baseline justify-between gap-3">
-                    <div className="space-y-0.5">
-                      <div className="flex items-baseline gap-1.5">
-                        <span className={cn("text-3xl sm:text-4xl font-black tracking-tight font-mono", icnTheme.scoreText)}>
-                          {bioScore}
+              {/* Main Content Body */}
+              <div className="flex-1 max-w-xl mx-auto w-full px-4 sm:px-6 py-5 space-y-5 text-left">
+                {/* Sample Dish Selector (if toggled) */}
+                {showOptions && (
+                  <div className="bg-card border border-border rounded-2xl p-3 shadow-xl space-y-2 animate-in fade-in zoom-in-95 text-left">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1 block">
+                      Seleccionar Muestra de Análisis:
+                    </span>
+                    {CAL_AI_SAMPLE_MEALS.map((sample, idx) => (
+                      <button
+                        key={sample.id}
+                        type="button"
+                        onClick={() => handleSelectSample(idx)}
+                        className={cn(
+                          "w-full text-left text-xs font-semibold px-3 py-2 rounded-xl transition cursor-pointer flex items-center justify-between",
+                          selectedSampleIndex === idx && !customImage
+                            ? "bg-foreground text-background font-bold"
+                            : "hover:bg-secondary text-foreground",
+                        )}
+                      >
+                        <span className="truncate">{sample.title}</span>
+                        <span className="text-[10px] opacity-80 ml-1 shrink-0 font-medium text-muted-foreground">
+                          {sample.bioGaugeIndex >= 4 ? "Óptimo" : sample.bioGaugeIndex >= 3 ? "Alto" : "Equilibrado"}
                         </span>
-                        <span className="text-xs font-bold text-muted-foreground">/ 100</span>
-                      </div>
-                      <span className="text-xs font-semibold text-muted-foreground block">
-                        {bioQualityLabel}
-                      </span>
-                    </div>
-
-                    <Badge variant="outline" className={cn("text-xs font-bold px-3 py-1 rounded-xl shadow-none whitespace-nowrap shrink-0", icnTheme.gradeBadge)}>
-                      Grado {bioGrade}
-                    </Badge>
+                      </button>
+                    ))}
                   </div>
+                )}
 
-                  {/* 5-Segment Bio-Nutrient Gauge Bar with Biological Colors */}
-                  <div className="space-y-1 pt-1 select-none">
-                    <div className="flex items-center gap-1.5">
-                      {[
-                        { label: "Básico", min: 0 },
-                        { label: "Moderado", min: 55 },
-                        { label: "Equilibrado", min: 70 },
-                        { label: "Superior", min: 85 },
-                        { label: "Óptimo", min: 95 },
-                      ].map((seg, idx) => {
-                        const isReached = idx <= bioGaugeIndex;
-                        const isCurrent = idx === bioGaugeIndex;
+                {/* Meal Photo Card - Clean Image */}
+                <div className="relative h-60 sm:h-72 w-full rounded-3xl overflow-hidden border border-border shadow-xs bg-muted group">
+                  <img
+                    src={activeImage}
+                    alt="Foto del plato"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
 
-                        return (
-                          <div
-                            key={idx}
+                {/* Meal Title */}
+                <div className="space-y-1.5 pt-1">
+                  <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground leading-snug">
+                    {reportTitle || title}
+                  </h1>
+                  {narrative && (
+                    <p className="text-xs sm:text-[13px] text-muted-foreground leading-relaxed font-normal">
+                      {narrative}
+                    </p>
+                  )}
+                </div>
+
+                {/* Choice Chips: ¿Por qué estás comiendo? */}
+                <div className="space-y-2 pt-1 text-left">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block">
+                    ¿Por qué estás comiendo?
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {EATING_REASONS_CONFIG.map((r) => {
+                      const IconComponent = r.icon;
+                      const isSelected = selectedReason === r.label;
+                      return (
+                        <button
+                          key={r.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedReason(r.label);
+                            setSelectedReasons([r.label]);
+                          }}
+                          className={cn(
+                            "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold border transition-all cursor-pointer select-none",
+                            isSelected
+                              ? "bg-foreground text-background border-foreground shadow-xs font-bold scale-[1.02]"
+                              : "bg-secondary/50 text-muted-foreground border-border/70 hover:text-foreground hover:bg-secondary hover:border-foreground/30",
+                          )}
+                        >
+                          <IconComponent
                             className={cn(
-                              "h-1.5 flex-1 rounded-full transition-all duration-300",
-                              isCurrent
-                                ? cn(icnTheme.gaugeColor, "opacity-100 shadow-xs")
-                                : isReached
-                                ? cn(icnTheme.gaugeColor, "opacity-45")
-                                : "bg-secondary border border-border/40"
+                              "w-3.5 h-3.5 shrink-0",
+                              isSelected ? "text-background" : "text-muted-foreground",
                             )}
                           />
-                        );
-                      })}
-                    </div>
+                          <span>{r.label}</span>
+                        </button>
+                      );
+                    })}
                   </div>
 
-                  {/* Inline Expandable Explanation */}
-                  {showBioScoreExplanation && (
-                    <div className="pt-3 border-t border-border/50 space-y-2.5 animate-in fade-in slide-in-from-top-2 text-xs text-muted-foreground leading-relaxed">
-                      <div className="p-3 rounded-2xl bg-secondary/40 border border-border/40 space-y-1">
-                        <span className="font-bold text-foreground block text-xs">Información Biológica, Cero Juicio</span>
-                        <p className="text-[11px]">
-                          El ICN cuantifica la biodisponibilidad y densidad de micronutrientes sin emitir juicios morales restrictivos.
-                        </p>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
-                        <div className="p-2 rounded-xl bg-secondary/30 border border-border/30">
-                          <span className="font-bold text-foreground block">Matriz NOVA:</span>
-                          Nivel de procesamiento biológico.
-                        </div>
-                        <div className="p-2 rounded-xl bg-secondary/30 border border-border/30">
-                          <span className="font-bold text-foreground block">Fibra Activa:</span>
-                          Microbiota y regulación glucémica.
-                        </div>
-                        <div className="p-2 rounded-xl bg-secondary/30 border border-border/30">
-                          <span className="font-bold text-foreground block">Proteína HBV:</span>
-                          Biodisponibilidad de aminoácidos.
-                        </div>
-                        <div className="p-2 rounded-xl bg-secondary/30 border border-border/30">
-                          <span className="font-bold text-foreground block">Perfil Lipídico:</span>
-                          Ácidos grasos insaturados/omega-3.
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                </CardContent>
-              </Card>
-
-              {/* ========================================================================= */}
-              {/* 7 NUTRITIONAL VECTORS: WITH CHECKMARK ICONS                              */}
-              {/* ========================================================================= */}
-              <div className="space-y-2.5 pt-1 text-left">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                    Vectores Nutricionales
-                  </span>
-                  <span className="text-[10px] font-bold text-muted-foreground/70 font-mono">
-                    7 de 7
-                  </span>
-                </div>
-
-                {/* Clean Badges Container with Check Icon */}
-                <div className="flex flex-wrap gap-1.5">
-                  {vectorBadges.map((badge) => (
-                    <div
-                      key={badge.id}
-                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-secondary/80 text-secondary-foreground border border-border/50 shadow-none cursor-default select-none transition-colors"
-                      title={badge.description}
+                  {selectedReason === "Estrés / Emocional" && (
+                    <Button
+                      type="button"
+                      onClick={() => setShowBreathingModal(true)}
+                      variant="outline"
+                      className="w-full h-10 rounded-2xl text-xs font-bold bg-background border-border/80 hover:bg-secondary flex items-center justify-center gap-2 cursor-pointer shadow-2xs mt-2"
                     >
-                      <Check className="w-3.5 h-3.5 text-foreground shrink-0 stroke-[2.5]" />
-                      <span>{badge.badgeText}</span>
-                    </div>
-                  ))}
+                      <Wind className="w-3.5 h-3.5 text-emerald-500" />
+                      <span>Realizar Pausa Vagal (60s)</span>
+                    </Button>
+                  )}
                 </div>
-              </div>
 
-              {/* ========================================================================= */}
-              {/* CROMONUTRICIÓN: PUNTOS SUTILES DE FITOCOLORES                            */}
-              {/* ========================================================================= */}
-              {phytoColors && phytoColors.length > 0 && (
-                <div className="space-y-2 pt-1 text-left">
+                {/* ========================================================================= */}
+                {/* PROPRIETARY METRIC: VALOR NUTRICIONAL CUALITATIVO & NEUTRAL               */}
+                {/* ========================================================================= */}
+                <Card
+                  className={cn(
+                    "rounded-3xl border bg-card shadow-xs p-5 sm:p-6 space-y-4 text-left transition-all",
+                    icnTheme.cardBorder,
+                  )}
+                >
+                  <CardContent className="p-0 space-y-3.5">
+                    {/* Card Header with Info Button */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck className={cn("w-4 h-4", icnTheme.iconColor)} />
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                          Valor Nutricional
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setShowBioScoreExplanation(!showBioScoreExplanation)}
+                        className={cn(
+                          "text-muted-foreground hover:text-foreground transition p-1.5 rounded-full hover:bg-secondary cursor-pointer",
+                          showBioScoreExplanation && "bg-secondary text-foreground",
+                        )}
+                        title="¿Cómo se evalúa el valor nutricional?"
+                      >
+                        <Info className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {/* Qualitative Value Hero Row */}
+                    <div className="space-y-0.5 pt-0.5">
+                      <h2
+                        className={cn(
+                          "text-2xl sm:text-3xl font-black tracking-tight uppercase font-mono",
+                          icnTheme.scoreText,
+                        )}
+                      >
+                        {bioGaugeIndex >= 4
+                          ? "Óptimo"
+                          : bioGaugeIndex >= 3
+                            ? "Alto"
+                            : bioGaugeIndex >= 2
+                              ? "Equilibrado"
+                              : bioGaugeIndex >= 1
+                                ? "Moderado"
+                                : "Básico"}
+                      </h2>
+                      <span className="text-xs font-semibold text-muted-foreground block">
+                        {bioQualityLabel || "Densidad de Micronutrientes"}
+                      </span>
+                    </div>
+
+                    {/* 5-Segment Qualitative Scale Bar */}
+                    <div className="space-y-1.5 pt-1 select-none">
+                      <div className="flex items-center gap-1.5">
+                        {[0, 1, 2, 3, 4].map((segIdx) => {
+                          const isReached = segIdx <= bioGaugeIndex;
+                          const isCurrent = segIdx === bioGaugeIndex;
+
+                          return (
+                            <div
+                              key={segIdx}
+                              className={cn(
+                                "h-2 flex-1 rounded-full transition-all duration-300",
+                                isCurrent
+                                  ? cn(icnTheme.gaugeColor, "opacity-100 shadow-xs")
+                                  : isReached
+                                    ? cn(icnTheme.gaugeColor, "opacity-40")
+                                    : "bg-secondary border border-border/40",
+                              )}
+                            />
+                          );
+                        })}
+                      </div>
+                      <div className="flex justify-between items-center text-[10px] font-bold text-muted-foreground/70 px-0.5">
+                        <span>Bajo</span>
+                        <span>Muy Alto</span>
+                      </div>
+                    </div>
+
+                    {/* Inline Expandable Explanation */}
+                    {showBioScoreExplanation && (
+                      <div className="pt-3 border-t border-border/50 space-y-2.5 animate-in fade-in slide-in-from-top-2 text-xs text-muted-foreground leading-relaxed">
+                        <div className="p-3 rounded-2xl bg-secondary/40 border border-border/40 space-y-1">
+                          <span className="font-bold text-foreground block text-xs">
+                            Información Biológica, Cero Juicio
+                          </span>
+                          <p className="text-[11px]">
+                            El ICN cuantifica la biodisponibilidad y densidad de micronutrientes sin
+                            emitir juicios morales restrictivos.
+                          </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                          <div className="p-2 rounded-xl bg-secondary/30 border border-border/30">
+                            <span className="font-bold text-foreground block">Matriz NOVA:</span>
+                            Nivel de procesamiento biológico.
+                          </div>
+                          <div className="p-2 rounded-xl bg-secondary/30 border border-border/30">
+                            <span className="font-bold text-foreground block">Fibra Activa:</span>
+                            Microbiota y regulación glucémica.
+                          </div>
+                          <div className="p-2 rounded-xl bg-secondary/30 border border-border/30">
+                            <span className="font-bold text-foreground block">Proteína HBV:</span>
+                            Biodisponibilidad de aminoácidos.
+                          </div>
+                          <div className="p-2 rounded-xl bg-secondary/30 border border-border/30">
+                            <span className="font-bold text-foreground block">
+                              Perfil Lipídico:
+                            </span>
+                            Ácidos grasos insaturados/omega-3.
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* ========================================================================= */}
+                {/* 7 NUTRITIONAL VECTORS: WITH CHECKMARK ICONS                              */}
+                {/* ========================================================================= */}
+                <div className="space-y-2.5 pt-1 text-left">
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                      Cromonutrición
+                      Vectores Nutricionales
                     </span>
                     <span className="text-[10px] font-bold text-muted-foreground/70 font-mono">
-                      {phytoColors.length}/5 fitocolores
+                      7 de 7
                     </span>
                   </div>
 
-                  {/* Subtle Color Dots with Phyto-labels */}
+                  {/* Clean Badges Container with Check Icon */}
                   <div className="flex flex-wrap gap-1.5">
-                    {phytoColors.map((phyto, idx) => (
+                    {vectorBadges.map((badge) => (
                       <div
-                        key={idx}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-secondary/80 text-secondary-foreground border border-border/50 shadow-none select-none cursor-default"
-                        title={phyto.phytochemical ? `${phyto.name}: ${phyto.phytochemical}` : phyto.name}
+                        key={badge.id}
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-secondary/80 text-secondary-foreground border border-border/50 shadow-none cursor-default select-none transition-colors"
+                        title={badge.description}
                       >
-                        <span className={cn("w-2 h-2 rounded-full shrink-0 shadow-2xs", phyto.bgClass)} />
-                        <span>{phyto.name}</span>
+                        <Check className="w-3.5 h-3.5 text-foreground shrink-0 stroke-[2.5]" />
+                        <span>{badge.badgeText}</span>
                       </div>
                     ))}
                   </div>
                 </div>
-              )}
 
-              {/* Visual Identification Disclaimer */}
-              <p className="text-[11px] text-muted-foreground/70 leading-snug pt-1 pb-4">
-                Visual identification may be inaccurate. Always check important details.
-              </p>
+                {/* ========================================================================= */}
+                {/* CROMONUTRICIÓN: PUNTOS SUTILES DE FITOCOLORES                            */}
+                {/* ========================================================================= */}
+                {phytoColors && phytoColors.length > 0 && (
+                  <div className="space-y-2 pt-1 text-left">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                        Cromonutrición
+                      </span>
+                      <span className="text-[10px] font-bold text-muted-foreground/70 font-mono">
+                        {phytoColors.length}/5 fitocolores
+                      </span>
+                    </div>
 
-            </div>
+                    {/* Subtle Color Dots with Phyto-labels */}
+                    <div className="flex flex-wrap gap-1.5">
+                      {phytoColors.map((phyto, idx) => (
+                        <div
+                          key={idx}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-secondary/80 text-secondary-foreground border border-border/50 shadow-none select-none cursor-default"
+                          title={
+                            phyto.phytochemical
+                              ? `${phyto.name}: ${phyto.phytochemical}`
+                              : phyto.name
+                          }
+                        >
+                          <span
+                            className={cn(
+                              "w-2 h-2 rounded-full shrink-0 shadow-2xs",
+                              phyto.bgClass,
+                            )}
+                          />
+                          <span>{phyto.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-            {/* Sticky Bottom Action Footer */}
-            <div className="sticky bottom-0 z-30 bg-background/90 backdrop-blur-xl border-t border-border px-4 sm:px-6 py-4 max-w-xl mx-auto w-full flex items-center gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setCurrentScreen("scanner")}
-                className="rounded-2xl px-4 py-5 font-semibold text-xs border-border text-foreground hover:bg-secondary cursor-pointer shadow-none"
-              >
-                <Camera className="w-4 h-4 mr-1.5" />
-                <span>Escanear Otro</span>
-              </Button>
-
-              <Button
-                type="button"
-                onClick={() => setCurrentScreen("checkin")}
-                className="flex-1 rounded-2xl py-5 font-bold text-sm bg-foreground text-background hover:opacity-90 shadow-md transition cursor-pointer"
-              >
-                <span>Continuar</span>
-                <ArrowRight className="w-4 h-4 stroke-[3px] ml-1.5" />
-              </Button>
-            </div>
-
-          </div>
-        );
-      })()}
-
-      {/* ========================================================================= */}
-      {/* SCREEN 3: STEP 2 - CHECK-IN CONSCIENTE & REGISTRO                         */}
-      {/* ========================================================================= */}
-      {currentScreen === "checkin" && (
-        <div className="min-h-screen w-full bg-background text-foreground flex flex-col justify-between overflow-x-hidden animate-in fade-in duration-300">
-          
-          {/* Top Bar */}
-          <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-md border-b border-border/60 px-4 sm:px-6 py-3.5 flex items-center justify-between max-w-xl mx-auto w-full">
-            <button
-              type="button"
-              onClick={() => setCurrentScreen("nutrition")}
-              className="w-9 h-9 rounded-full bg-secondary text-foreground flex items-center justify-center hover:bg-secondary/80 active:scale-95 transition cursor-pointer border border-border/50 shadow-xs"
-              aria-label="Volver al reporte"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </button>
-
-            <div className="flex flex-col items-center">
-              <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-muted-foreground">
-                PASO 2 DE 2
-              </span>
-              <span className="text-xs font-bold text-foreground">
-                Check-in Consciente
-              </span>
-            </div>
-
-            <div className="w-9 h-9" />
-          </div>
-
-          {/* Main Form Body */}
-          <div className="flex-1 max-w-xl mx-auto w-full px-4 sm:px-6 py-5 space-y-6 text-left">
-            
-            {/* Dish Context Snippet */}
-            <div className="p-3.5 rounded-2xl bg-secondary/40 border border-border/60 flex items-center gap-3.5 shadow-xs">
-              <img 
-                src={activeImage} 
-                alt="Foto" 
-                className="w-12 h-12 rounded-xl object-cover border border-border/50 shrink-0" 
-              />
-              <div className="flex-1 min-w-0">
-                <h4 className="text-xs font-bold text-foreground truncate">
-                  {reportTitle || title}
-                </h4>
-                <p className="text-[11px] text-muted-foreground">
-                  ICN {bioScore}/100 • Grado {bioGrade}
+                {/* Visual Identification Disclaimer */}
+                <p className="text-[11px] text-muted-foreground/70 leading-snug pt-1 pb-4">
+                  Visual identification may be inaccurate. Always check important details.
                 </p>
               </div>
-            </div>
 
-            {/* SECTION 1: MOMENTO DEL DÍA (SINGLE-SELECT) */}
-            <div className="space-y-2.5">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                  1. Momento del Día / Tipo de Comida
-                </span>
-                <span className="text-[10px] font-semibold text-muted-foreground/70">
-                  Selección única
-                </span>
-              </div>
-
-              <div className="flex flex-wrap gap-1.5">
-                {MEAL_TYPES.map((type) => {
-                  const isSelected = (mealType || "Almuerzo") === type;
-                  return (
-                    <button
-                      key={type}
-                      type="button"
-                      onClick={() => setMealType(type)}
-                      className={cn(
-                        "rounded-full px-3.5 py-1.5 text-xs font-semibold border transition-all cursor-pointer shadow-none",
-                        isSelected
-                          ? "bg-foreground text-background border-foreground font-bold shadow-xs scale-[1.02]"
-                          : "bg-secondary/60 text-secondary-foreground border-border/50 hover:bg-secondary hover:text-foreground"
-                      )}
-                    >
-                      {type}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* SECTION 2: ¿POR QUÉ COMES HOY? (MULTI-SELECT) */}
-            <div className="space-y-2.5">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                  2. ¿Por qué comes este plato?
-                </span>
-                <span className="text-[10px] font-semibold text-muted-foreground/70">
-                  Selección múltiple ({selectedReasons.length})
-                </span>
-              </div>
-
-              <div className="flex flex-wrap gap-1.5">
-                {EATING_REASONS.map((r) => {
-                  const isSelected = selectedReasons.includes(r.label);
-                  return (
-                    <button
-                      key={r.id}
-                      type="button"
-                      onClick={() => handleToggleReason(r.label)}
-                      className={cn(
-                        "rounded-full px-3.5 py-1.5 text-xs font-semibold border transition-all cursor-pointer shadow-none",
-                        isSelected
-                          ? "bg-foreground text-background border-foreground font-bold shadow-xs scale-[1.02]"
-                          : "bg-secondary/60 text-secondary-foreground border-border/50 hover:bg-secondary hover:text-foreground"
-                      )}
-                    >
-                      {isSelected ? `✓ ${r.label}` : `+ ${r.label}`}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* CONDITIONAL PROMINENT MINDFUL PAUSE BANNER */}
-            {selectedReasons.includes("Estrés / Emocional") && (
-              <div className="p-4 sm:p-5 rounded-3xl bg-secondary/70 border border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5 animate-in fade-in slide-in-from-top-3 duration-300 shadow-sm">
-                <div className="space-y-1 text-left flex-1">
-                  <div className="flex items-center gap-2 text-foreground font-bold text-sm">
-                    <Wind className="w-4 h-4 text-foreground shrink-0" />
-                    <span>¿Sientes tensión o ansiedad?</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    Tómate 1 minuto para activar tu tono vagal y calmar tu sistema simpático antes del primer bocado.
-                  </p>
-                </div>
+              {/* Sticky Bottom Action Footer with Direct Save to Diary */}
+              <div className="sticky bottom-0 z-30 bg-background/90 backdrop-blur-xl border-t border-border px-4 sm:px-6 py-4 max-w-xl mx-auto w-full flex items-center gap-3">
                 <Button
                   type="button"
-                  onClick={() => setShowBreathingModal(true)}
-                  className="w-full sm:w-auto rounded-2xl px-4 py-2.5 text-xs font-bold bg-foreground text-background hover:opacity-90 shadow-xs cursor-pointer shrink-0"
+                  variant="outline"
+                  onClick={() => setCurrentScreen("scanner")}
+                  className="rounded-2xl px-4 py-5 font-semibold text-xs border-border text-foreground hover:bg-secondary cursor-pointer shadow-none"
                 >
-                  <Wind className="w-3.5 h-3.5 mr-1.5" />
-                  <span>Pausa de Respiración</span>
+                  <Camera className="w-4 h-4 mr-1.5" />
+                  <span>Escanear Otro</span>
+                </Button>
+
+                <Button
+                  type="button"
+                  onClick={handleSaveToDiary}
+                  className="flex-1 rounded-2xl py-5 font-bold text-sm bg-foreground text-background hover:opacity-90 shadow-md transition cursor-pointer"
+                >
+                  <Check className="w-4 h-4 stroke-[3px] mr-1.5" />
+                  <span>Guardar en el Diario</span>
                 </Button>
               </div>
-            )}
-
-            <p className="text-[11px] text-muted-foreground/70 leading-snug pt-2">
-              Este check-in entrena tu conciencia interoceptiva para diferenciar hambre homeostática de apetito emocional.
-            </p>
-
-          </div>
-
-          {/* Sticky Bottom Action Footer */}
-          <div className="sticky bottom-0 z-30 bg-background/90 backdrop-blur-xl border-t border-border px-4 sm:px-6 py-4 max-w-xl mx-auto w-full flex items-center gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setCurrentScreen("nutrition")}
-              className="rounded-2xl px-4 py-5 font-semibold text-xs border-border text-foreground hover:bg-secondary cursor-pointer shadow-none"
-            >
-              <ArrowLeft className="w-4 h-4 mr-1.5" />
-              <span>Atrás</span>
-            </Button>
-
-            <Button
-              type="button"
-              onClick={handleSaveToDiary}
-              className="flex-1 rounded-2xl py-5 font-bold text-sm bg-foreground text-background hover:opacity-90 shadow-md transition cursor-pointer"
-            >
-              <Check className="w-4 h-4 stroke-[3px] mr-1.5" />
-              <span>Guardar en el Diario</span>
-            </Button>
-          </div>
-
-        </div>
-      )}
+            </div>
+          );
+        })()}
 
       {/* ========================================================================= */}
       {/* SCREEN 3: FIX RESULTS & EDIT INGREDIENTS SUB-SCREEN                       */}
@@ -1968,9 +2288,7 @@ function ScanMealPage() {
       {currentScreen === "fix" && (
         <div className="relative w-full h-full flex items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-md">
           <div className="max-w-md w-full h-full sm:h-[92vh] sm:max-h-[820px] rounded-none sm:rounded-[36px] overflow-hidden bg-background border-0 sm:border sm:border-border shadow-2xl p-5 space-y-4 overflow-y-auto custom-scrollbar text-left flex flex-col justify-between text-foreground">
-            
             <div className="space-y-4">
-              
               {/* Header */}
               <div className="flex items-center justify-between pb-3 border-b border-border/50">
                 <button
@@ -1982,12 +2300,16 @@ function ScanMealPage() {
                   <span>Volver al Reporte</span>
                 </button>
 
-                <span className="text-xs font-black uppercase text-foreground">Ajustar Resultados</span>
+                <span className="text-xs font-black uppercase text-foreground">
+                  Ajustar Resultados
+                </span>
               </div>
 
               {/* Title Edit */}
               <div className="space-y-1">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Nombre del Plato</label>
+                <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                  Nombre del Plato
+                </label>
                 <input
                   type="text"
                   value={reportTitle || title}
@@ -2047,7 +2369,9 @@ function ScanMealPage() {
                       className="p-2.5 rounded-2xl bg-secondary/40 border border-border/40 flex items-center justify-between gap-2"
                     >
                       <div className="min-w-0 flex-1">
-                        <span className="text-xs font-bold text-foreground block truncate">{ing.name}</span>
+                        <span className="text-xs font-bold text-foreground block truncate">
+                          {ing.name}
+                        </span>
                         <span className="text-[10px] text-muted-foreground">
                           {Math.round(ing.calories * servings)} cal • {ing.category}
                         </span>
@@ -2086,7 +2410,6 @@ function ScanMealPage() {
                   ))}
                 </div>
               </div>
-
             </div>
 
             {/* Bottom Button */}
@@ -2099,7 +2422,6 @@ function ScanMealPage() {
                 Listo
               </Button>
             </div>
-
           </div>
         </div>
       )}
@@ -2138,11 +2460,13 @@ function ScanMealPage() {
                       "w-full text-left p-2.5 rounded-xl text-xs font-semibold flex items-center justify-between transition cursor-pointer",
                       selectedAddFood.name === f.name
                         ? "bg-foreground text-background font-bold"
-                        : "hover:bg-secondary text-foreground"
+                        : "hover:bg-secondary text-foreground",
                     )}
                   >
                     <span>{f.name}</span>
-                    <span className="text-[10px] opacity-70 font-mono">{f.calPer100g} kcal / 100g</span>
+                    <span className="text-[10px] opacity-70 font-mono">
+                      {f.calPer100g} kcal / 100g
+                    </span>
                   </button>
                 ))}
               </div>
@@ -2171,10 +2495,17 @@ function ScanMealPage() {
             </div>
 
             <div className="pt-2 border-t border-border/40 flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setIsAddFoodOpen(false)} className="rounded-xl font-semibold text-xs">
+              <Button
+                variant="outline"
+                onClick={() => setIsAddFoodOpen(false)}
+                className="rounded-xl font-semibold text-xs"
+              >
                 Cancelar
               </Button>
-              <Button onClick={handleAddIngredientSubmit} className="rounded-xl font-bold text-xs bg-foreground text-background">
+              <Button
+                onClick={handleAddIngredientSubmit}
+                className="rounded-xl font-bold text-xs bg-foreground text-background"
+              >
                 Agregar al Plato
               </Button>
             </div>
@@ -2183,11 +2514,7 @@ function ScanMealPage() {
       )}
 
       {/* Mindful Vagal Breathing Orb Modal */}
-      <MindfulBreathingModal
-        open={showBreathingModal}
-        onOpenChange={setShowBreathingModal}
-      />
-
+      <MindfulBreathingModal open={showBreathingModal} onOpenChange={setShowBreathingModal} />
     </div>
   );
 }

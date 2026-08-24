@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -11,21 +11,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ChartContainer, type ChartConfig } from "@/components/ui/chart";
-import {
-  AreaChart,
-  Area,
-  CartesianGrid,
-  XAxis,
-  YAxis,
-  ReferenceLine,
-} from "recharts";
+import { AreaChart, Area, CartesianGrid, XAxis, YAxis, ReferenceLine } from "recharts";
 import {
   User,
   Sparkles,
@@ -60,8 +48,45 @@ export function SiteHeader() {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isStreakModalOpen, setIsStreakModalOpen] = useState(false);
+  const [userPhoto, setUserPhoto] = useState(() => {
+    if (typeof window !== "undefined") {
+      return (
+        localStorage.getItem("shakerfy_user_photo") ||
+        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80"
+      );
+    }
+    return "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80";
+  });
+  const [userName, setUserName] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("shakerfy_user_profile_edit");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed.fullName) return parsed.fullName.split(" ")[0];
+        } catch (e) {}
+      }
+    }
+    return "Agustín";
+  });
+
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handlePhotoUpdate = (e: any) => {
+      if (e.detail) setUserPhoto(e.detail);
+    };
+    const handleProfileUpdate = (e: any) => {
+      if (e.detail?.fullName) setUserName(e.detail.fullName.split(" ")[0]);
+    };
+    window.addEventListener("shakerfy:photo-updated", handlePhotoUpdate);
+    window.addEventListener("shakerfy:profile-updated", handleProfileUpdate);
+    return () => {
+      window.removeEventListener("shakerfy:photo-updated", handlePhotoUpdate);
+      window.removeEventListener("shakerfy:profile-updated", handleProfileUpdate);
+    };
+  }, []);
 
   const handleMouseEnter = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -80,13 +105,14 @@ export function SiteHeader() {
         {/* Left: User Profile Photo avatar on mobile, Nav links on desktop */}
         <div className="flex items-center flex-1 justify-start gap-3">
           {isLoggedIn && (
-            <div className="md:hidden w-8 h-8 rounded-full border border-border/80 overflow-hidden bg-secondary shrink-0 shadow-2xs select-none">
-              <img
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80"
-                alt="Foto de Perfil"
-                className="w-full h-full object-cover"
-              />
-            </div>
+            <button
+              type="button"
+              onClick={() => navigate({ to: "/app", search: { tab: "config" } })}
+              className="md:hidden w-8 h-8 rounded-full border border-border/80 overflow-hidden bg-secondary shrink-0 shadow-2xs select-none cursor-pointer active:scale-95 transition-transform"
+              title="Ver mi perfil"
+            >
+              <img src={userPhoto} alt="Foto de Perfil" className="w-full h-full object-cover" />
+            </button>
           )}
           <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
             <a href="/#como-funciona" className="transition hover:text-foreground">
@@ -108,11 +134,11 @@ export function SiteHeader() {
             onClick={() => window.scrollTo(0, 0)}
             className="text-2xl sm:text-3xl font-bebas tracking-wider text-foreground uppercase select-none"
           >
-            Shakerfy
+            The wellness face
           </Link>
         </div>
 
-        {/* Right: Actions (Racha de Actividad & Desktop Profile Menu) */}
+        {/* Right: Actions (Racha de Actividad, Botón Configuración & Desktop Profile Menu) */}
         <div className="flex items-center flex-1 justify-end gap-2">
           {isLoggedIn ? (
             <>
@@ -127,6 +153,21 @@ export function SiteHeader() {
                 <span className="font-extrabold tracking-tight">12 Días</span>
               </button>
 
+              {/* Botón de Configuración (Settings) al lado del badge de racha */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (typeof window !== "undefined") {
+                    window.dispatchEvent(new CustomEvent("shakerfy:open-settings"));
+                  }
+                  navigate({ to: "/app", search: { tab: "config" } });
+                }}
+                className="w-8 h-8 rounded-full border border-border/80 bg-card hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition cursor-pointer active:scale-95 shadow-2xs"
+                title="Ajustes & Configuración"
+              >
+                <Settings className="w-4 h-4" />
+              </button>
+
               {/* Desktop Only User Profile Dropdown Menu */}
               <div
                 className="hidden md:inline-block relative"
@@ -139,16 +180,16 @@ export function SiteHeader() {
                       variant="ghost"
                       className="flex items-center gap-2 rounded-full pl-1.5 pr-2.5 py-1 hover:bg-secondary border border-border/50"
                     >
-                      {/* User Profile Photo (replaced green circle with letter A) */}
+                      {/* User Profile Photo */}
                       <div className="w-7 h-7 rounded-full overflow-hidden bg-secondary shrink-0 shadow-2xs border border-white/50">
                         <img
-                          src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80"
+                          src={userPhoto}
                           alt="Foto de Perfil"
                           className="w-full h-full object-cover"
                         />
                       </div>
                       <span className="text-xs font-bold text-foreground hidden sm:inline-block">
-                        Agustín
+                        {userName}
                       </span>
                       <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
                     </Button>
@@ -278,45 +319,58 @@ export function SiteHeader() {
               <span className="text-emerald-500 font-bold">Mínimo Saludable (150)</span>
             </div>
 
-            <ChartContainer config={STREAK_CHART_CONFIG} className="h-44 w-full aspect-auto select-none">
+            <ChartContainer
+              config={STREAK_CHART_CONFIG}
+              className="h-44 w-full aspect-auto select-none"
+            >
               <AreaChart
                 data={STREAK_ACTIVITY_DATA}
                 margin={{ top: 5, right: 5, left: -25, bottom: 0 }}
               >
                 <defs>
-                  <linearGradient id="recharts-activity-grad-header-modal" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient
+                    id="recharts-activity-grad-header-modal"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
                     <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.25} />
                     <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border/40" />
-                <XAxis 
-                  dataKey="day" 
-                  tickLine={false} 
-                  axisLine={false} 
+                <CartesianGrid
+                  vertical={false}
+                  strokeDasharray="3 3"
+                  className="stroke-border/40"
+                />
+                <XAxis
+                  dataKey="day"
+                  tickLine={false}
+                  axisLine={false}
                   tickMargin={6}
                   className="text-[10px] font-bold fill-muted-foreground"
                 />
-                <YAxis 
-                  tickLine={false} 
-                  axisLine={false} 
+                <YAxis
+                  tickLine={false}
+                  axisLine={false}
                   tickMargin={4}
                   domain={[100, 200]}
                   className="text-[9px] font-semibold fill-muted-foreground"
                 />
-                <ReferenceLine 
-                  y={150} 
-                  stroke="#10b981" 
-                  strokeDasharray="4 4" 
+                <ReferenceLine
+                  y={150}
+                  stroke="#10b981"
+                  strokeDasharray="4 4"
                   strokeWidth={2}
-                  label={{ 
-                    value: "Mínimo Saludable (150)", 
-                    position: "insideBottomRight", 
+                  label={{
+                    value: "Mínimo Saludable (150)",
+                    position: "insideBottomRight",
                     offset: 8,
                     fill: "#10b981",
                     fontSize: 9,
-                    fontWeight: "bold"
-                  }} 
+                    fontWeight: "bold",
+                  }}
                 />
                 <Area
                   type="monotone"
@@ -330,7 +384,9 @@ export function SiteHeader() {
             </ChartContainer>
 
             <p className="text-xs text-muted-foreground leading-relaxed pt-2 border-t border-border/40">
-              Mantén tu racha de actividad física diaria sumando al menos <strong>150 Puntos MET</strong>. Cada día completado fortalece tu consistencia metabólica.
+              Mantén tu racha de actividad física diaria sumando al menos{" "}
+              <strong>150 Puntos MET</strong>. Cada día completado fortalece tu consistencia
+              metabólica.
             </p>
           </div>
         </DialogContent>

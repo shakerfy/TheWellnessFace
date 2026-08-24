@@ -1,13 +1,18 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "@tanstack/react-router";
-import { Home, QrCode, Sparkles, Heart, User, Settings, CreditCard, BarChart3, LogOut, ChevronRight } from "lucide-react";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+  Home,
+  QrCode,
+  Sparkles,
+  Heart,
+  User,
+  Settings,
+  CreditCard,
+  BarChart3,
+  LogOut,
+  ChevronRight,
+} from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export function MobileBottomNav() {
@@ -45,11 +50,13 @@ export function MobileBottomNav() {
     return null;
   }
 
-  const isInicioActive = pathname === "/" || (pathname === "/app" && (currentTab === "inicio" || !currentTab));
+  const isInicioActive =
+    pathname === "/" || (pathname === "/app" && (currentTab === "inicio" || !currentTab));
   const isCheckInActive = pathname === "/app" && currentTab === "clases";
   const isAiCoachActive = pathname === "/app" && currentTab === "diario";
   const isFavoritosActive = pathname === "/app" && currentTab === "favoritos";
-  const isPerfilActive = pathname === "/app" && ["config", "pagos", "progreso"].includes(currentTab);
+  const isPerfilActive =
+    pathname === "/app" && ["config", "pagos", "progreso"].includes(currentTab);
 
   const handleNavClick = (tabId: string) => {
     setSheetOpen(false);
@@ -71,7 +78,9 @@ export function MobileBottomNav() {
             : "text-muted-foreground hover:text-foreground"
         }`}
       >
-        <Home className={`h-5 w-5 ${isInicioActive ? "stroke-[2.5px] text-black dark:text-white" : "stroke-[1.8px]"}`} />
+        <Home
+          className={`h-5 w-5 ${isInicioActive ? "stroke-[2.5px] text-black dark:text-white" : "stroke-[1.8px]"}`}
+        />
         <span className="text-[10px] font-medium tracking-tight">Inicio</span>
       </button>
 
@@ -84,7 +93,9 @@ export function MobileBottomNav() {
             : "text-muted-foreground hover:text-foreground"
         }`}
       >
-        <QrCode className={`h-5 w-5 ${isCheckInActive ? "stroke-[2.5px] text-black dark:text-white" : "stroke-[1.8px]"}`} />
+        <QrCode
+          className={`h-5 w-5 ${isCheckInActive ? "stroke-[2.5px] text-black dark:text-white" : "stroke-[1.8px]"}`}
+        />
         <span className="text-[10px] font-medium tracking-tight">Check-in</span>
       </button>
 
@@ -97,7 +108,9 @@ export function MobileBottomNav() {
             : "text-muted-foreground hover:text-foreground"
         }`}
       >
-        <Sparkles className={`h-5 w-5 ${isAiCoachActive ? "stroke-[2.5px] text-black dark:text-white" : "stroke-[1.8px]"}`} />
+        <Sparkles
+          className={`h-5 w-5 ${isAiCoachActive ? "stroke-[2.5px] text-black dark:text-white" : "stroke-[1.8px]"}`}
+        />
         <span className="text-[10px] font-medium tracking-tight">AI Coach</span>
       </button>
 
@@ -110,7 +123,9 @@ export function MobileBottomNav() {
             : "text-muted-foreground hover:text-foreground"
         }`}
       >
-        <Heart className={`h-5 w-5 ${isFavoritosActive ? "stroke-[2.5px] fill-black dark:fill-white text-black dark:text-white" : "stroke-[1.8px]"}`} />
+        <Heart
+          className={`h-5 w-5 ${isFavoritosActive ? "stroke-[2.5px] fill-black dark:fill-white text-black dark:text-white" : "stroke-[1.8px]"}`}
+        />
         <span className="text-[10px] font-medium tracking-tight">Favoritos</span>
       </button>
 
@@ -123,7 +138,9 @@ export function MobileBottomNav() {
             : "text-muted-foreground hover:text-foreground"
         }`}
       >
-        <User className={`h-5 w-5 ${isPerfilActive ? "stroke-[2.5px] text-black dark:text-white" : "stroke-[1.8px]"}`} />
+        <User
+          className={`h-5 w-5 ${isPerfilActive ? "stroke-[2.5px] text-black dark:text-white" : "stroke-[1.8px]"}`}
+        />
         <span className="text-[10px] font-medium tracking-tight">Perfil</span>
       </button>
     </nav>

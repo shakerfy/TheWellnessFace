@@ -6,56 +6,61 @@ Este documento detalla el estado real del proyecto **Studio Pulse Smart (Shakerf
 
 ## 📊 Estado Actual de Módulos y Componentes
 
-| Módulo / Vista                            | Estado                     | Progreso | Descripción / Notas |
-| :---------------------------------------- | :------------------------- | :------: | :------------------ |
-| **Landing Page Principal (`/`)**          | 🟢 Completo & Funcional    |   100%   | Buscador semántico tipo IA, carrusel y tarjetas de gimnasios. |
-| **Perfil del Gimnasio (`/gym/$slug`)**    | 🟢 Completo (Sede Única)   |   100%   | Galería, amenities, horarios semanales, staff y agenda de clases. |
-| **Autenticación Alumnos (`/auth`)**       | 🟢 Completo                |   100%   | Login/Registro limpio para alumnos. |
-| **Autenticación Gimnasios (`/auth/gym`)** | 🟢 Completo                |   100%   | Portal de acceso para administración de gimnasios. |
-| **Dashboard Admin (`/dashboard`)**        | 🟢 Producción (8 Pestañas) |   100%   | Asistencia, Miembros, Clases, Membresías, Staff, Reportes, Inventario y Configuración. |
-| **App Móvil Alumnos (`/app`)**            | 🟢 Completo (5 Pestañas)   |   100%   | Inicio, Check-in QR, AI Coach, Favoritos y Perfil con validación de créditos. |
-| **Analítica & Reportes Ejecutivos**      | 🟢 Completo (CSV / PDF)    |   100%   | 4 Sub-tabs (Finanzas, Asistencia, Socios, Staff), filtros dinámicos y exportación CSV. |
-| **Validación de Créditos y Planes**       | 🟢 Completo                |   100%   | Deducción y reembolso automático de créditos por clase según plan del alumno. |
+| Módulo / Vista                            | Estado                     | Progreso | Descripción / Notas                                                                     |
+| :---------------------------------------- | :------------------------- | :------: | :-------------------------------------------------------------------------------------- |
+| **Landing Page Principal (`/`)**          | 🟢 Completo & Funcional    |   100%   | Buscador semántico tipo IA, carrusel y tarjetas de gimnasios.                           |
+| **Perfil del Gimnasio (`/gym/$slug`)**    | 🟢 Completo (Sede Única)   |   100%   | Galería, amenities, horarios semanales, staff y agenda de clases.                       |
+| **Autenticación Alumnos (`/auth`)**       | 🟢 Completo                |   100%   | Login/Registro limpio para alumnos.                                                     |
+| **Autenticación Gimnasios (`/auth/gym`)** | 🟢 Completo                |   100%   | Portal de acceso para administración de gimnasios.                                      |
+| **Dashboard Admin (`/dashboard`)**        | 🟢 Producción (8 Pestañas) |   100%   | Asistencia, Miembros, Clases, Membresías, Staff, Reportes, Inventario y Configuración.  |
+| **App Móvil Alumnos (`/app`)**            | 🟢 Completo (5 Pestañas)   |   100%   | Inicio, Check-in QR, AI Coach, Favoritos y Perfil con validación de créditos.           |
+| **Analítica & Reportes Ejecutivos**       | 🟢 Completo (CSV / PDF)    |   100%   | 4 Sub-tabs (Finanzas, Asistencia, Socios, Staff), filtros dinámicos y exportación CSV.  |
+| **Validación de Créditos y Planes**       | 🟢 Completo                |   100%   | Deducción y reembolso automático de créditos por clase según plan del alumno.           |
 | **Depuración de Código Residual**         | 🟢 Completo                |   100%   | Removidas calificaciones de coaches, sedes secundarias, simulador RBAC y código muerto. |
-| **Integración Firebase Backend**          | 🟡 Tipado & Modelado       |    30%   | Interfaces TypeScript listas para sync con Firestore & Storage. |
+| **Integración Firebase Backend**          | 🟡 Tipado & Modelado       |   30%    | Interfaces TypeScript listas para sync con Firestore & Storage.                         |
 
 ---
 
 ## 📐 1. Estructura de Vistas e Interfaces Implementadas
 
 ### 🏠 Landing Page (`/`)
-- **Buscador Semántico:** Efecto *typewriter* que simula a la IA redactando solicitudes de búsqueda.
+
+- **Buscador Semántico:** Efecto _typewriter_ que simula a la IA redactando solicitudes de búsqueda.
 - **Grilla de Gimnasios:** Tarjetas con foto destacada, calificación, barrio/ciudad, precio base y estado de apertura.
-- **Filtros Rápidos:** Selección por disciplinas (*CrossFit*, *Yoga*, *Pilates*, *Funcional*, *Spinning*, *Powerlifting*, *Boutique*).
+- **Filtros Rápidos:** Selección por disciplinas (_CrossFit_, _Yoga_, _Pilates_, _Funcional_, _Spinning_, _Powerlifting_, _Boutique_).
 
 ### 🏋️ Perfil del Gimnasio (`/gym/$slug`)
+
 - **Ficha del Studio:** Carrusel de imágenes, dirección oficial y horarios de atención por turnos.
 - **Amenities y Normas:** Badges con equipamiento incluido (WiFi, duchas, vestuarios) y requisitos de ingreso (Apto médico, toalla).
 - **Staff & Coaches:** Presentación del equipo de entrenadores con foto, especialidad y certificaciones.
-- **Tarifario & Membresías:** Comparador de planes (*Pase Libre*, *Por Créditos*, *Off-Peak*).
+- **Tarifario & Membresías:** Comparador de planes (_Pase Libre_, _Por Créditos_, _Off-Peak_).
 - **Reserva de Clases:** Agenda de clases por día con cupos en tiempo real.
 
 ### 🏢 Dashboard de Administración (`/dashboard`)
+
 Interfaz de gestión basada en Sidebar accesible e intuitivo con 8 pestañas operativas:
 
 1. 📥 **Asistencia en Vivo:** Monitor de check-ins en tiempo real por QR o recepción manual, control de aforo (42/80) e historial exportable a CSV.
-2. 👥 **Miembros / Alumnos:** Gestión de socios, estado de cuenta (*Activo*, *Pendiente*, *Vencido*), asignación de planes y registro.
+2. 👥 **Miembros / Alumnos:** Gestión de socios, estado de cuenta (_Activo_, _Pendiente_, _Vencido_), asignación de planes y registro.
 3. 🏋️ **Gestión de Clases & Agenda:**
    - Creación de sesiones asociadas a profesores del staff.
    - **Switch de Mapa de Lugares:** Permite activar o desactivar la selección táctil de asientos/mats individuales vs. aforo general.
    - Gestión de ausencias de profesores y solicitud de suplencias.
-4. 💳 **Planes & Membresías:** Creación y edición de planes comerciales (*Pases Libres* vs *Por Créditos*, matrículas, días de congelamiento, límite diario).
+4. 💳 **Planes & Membresías:** Creación y edición de planes comerciales (_Pases Libres_ vs _Por Créditos_, matrículas, días de congelamiento, límite diario).
 5. 🧘 **Personal / Staff:** Altas, bajas y edición de profesores, certificaciones, diplomas cargados y esquema de liquidación de sueldos.
 6. 📊 **Reportes & Analítica de Negocio:**
-   - **Filtros:** Por rango temporal (*Hoy*, *Semana*, *Este Mes*, *Mes Anterior*, *Trimestre*) y disciplina.
-   - **Sub-Tabs:** *Finanzas e Ingresos*, *Asistencia y Ocupación*, *Retención y Alumnos* y *Staff & Coaches*.
+   - **Filtros:** Por rango temporal (_Hoy_, _Semana_, _Este Mes_, _Mes Anterior_, _Trimestre_) y disciplina.
+   - **Sub-Tabs:** _Finanzas e Ingresos_, _Asistencia y Ocupación_, _Retención y Alumnos_ y _Staff & Coaches_.
    - **Módulo de Alerta Temprana de Churn:** Identificación de alumnos en riesgo (14+ días sin check-in) con envío de recordatorio por WhatsApp.
    - **Exportación:** Generador dinámico de archivos CSV e informes imprimibles PDF.
 7. 📦 **Inventario & Productos:** Control de stock de insumos y merchandising en recepción.
 8. ⚙️ **Configuración del Studio:** Edición de datos públicos, política de cancelación de clases, gestión de salas físicas y días de cierre/feriados.
 
 ### 📱 App Móvil de Alumnos (`/app`)
+
 Navegación inferior táctil de 5 pestañas:
+
 1. 🏠 **Inicio:** Resumen de próximo turno, estado de membresía activa y contador de créditos restantes.
 2. 🎟️ **Check-in:** Generador de Pase QR personal para acceso en recepción.
 3. 🤖 **AI Coach:** Asistente inteligente de recomendaciones de rutinas y descansos.
@@ -68,9 +73,9 @@ Navegación inferior táctil de 5 pestañas:
 
 1. **Validación Rígida de Membresías y Créditos:**
    - Al reservar una clase, la app verifica si el plan incluye la actividad requerida.
-   - Si la membresía es *Por Créditos*, valida que el saldo restante sea `>= 1` y descuenta 1 crédito automáticamente.
+   - Si la membresía es _Por Créditos_, valida que el saldo restante sea `>= 1` y descuenta 1 crédito automáticamente.
    - Al cancelar una reserva dentro de la política de anticipación, el crédito se reembolsa automáticamente.
-2. **Modelo de Sede Única (*Studio Central*):**
+2. **Modelo de Sede Única (_Studio Central_):**
    - El sistema opera de forma limpia para un centro deportivo, sin selectores de sucursales obsoletos ni asignaciones secundarias.
 3. **Depuración de Permisos y Roles:**
    - Se removió el antiguo simulador de permisos flotante (RBAC). El Dashboard es la consola de administración directa y la App es la interfaz del alumno.
@@ -82,6 +87,7 @@ Navegación inferior táctil de 5 pestañas:
 ## 🗄️ 3. Modelo de Datos de Firebase (Colecciones Firestore)
 
 ### 1. Colección: `memberships` (Planes Comercializados)
+
 ```json
 {
   "id": "uuid",
@@ -103,6 +109,7 @@ Navegación inferior táctil de 5 pestañas:
 ```
 
 ### 2. Colección: `members` (Alumnos y Socios)
+
 ```json
 {
   "id": "uuid (referencia a Firebase Auth uid)",
@@ -119,6 +126,7 @@ Navegación inferior táctil de 5 pestañas:
 ```
 
 ### 3. Colección: `staff` (Instructores y Personal)
+
 ```json
 {
   "id": "uuid",
@@ -135,6 +143,7 @@ Navegación inferior táctil de 5 pestañas:
 ```
 
 ### 4. Colección: `classes` (Clases Programadas)
+
 ```json
 {
   "id": "uuid",
@@ -155,6 +164,7 @@ Navegación inferior táctil de 5 pestañas:
 ```
 
 ### 5. Colección: `bookings` (Reservas de Alumnos)
+
 ```json
 {
   "id": "uuid",
@@ -175,4 +185,4 @@ Navegación inferior táctil de 5 pestañas:
 - [ ] **Fase 2: Pasarela de Pagos (MercadoPago Webhook)**
   - Automatizar la renovación de cuotas y acreditación instantánea de pases de crédito al recibir webhooks de cobro aprobado.
 - [ ] **Fase 3: Integración WhatsApp API (Notificaciones)**
-  - Conectar el botón de *Alerta de Churn* y confirmaciones de reservas con la API de WhatsApp Business.
+  - Conectar el botón de _Alerta de Churn_ y confirmaciones de reservas con la API de WhatsApp Business.

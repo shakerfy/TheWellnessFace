@@ -57,7 +57,10 @@ export function ThemeToggle({
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="rounded-2xl p-1.5 min-w-[150px] border-border bg-card shadow-xl">
+      <DropdownMenuContent
+        align="end"
+        className="rounded-2xl p-1.5 min-w-[150px] border-border bg-card shadow-xl"
+      >
         <DropdownMenuItem
           onClick={() => setTheme("light")}
           className={`rounded-xl text-xs font-bold gap-2.5 cursor-pointer py-2 ${

@@ -461,7 +461,8 @@ Para resolver este desafío operativo, la plataforma **Shakerfy** integra una ar
   {
     id: "post-7",
     slug: "ritmos-circadianos-y-bienestar",
-    title: "Ritmos Circadianos y Nutrición: La ciencia de sincronizar tu reloj biológico para potenciar tu salud",
+    title:
+      "Ritmos Circadianos y Nutrición: La ciencia de sincronizar tu reloj biológico para potenciar tu salud",
     excerpt:
       "Aprende cómo la cronobiología y la Alimentación Con Tiempo Restringido (TRE) coordinan la sensibilidad a la insulina y la secreción hormonal según las investigaciones de Cell Metabolism y Annals of Internal Medicine.",
     category: "Bienestar & Salud",
@@ -727,7 +728,8 @@ Cuando la integridad de las uniones estrechas del epitelio intestinal (tight jun
   {
     id: "post-11",
     slug: "estabilidad-conductual-pilares-salud",
-    title: "El Índice de Estabilidad Conductual: Sinergia metabólica y Variabilidad de Frecuencia Cardíaca (HRV)",
+    title:
+      "El Índice de Estabilidad Conductual: Sinergia metabólica y Variabilidad de Frecuencia Cardíaca (HRV)",
     excerpt:
       "Revisamos las investigaciones de Current Biology sobre el Jetlag Social y la consistencia en los 5 pilares del estilo de vida.",
     category: "Bienestar & Salud",
@@ -849,7 +851,8 @@ Una dieta monótona (por ejemplo, alimentarse únicamente de pechuga de pollo y 
   {
     id: "post-13",
     slug: "por-que-no-contar-calorias-nutricion-consciente",
-    title: "Por qué NO contar calorías: La trampa del balance calórico simplista y la ciencia de la densidad nutricional",
+    title:
+      "Por qué NO contar calorías: La trampa del balance calórico simplista y la ciencia de la densidad nutricional",
     excerpt:
       "Explicamos la neurobiología de la saciedad, el efecto térmico de los alimentos (TEF) y por qué obsesionarse con los números destruye la adherencia a largo plazo.",
     category: "Nutrición",
@@ -924,7 +927,8 @@ La FDA y normativas internacionales permiten hasta un **20% de margen de error**
   {
     id: "post-14",
     slug: "fisiologia-de-la-recuperacion-muscular-y-fatiga",
-    title: "Fisiología de la recuperación muscular: ¿Por qué excluir músculos con menos del 70% de recuperación?",
+    title:
+      "Fisiología de la recuperación muscular: ¿Por qué excluir músculos con menos del 70% de recuperación?",
     excerpt:
       "Análisis fisiológico y metodológico sobre la reparación del microtrauma muscular, la curva de recuperación de fuerza y por qué el umbral del 70% optimiza la hipertrofia y previene lesiones.",
     category: "Entrenamiento",
@@ -940,7 +944,13 @@ La FDA y normativas internacionales permiten hasta un **20% de margen de error**
     image:
       "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=1200&q=80",
     featured: true,
-    tags: ["Recuperación Muscular", "Evidencia Científica", "Fatiga", "Hipertrofia", "Prevención de Lesiones"],
+    tags: [
+      "Recuperación Muscular",
+      "Evidencia Científica",
+      "Fatiga",
+      "Hipertrofia",
+      "Prevención de Lesiones",
+    ],
     content: `
 El entrenamiento de fuerza y la hipertrofia muscular dependen de un equilibrio preciso entre el **estímulo estresante (carga mecánica y daño tisular)** y el **proceso fisiológico de reparación y supercompensación**. 
 
@@ -1007,7 +1017,8 @@ Al mantener la exclusión en el **70%**, garantizamos que cada rutina generada p
   {
     id: "post-15",
     slug: "ciencia-de-la-racha-de-actividad-y-mets",
-    title: "La Ciencia detrás de la Racha de Actividad: Promedio Ponderado de 7 Días, METs y Adherencia Sostenible",
+    title:
+      "La Ciencia detrás de la Racha de Actividad: Promedio Ponderado de 7 Días, METs y Adherencia Sostenible",
     excerpt:
       "Descubre cómo el cálculo de 7 días y los equivalentes metabólicos (METs) evitan la fatiga cognitiva, promueven la constancia sobre la perfección y están validados por la OMS.",
     category: "Bienestar & Salud",
@@ -1101,7 +1112,8 @@ No. Mientras tu promedio de 7 días se mantenga por encima de la línea base Sal
   {
     id: "post-16",
     slug: "escala-de-armstrong-y-fisiologia-de-la-hidratacion",
-    title: "La Escala de Armstrong y la Fisiología de la Hidratación: Guía Científica para Rendimiento y Salud",
+    title:
+      "La Escala de Armstrong y la Fisiología de la Hidratación: Guía Científica para Rendimiento y Salud",
     excerpt:
       "Conoce cómo la escala colorimétrica de 8 niveles desarrollada por el Dr. Lawrence Armstrong evalúa la densidad específica de la orina, el impacto de un 2% de deshidratación y los mitos de la sed.",
     category: "Bienestar & Salud",
@@ -1117,7 +1129,13 @@ No. Mientras tu promedio de 7 días se mantenga por encima de la línea base Sal
     image:
       "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=1200&q=80",
     featured: true,
-    tags: ["Escala de Armstrong", "Hidratación", "Rendimiento", "Electrolitos", "Evidencia Científica"],
+    tags: [
+      "Escala de Armstrong",
+      "Hidratación",
+      "Rendimiento",
+      "Electrolitos",
+      "Evidencia Científica",
+    ],
     content: `
 La hidratación adecuada es uno de los pilares biológicos más subestimados tanto en el deporte de alto rendimiento como en la vitalidad diaria. Aunque comúnmente se aconseja "beber 2 litros de agua al día", las necesidades hídricas varían drásticamente según la masa corporal, la tasa de sudoración, la humedad ambiental y la intensidad del ejercicio.
 
@@ -1188,7 +1206,8 @@ Rehidratarse adecuadamente no consiste únicamente en beber grandes volúmenes d
   {
     id: "post-14",
     slug: "score-calidad-nutricional-evidencia",
-    title: "El Índice de Calidad Nutricional (ICN): La ciencia de los 7 vectores biológicos y el escáner con IA",
+    title:
+      "El Índice de Calidad Nutricional (ICN): La ciencia de los 7 vectores biológicos y el escáner con IA",
     excerpt:
       "Descubre la metodología científica detrás del Índice de Calidad Nutricional (ICN) de Shakerfy: 7 vectores biológicos, clasificación NOVA y un escáner con visión computacional que educa sin juzgar.",
     category: "Nutrición",
@@ -1287,7 +1306,8 @@ La barra de gauge del ICN distribuye la densidad biológica en 5 niveles continu
   {
     id: "post-16",
     slug: "fisiologia-del-sueno-y-recuperacion-muscular",
-    title: "La Fisiología del Sueño en la Recuperación Muscular: Evidencia sobre hGH, Cortisol y Prevención de Lesiones",
+    title:
+      "La Fisiología del Sueño en la Recuperación Muscular: Evidencia sobre hGH, Cortisol y Prevención de Lesiones",
     excerpt:
       "Analizamos la literatura endocrinológica y de medicina deportiva sobre cómo la privación del sueño de onda lenta (SWS) inhibe la hipertrofia y duplica el riesgo de lesiones.",
     category: "Bienestar & Salud",

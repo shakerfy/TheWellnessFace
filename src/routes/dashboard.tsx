@@ -149,7 +149,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-
 export const Route = createFileRoute("/dashboard")({
   component: GymDashboard,
 });
@@ -765,7 +764,8 @@ function GymDashboard() {
           type: "warmup",
           title: "Calentamiento Articular & Cardio",
           subtitle: "3 Rondas - 8 min Cap",
-          description: "- 200m Running / Remadora\n- 10 Pass-throughs con PVC\n- 15 Air Squats\n- 30s Plank Isométrico",
+          description:
+            "- 200m Running / Remadora\n- 10 Pass-throughs con PVC\n- 15 Air Squats\n- 30s Plank Isométrico",
           timeCap: "8 min",
         },
         {
@@ -773,7 +773,8 @@ function GymDashboard() {
           type: "strength",
           title: "Trabajo de Fuerza: Back Squat",
           subtitle: "5 Series x 5 Repeticiones",
-          description: "Trabajar a 75-80% de 1RM\nDescanso: 2 min entre cada serie\nEnfocarse en la profundidad y estabilidad del torso",
+          description:
+            "Trabajar a 75-80% de 1RM\nDescanso: 2 min entre cada serie\nEnfocarse en la profundidad y estabilidad del torso",
           timeCap: "18 min",
         },
         {
@@ -781,7 +782,8 @@ function GymDashboard() {
           type: "main",
           title: "WOD Principal: 'Helen Modified'",
           subtitle: "3 Rondas por Tiempo (For Time)",
-          description: "- 400m Run\n- 21 Kettlebell Swings (24kg / 16kg)\n- 12 Pull-ups / Dominadas",
+          description:
+            "- 400m Run\n- 21 Kettlebell Swings (24kg / 16kg)\n- 12 Pull-ups / Dominadas",
           timeCap: "14 min",
         },
         {
@@ -789,7 +791,8 @@ function GymDashboard() {
           type: "cooldown",
           title: "Vuelta a la Calma & Estiramientos",
           subtitle: "Recuperación Pasiva",
-          description: "- 3 min Couch Stretch (Isquios y Psoas)\n- Movilidad pasiva de hombros con banda",
+          description:
+            "- 3 min Couch Stretch (Isquios y Psoas)\n- Movilidad pasiva de hombros con banda",
           timeCap: "5 min",
         },
       ],
@@ -1463,8 +1466,6 @@ function GymDashboard() {
     },
   ]);
 
-
-
   const visibleClasses = classesList;
   const visibleTabs = TABS;
 
@@ -1508,7 +1509,9 @@ function GymDashboard() {
                     : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
                 }`}
               >
-                <Icon className={`h-4 w-4 shrink-0 ${activeTab === tab.id ? "text-primary" : "text-muted-foreground"}`} />
+                <Icon
+                  className={`h-4 w-4 shrink-0 ${activeTab === tab.id ? "text-primary" : "text-muted-foreground"}`}
+                />
                 <span className="truncate">{tab.label}</span>
               </button>
             );
@@ -1528,9 +1531,7 @@ function GymDashboard() {
 
       {/* Main Content Area */}
       <main className="flex-1 p-6 md:p-10 w-full max-w-7xl mx-auto overflow-x-auto min-w-0">
-
         {/* Staff Operations Checklist (Mejora 4) */}
-
 
         {activeTab === "asistencia" && (
           <AsistenciasTab
@@ -1564,7 +1565,11 @@ function GymDashboard() {
             classesList={visibleClasses}
             setClassesList={setClassesList}
             staffList={staffList}
-            canManageClasses={currentUser.role === "superadmin" || currentUser.role === "manager" || currentUser.role === "admin"}
+            canManageClasses={
+              currentUser.role === "superadmin" ||
+              currentUser.role === "manager" ||
+              currentUser.role === "admin"
+            }
             blackoutDays={blackoutDays}
             salasList={salasList}
             cancellationPolicyHours={cancellationPolicyHours}
@@ -1572,9 +1577,7 @@ function GymDashboard() {
             membersList={membersList}
           />
         )}
-        {activeTab === "reseñas" && (
-          <ReseñasTab membersList={membersList} />
-        )}
+        {activeTab === "reseñas" && <ReseñasTab membersList={membersList} />}
         {activeTab === "config" && (
           <ConfigTab
             staffList={staffList as any}
@@ -1603,12 +1606,8 @@ function GymDashboard() {
             setChecklistLogs={setChecklistLogs}
           />
         )}
-        {activeTab === "ayuda" && (
-          <AyudaTab />
-        )}
+        {activeTab === "ayuda" && <AyudaTab />}
       </main>
-
-
     </div>
   );
 }
@@ -1645,11 +1644,7 @@ interface GymFacilityReview {
   reportReason?: string;
 }
 
-function ReseñasTab({
-  membersList = [],
-}: {
-  membersList?: any[];
-}) {
+function ReseñasTab({ membersList = [] }: { membersList?: any[] }) {
   const [subTab, setSubTab] = useState<"public" | "private">("public");
 
   // Public Facility Reviews
@@ -1667,7 +1662,8 @@ function ReseñasTab({
       overallRating: 4.9,
       comment:
         "Excelente gimnasio. La atención del personal es de 10 y las máquinas son de última generación. Muy limpio siempre.",
-      reply: "¡Muchas gracias Agustín por tu comentario! Nos alegra mucho que disfrutes del centro.",
+      reply:
+        "¡Muchas gracias Agustín por tu comentario! Nos alegra mucho que disfrutes del centro.",
     },
     {
       id: "rev-2",
@@ -1680,7 +1676,8 @@ function ReseñasTab({
       ratingStaff: 5.0,
       ratingPrice: 4.6,
       overallRating: 4.8,
-      comment: "Vestuarios impecables y excelente ambiente para entrenar. El staff siempre muy atento.",
+      comment:
+        "Vestuarios impecables y excelente ambiente para entrenar. El staff siempre muy atento.",
       reply: "",
     },
     {
@@ -1708,38 +1705,45 @@ function ReseñasTab({
       ratingStaff: 4.8,
       ratingPrice: 4.5,
       overallRating: 4.7,
-      comment: "Llevo 6 meses entrenando aquí y la experiencia es inmejorable. Súper recomendado para todas las edades.",
+      comment:
+        "Llevo 6 meses entrenando aquí y la experiencia es inmejorable. Súper recomendado para todas las edades.",
       reply: "¡Gracias Sofía! Nos motiva muchísimo seguir dando lo mejor cada día.",
     },
   ]);
 
   // Private Feedback & Suggestions
-  const [privateFeedback, setPrivateFeedback] = useState<Array<{
-    id: string;
-    date: string;
-    studentName: string;
-    studentPhoto: string;
-    category: "Instalaciones" | "Clases & Horarios" | "Climatización" | "Atención / Staff";
-    message: string;
-    status: "Pendiente" | "Atendido";
-    adminNotes?: string;
-  }>>([
+  const [privateFeedback, setPrivateFeedback] = useState<
+    Array<{
+      id: string;
+      date: string;
+      studentName: string;
+      studentPhoto: string;
+      category: "Instalaciones" | "Clases & Horarios" | "Climatización" | "Atención / Staff";
+      message: string;
+      status: "Pendiente" | "Atendido";
+      adminNotes?: string;
+    }>
+  >([
     {
       id: "priv-1",
       date: "2026-07-28",
       studentName: "Martín Páez",
-      studentPhoto: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80",
+      studentPhoto:
+        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80",
       category: "Climatización",
-      message: "En el sector de peso libre el aire acondicionado estuvo un poco fuerte ayer por la tarde, ¿se podría regular?",
+      message:
+        "En el sector de peso libre el aire acondicionado estuvo un poco fuerte ayer por la tarde, ¿se podría regular?",
       status: "Pendiente",
     },
     {
       id: "priv-2",
       date: "2026-07-24",
       studentName: "Valeria Benítez",
-      studentPhoto: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80",
+      studentPhoto:
+        "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80",
       category: "Instalaciones",
-      message: "Estaría genial si pudieran agregar un dispenser de agua extra cerca de la sala de Pilates.",
+      message:
+        "Estaría genial si pudieran agregar un dispenser de agua extra cerca de la sala de Pilates.",
       status: "Atendido",
       adminNotes: "Nota interna: Instalaremos segundo dispenser la próxima semana.",
     },
@@ -1747,9 +1751,11 @@ function ReseñasTab({
       id: "priv-3",
       date: "2026-07-15",
       studentName: "Diego Rossi",
-      studentPhoto: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80",
+      studentPhoto:
+        "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80",
       category: "Clases & Horarios",
-      message: "Habría mucha demanda si agregan una clase de Yoga a las 20:00 hs los días martes. ¡Ojalá sea posible!",
+      message:
+        "Habría mucha demanda si agregan una clase de Yoga a las 20:00 hs los días martes. ¡Ojalá sea posible!",
       status: "Pendiente",
     },
   ]);
@@ -1869,7 +1875,9 @@ function ReseñasTab({
   const handleSaveAdminNote = (id: string) => {
     const text = adminNoteTexts[id];
     setPrivateFeedback((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, adminNotes: text?.trim() || "", status: "Atendido" } : item)),
+      prev.map((item) =>
+        item.id === id ? { ...item, adminNotes: text?.trim() || "", status: "Atendido" } : item,
+      ),
     );
     setActiveNoteId(null);
     toast.success("✓ Nota interna guardada y sugerencia marcada como Atendida.");
@@ -1934,12 +1942,12 @@ function ReseñasTab({
         publicStatusFilter === "all"
           ? true
           : publicStatusFilter === "unreplied"
-          ? !r.reply
-          : publicStatusFilter === "replied"
-          ? !!r.reply
-          : publicStatusFilter === "featured"
-          ? featuredReviewIds.includes(r.id)
-          : true;
+            ? !r.reply
+            : publicStatusFilter === "replied"
+              ? !!r.reply
+              : publicStatusFilter === "featured"
+                ? featuredReviewIds.includes(r.id)
+                : true;
 
       return matchSearch && matchRating && matchStatus;
     });
@@ -1953,11 +1961,9 @@ function ReseñasTab({
         f.message.toLowerCase().includes(q) ||
         f.category.toLowerCase().includes(q);
 
-      const matchCat =
-        privateCategoryFilter === "all" || f.category === privateCategoryFilter;
+      const matchCat = privateCategoryFilter === "all" || f.category === privateCategoryFilter;
 
-      const matchStatus =
-        privateStatusFilter === "all" || f.status === privateStatusFilter;
+      const matchStatus = privateStatusFilter === "all" || f.status === privateStatusFilter;
 
       return matchSearch && matchCat && matchStatus;
     });
@@ -1966,11 +1972,46 @@ function ReseñasTab({
   // Available Members for WhatsApp modal
   const availableWhatsAppMembers = useMemo(() => {
     const defaultList = [
-      { id: "m1", name: "Agustín Gómez", phone: "+5491155551234", plan: "Pase Libre", photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80" },
-      { id: "m2", name: "Camila Díaz", phone: "+5491141245124", plan: "Performance", photo: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80" },
-      { id: "m3", name: "Lucas Peralta", phone: "+5491141241111", plan: "Pase Libre", photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80" },
-      { id: "m4", name: "Sofía Martínez", phone: "+5491133338888", plan: "Elite Coached", photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80" },
-      { id: "m5", name: "Martín Páez", phone: "+5491166669999", plan: "Performance", photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80" },
+      {
+        id: "m1",
+        name: "Agustín Gómez",
+        phone: "+5491155551234",
+        plan: "Pase Libre",
+        photo:
+          "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80",
+      },
+      {
+        id: "m2",
+        name: "Camila Díaz",
+        phone: "+5491141245124",
+        plan: "Performance",
+        photo:
+          "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80",
+      },
+      {
+        id: "m3",
+        name: "Lucas Peralta",
+        phone: "+5491141241111",
+        plan: "Pase Libre",
+        photo:
+          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80",
+      },
+      {
+        id: "m4",
+        name: "Sofía Martínez",
+        phone: "+5491133338888",
+        plan: "Elite Coached",
+        photo:
+          "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80",
+      },
+      {
+        id: "m5",
+        name: "Martín Páez",
+        phone: "+5491166669999",
+        plan: "Performance",
+        photo:
+          "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80",
+      },
     ];
 
     const combined = membersList.length > 0 ? membersList : defaultList;
@@ -2057,7 +2098,9 @@ function ReseñasTab({
           </div>
           <p className="text-[11px] text-muted-foreground pt-1">
             {pendingRepliesCount > 0 ? (
-              <span className="text-amber-600 font-semibold">{pendingRepliesCount} pendientes de respuesta.</span>
+              <span className="text-amber-600 font-semibold">
+                {pendingRepliesCount} pendientes de respuesta.
+              </span>
             ) : (
               <span className="text-emerald-600 font-semibold">100% de opiniones respondidas.</span>
             )}
@@ -2171,7 +2214,10 @@ function ReseñasTab({
             </div>
 
             <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-              <Select value={publicRatingFilter} onValueChange={(val) => setPublicRatingFilter(val)}>
+              <Select
+                value={publicRatingFilter}
+                onValueChange={(val) => setPublicRatingFilter(val)}
+              >
                 <SelectTrigger className="w-full sm:w-[160px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
                   <SelectValue placeholder="Puntuación" />
                 </SelectTrigger>
@@ -2185,7 +2231,10 @@ function ReseñasTab({
                 </SelectContent>
               </Select>
 
-              <Select value={publicStatusFilter} onValueChange={(val) => setPublicStatusFilter(val)}>
+              <Select
+                value={publicStatusFilter}
+                onValueChange={(val) => setPublicStatusFilter(val)}
+              >
                 <SelectTrigger className="w-full sm:w-[190px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
                   <SelectValue placeholder="Estado de Respuesta" />
                 </SelectTrigger>
@@ -2266,7 +2315,9 @@ function ReseñasTab({
                               : "hover:bg-secondary"
                           }`}
                         >
-                          <Star className={`h-3.5 w-3.5 ${isFeatured ? "fill-amber-500 text-amber-500" : ""}`} />
+                          <Star
+                            className={`h-3.5 w-3.5 ${isFeatured ? "fill-amber-500 text-amber-500" : ""}`}
+                          />
                           {isFeatured ? "Destacada" : "Destacar"}
                         </Button>
                       </div>
@@ -2279,16 +2330,24 @@ function ReseñasTab({
                     {/* Sub-ratings badges */}
                     <div className="flex flex-wrap gap-2 text-[10.5px] text-muted-foreground pt-0.5">
                       <span className="px-2.5 py-0.5 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300 font-medium border border-amber-500/20">
-                        Limpieza: <strong className="font-mono text-foreground">{rev.ratingCleanliness} ★</strong>
+                        Limpieza:{" "}
+                        <strong className="font-mono text-foreground">
+                          {rev.ratingCleanliness} ★
+                        </strong>
                       </span>
                       <span className="px-2.5 py-0.5 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300 font-medium border border-amber-500/20">
-                        Equipamiento: <strong className="font-mono text-foreground">{rev.ratingEquipment} ★</strong>
+                        Equipamiento:{" "}
+                        <strong className="font-mono text-foreground">
+                          {rev.ratingEquipment} ★
+                        </strong>
                       </span>
                       <span className="px-2.5 py-0.5 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300 font-medium border border-amber-500/20">
-                        Staff: <strong className="font-mono text-foreground">{rev.ratingStaff} ★</strong>
+                        Staff:{" "}
+                        <strong className="font-mono text-foreground">{rev.ratingStaff} ★</strong>
                       </span>
                       <span className="px-2.5 py-0.5 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300 font-medium border border-amber-500/20">
-                        Precio: <strong className="font-mono text-foreground">{rev.ratingPrice} ★</strong>
+                        Precio:{" "}
+                        <strong className="font-mono text-foreground">{rev.ratingPrice} ★</strong>
                       </span>
                     </div>
 
@@ -2297,7 +2356,8 @@ function ReseñasTab({
                       <div className="mt-3 p-3.5 rounded-2xl bg-secondary/30 border border-border/60 text-xs space-y-1.5">
                         <div className="flex items-center justify-between">
                           <span className="font-extrabold text-primary flex items-center gap-1.5">
-                            <MessageCircle className="w-3.5 h-3.5 text-primary" /> Respuesta Oficial del Centro
+                            <MessageCircle className="w-3.5 h-3.5 text-primary" /> Respuesta Oficial
+                            del Centro
                           </span>
                           <div className="flex items-center gap-2">
                             <button
@@ -2312,7 +2372,13 @@ function ReseñasTab({
                             </button>
                             <button
                               type="button"
-                              onClick={() => setDeleteConfirmState({ type: "reply_delete", id: rev.id, name: rev.studentName })}
+                              onClick={() =>
+                                setDeleteConfirmState({
+                                  type: "reply_delete",
+                                  id: rev.id,
+                                  name: rev.studentName,
+                                })
+                              }
                               className="text-[10.5px] text-rose-500 hover:text-rose-600 font-semibold underline flex items-center gap-1"
                             >
                               <Trash2 className="h-3 w-3" /> Eliminar Respuesta
@@ -2385,7 +2451,8 @@ function ReseñasTab({
                 Buzón Privado de Mensajes y Sugerencias
               </span>
               <p className="text-muted-foreground leading-relaxed">
-                Mensajes directos enviados por los alumnos a la dirección del centro. Este feedback es 100% privado y permite resolver inquietudes de forma personalizada.
+                Mensajes directos enviados por los alumnos a la dirección del centro. Este feedback
+                es 100% privado y permite resolver inquietudes de forma personalizada.
               </p>
             </div>
           </div>
@@ -2404,7 +2471,10 @@ function ReseñasTab({
             </div>
 
             <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-              <Select value={privateCategoryFilter} onValueChange={(val) => setPrivateCategoryFilter(val)}>
+              <Select
+                value={privateCategoryFilter}
+                onValueChange={(val) => setPrivateCategoryFilter(val)}
+              >
                 <SelectTrigger className="w-full sm:w-[180px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
                   <SelectValue placeholder="Categoría" />
                 </SelectTrigger>
@@ -2417,7 +2487,10 @@ function ReseñasTab({
                 </SelectContent>
               </Select>
 
-              <Select value={privateStatusFilter} onValueChange={(val) => setPrivateStatusFilter(val)}>
+              <Select
+                value={privateStatusFilter}
+                onValueChange={(val) => setPrivateStatusFilter(val)}
+              >
                 <SelectTrigger className="w-full sm:w-[160px] h-9 rounded-xl border border-border bg-background text-xs font-bold text-foreground">
                   <SelectValue placeholder="Estado" />
                 </SelectTrigger>
@@ -2428,7 +2501,9 @@ function ReseñasTab({
                 </SelectContent>
               </Select>
 
-              {(privateSearch || privateCategoryFilter !== "all" || privateStatusFilter !== "all") && (
+              {(privateSearch ||
+                privateCategoryFilter !== "all" ||
+                privateStatusFilter !== "all") && (
                 <Button
                   type="button"
                   variant="ghost"
@@ -2493,7 +2568,13 @@ function ReseñasTab({
 
                         <button
                           type="button"
-                          onClick={() => setDeleteConfirmState({ type: "private_delete", id: fb.id, name: fb.studentName })}
+                          onClick={() =>
+                            setDeleteConfirmState({
+                              type: "private_delete",
+                              id: fb.id,
+                              name: fb.studentName,
+                            })
+                          }
                           className="p-1.5 text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 rounded-lg transition"
                           title="Eliminar sugerencia"
                         >
@@ -2511,12 +2592,16 @@ function ReseñasTab({
                       <div className="p-3.5 rounded-2xl bg-secondary/30 border border-border/60 text-xs space-y-1">
                         <div className="flex items-center justify-between">
                           <span className="font-extrabold text-foreground flex items-center gap-1.5">
-                            <FileText className="w-3.5 h-3.5 text-primary" /> Nota Interna de Administración
+                            <FileText className="w-3.5 h-3.5 text-primary" /> Nota Interna de
+                            Administración
                           </span>
                           <button
                             type="button"
                             onClick={() => {
-                              setAdminNoteTexts((prev) => ({ ...prev, [fb.id]: fb.adminNotes || "" }));
+                              setAdminNoteTexts((prev) => ({
+                                ...prev,
+                                [fb.id]: fb.adminNotes || "",
+                              }));
                               setActiveNoteId(fb.id);
                             }}
                             className="text-[10.5px] text-muted-foreground hover:text-foreground font-semibold underline"
@@ -2593,7 +2678,8 @@ function ReseñasTab({
 
             <div className="space-y-4 text-xs">
               <p className="text-muted-foreground leading-relaxed">
-                Selecciona un socio de la lista activa para enviarle una invitación directa a su WhatsApp personal.
+                Selecciona un socio de la lista activa para enviarle una invitación directa a su
+                WhatsApp personal.
               </p>
 
               {/* Member Search input */}
@@ -2611,7 +2697,8 @@ function ReseñasTab({
               {/* Members List Selector */}
               <div className="max-h-56 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar">
                 {availableWhatsAppMembers.map((m) => {
-                  const isSelected = selectedMemberModal?.id === m.id || requestStudentName === m.name;
+                  const isSelected =
+                    selectedMemberModal?.id === m.id || requestStudentName === m.name;
                   return (
                     <div
                       key={m.id || m.name}
@@ -2628,7 +2715,11 @@ function ReseñasTab({
                     >
                       <div className="flex items-center gap-3">
                         <img
-                          src={m.photo || m.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80"}
+                          src={
+                            m.photo ||
+                            m.avatar ||
+                            "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80"
+                          }
                           alt={m.name}
                           className="w-8 h-8 rounded-full object-cover border border-border shrink-0"
                         />
@@ -2636,7 +2727,11 @@ function ReseñasTab({
                           <div className="font-bold text-xs text-foreground">{m.name}</div>
                           <div className="text-[11px] text-muted-foreground flex items-center gap-2">
                             <span>{m.phone || "Sin teléfono registrado"}</span>
-                            {m.plan && <span className="text-[10px] bg-secondary px-1.5 py-0.2 rounded font-semibold">{m.plan}</span>}
+                            {m.plan && (
+                              <span className="text-[10px] bg-secondary px-1.5 py-0.2 rounded font-semibold">
+                                {m.plan}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -2654,7 +2749,9 @@ function ReseñasTab({
                           <Send className="h-3 w-3" /> Enviar
                         </Button>
                       ) : (
-                        <span className="text-[10px] text-muted-foreground italic">Sin WhatsApp</span>
+                        <span className="text-[10px] text-muted-foreground italic">
+                          Sin WhatsApp
+                        </span>
                       )}
                     </div>
                   );
@@ -2682,7 +2779,10 @@ function ReseñasTab({
 
       {/* Confirmation Modal for Deletions */}
       {deleteConfirmState && (
-        <AlertDialog open={!!deleteConfirmState} onOpenChange={(open) => !open && setDeleteConfirmState(null)}>
+        <AlertDialog
+          open={!!deleteConfirmState}
+          onOpenChange={(open) => !open && setDeleteConfirmState(null)}
+        >
           <AlertDialogContent className="sm:max-w-md border border-border bg-card p-6 rounded-3xl shadow-2xl">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
@@ -2690,10 +2790,17 @@ function ReseñasTab({
               </AlertDialogTitle>
               <AlertDialogDescription className="text-xs text-muted-foreground pt-1 leading-relaxed">
                 {deleteConfirmState.type === "reply_delete" && (
-                  <>¿Estás seguro de que deseas eliminar tu <strong>Respuesta Oficial</strong> a la reseña de <strong>"{deleteConfirmState.name}"</strong>? La reseña volverá a quedar como pendiente de respuesta.</>
+                  <>
+                    ¿Estás seguro de que deseas eliminar tu <strong>Respuesta Oficial</strong> a la
+                    reseña de <strong>"{deleteConfirmState.name}"</strong>? La reseña volverá a
+                    quedar como pendiente de respuesta.
+                  </>
                 )}
                 {deleteConfirmState.type === "private_delete" && (
-                  <>¿Estás seguro de que deseas eliminar la sugerencia privada enviada por <strong>"{deleteConfirmState.name}"</strong>?</>
+                  <>
+                    ¿Estás seguro de que deseas eliminar la sugerencia privada enviada por{" "}
+                    <strong>"{deleteConfirmState.name}"</strong>?
+                  </>
                 )}
               </AlertDialogDescription>
             </AlertDialogHeader>
@@ -2735,8 +2842,6 @@ function AsistenciasTab({
   const [historySearch, setHistorySearch] = useState("");
   const [methodFilter, setMethodFilter] = useState("Todos");
   const [dateFilter, setDateFilter] = useState("Todos");
-
-
 
   const [historyList, setHistoryList] = useState([
     {
@@ -2951,7 +3056,10 @@ function AsistenciasTab({
   const handleExport = () => {
     const csvHeader = "Nombre,Fecha,Hora,Metodo,Estado,Detalle,Clase\n";
     const csvRows = filteredHistory
-      .map((h) => `"${h.name}","${h.date}","${h.time}","${h.method}","${h.status}","${h.distance}","${h.class}"`)
+      .map(
+        (h) =>
+          `"${h.name}","${h.date}","${h.time}","${h.method}","${h.status}","${h.distance}","${h.class}"`,
+      )
       .join("\n");
     const blob = new Blob([csvHeader + csvRows], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -3001,9 +3109,7 @@ function AsistenciasTab({
             <div className="w-full bg-muted rounded-full h-1.5 mt-2 overflow-hidden">
               <div className="bg-emerald-500 h-full rounded-full w-[52%]" />
             </div>
-            <p className="text-[11px] text-muted-foreground mt-2">
-              Ocupación segura al 52%
-            </p>
+            <p className="text-[11px] text-muted-foreground mt-2">Ocupación segura al 52%</p>
           </div>
         </div>
 
@@ -3019,9 +3125,7 @@ function AsistenciasTab({
           </div>
           <div className="mt-4">
             <div className="text-3xl font-extrabold tracking-tight">65%</div>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              28 ingresos escaneados hoy
-            </p>
+            <p className="text-[11px] text-muted-foreground mt-1">28 ingresos escaneados hoy</p>
           </div>
         </div>
 
@@ -3037,9 +3141,7 @@ function AsistenciasTab({
           </div>
           <div className="mt-4">
             <div className="text-3xl font-extrabold tracking-tight">25%</div>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              11 accesos por cercanía
-            </p>
+            <p className="text-[11px] text-muted-foreground mt-1">11 accesos por cercanía</p>
           </div>
         </div>
 
@@ -3055,9 +3157,7 @@ function AsistenciasTab({
           </div>
           <div className="mt-4">
             <div className="text-3xl font-extrabold tracking-tight">10%</div>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              4 validados en mostrador
-            </p>
+            <p className="text-[11px] text-muted-foreground mt-1">4 validados en mostrador</p>
           </div>
         </div>
       </div>
@@ -3074,7 +3174,8 @@ function AsistenciasTab({
             </h3>
           </div>
           <p className="text-xs text-muted-foreground leading-relaxed pl-1">
-            Valida el ingreso presencial de los socios. Detecta automáticamente sus reservas de clases para el día de hoy.
+            Valida el ingreso presencial de los socios. Detecta automáticamente sus reservas de
+            clases para el día de hoy.
           </p>
         </div>
 
@@ -3098,7 +3199,8 @@ function AsistenciasTab({
               Monitor de Entradas Recientes
             </h3>
             <span className="text-[11px] text-emerald-500 font-semibold flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Actualizado en vivo
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Actualizado en
+              vivo
             </span>
           </div>
 
@@ -3109,15 +3211,23 @@ function AsistenciasTab({
                 className="flex items-center justify-between pb-3 border-b border-border/50 last:border-0 last:pb-0"
               >
                 <div className="flex items-center gap-3">
-                  <img src={c.photo} alt={c.name} className="h-9 w-9 rounded-full object-cover border border-border" />
+                  <img
+                    src={c.photo}
+                    alt={c.name}
+                    className="h-9 w-9 rounded-full object-cover border border-border"
+                  />
                   <div>
                     <div className="text-sm font-semibold text-foreground">{c.name}</div>
                     <div className="text-xs text-muted-foreground flex items-center gap-2">
                       <span>{c.time}</span>
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-secondary border border-border font-medium text-foreground">
                         {c.method === "Scan QR" && <Scan className="w-3 h-3 text-emerald-500" />}
-                        {c.method === "Geolocalización GPS" && <Navigation className="w-3 h-3 text-blue-500" />}
-                        {c.method === "Recepción" && <DoorOpen className="w-3 h-3 text-amber-500" />}
+                        {c.method === "Geolocalización GPS" && (
+                          <Navigation className="w-3 h-3 text-blue-500" />
+                        )}
+                        {c.method === "Recepción" && (
+                          <DoorOpen className="w-3 h-3 text-amber-500" />
+                        )}
                         {c.method}
                       </span>
                     </div>
@@ -3199,7 +3309,8 @@ function AsistenciasTab({
               </span>
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Registros detallados de accesos por escaneo QR, geolocalización GPS y recepción manual.
+              Registros detallados de accesos por escaneo QR, geolocalización GPS y recepción
+              manual.
             </p>
           </div>
 
@@ -3332,9 +3443,15 @@ function AsistenciasTab({
                     <td className="p-3.5 text-foreground font-medium">{h.time}</td>
                     <td className="p-3.5">
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] bg-secondary border border-border font-semibold text-foreground">
-                        {h.method === "Scan QR" && <Scan className="w-3.5 h-3.5 text-emerald-500" />}
-                        {h.method === "Geolocalización GPS" && <Navigation className="w-3.5 h-3.5 text-blue-500" />}
-                        {h.method === "Recepción" && <DoorOpen className="w-3.5 h-3.5 text-amber-500" />}
+                        {h.method === "Scan QR" && (
+                          <Scan className="w-3.5 h-3.5 text-emerald-500" />
+                        )}
+                        {h.method === "Geolocalización GPS" && (
+                          <Navigation className="w-3.5 h-3.5 text-blue-500" />
+                        )}
+                        {h.method === "Recepción" && (
+                          <DoorOpen className="w-3.5 h-3.5 text-amber-500" />
+                        )}
                         {h.method}
                       </span>
                     </td>
@@ -3364,10 +3481,12 @@ function AsistenciasTab({
         <DialogContent className="max-w-xl max-h-[85vh] rounded-3xl p-6 border-border shadow-2xl bg-slate-50 dark:bg-background overflow-hidden flex flex-col">
           <DialogHeader className="pb-3 border-b border-border/40 shrink-0">
             <DialogTitle className="text-lg font-black text-foreground flex items-center gap-2">
-              <DoorOpen className="h-5 w-5 text-amber-500" /> Check-in en Recepción (Validación Presencial)
+              <DoorOpen className="h-5 w-5 text-amber-500" /> Check-in en Recepción (Validación
+              Presencial)
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground leading-relaxed pt-1">
-              Busca un alumno por nombre, DNI o teléfono. El sistema resalta automáticamente a los socios con reserva en las clases de hoy.
+              Busca un alumno por nombre, DNI o teléfono. El sistema resalta automáticamente a los
+              socios con reserva en las clases de hoy.
             </DialogDescription>
           </DialogHeader>
 
@@ -3427,7 +3546,7 @@ function AsistenciasTab({
                           "text-[10px] font-bold px-2.5 py-0.5 rounded-full shrink-0 border",
                           isAptoExpired
                             ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
-                            : "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+                            : "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
                         )}
                       >
                         {isAptoExpired ? "Apto Pendiente" : "Apto Vigente"}
@@ -3469,25 +3588,30 @@ function AsistenciasTab({
                                     return { ...c, attendance: copyAtt };
                                   }
                                   return c;
-                                })
+                                }),
                               );
 
                               // Add to recent checkins list
-                              const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                              const nowTime = new Date().toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              });
                               setRecentCheckinsList((prev) => [
                                 {
                                   name: m.name,
                                   time: nowTime,
                                   method: "Recepción",
                                   alert: isAptoExpired ? "Apto Pendiente" : null,
-                                  alertColor: isAptoExpired ? "bg-amber-500/10 text-amber-600 border-amber-500/20" : "",
+                                  alertColor: isAptoExpired
+                                    ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                                    : "",
                                   photo: m.photo || getStudentPhoto(m.name),
                                 },
                                 ...prev,
                               ]);
 
                               toast.success(
-                                `✓ Check-in exitoso: ${m.name} ingresó a ${activeBooking.className} (${activeBooking.time} hs)`
+                                `✓ Check-in exitoso: ${m.name} ingresó a ${activeBooking.className} (${activeBooking.time} hs)`,
                               );
                               setIsCheckInModalOpen(false);
                             }}
@@ -3507,14 +3631,19 @@ function AsistenciasTab({
                           size="sm"
                           className="h-7 text-[10.5px] font-bold rounded-xl shrink-0"
                           onClick={() => {
-                            const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            const nowTime = new Date().toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            });
                             setRecentCheckinsList((prev) => [
                               {
                                 name: m.name,
                                 time: nowTime,
                                 method: "Recepción",
                                 alert: isAptoExpired ? "Apto Pendiente" : null,
-                                alertColor: isAptoExpired ? "bg-amber-500/10 text-amber-600 border-amber-500/20" : "",
+                                alertColor: isAptoExpired
+                                  ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                                  : "",
                                 photo: m.photo || getStudentPhoto(m.name),
                               },
                               ...prev,
@@ -3966,7 +4095,8 @@ function MiembrosTab({
               ...m,
               status: "activo",
               color: getStatusBadgeColor("activo"),
-              notes: (m.notes || "") + ` | Descongelado el ${new Date().toISOString().split("T")[0]}`,
+              notes:
+                (m.notes || "") + ` | Descongelado el ${new Date().toISOString().split("T")[0]}`,
             }
           : m,
       ),
@@ -4001,7 +4131,16 @@ function MiembrosTab({
       toast.error("No hay alumnos visibles para exportar.");
       return;
     }
-    const headers = ["Nombre", "DNI", "Email", "Teléfono", "Plan", "Estado", "Vencimiento", "Apto Médico"];
+    const headers = [
+      "Nombre",
+      "DNI",
+      "Email",
+      "Teléfono",
+      "Plan",
+      "Estado",
+      "Vencimiento",
+      "Apto Médico",
+    ];
     const rows = filteredMembers.map((m: any) => [
       `"${m.name || ""}"`,
       `"${m.dni || ""}"`,
@@ -4012,11 +4151,16 @@ function MiembrosTab({
       `"${m.end || ""}"`,
       `"${m.hasApto || "Pendiente"}"`,
     ]);
-    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((r: string[]) => r.join(","))].join("\n");
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers.join(","), ...rows.map((r: string[]) => r.join(","))].join("\n");
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `miembros_shakerfy_${new Date().toISOString().split("T")[0]}.csv`);
+    link.setAttribute(
+      "download",
+      `miembros_shakerfy_${new Date().toISOString().split("T")[0]}.csv`,
+    );
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -4170,7 +4314,9 @@ function MiembrosTab({
         return m;
       }),
     );
-    toast.success(`Membresía (${renewPlan || "actual"}) de ${renewMemberId} renovada por ${renewMonths} mes(es).`);
+    toast.success(
+      `Membresía (${renewPlan || "actual"}) de ${renewMemberId} renovada por ${renewMonths} mes(es).`,
+    );
     setRenewMemberId(null);
     setRenewPlan("");
     setRenewMonths("1");
@@ -4201,7 +4347,8 @@ function MiembrosTab({
         <div>
           <h2 className="text-xl font-bold tracking-tight">Administración de Miembros</h2>
           <p className="text-sm text-muted-foreground">
-            Listado general de alumnos ({filteredMembers.length} de {membersList.length} registrados).
+            Listado general de alumnos ({filteredMembers.length} de {membersList.length}{" "}
+            registrados).
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -4213,7 +4360,11 @@ function MiembrosTab({
           >
             <Download className="h-4 w-4 text-primary" /> Exportar CSV
           </Button>
-          <Button size="sm" className="rounded-xl gap-1.5 font-bold h-9" onClick={handleOpenAddMember}>
+          <Button
+            size="sm"
+            className="rounded-xl gap-1.5 font-bold h-9"
+            onClick={handleOpenAddMember}
+          >
             <Plus className="h-4 w-4" /> Agregar Miembro
           </Button>
         </div>
@@ -4431,16 +4582,24 @@ function MiembrosTab({
                   <Label>Método de Pago del Alumno</Label>
                   <Select
                     value={newMember.paymentMethod || "Efectivo"}
-                    onValueChange={(val) => setNewMember((prev) => ({ ...prev, paymentMethod: val }))}
+                    onValueChange={(val) =>
+                      setNewMember((prev) => ({ ...prev, paymentMethod: val }))
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccionar Método" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Efectivo">Efectivo</SelectItem>
-                      <SelectItem value="Transferencia Bancaria / CBU">Transferencia Bancaria / CBU</SelectItem>
-                      <SelectItem value="Mercado Pago (Marketplace / App)">Mercado Pago (Marketplace / App)</SelectItem>
-                      <SelectItem value="Tarjeta de Débito / Crédito (POS)">Tarjeta Posnet (Débito / Crédito)</SelectItem>
+                      <SelectItem value="Transferencia Bancaria / CBU">
+                        Transferencia Bancaria / CBU
+                      </SelectItem>
+                      <SelectItem value="Mercado Pago (Marketplace / App)">
+                        Mercado Pago (Marketplace / App)
+                      </SelectItem>
+                      <SelectItem value="Tarjeta de Débito / Crédito (POS)">
+                        Tarjeta Posnet (Débito / Crédito)
+                      </SelectItem>
                       <SelectItem value="Otro">Otro Medio de Pago</SelectItem>
                     </SelectContent>
                   </Select>
@@ -4471,7 +4630,10 @@ function MiembrosTab({
                     onChange={(e) => setNewMember({ ...newMember, end: e.target.value })}
                   />
                   <p className="text-[10.5px] text-muted-foreground">
-                    Auto-calculado ({membershipsList?.find((m: any) => m.name === newMember.plan)?.duration || "Mensual"}). Podés ajustarlo si lo deseás.
+                    Auto-calculado (
+                    {membershipsList?.find((m: any) => m.name === newMember.plan)?.duration ||
+                      "Mensual"}
+                    ). Podés ajustarlo si lo deseás.
                   </p>
                 </div>
               </div>
@@ -4515,7 +4677,9 @@ function MiembrosTab({
             <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
               Apto Vencido
             </span>
-            <span className="text-2xl font-black text-amber-500 mt-1 block">{stats.expiredAptos}</span>
+            <span className="text-2xl font-black text-amber-500 mt-1 block">
+              {stats.expiredAptos}
+            </span>
           </div>
           <AlertCircle className="h-8 w-8 text-amber-500/30" />
         </div>
@@ -4532,8 +4696,6 @@ function MiembrosTab({
           <ShieldAlert className="h-8 w-8 text-purple-500/30" />
         </div>
       </div>
-
-
 
       <div className="rounded-xl border border-border bg-card overflow-hidden">
         {/* Toolbar integrada en la tabla */}
@@ -4611,7 +4773,11 @@ function MiembrosTab({
                           />
                           <div>
                             <span className="font-semibold text-foreground block">{m.name}</span>
-                            {m.dni && <span className="text-[10.5px] text-muted-foreground">DNI: {m.dni}</span>}
+                            {m.dni && (
+                              <span className="text-[10.5px] text-muted-foreground">
+                                DNI: {m.dni}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </td>
@@ -4694,27 +4860,37 @@ function MiembrosTab({
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-52 rounded-xl p-1.5 shadow-xl border-border">
+                              <DropdownMenuContent
+                                align="end"
+                                className="w-52 rounded-xl p-1.5 shadow-xl border-border"
+                              >
                                 {m.status === "cancelado" ? (
                                   <DropdownMenuItem onClick={() => handleReactivateMember(m.name)}>
-                                    <UserCheck className="h-4 w-4 mr-2 text-emerald-500" /> Reactivar Alumno
+                                    <UserCheck className="h-4 w-4 mr-2 text-emerald-500" />{" "}
+                                    Reactivar Alumno
                                   </DropdownMenuItem>
                                 ) : (
                                   <>
                                     <DropdownMenuItem onClick={() => setRenewMemberId(m.name)}>
-                                      <CreditCard className="h-4 w-4 mr-2 text-primary" /> Renovar / Cobrar
+                                      <CreditCard className="h-4 w-4 mr-2 text-primary" /> Renovar /
+                                      Cobrar
                                     </DropdownMenuItem>
                                     {m.status === "congelado" ? (
-                                      <DropdownMenuItem onClick={() => handleUnfreezeMember(m.name)}>
-                                        <Zap className="h-4 w-4 mr-2 text-emerald-500" /> Descongelar Membresía
+                                      <DropdownMenuItem
+                                        onClick={() => handleUnfreezeMember(m.name)}
+                                      >
+                                        <Zap className="h-4 w-4 mr-2 text-emerald-500" />{" "}
+                                        Descongelar Membresía
                                       </DropdownMenuItem>
                                     ) : (
                                       <DropdownMenuItem onClick={() => handleFreezeMember(m.name)}>
-                                        <Snowflake className="h-4 w-4 mr-2 text-blue-400" /> Congelar Membresía
+                                        <Snowflake className="h-4 w-4 mr-2 text-blue-400" />{" "}
+                                        Congelar Membresía
                                       </DropdownMenuItem>
                                     )}
                                     <DropdownMenuItem onClick={() => handleValidateApto(m.name)}>
-                                      <CheckCircle2 className="h-4 w-4 mr-2 text-primary" /> Validar Apto Médico
+                                      <CheckCircle2 className="h-4 w-4 mr-2 text-primary" /> Validar
+                                      Apto Médico
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => handleEditMemberClick(m)}>
                                       <Edit2 className="h-4 w-4 mr-2" /> Editar Alumno
@@ -4723,7 +4899,8 @@ function MiembrosTab({
                                       className="text-amber-600 dark:text-amber-400 focus:text-amber-600"
                                       onClick={() => handleCancelPlan(m)}
                                     >
-                                      <ShieldAlert className="h-4 w-4 mr-2" /> Dar de baja / Archivar
+                                      <ShieldAlert className="h-4 w-4 mr-2" /> Dar de baja /
+                                      Archivar
                                     </DropdownMenuItem>
                                   </>
                                 )}
@@ -4761,7 +4938,9 @@ function MiembrosTab({
                                 />
                                 <div>
                                   <div className="flex items-center gap-2">
-                                    <h4 className="font-bold text-base text-foreground">{m.name}</h4>
+                                    <h4 className="font-bold text-base text-foreground">
+                                      {m.name}
+                                    </h4>
                                     <span
                                       className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold capitalize ${m.color}`}
                                     >
@@ -4769,10 +4948,34 @@ function MiembrosTab({
                                     </span>
                                   </div>
                                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground mt-0.5">
-                                    {m.dni && <span>DNI: <strong className="text-foreground font-semibold">{m.dni}</strong></span>}
-                                    {m.dob && <span>Nac: <strong className="text-foreground font-semibold">{m.dob}</strong></span>}
-                                    <span>Plan: <strong className="text-foreground font-semibold">{m.plan}</strong></span>
-                                    <span>Vence: <strong className="text-foreground font-semibold">{m.end}</strong></span>
+                                    {m.dni && (
+                                      <span>
+                                        DNI:{" "}
+                                        <strong className="text-foreground font-semibold">
+                                          {m.dni}
+                                        </strong>
+                                      </span>
+                                    )}
+                                    {m.dob && (
+                                      <span>
+                                        Nac:{" "}
+                                        <strong className="text-foreground font-semibold">
+                                          {m.dob}
+                                        </strong>
+                                      </span>
+                                    )}
+                                    <span>
+                                      Plan:{" "}
+                                      <strong className="text-foreground font-semibold">
+                                        {m.plan}
+                                      </strong>
+                                    </span>
+                                    <span>
+                                      Vence:{" "}
+                                      <strong className="text-foreground font-semibold">
+                                        {m.end}
+                                      </strong>
+                                    </span>
                                   </div>
                                 </div>
                               </div>
@@ -4861,7 +5064,8 @@ function MiembrosTab({
                                   <div>
                                     <div className="font-bold">Riesgo de Baja Detectado</div>
                                     <div className="text-[11px] opacity-90 mt-0.5 leading-relaxed">
-                                      Este alumno no registra asistencias recientes. Te sugerimos contactarlo para retenerlo.
+                                      Este alumno no registra asistencias recientes. Te sugerimos
+                                      contactarlo para retenerlo.
                                     </div>
                                   </div>
                                 </div>
@@ -4904,7 +5108,9 @@ function MiembrosTab({
 
                                   <div className="space-y-2 text-xs">
                                     <div className="flex justify-between items-center py-1">
-                                      <span className="text-muted-foreground font-semibold">Obra Social / Prepaga:</span>
+                                      <span className="text-muted-foreground font-semibold">
+                                        Obra Social / Prepaga:
+                                      </span>
                                       <span className="font-bold text-foreground">
                                         {m.medicalInsurance || "No declarada"}
                                         {m.affiliateNumber && ` (${m.affiliateNumber})`}
@@ -4914,7 +5120,9 @@ function MiembrosTab({
                                     <Separator />
 
                                     <div className="flex justify-between items-center py-1">
-                                      <span className="text-muted-foreground font-semibold">Contacto Emergencia:</span>
+                                      <span className="text-muted-foreground font-semibold">
+                                        Contacto Emergencia:
+                                      </span>
                                       <span className="font-bold text-foreground">
                                         {m.emergencyContactName || "No especificado"}
                                         {m.emergencyContactPhone && ` · ${m.emergencyContactPhone}`}
@@ -4924,7 +5132,9 @@ function MiembrosTab({
                                     <Separator />
 
                                     <div className="flex justify-between items-center py-1">
-                                      <span className="text-muted-foreground font-semibold">Certificado Apto Físico:</span>
+                                      <span className="text-muted-foreground font-semibold">
+                                        Certificado Apto Físico:
+                                      </span>
                                       <span
                                         className={`font-bold px-2 py-0.5 rounded-full text-[10px] ${
                                           m.hasApto === "Entregado"
@@ -5003,10 +5213,19 @@ function MiembrosTab({
                                           </thead>
                                           <tbody className="divide-y divide-border/30">
                                             {history.attended.map((h: any, i: number) => (
-                                              <tr key={i} className="hover:bg-secondary/20 transition-colors">
-                                                <td className="p-2.5 font-bold text-foreground">{h.className}</td>
-                                                <td className="p-2.5 text-muted-foreground">{h.day}</td>
-                                                <td className="p-2.5 text-muted-foreground">{h.time}</td>
+                                              <tr
+                                                key={i}
+                                                className="hover:bg-secondary/20 transition-colors"
+                                              >
+                                                <td className="p-2.5 font-bold text-foreground">
+                                                  {h.className}
+                                                </td>
+                                                <td className="p-2.5 text-muted-foreground">
+                                                  {h.day}
+                                                </td>
+                                                <td className="p-2.5 text-muted-foreground">
+                                                  {h.time}
+                                                </td>
                                               </tr>
                                             ))}
                                           </tbody>
@@ -5050,11 +5269,22 @@ function MiembrosTab({
                                           </thead>
                                           <tbody className="divide-y divide-border/30">
                                             {m.payments.map((p: any) => (
-                                              <tr key={p.id} className="hover:bg-secondary/20 transition-colors">
-                                                <td className="p-2.5 text-muted-foreground">{p.date}</td>
-                                                <td className="p-2.5 font-semibold text-foreground">{p.duration}</td>
-                                                <td className="p-2.5 font-bold text-primary">${p.amount}</td>
-                                                <td className="p-2.5 text-muted-foreground">{p.method}</td>
+                                              <tr
+                                                key={p.id}
+                                                className="hover:bg-secondary/20 transition-colors"
+                                              >
+                                                <td className="p-2.5 text-muted-foreground">
+                                                  {p.date}
+                                                </td>
+                                                <td className="p-2.5 font-semibold text-foreground">
+                                                  {p.duration}
+                                                </td>
+                                                <td className="p-2.5 font-bold text-primary">
+                                                  ${p.amount}
+                                                </td>
+                                                <td className="p-2.5 text-muted-foreground">
+                                                  {p.method}
+                                                </td>
                                                 <td className="p-2.5 text-right">
                                                   <Button
                                                     variant="ghost"
@@ -5177,7 +5407,8 @@ function MiembrosTab({
                       <span>💳 Alumno con Débito Automático Activo</span>
                     </div>
                     <p className="text-[11px] text-muted-foreground leading-relaxed">
-                      Este alumno abona mediante Mercado Pago. Selecciona la acción a tomar en la pasarela al registrar este cobro manual:
+                      Este alumno abona mediante Mercado Pago. Selecciona la acción a tomar en la
+                      pasarela al registrar este cobro manual:
                     </p>
                     <RadioGroup
                       value={mpRenewAction}
@@ -5187,15 +5418,23 @@ function MiembrosTab({
                       <div className="flex items-start gap-2.5 cursor-pointer font-medium text-[11px]">
                         <RadioGroupItem value="skip" id="mp-skip" className="mt-0.5" />
                         <Label htmlFor="mp-skip" className="cursor-pointer font-normal">
-                          <span className="font-bold block text-foreground">Saltear este mes en Mercado Pago</span>
-                          <span className="text-muted-foreground text-[10px]">Pospone la fecha del próximo débito automático 30 días.</span>
+                          <span className="font-bold block text-foreground">
+                            Saltear este mes en Mercado Pago
+                          </span>
+                          <span className="text-muted-foreground text-[10px]">
+                            Pospone la fecha del próximo débito automático 30 días.
+                          </span>
                         </Label>
                       </div>
                       <div className="flex items-start gap-2.5 cursor-pointer font-medium text-[11px]">
                         <RadioGroupItem value="cancel" id="mp-cancel" className="mt-0.5" />
                         <Label htmlFor="mp-cancel" className="cursor-pointer font-normal">
-                          <span className="font-bold block text-foreground">Cancelar Débito Automático</span>
-                          <span className="text-muted-foreground text-[10px]">Cancela la suscripción en MP para pasar a pago manual permanente.</span>
+                          <span className="font-bold block text-foreground">
+                            Cancelar Débito Automático
+                          </span>
+                          <span className="text-muted-foreground text-[10px]">
+                            Cancela la suscripción en MP para pasar a pago manual permanente.
+                          </span>
                         </Label>
                       </div>
                     </RadioGroup>
@@ -5205,7 +5444,9 @@ function MiembrosTab({
                 <div className="space-y-1.5">
                   <Label className="text-xs font-bold">Plan a contratar / renovar</Label>
                   <Select
-                    value={renewPlan || memberObj?.plan || membershipsList?.[0]?.name || "Pase Libre"}
+                    value={
+                      renewPlan || memberObj?.plan || membershipsList?.[0]?.name || "Pase Libre"
+                    }
                     onValueChange={(val) => setRenewPlan(val)}
                   >
                     <SelectTrigger className="h-9 rounded-xl text-xs bg-secondary/30">
@@ -5244,16 +5485,22 @@ function MiembrosTab({
                     </SelectTrigger>
                     <SelectContent className="rounded-xl">
                       <SelectItem value="Efectivo">Efectivo</SelectItem>
-                      <SelectItem value="Transferencia Bancaria / CBU">Transferencia Bancaria / CBU</SelectItem>
-                      <SelectItem value="Mercado Pago (Marketplace / App)">Mercado Pago (Marketplace / App)</SelectItem>
-                      <SelectItem value="Tarjeta de Débito / Crédito (POS)">Tarjeta Posnet (Débito / Crédito)</SelectItem>
+                      <SelectItem value="Transferencia Bancaria / CBU">
+                        Transferencia Bancaria / CBU
+                      </SelectItem>
+                      <SelectItem value="Mercado Pago (Marketplace / App)">
+                        Mercado Pago (Marketplace / App)
+                      </SelectItem>
+                      <SelectItem value="Tarjeta de Débito / Crédito (POS)">
+                        Tarjeta Posnet (Débito / Crédito)
+                      </SelectItem>
                       <SelectItem value="Otro">Otro Medio de Pago</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <p className="text-xs text-muted-foreground bg-primary/10 text-primary p-2.5 rounded-xl border border-primary/20">
-                  Se actualizará su estado a <span className="font-bold">Activo</span> y se extenderá su
-                  vencimiento por {renewMonths} mes{renewMonths === "1" ? "" : "es"}.
+                  Se actualizará su estado a <span className="font-bold">Activo</span> y se
+                  extenderá su vencimiento por {renewMonths} mes{renewMonths === "1" ? "" : "es"}.
                 </p>
               </div>
             );
@@ -5280,17 +5527,26 @@ function MiembrosTab({
       </Dialog>
 
       {/* Modal AlertDialog para Confirmar Baja de Alumno (Shadcn/ui) */}
-      <AlertDialog open={!!cancelConfirmMember} onOpenChange={(open) => !open && setCancelConfirmMember(null)}>
+      <AlertDialog
+        open={!!cancelConfirmMember}
+        onOpenChange={(open) => !open && setCancelConfirmMember(null)}
+      >
         <AlertDialogContent className="rounded-3xl border-border shadow-2xl bg-card max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-lg font-black text-foreground flex items-center gap-2">
               <ShieldAlert className="h-5 w-5 text-amber-500" /> Dar de Baja / Archivar Alumno
             </AlertDialogTitle>
             <AlertDialogDescription className="text-xs text-muted-foreground pt-1 space-y-2">
-              <span>¿Confirmás la baja del alumno <strong className="text-foreground">{cancelConfirmMember?.name}</strong>?</span>
-              {(cancelConfirmMember?.paymentMethod === "Mercado Pago (Auto)" || cancelConfirmMember?.isAutoRenew) && (
+              <span>
+                ¿Confirmás la baja del alumno{" "}
+                <strong className="text-foreground">{cancelConfirmMember?.name}</strong>?
+              </span>
+              {(cancelConfirmMember?.paymentMethod === "Mercado Pago (Auto)" ||
+                cancelConfirmMember?.isAutoRenew) && (
                 <div className="p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-amber-700 dark:text-amber-300 font-medium text-[11px] leading-relaxed mt-2">
-                  ⚠️ <strong>Aviso Mercado Pago:</strong> Este alumno tiene una suscripción activa de Débito Automático. Al darlo de baja, la suscripción se cancelará automáticamente en Mercado Pago para evitar cobros futuros.
+                  ⚠️ <strong>Aviso Mercado Pago:</strong> Este alumno tiene una suscripción activa
+                  de Débito Automático. Al darlo de baja, la suscripción se cancelará
+                  automáticamente en Mercado Pago para evitar cobros futuros.
                 </div>
               )}
             </AlertDialogDescription>
@@ -5308,16 +5564,25 @@ function MiembrosTab({
       </AlertDialog>
 
       {/* Modal AlertDialog de Protección contra Borrado Físico (Hard Delete Guard) */}
-      <AlertDialog open={!!cantDeleteWarningMember} onOpenChange={(open) => !open && setCantDeleteWarningMember(null)}>
+      <AlertDialog
+        open={!!cantDeleteWarningMember}
+        onOpenChange={(open) => !open && setCantDeleteWarningMember(null)}
+      >
         <AlertDialogContent className="rounded-3xl border-border shadow-2xl bg-card max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-lg font-black text-foreground flex items-center gap-2">
               <AlertCircle className="h-5 w-5 text-destructive" /> No es posible eliminar
             </AlertDialogTitle>
             <AlertDialogDescription className="text-xs text-muted-foreground pt-1 space-y-2">
-              <span>No se puede eliminar físicamente la ficha de <strong className="text-foreground">{cantDeleteWarningMember?.name}</strong> porque cuenta con registros contables de pagos en Caja o Mercado Pago.</span>
+              <span>
+                No se puede eliminar físicamente la ficha de{" "}
+                <strong className="text-foreground">{cantDeleteWarningMember?.name}</strong> porque
+                cuenta con registros contables de pagos en Caja o Mercado Pago.
+              </span>
               <div className="p-3 bg-muted/40 border border-border/60 rounded-2xl text-foreground font-medium text-[11px] leading-relaxed mt-2">
-                💡 <strong>Recomendación de Producción:</strong> Te sugerimos usar la opción <strong>"Dar de Baja / Archivar"</strong> para pausar la cuenta y cancelar sus débitos sin alterar la integridad de tus reportes financieros.
+                💡 <strong>Recomendación de Producción:</strong> Te sugerimos usar la opción{" "}
+                <strong>"Dar de Baja / Archivar"</strong> para pausar la cuenta y cancelar sus
+                débitos sin alterar la integridad de tus reportes financieros.
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -5333,14 +5598,18 @@ function MiembrosTab({
       </AlertDialog>
 
       {/* Modal Shadcn UI para Congelar Membresía */}
-      <Dialog open={!!freezeDialogMember} onOpenChange={(open) => !open && setFreezeDialogMember(null)}>
+      <Dialog
+        open={!!freezeDialogMember}
+        onOpenChange={(open) => !open && setFreezeDialogMember(null)}
+      >
         <DialogContent className="max-w-md rounded-3xl p-6 border-border shadow-2xl bg-card">
           <DialogHeader>
             <DialogTitle className="text-lg font-black text-foreground flex items-center gap-2">
               <Snowflake className="h-5 w-5 text-blue-500" /> Congelar Membresía
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground pt-1">
-              Selecciona o ingresa por cuántos días deseas pausar la membresía de <strong className="text-foreground">{freezeDialogMember}</strong>.
+              Selecciona o ingresa por cuántos días deseas pausar la membresía de{" "}
+              <strong className="text-foreground">{freezeDialogMember}</strong>.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
@@ -5362,7 +5631,9 @@ function MiembrosTab({
               </div>
             </div>
             <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">Otro período (días personalizados):</Label>
+              <Label className="text-xs text-muted-foreground">
+                Otro período (días personalizados):
+              </Label>
               <Input
                 type="number"
                 value={freezeDaysInput}
@@ -5372,10 +5643,17 @@ function MiembrosTab({
             </div>
           </div>
           <DialogFooter className="gap-2">
-            <Button variant="outline" className="rounded-xl font-bold" onClick={() => setFreezeDialogMember(null)}>
+            <Button
+              variant="outline"
+              className="rounded-xl font-bold"
+              onClick={() => setFreezeDialogMember(null)}
+            >
               Cancelar
             </Button>
-            <Button className="rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white" onClick={confirmFreezeMemberAction}>
+            <Button
+              className="rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white"
+              onClick={confirmFreezeMemberAction}
+            >
               Confirmar Congelamiento
             </Button>
           </DialogFooter>
@@ -5466,7 +5744,10 @@ function MiembrosTab({
                         <span>Compartir</span>
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48 rounded-xl p-1.5 shadow-xl border-border">
+                    <DropdownMenuContent
+                      align="end"
+                      className="w-48 rounded-xl p-1.5 shadow-xl border-border"
+                    >
                       <DropdownMenuItem
                         disabled={!viewingReceipt.member.phone}
                         onClick={() => {
@@ -5608,11 +5889,7 @@ const STAFF_SPECIALTY_PRESETS = [
   "Running Club",
 ];
 
-function MembresiasTab({
-  membershipsList,
-  setMembershipsList,
-  amenities,
-}: MembresiasTabProps) {
+function MembresiasTab({ membershipsList, setMembershipsList, amenities }: MembresiasTabProps) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
@@ -5834,8 +6111,8 @@ function MembresiasTab({
         tagFilter === "all"
           ? true
           : tagFilter === "featured"
-          ? !!m.isFeatured
-          : m.tag === tagFilter;
+            ? !!m.isFeatured
+            : m.tag === tagFilter;
 
       const matchPeriod = periodicityFilter === "all" || m.duration === periodicityFilter;
 
@@ -5889,7 +6166,9 @@ function MembresiasTab({
           <form onSubmit={handleAddMembership} className="space-y-4 pt-2 text-xs text-foreground">
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="space-y-1.5 sm:col-span-1">
-                <label className="text-xs font-semibold text-muted-foreground">Nombre del Plan</label>
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Nombre del Plan
+                </label>
                 <Input
                   type="text"
                   required
@@ -6170,7 +6449,10 @@ function MembresiasTab({
               >
                 Cancelar
               </Button>
-              <Button type="submit" className="rounded-xl text-xs font-bold bg-primary text-primary-foreground">
+              <Button
+                type="submit"
+                className="rounded-xl text-xs font-bold bg-primary text-primary-foreground"
+              >
                 Crear Plan
               </Button>
             </DialogFooter>
@@ -6338,7 +6620,8 @@ function MembresiasTab({
 
                 <ul className="mt-4 space-y-2 border-t border-border/60 pt-3">
                   {m.includedServices.map((serviceId) => {
-                    const serviceName = amenities.find((a) => a.id === serviceId)?.name || serviceId;
+                    const serviceName =
+                      amenities.find((a) => a.id === serviceId)?.name || serviceId;
                     return (
                       <li
                         key={serviceId}
@@ -6374,7 +6657,9 @@ function MembresiasTab({
                     }`}
                     title="Marcar como Plan Destacado en el Perfil del Gimnasio"
                   >
-                    <Star className={`h-3.5 w-3.5 ${m.isFeatured ? "fill-amber-500 text-amber-500" : ""}`} />
+                    <Star
+                      className={`h-3.5 w-3.5 ${m.isFeatured ? "fill-amber-500 text-amber-500" : ""}`}
+                    />
                     {m.isFeatured ? "Destacado" : "Destacar"}
                   </button>
                   <button
@@ -6424,7 +6709,10 @@ function MembresiasTab({
             </DialogTitle>
           </DialogHeader>
 
-          <form onSubmit={handleSaveEditMembership} className="space-y-4 pt-2 text-xs text-foreground">
+          <form
+            onSubmit={handleSaveEditMembership}
+            className="space-y-4 pt-2 text-xs text-foreground"
+          >
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="space-y-1.5 sm:col-span-1">
                 <label className="text-xs font-semibold text-muted-foreground">
@@ -6701,7 +6989,10 @@ function MembresiasTab({
               >
                 Cancelar
               </Button>
-              <Button type="submit" className="rounded-xl text-xs font-bold bg-primary text-primary-foreground">
+              <Button
+                type="submit"
+                className="rounded-xl text-xs font-bold bg-primary text-primary-foreground"
+              >
                 Guardar Cambios
               </Button>
             </DialogFooter>
@@ -6718,7 +7009,9 @@ function MembresiasTab({
                 <Trash2 className="h-5 w-5 text-rose-600" /> Confirmar Eliminación de Plan
               </AlertDialogTitle>
               <AlertDialogDescription className="text-xs text-muted-foreground pt-1">
-                Para confirmar la eliminación definitiva del plan <strong>"{deletingPlan.name}"</strong>, escribe la palabra clave <strong>ELIMINAR</strong> a continuación:
+                Para confirmar la eliminación definitiva del plan{" "}
+                <strong>"{deletingPlan.name}"</strong>, escribe la palabra clave{" "}
+                <strong>ELIMINAR</strong> a continuación:
               </AlertDialogDescription>
             </AlertDialogHeader>
 
@@ -6825,8 +7118,6 @@ function ClasesTab({
   const [selectedCalendarSalaId, setSelectedCalendarSalaId] = useState("");
   const [customCapacity, setCustomCapacity] = useState(20);
 
-
-
   // Estados para Modal Shadcn de Inscripción de Alumno
   const [enrollModalClass, setEnrollModalClass] = useState<any | null>(null);
   const [enrollTargetSpotIndex, setEnrollTargetSpotIndex] = useState<number | null>(null);
@@ -6930,8 +7221,7 @@ function ClasesTab({
         m.email?.toLowerCase().includes(enrollSearchTerm.toLowerCase());
 
       const matchesPlan =
-        enrollPlanFilter === "todos" ||
-        m.plan?.toLowerCase() === enrollPlanFilter.toLowerCase();
+        enrollPlanFilter === "todos" || m.plan?.toLowerCase() === enrollPlanFilter.toLowerCase();
 
       return matchesSearch && matchesPlan;
     });
@@ -6988,8 +7278,11 @@ function ClasesTab({
         return item;
       }),
     );
-    const spotLabel = enrollTargetSpotIndex !== null ? ` en el Lugar #${enrollTargetSpotIndex + 1}` : "";
-    toast.success(`✅ Alumno "${memberName}" inscrito exitosamente${spotLabel} en "${enrollModalClass.name}". Notification enviada.`);
+    const spotLabel =
+      enrollTargetSpotIndex !== null ? ` en el Lugar #${enrollTargetSpotIndex + 1}` : "";
+    toast.success(
+      `✅ Alumno "${memberName}" inscrito exitosamente${spotLabel} en "${enrollModalClass.name}". Notification enviada.`,
+    );
     setEnrollModalClass(null);
     setEnrollTargetSpotIndex(null);
   };
@@ -7037,7 +7330,9 @@ function ClasesTab({
       });
 
       if (!fits) {
-        const intervalsStr = DayAvail.intervals.map((i: { from: string; to: string }) => `${i.from} a ${i.to}`).join(" o ");
+        const intervalsStr = DayAvail.intervals
+          .map((i: { from: string; to: string }) => `${i.from} a ${i.to}`)
+          .join(" o ");
         return `⚠️ Alerta: El horario (${time}) está fuera de la disponibilidad del instructor (${intervalsStr}).`;
       }
     } catch (e) {
@@ -7391,7 +7686,7 @@ function ClasesTab({
               }),
             );
             toast.success(
-              `📢 Reserva de ${displayNameForConfirm} cancelada. Lugar #${index + 1} asignado a ${nextStudent} desde la lista de espera.`
+              `📢 Reserva de ${displayNameForConfirm} cancelada. Lugar #${index + 1} asignado a ${nextStudent} desde la lista de espera.`,
             );
           },
         });
@@ -7441,561 +7736,574 @@ function ClasesTab({
         >
           {/* Header Card */}
           <div className="p-6 bg-card border-b border-border/60 sticky top-0 z-20 space-y-4">
-              {/* Row 1: Badges & Header Actions */}
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs bg-primary/10 text-primary font-bold px-2.5 py-0.5 rounded-full border border-primary/20">
-                    {salaName}
+            {/* Row 1: Badges & Header Actions */}
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs bg-primary/10 text-primary font-bold px-2.5 py-0.5 rounded-full border border-primary/20">
+                  {salaName}
+                </span>
+                {c.status === "cancelada" ? (
+                  <span className="text-xs bg-destructive/10 text-destructive font-bold px-2.5 py-0.5 rounded-full border border-destructive/20">
+                    Clase Cancelada
                   </span>
-                  {c.status === "cancelada" ? (
-                    <span className="text-xs bg-destructive/10 text-destructive font-bold px-2.5 py-0.5 rounded-full border border-destructive/20">
-                      Clase Cancelada
-                    </span>
-                  ) : (
-                    <span className="text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold px-2.5 py-0.5 rounded-full border border-emerald-500/20">
-                      Sesión Activa
-                    </span>
-                  )}
-                  <span className="text-xs bg-secondary border border-border/60 text-foreground font-bold px-2.5 py-0.5 rounded-full">
-                    {c.creditsCost || 1} {c.creditsCost === 1 ? "crédito" : "créditos"}
+                ) : (
+                  <span className="text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                    Sesión Activa
                   </span>
-                </div>
+                )}
+                <span className="text-xs bg-secondary border border-border/60 text-foreground font-bold px-2.5 py-0.5 rounded-full">
+                  {c.creditsCost || 1} {c.creditsCost === 1 ? "crédito" : "créditos"}
+                </span>
+              </div>
 
-                {/* Header Actions Menu & Close Button */}
-                <div className="flex items-center gap-2 shrink-0">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="h-8 px-3 rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 text-xs font-bold gap-1.5 shadow-xs"
-                        title="Acciones de Gestión de Clase"
-                      >
-                        <Wrench className="h-3.5 w-3.5" />
-                        <span>Acciones</span>
-                        <MoreVertical className="h-3.5 w-3.5 opacity-70" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56 rounded-2xl p-1.5 shadow-xl border-border">
-                      <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-2 py-1.5">
-                        Gestión de Clase
-                      </DropdownMenuLabel>
-                      <DropdownMenuSeparator />
+              {/* Header Actions Menu & Close Button */}
+              <div className="flex items-center gap-2 shrink-0">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8 px-3 rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 text-xs font-bold gap-1.5 shadow-xs"
+                      title="Acciones de Gestión de Clase"
+                    >
+                      <Wrench className="h-3.5 w-3.5" />
+                      <span>Acciones</span>
+                      <MoreVertical className="h-3.5 w-3.5 opacity-70" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    className="w-56 rounded-2xl p-1.5 shadow-xl border-border"
+                  >
+                    <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-2 py-1.5">
+                      Gestión de Clase
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
 
-                      {/* Inscribir Alumno */}
-                      {c.status !== "cancelada" && c.booked < c.capacity && (
-                        <DropdownMenuItem
-                          className="rounded-xl cursor-pointer text-xs font-semibold gap-2 py-2"
-                          onClick={() => {
-                            setEnrollModalClass(c);
-                          }}
-                        >
-                          <Plus className="h-4 w-4 text-primary" /> Inscribir Alumno
-                        </DropdownMenuItem>
-                      )}
-
-                      {/* Sustituir Coach */}
+                    {/* Inscribir Alumno */}
+                    {c.status !== "cancelada" && c.booked < c.capacity && (
                       <DropdownMenuItem
                         className="rounded-xl cursor-pointer text-xs font-semibold gap-2 py-2"
                         onClick={() => {
-                          setSubstituteSearchTerm("");
-                          setSubstituteCoachModalClass(c);
+                          setEnrollModalClass(c);
                         }}
                       >
-                        <Users className="h-4 w-4 text-blue-500" /> Sustituir Coach
+                        <Plus className="h-4 w-4 text-primary" /> Inscribir Alumno
                       </DropdownMenuItem>
+                    )}
 
-                      {/* Editar Clase */}
+                    {/* Sustituir Coach */}
+                    <DropdownMenuItem
+                      className="rounded-xl cursor-pointer text-xs font-semibold gap-2 py-2"
+                      onClick={() => {
+                        setSubstituteSearchTerm("");
+                        setSubstituteCoachModalClass(c);
+                      }}
+                    >
+                      <Users className="h-4 w-4 text-blue-500" /> Sustituir Coach
+                    </DropdownMenuItem>
+
+                    {/* Editar Clase */}
+                    <DropdownMenuItem
+                      className="rounded-xl cursor-pointer text-xs font-semibold gap-2 py-2"
+                      onClick={() => {
+                        setName(c.name);
+                        setStaffId(c.staffId);
+                        const parts = c.time.split("-");
+                        setStartTime(parts[0]?.trim() || "08:00");
+                        setEndTime(parts[1]?.trim() || "09:00");
+                        setCreditsCost((c.creditsCost || 1).toString());
+                        setSalaId(c.salaId || "");
+                        setDay(c.day);
+                        setCustomCapacity(c.capacity || 20);
+                        setEditingClassId(c.id);
+                        setShowAddForm(true);
+                        setSelectedClass(null);
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
+                    >
+                      <Edit2 className="h-4 w-4 text-amber-500" /> Editar Clase
+                    </DropdownMenuItem>
+
+                    {/* Cancelar Clase / Reactivar */}
+                    {c.status === "cancelada" ? (
                       <DropdownMenuItem
-                        className="rounded-xl cursor-pointer text-xs font-semibold gap-2 py-2"
+                        className="rounded-xl cursor-pointer text-xs font-semibold gap-2 py-2 text-primary"
                         onClick={() => {
-                          setName(c.name);
-                          setStaffId(c.staffId);
-                          const parts = c.time.split("-");
-                          setStartTime(parts[0]?.trim() || "08:00");
-                          setEndTime(parts[1]?.trim() || "09:00");
-                          setCreditsCost((c.creditsCost || 1).toString());
-                          setSalaId(c.salaId || "");
-                          setDay(c.day);
-                          setCustomCapacity(c.capacity || 20);
-                          setEditingClassId(c.id);
-                          setShowAddForm(true);
-                          setSelectedClass(null);
-                          window.scrollTo({ top: 0, behavior: "smooth" });
-                        }}
-                      >
-                        <Edit2 className="h-4 w-4 text-amber-500" /> Editar Clase
-                      </DropdownMenuItem>
-
-                      {/* Cancelar Clase / Reactivar */}
-                      {c.status === "cancelada" ? (
-                        <DropdownMenuItem
-                          className="rounded-xl cursor-pointer text-xs font-semibold gap-2 py-2 text-primary"
-                          onClick={() => {
-                            setConfirmDialog({
-                              isOpen: true,
-                              title: "Reactivar Clase",
-                              description: `¿Deseas reactivar la clase "${c.name}"?`,
-                              confirmText: "Reactivar Clase",
-                              onConfirm: () => {
-                                setClassesList((prev) =>
-                                  prev.map((item) =>
-                                    item.id === c.id ? { ...item, status: "activa" } : item,
-                                  ),
-                                );
-                                toast.success(`📢 La clase "${c.name}" ha sido reactivada.`);
-                              },
-                            });
-                          }}
-                        >
-                          <Check className="h-4 w-4" /> Reactivar Clase
-                        </DropdownMenuItem>
-                      ) : (
-                        <DropdownMenuItem
-                          className="rounded-xl cursor-pointer text-xs font-semibold gap-2 py-2 text-amber-600 dark:text-amber-400"
-                          onClick={() => {
-                            setConfirmDialog({
-                              isOpen: true,
-                              title: "Cancelar Sesión de Clase",
-                              description: `¿Confirmas cancelar la clase "${c.name}"?\n\n• Se reembolsarán los créditos a todos los alumnos agendados (${c.booked} inscriptos).\n• Se enviará una notificación automática (Push / WhatsApp).`,
-                              confirmText: "Sí, Cancelar Clase",
-                              variant: "destructive",
-                              onConfirm: () => {
-                                setClassesList((prev) =>
-                                  prev.map((item) =>
-                                    item.id === c.id
-                                      ? {
-                                          ...item,
-                                          status: "cancelada",
-                                          enrolledSpots: {},
-                                          releasedSpots: {},
-                                          booked: 0,
-                                          attendance: {},
-                                          waitlist: [],
-                                        }
-                                      : item,
-                                  ),
-                                );
-                                toast.info(`📢 Clase "${c.name}" cancelada. Notificación enviada a todos los inscriptos.`);
-                              },
-                            });
-                          }}
-                        >
-                          <Slash className="h-4 w-4" /> Cancelar Clase
-                        </DropdownMenuItem>
-                      )}
-
-                      <DropdownMenuSeparator />
-
-                      {/* Eliminar Permanentemente */}
-                      <DropdownMenuItem
-                        className="rounded-xl cursor-pointer text-xs font-semibold gap-2 py-2 text-destructive focus:text-destructive focus:bg-destructive/10"
-                        onClick={() => {
-                          setPromptDialog({
+                          setConfirmDialog({
                             isOpen: true,
-                            title: "Eliminar Clase Definitivamente",
-                            description: `⚠️ ¿Eliminar permanentemente "${c.name}"?\n\nPara confirmar, escribe "eliminar". Se notificará a los ${c.booked} alumnos inscriptos.`,
-                            placeholder: 'Escribe "eliminar"',
-                            confirmText: "Eliminar Definitivamente",
-                            variant: "destructive",
-                            onConfirm: (confirmWord) => {
-                              if (confirmWord?.trim().toLowerCase() === "eliminar") {
-                                setClassesList((prev) => prev.filter((item) => item.id !== c.id));
-                                setSelectedClass(null);
-                                toast.success(`⚠️ La clase "${c.name}" ha sido eliminada permanentemente.`);
-                              } else {
-                                toast.error('No escribiste "eliminar". La eliminación ha sido cancelada.');
-                              }
+                            title: "Reactivar Clase",
+                            description: `¿Deseas reactivar la clase "${c.name}"?`,
+                            confirmText: "Reactivar Clase",
+                            onConfirm: () => {
+                              setClassesList((prev) =>
+                                prev.map((item) =>
+                                  item.id === c.id ? { ...item, status: "activa" } : item,
+                                ),
+                              );
+                              toast.success(`📢 La clase "${c.name}" ha sido reactivada.`);
                             },
                           });
                         }}
                       >
-                        <Trash2 className="h-4 w-4" /> Eliminar Clase
+                        <Check className="h-4 w-4" /> Reactivar Clase
                       </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                    ) : (
+                      <DropdownMenuItem
+                        className="rounded-xl cursor-pointer text-xs font-semibold gap-2 py-2 text-amber-600 dark:text-amber-400"
+                        onClick={() => {
+                          setConfirmDialog({
+                            isOpen: true,
+                            title: "Cancelar Sesión de Clase",
+                            description: `¿Confirmas cancelar la clase "${c.name}"?\n\n• Se reembolsarán los créditos a todos los alumnos agendados (${c.booked} inscriptos).\n• Se enviará una notificación automática (Push / WhatsApp).`,
+                            confirmText: "Sí, Cancelar Clase",
+                            variant: "destructive",
+                            onConfirm: () => {
+                              setClassesList((prev) =>
+                                prev.map((item) =>
+                                  item.id === c.id
+                                    ? {
+                                        ...item,
+                                        status: "cancelada",
+                                        enrolledSpots: {},
+                                        releasedSpots: {},
+                                        booked: 0,
+                                        attendance: {},
+                                        waitlist: [],
+                                      }
+                                    : item,
+                                ),
+                              );
+                              toast.info(
+                                `📢 Clase "${c.name}" cancelada. Notificación enviada a todos los inscriptos.`,
+                              );
+                            },
+                          });
+                        }}
+                      >
+                        <Slash className="h-4 w-4" /> Cancelar Clase
+                      </DropdownMenuItem>
+                    )}
 
-                  <button
-                    type="button"
-                    onClick={() => setSelectedClass(null)}
-                    className="h-8 w-8 rounded-full bg-secondary/80 hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors border border-border/60"
-                    title="Cerrar ventana"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
+                    <DropdownMenuSeparator />
+
+                    {/* Eliminar Permanentemente */}
+                    <DropdownMenuItem
+                      className="rounded-xl cursor-pointer text-xs font-semibold gap-2 py-2 text-destructive focus:text-destructive focus:bg-destructive/10"
+                      onClick={() => {
+                        setPromptDialog({
+                          isOpen: true,
+                          title: "Eliminar Clase Definitivamente",
+                          description: `⚠️ ¿Eliminar permanentemente "${c.name}"?\n\nPara confirmar, escribe "eliminar". Se notificará a los ${c.booked} alumnos inscriptos.`,
+                          placeholder: 'Escribe "eliminar"',
+                          confirmText: "Eliminar Definitivamente",
+                          variant: "destructive",
+                          onConfirm: (confirmWord) => {
+                            if (confirmWord?.trim().toLowerCase() === "eliminar") {
+                              setClassesList((prev) => prev.filter((item) => item.id !== c.id));
+                              setSelectedClass(null);
+                              toast.success(
+                                `⚠️ La clase "${c.name}" ha sido eliminada permanentemente.`,
+                              );
+                            } else {
+                              toast.error(
+                                'No escribiste "eliminar". La eliminación ha sido cancelada.',
+                              );
+                            }
+                          },
+                        });
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" /> Eliminar Clase
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedClass(null)}
+                  className="h-8 w-8 rounded-full bg-secondary/80 hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors border border-border/60"
+                  title="Cerrar ventana"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Row 2: Title & Stats on Left, Coach Card on Right */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
+              <div>
+                <h2 className="text-2xl font-black text-foreground tracking-tight">{c.name}</h2>
+                <p className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
+                  <span>
+                    Horario: <strong className="text-foreground font-bold">{c.time} hs</strong>
+                  </span>
+                  <span>·</span>
+                  <span>
+                    Ocupación:{" "}
+                    <strong className="text-foreground font-bold">
+                      {c.booked} / {c.capacity} cupos
+                    </strong>
+                  </span>
+                </p>
               </div>
 
-              {/* Row 2: Title & Stats on Left, Coach Card on Right */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
-                <div>
-                  <h2 className="text-2xl font-black text-foreground tracking-tight">{c.name}</h2>
-                  <p className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
-                    <span>
-                      Horario: <strong className="text-foreground font-bold">{c.time} hs</strong>
-                    </span>
-                    <span>·</span>
-                    <span>
-                      Ocupación:{" "}
-                      <strong className="text-foreground font-bold">
-                        {c.booked} / {c.capacity} cupos
-                      </strong>
-                    </span>
-                  </p>
+              {/* Coach Card */}
+              <div className="bg-background border border-border/60 p-3 rounded-2xl flex items-center gap-3 shrink-0">
+                <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-black text-sm border border-primary/20 shrink-0 uppercase">
+                  {coach?.name
+                    ? coach.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                    : "ST"}
+                </div>
+                <div className="text-xs">
+                  <span className="text-[10px] text-muted-foreground font-semibold block uppercase tracking-wider">
+                    Profesor / Coach
+                  </span>
+                  <span className="font-bold text-foreground block">
+                    {coach?.name || "Sin asignar"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Body: 2 Columns 50/50 Aligned System */}
+          <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5 items-stretch w-full">
+            {/* Row 2 Left: Lista de Reservas y Asistencia */}
+            <div className="group rounded-3xl border border-border bg-card p-5 space-y-4 transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg shadow-xs h-full flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+                    Lista de Reservas y Asistencia
+                  </span>
+                  <span className="text-[10px] text-muted-foreground/70 font-semibold uppercase tracking-wider">
+                    {c.booked} inscriptos
+                  </span>
                 </div>
 
-                {/* Coach Card */}
-                <div className="bg-background border border-border/60 p-3 rounded-2xl flex items-center gap-3 shrink-0">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-black text-sm border border-primary/20 shrink-0 uppercase">
-                    {coach?.name
-                      ? coach.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")
-                      : "ST"}
-                  </div>
-                  <div className="text-xs">
-                    <span className="text-[10px] text-muted-foreground font-semibold block uppercase tracking-wider">
-                      Profesor / Coach
-                    </span>
-                    <span className="font-bold text-foreground block">
-                      {coach?.name || "Sin asignar"}
-                    </span>
-                  </div>
+                <div className="overflow-x-auto border border-border/40 rounded-2xl bg-secondary/20 max-h-[260px]">
+                  <table className="w-full text-left text-xs min-w-[380px] border-collapse">
+                    <thead>
+                      <tr className="border-b border-border/40 bg-secondary/60 text-muted-foreground font-bold text-[10px] uppercase">
+                        <th className="p-2.5">Alumno</th>
+                        <th className="p-2.5 text-center">Asistencia</th>
+                        <th className="p-2.5 text-center">Lugar</th>
+                        <th className="p-2.5 text-right">Acción</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/30">
+                      {Object.entries(c.enrolledSpots || {}).map(([spotIdxStr, name]) => {
+                        const idx = parseInt(spotIdxStr);
+                        const displayName = getDisplayStudentName(name);
+                        const isPrivate = false;
+                        const enriched = getEnrichedStudentInfo(name);
+
+                        const currentAttendance = c.attendance?.[idx] || "pendiente";
+                        const attendanceIcons = { pendiente: "⚪", presente: "🟢", ausente: "🔴" };
+                        const attendanceLabels = {
+                          pendiente: "Pendiente",
+                          presente: "Presente",
+                          ausente: "Ausente",
+                        };
+
+                        const handleToggleAttendance = () => {
+                          const nextStatus =
+                            currentAttendance === "pendiente"
+                              ? "presente"
+                              : currentAttendance === "presente"
+                                ? "ausente"
+                                : "pendiente";
+
+                          setClassesList((prev) =>
+                            prev.map((item) => {
+                              if (item.id === c.id) {
+                                const copyAtt = { ...(item.attendance || {}) };
+                                copyAtt[idx] = nextStatus;
+                                return { ...item, attendance: copyAtt };
+                              }
+                              return item;
+                            }),
+                          );
+                        };
+
+                        return (
+                          <tr key={idx} className="hover:bg-background transition-colors">
+                            <td className="p-2.5 font-semibold">
+                              <div className="flex items-center gap-2">
+                                {isPrivate ? (
+                                  <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center text-xs text-muted-foreground shrink-0 border border-border/40">
+                                    🔒
+                                  </div>
+                                ) : (
+                                  <img
+                                    src={enriched.photo}
+                                    alt={displayName}
+                                    className="h-7 w-7 rounded-full object-cover shrink-0 border border-border/30"
+                                  />
+                                )}
+                                <div className="leading-tight flex flex-col">
+                                  <span className="font-bold text-foreground text-xs truncate max-w-[120px]">
+                                    {displayName}
+                                  </span>
+                                  {!isPrivate && (
+                                    <span className="text-[9.5px] text-muted-foreground">
+                                      {enriched.username}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="p-2.5 text-center">
+                              <button
+                                type="button"
+                                onClick={handleToggleAttendance}
+                                className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border transition whitespace-nowrap ${
+                                  currentAttendance === "presente"
+                                    ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+                                    : currentAttendance === "ausente"
+                                      ? "bg-destructive/10 border-destructive/20 text-destructive"
+                                      : "bg-background border-border text-muted-foreground"
+                                }`}
+                              >
+                                {attendanceIcons[currentAttendance]}{" "}
+                                {attendanceLabels[currentAttendance]}
+                              </button>
+                            </td>
+                            <td className="p-2.5 text-center font-bold">
+                              <span className="bg-background px-2 py-0.5 rounded font-bold text-[10px] text-foreground border border-border/40">
+                                #{idx + 1}
+                              </span>
+                            </td>
+                            <td className="p-2.5 text-right">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7 rounded-lg hover:bg-secondary border border-transparent hover:border-border/60"
+                                    title="Acciones del Alumno"
+                                  >
+                                    <MoreHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                  align="end"
+                                  className="w-48 rounded-2xl p-1 shadow-xl border-border"
+                                >
+                                  <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-2.5 py-1.5 truncate">
+                                    {displayName}
+                                  </DropdownMenuLabel>
+                                  <DropdownMenuSeparator />
+
+                                  {/* Marcar Presente */}
+                                  <DropdownMenuItem
+                                    className="rounded-xl cursor-pointer text-xs font-semibold gap-2 py-1.5"
+                                    onClick={() => {
+                                      setClassesList((prev) =>
+                                        prev.map((item) => {
+                                          if (item.id === c.id) {
+                                            const copyAtt = { ...(item.attendance || {}) };
+                                            copyAtt[idx] = "presente";
+                                            return { ...item, attendance: copyAtt };
+                                          }
+                                          return item;
+                                        }),
+                                      );
+                                    }}
+                                  >
+                                    <UserCheck className="h-3.5 w-3.5 text-emerald-500" /> Marcar
+                                    Presente
+                                  </DropdownMenuItem>
+
+                                  {/* Marcar Ausente */}
+                                  <DropdownMenuItem
+                                    className="rounded-xl cursor-pointer text-xs font-semibold gap-2 py-1.5"
+                                    onClick={() => {
+                                      setClassesList((prev) =>
+                                        prev.map((item) => {
+                                          if (item.id === c.id) {
+                                            const copyAtt = { ...(item.attendance || {}) };
+                                            copyAtt[idx] = "ausente";
+                                            return { ...item, attendance: copyAtt };
+                                          }
+                                          return item;
+                                        }),
+                                      );
+                                    }}
+                                  >
+                                    <UserX className="h-3.5 w-3.5 text-destructive" /> Marcar
+                                    Ausente
+                                  </DropdownMenuItem>
+
+                                  {/* Contactar por WhatsApp */}
+                                  <DropdownMenuItem
+                                    className="rounded-xl cursor-pointer text-xs font-semibold gap-2 py-1.5 text-emerald-600 dark:text-emerald-400"
+                                    onClick={() => {
+                                      const rawPhone = enriched.phone.replace(/[^0-9]/g, "");
+                                      window.open(`https://wa.me/${rawPhone}`, "_blank");
+                                    }}
+                                  >
+                                    <MessageCircle className="h-3.5 w-3.5" /> Contactar por WhatsApp
+                                  </DropdownMenuItem>
+
+                                  <DropdownMenuSeparator />
+
+                                  {/* Quitar Reserva */}
+                                  <DropdownMenuItem
+                                    className="rounded-xl cursor-pointer text-xs font-semibold gap-2 py-1.5 text-destructive focus:text-destructive focus:bg-destructive/10"
+                                    onClick={() => handleCancelSpot(idx, name)}
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" /> Quitar Reserva
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                      {Object.keys(c.enrolledSpots || {}).length === 0 && (
+                        <tr>
+                          <td
+                            colSpan={4}
+                            className="text-xs text-muted-foreground italic text-center py-6"
+                          >
+                            Ningún alumno reservó lugar todavía.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
 
-            {/* Body: 2 Columns 50/50 Aligned System */}
-            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5 items-stretch w-full">
-
-              {/* Row 2 Left: Lista de Reservas y Asistencia */}
-              <div className="group rounded-3xl border border-border bg-card p-5 space-y-4 transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg shadow-xs h-full flex flex-col justify-between">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between pb-2 border-b border-border/40">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
-                      Lista de Reservas y Asistencia
-                    </span>
-                    <span className="text-[10px] text-muted-foreground/70 font-semibold uppercase tracking-wider">
-                      {c.booked} inscriptos
-                    </span>
-                  </div>
-
-                  <div className="overflow-x-auto border border-border/40 rounded-2xl bg-secondary/20 max-h-[260px]">
-                    <table className="w-full text-left text-xs min-w-[380px] border-collapse">
-                      <thead>
-                        <tr className="border-b border-border/40 bg-secondary/60 text-muted-foreground font-bold text-[10px] uppercase">
-                          <th className="p-2.5">Alumno</th>
-                          <th className="p-2.5 text-center">Asistencia</th>
-                          <th className="p-2.5 text-center">Lugar</th>
-                          <th className="p-2.5 text-right">Acción</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border/30">
-                        {Object.entries(c.enrolledSpots || {}).map(([spotIdxStr, name]) => {
-                          const idx = parseInt(spotIdxStr);
-                          const displayName = getDisplayStudentName(name);
-                          const isPrivate = false;
-                          const enriched = getEnrichedStudentInfo(name);
-
-                          const currentAttendance = c.attendance?.[idx] || "pendiente";
-                          const attendanceIcons = { pendiente: "⚪", presente: "🟢", ausente: "🔴" };
-                          const attendanceLabels = {
-                            pendiente: "Pendiente",
-                            presente: "Presente",
-                            ausente: "Ausente",
-                          };
-
-                          const handleToggleAttendance = () => {
-                            const nextStatus =
-                              currentAttendance === "pendiente"
-                                ? "presente"
-                                : currentAttendance === "presente"
-                                  ? "ausente"
-                                  : "pendiente";
-
-                            setClassesList((prev) =>
-                              prev.map((item) => {
-                                if (item.id === c.id) {
-                                  const copyAtt = { ...(item.attendance || {}) };
-                                  copyAtt[idx] = nextStatus;
-                                  return { ...item, attendance: copyAtt };
-                                }
-                                return item;
-                              }),
-                            );
-                          };
-
-                          return (
-                            <tr key={idx} className="hover:bg-background transition-colors">
-                              <td className="p-2.5 font-semibold">
-                                <div className="flex items-center gap-2">
-                                  {isPrivate ? (
-                                    <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center text-xs text-muted-foreground shrink-0 border border-border/40">
-                                      🔒
-                                    </div>
-                                  ) : (
-                                    <img
-                                      src={enriched.photo}
-                                      alt={displayName}
-                                      className="h-7 w-7 rounded-full object-cover shrink-0 border border-border/30"
-                                    />
-                                  )}
-                                  <div className="leading-tight flex flex-col">
-                                    <span className="font-bold text-foreground text-xs truncate max-w-[120px]">
-                                      {displayName}
-                                    </span>
-                                    {!isPrivate && (
-                                      <span className="text-[9.5px] text-muted-foreground">
-                                        {enriched.username}
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                              </td>
-                              <td className="p-2.5 text-center">
-                                <button
-                                  type="button"
-                                  onClick={handleToggleAttendance}
-                                  className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border transition whitespace-nowrap ${
-                                    currentAttendance === "presente"
-                                      ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
-                                      : currentAttendance === "ausente"
-                                        ? "bg-destructive/10 border-destructive/20 text-destructive"
-                                        : "bg-background border-border text-muted-foreground"
-                                  }`}
-                                >
-                                  {attendanceIcons[currentAttendance]}{" "}
-                                  {attendanceLabels[currentAttendance]}
-                                </button>
-                              </td>
-                              <td className="p-2.5 text-center font-bold">
-                                <span className="bg-background px-2 py-0.5 rounded font-bold text-[10px] text-foreground border border-border/40">
-                                  #{idx + 1}
-                                </span>
-                              </td>
-                              <td className="p-2.5 text-right">
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-7 w-7 rounded-lg hover:bg-secondary border border-transparent hover:border-border/60"
-                                      title="Acciones del Alumno"
-                                    >
-                                      <MoreHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end" className="w-48 rounded-2xl p-1 shadow-xl border-border">
-                                    <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-2.5 py-1.5 truncate">
-                                      {displayName}
-                                    </DropdownMenuLabel>
-                                    <DropdownMenuSeparator />
-
-                                    {/* Marcar Presente */}
-                                    <DropdownMenuItem
-                                      className="rounded-xl cursor-pointer text-xs font-semibold gap-2 py-1.5"
-                                      onClick={() => {
-                                        setClassesList((prev) =>
-                                          prev.map((item) => {
-                                            if (item.id === c.id) {
-                                              const copyAtt = { ...(item.attendance || {}) };
-                                              copyAtt[idx] = "presente";
-                                              return { ...item, attendance: copyAtt };
-                                            }
-                                            return item;
-                                          }),
-                                        );
-                                      }}
-                                    >
-                                      <UserCheck className="h-3.5 w-3.5 text-emerald-500" /> Marcar Presente
-                                    </DropdownMenuItem>
-
-                                    {/* Marcar Ausente */}
-                                    <DropdownMenuItem
-                                      className="rounded-xl cursor-pointer text-xs font-semibold gap-2 py-1.5"
-                                      onClick={() => {
-                                        setClassesList((prev) =>
-                                          prev.map((item) => {
-                                            if (item.id === c.id) {
-                                              const copyAtt = { ...(item.attendance || {}) };
-                                              copyAtt[idx] = "ausente";
-                                              return { ...item, attendance: copyAtt };
-                                            }
-                                            return item;
-                                          }),
-                                        );
-                                      }}
-                                    >
-                                      <UserX className="h-3.5 w-3.5 text-destructive" /> Marcar Ausente
-                                    </DropdownMenuItem>
-
-                                    {/* Contactar por WhatsApp */}
-                                    <DropdownMenuItem
-                                      className="rounded-xl cursor-pointer text-xs font-semibold gap-2 py-1.5 text-emerald-600 dark:text-emerald-400"
-                                      onClick={() => {
-                                        const rawPhone = enriched.phone.replace(/[^0-9]/g, "");
-                                        window.open(`https://wa.me/${rawPhone}`, "_blank");
-                                      }}
-                                    >
-                                      <MessageCircle className="h-3.5 w-3.5" /> Contactar por WhatsApp
-                                    </DropdownMenuItem>
-
-                                    <DropdownMenuSeparator />
-
-                                    {/* Quitar Reserva */}
-                                    <DropdownMenuItem
-                                      className="rounded-xl cursor-pointer text-xs font-semibold gap-2 py-1.5 text-destructive focus:text-destructive focus:bg-destructive/10"
-                                      onClick={() => handleCancelSpot(idx, name)}
-                                    >
-                                      <Trash2 className="h-3.5 w-3.5" /> Quitar Reserva
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                        {Object.keys(c.enrolledSpots || {}).length === 0 && (
-                          <tr>
-                            <td
-                              colSpan={4}
-                              className="text-xs text-muted-foreground italic text-center py-6"
-                            >
-                              Ningún alumno reservó lugar todavía.
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
+            {/* Row 2 Right: Lista de Espera */}
+            <div className="group rounded-3xl border border-border bg-card p-5 space-y-4 transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg shadow-xs h-full flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+                    Lista de Espera
+                  </span>
+                  <span className="text-[10px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 px-2.5 py-0.5 rounded-full border border-amber-500/20">
+                    {c.waitlist?.length || 0} en cola
+                  </span>
                 </div>
-              </div>
 
-              {/* Row 2 Right: Lista de Espera */}
-              <div className="group rounded-3xl border border-border bg-card p-5 space-y-4 transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg shadow-xs h-full flex flex-col justify-between">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between pb-2 border-b border-border/40">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
-                      Lista de Espera
-                    </span>
-                    <span className="text-[10px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 px-2.5 py-0.5 rounded-full border border-amber-500/20">
-                      {c.waitlist?.length || 0} en cola
-                    </span>
-                  </div>
-
-                  {c.waitlist && c.waitlist.length > 0 ? (
-                    <div className="space-y-2">
-                      {c.waitlist.map((wName, wIdx) => (
-                        <div
-                          key={wIdx}
-                          className="flex items-center justify-between p-3 bg-secondary/20 border border-border/40 rounded-xl text-xs"
-                        >
-                          <div className="flex items-center gap-2.5">
-                            <span className="h-6 w-6 rounded-full bg-background font-bold text-[10px] flex items-center justify-center border border-border/40 text-muted-foreground">
-                              #{wIdx + 1}
-                            </span>
-                            <span className="font-bold text-foreground text-xs">{wName}</span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setConfirmDialog({
-                                  isOpen: true,
-                                  title: "Promover Alumno",
-                                  description: `¿Confirmas promover a ${wName} para ocupar un lugar vacante en la clase?`,
-                                  confirmText: "Promover Alumno",
-                                  onConfirm: () => {
-                                    setClassesList((prev) =>
-                                      prev.map((item) => {
-                                        if (item.id === c.id) {
-                                          const nextWaitlist = (item.waitlist || []).filter(
-                                            (_, idx) => idx !== wIdx,
-                                          );
-                                          const copySpots = { ...(item.enrolledSpots || {}) };
-                                          let nextSpot = 0;
-                                          while (copySpots[nextSpot]) nextSpot++;
-                                          copySpots[nextSpot] = wName;
-                                          return {
-                                            ...item,
-                                            waitlist: nextWaitlist,
-                                            enrolledSpots: copySpots,
-                                            booked: Object.keys(copySpots).length,
-                                          };
-                                        }
-                                        return item;
-                                      }),
-                                    );
-                                    toast.success(`✓ ${wName} inscripto en un lugar vacante.`);
-                                  },
-                                });
-                              }}
-                              className="text-[10.5px] font-bold text-primary hover:underline px-1 py-0.5"
-                            >
-                              Asignar Lugar
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setConfirmDialog({
-                                  isOpen: true,
-                                  title: "Quitar de Lista de Espera",
-                                  description: `¿Quitar a "${wName}" de la lista de espera?\n\n• Se le enviará una notificación automática al alumno.`,
-                                  confirmText: "Quitar de la Lista",
-                                  variant: "destructive",
-                                  onConfirm: () => {
-                                    setClassesList((prev) =>
-                                      prev.map((item) => {
-                                        if (item.id === c.id) {
-                                          const nextWaitlist = (item.waitlist || []).filter(
-                                            (_, idx) => idx !== wIdx,
-                                          );
-                                          return { ...item, waitlist: nextWaitlist };
-                                        }
-                                        return item;
-                                      }),
-                                    );
-                                    toast.info(`📢 Alumno "${wName}" removido de la lista de espera.`);
-                                  },
-                                });
-                              }}
-                              className="text-destructive hover:bg-destructive/10 p-1.5 rounded-lg transition-colors"
-                              title="Quitar de lista de espera"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
+                {c.waitlist && c.waitlist.length > 0 ? (
+                  <div className="space-y-2">
+                    {c.waitlist.map((wName, wIdx) => (
+                      <div
+                        key={wIdx}
+                        className="flex items-center justify-between p-3 bg-secondary/20 border border-border/40 rounded-xl text-xs"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <span className="h-6 w-6 rounded-full bg-background font-bold text-[10px] flex items-center justify-center border border-border/40 text-muted-foreground">
+                            #{wIdx + 1}
+                          </span>
+                          <span className="font-bold text-foreground text-xs">{wName}</span>
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-xs text-muted-foreground italic py-8 text-center">
-                      No hay alumnos en lista de espera para esta clase.
-                    </p>
-                  )}
-                </div>
-
-                {canManageClasses && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="w-full text-xs font-bold border-border/60 hover:bg-secondary rounded-xl py-2 mt-2"
-                    onClick={() => {
-                      setWaitlistSearchTerm("");
-                      setWaitlistPlanFilter("todos");
-                      setWaitlistModalClass(c);
-                    }}
-                  >
-                    + Sumar Alumno a Lista de Espera
-                  </Button>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setConfirmDialog({
+                                isOpen: true,
+                                title: "Promover Alumno",
+                                description: `¿Confirmas promover a ${wName} para ocupar un lugar vacante en la clase?`,
+                                confirmText: "Promover Alumno",
+                                onConfirm: () => {
+                                  setClassesList((prev) =>
+                                    prev.map((item) => {
+                                      if (item.id === c.id) {
+                                        const nextWaitlist = (item.waitlist || []).filter(
+                                          (_, idx) => idx !== wIdx,
+                                        );
+                                        const copySpots = { ...(item.enrolledSpots || {}) };
+                                        let nextSpot = 0;
+                                        while (copySpots[nextSpot]) nextSpot++;
+                                        copySpots[nextSpot] = wName;
+                                        return {
+                                          ...item,
+                                          waitlist: nextWaitlist,
+                                          enrolledSpots: copySpots,
+                                          booked: Object.keys(copySpots).length,
+                                        };
+                                      }
+                                      return item;
+                                    }),
+                                  );
+                                  toast.success(`✓ ${wName} inscripto en un lugar vacante.`);
+                                },
+                              });
+                            }}
+                            className="text-[10.5px] font-bold text-primary hover:underline px-1 py-0.5"
+                          >
+                            Asignar Lugar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setConfirmDialog({
+                                isOpen: true,
+                                title: "Quitar de Lista de Espera",
+                                description: `¿Quitar a "${wName}" de la lista de espera?\n\n• Se le enviará una notificación automática al alumno.`,
+                                confirmText: "Quitar de la Lista",
+                                variant: "destructive",
+                                onConfirm: () => {
+                                  setClassesList((prev) =>
+                                    prev.map((item) => {
+                                      if (item.id === c.id) {
+                                        const nextWaitlist = (item.waitlist || []).filter(
+                                          (_, idx) => idx !== wIdx,
+                                        );
+                                        return { ...item, waitlist: nextWaitlist };
+                                      }
+                                      return item;
+                                    }),
+                                  );
+                                  toast.info(
+                                    `📢 Alumno "${wName}" removido de la lista de espera.`,
+                                  );
+                                },
+                              });
+                            }}
+                            className="text-destructive hover:bg-destructive/10 p-1.5 rounded-lg transition-colors"
+                            title="Quitar de lista de espera"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground italic py-8 text-center">
+                    No hay alumnos en lista de espera para esta clase.
+                  </p>
                 )}
               </div>
 
-
+              {canManageClasses && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="w-full text-xs font-bold border-border/60 hover:bg-secondary rounded-xl py-2 mt-2"
+                  onClick={() => {
+                    setWaitlistSearchTerm("");
+                    setWaitlistPlanFilter("todos");
+                    setWaitlistModalClass(c);
+                  }}
+                >
+                  + Sumar Alumno a Lista de Espera
+                </Button>
+              )}
+            </div>
           </div>
         </DialogContent>
       </Dialog>
@@ -8014,7 +8322,14 @@ function ClasesTab({
             <DialogDescription className="text-xs text-muted-foreground">
               Busca y selecciona un alumno activo para inscribirlo
               {enrollTargetSpotIndex !== null ? (
-                <> en el <strong className="text-primary font-bold">Lugar #{enrollTargetSpotIndex + 1}</strong> de </>
+                <>
+                  {" "}
+                  en el{" "}
+                  <strong className="text-primary font-bold">
+                    Lugar #{enrollTargetSpotIndex + 1}
+                  </strong>{" "}
+                  de{" "}
+                </>
               ) : (
                 <> en </>
               )}
@@ -8056,7 +8371,9 @@ function ClasesTab({
             {/* Lista de Alumnos Activos */}
             <div className="max-h-[280px] overflow-y-auto custom-scrollbar space-y-2 pr-1 pt-1">
               {availableMembersToEnroll.map((m: any) => {
-                const isAlreadyEnrolled = Object.values(enrollModalClass?.enrolledSpots || {}).includes(m.name);
+                const isAlreadyEnrolled = Object.values(
+                  enrollModalClass?.enrolledSpots || {},
+                ).includes(m.name);
                 return (
                   <div
                     key={m.name}
@@ -8166,7 +8483,9 @@ function ClasesTab({
             {/* Lista de Alumnos Activos */}
             <div className="max-h-[280px] overflow-y-auto custom-scrollbar space-y-2 pr-1 pt-1">
               {availableMembersToWaitlist.map((m: any) => {
-                const isEnrolled = Object.values(waitlistModalClass?.enrolledSpots || {}).includes(m.name);
+                const isEnrolled = Object.values(waitlistModalClass?.enrolledSpots || {}).includes(
+                  m.name,
+                );
                 const isInWaitlist = (waitlistModalClass?.waitlist || []).includes(m.name);
 
                 return (
@@ -8215,7 +8534,7 @@ function ClasesTab({
                                 return { ...item, waitlist: [...currentWaitlist, studentName] };
                               }
                               return item;
-                            })
+                            }),
                           );
                           toast.success(`✓ ${studentName} registrado en la lista de espera.`);
                           setWaitlistModalClass(null);
@@ -8243,7 +8562,10 @@ function ClasesTab({
       <Toaster position="top-right" richColors />
 
       {/* Modal Shadcn UI de Confirmación Genérico */}
-      <AlertDialog open={!!confirmDialog?.isOpen} onOpenChange={(open) => !open && setConfirmDialog(null)}>
+      <AlertDialog
+        open={!!confirmDialog?.isOpen}
+        onOpenChange={(open) => !open && setConfirmDialog(null)}
+      >
         <AlertDialogContent className="max-w-md rounded-3xl p-6 border-border shadow-2xl bg-background">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-lg font-black text-foreground flex items-center gap-2">
@@ -8274,7 +8596,7 @@ function ClasesTab({
                 "rounded-xl text-xs font-bold",
                 confirmDialog?.variant === "destructive"
                   ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  : "bg-primary text-primary-foreground hover:bg-primary/90"
+                  : "bg-primary text-primary-foreground hover:bg-primary/90",
               )}
             >
               {confirmDialog?.confirmText || "Confirmar"}
@@ -8339,7 +8661,7 @@ function ClasesTab({
                 "rounded-xl text-xs font-bold",
                 promptDialog?.variant === "destructive"
                   ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  : "bg-primary text-primary-foreground hover:bg-primary/90"
+                  : "bg-primary text-primary-foreground hover:bg-primary/90",
               )}
               onClick={() => {
                 if (promptDialog?.onConfirm) promptDialog.onConfirm(promptInputValue);
@@ -8364,7 +8686,8 @@ function ClasesTab({
               <ShieldAlert className="h-5 w-5 text-amber-500" /> Cancelar Reserva
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
-              Elige la modalidad para procesar la baja de <strong>{cancelSpotDialog?.displayNameForConfirm}</strong>:
+              Elige la modalidad para procesar la baja de{" "}
+              <strong>{cancelSpotDialog?.displayNameForConfirm}</strong>:
             </DialogDescription>
           </DialogHeader>
 
@@ -8376,7 +8699,7 @@ function ClasesTab({
                 "p-4 rounded-2xl border cursor-pointer transition-all duration-200 flex items-start gap-3",
                 cancelOption === "refund"
                   ? "border-primary bg-primary/10 ring-2 ring-primary/20"
-                  : "border-border/60 bg-card hover:bg-secondary/40"
+                  : "border-border/60 bg-card hover:bg-secondary/40",
               )}
             >
               <div
@@ -8384,13 +8707,15 @@ function ClasesTab({
                   "h-5 w-5 rounded-full border-2 shrink-0 mt-0.5 flex items-center justify-center transition-colors",
                   cancelOption === "refund"
                     ? "border-primary bg-primary text-primary-foreground"
-                    : "border-muted-foreground/40"
+                    : "border-muted-foreground/40",
                 )}
               >
                 {cancelOption === "refund" && <Check className="h-3 w-3 stroke-[3]" />}
               </div>
               <div>
-                <h4 className="text-xs font-bold text-foreground">1. Devolver créditos automáticamente</h4>
+                <h4 className="text-xs font-bold text-foreground">
+                  1. Devolver créditos automáticamente
+                </h4>
                 <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
                   Reembolso inmediato e incondicional del crédito a la cuenta del alumno.
                 </p>
@@ -8404,7 +8729,7 @@ function ClasesTab({
                 "p-4 rounded-2xl border cursor-pointer transition-all duration-200 flex items-start gap-3",
                 cancelOption === "rereserva"
                   ? "border-primary bg-primary/10 ring-2 ring-primary/20"
-                  : "border-border/60 bg-card hover:bg-secondary/40"
+                  : "border-border/60 bg-card hover:bg-secondary/40",
               )}
             >
               <div
@@ -8412,15 +8737,18 @@ function ClasesTab({
                   "h-5 w-5 rounded-full border-2 shrink-0 mt-0.5 flex items-center justify-center transition-colors",
                   cancelOption === "rereserva"
                     ? "border-primary bg-primary text-primary-foreground"
-                    : "border-muted-foreground/40"
+                    : "border-muted-foreground/40",
                 )}
               >
                 {cancelOption === "rereserva" && <Check className="h-3 w-3 stroke-[3]" />}
               </div>
               <div>
-                <h4 className="text-xs font-bold text-foreground">2. Aplicar modalidad "Re-reserva"</h4>
+                <h4 className="text-xs font-bold text-foreground">
+                  2. Aplicar modalidad "Re-reserva"
+                </h4>
                 <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
-                  Libera el casillero en la sala. El reembolso se procesará únicamente si otro alumno vuelve a agendar la plaza.
+                  Libera el casillero en la sala. El reembolso se procesará únicamente si otro
+                  alumno vuelve a agendar la plaza.
                 </p>
               </div>
             </div>
@@ -8469,7 +8797,7 @@ function ClasesTab({
                     }),
                   );
                   toast.info(
-                    `📢 Lugar #${index + 1} liberado bajo modalidad "Disponible para Re-reserva".`
+                    `📢 Lugar #${index + 1} liberado bajo modalidad "Disponible para Re-reserva".`,
                   );
                 } else {
                   setClassesList((prev) =>
@@ -8490,7 +8818,7 @@ function ClasesTab({
                     }),
                   );
                   toast.success(
-                    `📢 Reserva de ${displayNameForConfirm} cancelada. Crédito reembolsado automáticamente.`
+                    `📢 Reserva de ${displayNameForConfirm} cancelada. Crédito reembolsado automáticamente.`,
                   );
                 }
                 setCancelSpotDialog(null);
@@ -8519,7 +8847,10 @@ function ClasesTab({
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground leading-relaxed pt-1">
               Busca y selecciona un profesor del Staff para sustituir la clase{" "}
-              <strong className="text-foreground font-bold">{substituteCoachModalClass?.name}</strong>.
+              <strong className="text-foreground font-bold">
+                {substituteCoachModalClass?.name}
+              </strong>
+              .
             </DialogDescription>
           </DialogHeader>
 
@@ -8549,7 +8880,10 @@ function ClasesTab({
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <img
-                        src={s.photo || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&h=80&fit=crop&q=80"}
+                        src={
+                          s.photo ||
+                          "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&h=80&fit=crop&q=80"
+                        }
                         alt={s.name}
                         className="h-9 w-9 rounded-full object-cover shrink-0 border border-border/60 shadow-2xs"
                       />
@@ -8580,8 +8914,8 @@ function ClasesTab({
                             prev.map((item) =>
                               item.id === substituteCoachModalClass.id
                                 ? { ...item, staffId: s.id, coach: coachName }
-                                : item
-                            )
+                                : item,
+                            ),
                           );
                           toast.success(`Profesor ${coachName} asignado como sustituto.`);
                           setSubstituteCoachModalClass(null);
@@ -8604,7 +8938,6 @@ function ClasesTab({
           </div>
         </DialogContent>
       </Dialog>
-
 
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
@@ -8648,7 +8981,9 @@ function ClasesTab({
               variant={viewMode === "list" ? "secondary" : "ghost"}
               size="sm"
               className={`h-7 text-xs font-semibold rounded-lg ${
-                viewMode === "list" ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground hover:text-foreground"
+                viewMode === "list"
+                  ? "bg-background text-foreground shadow-2xs"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
               onClick={() => setViewMode("list")}
             >
@@ -8659,7 +8994,9 @@ function ClasesTab({
               variant={viewMode === "calendar" ? "secondary" : "ghost"}
               size="sm"
               className={`h-7 text-xs font-semibold rounded-lg ${
-                viewMode === "calendar" ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground hover:text-foreground"
+                viewMode === "calendar"
+                  ? "bg-background text-foreground shadow-2xs"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
               onClick={() => setViewMode("calendar")}
             >
@@ -8696,13 +9033,17 @@ function ClasesTab({
           <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
             Ocupación Hoy
           </span>
-          <span className="text-2xl font-black text-foreground mt-2 block">{stats.avgOccupancy}%</span>
+          <span className="text-2xl font-black text-foreground mt-2 block">
+            {stats.avgOccupancy}%
+          </span>
         </div>
         <div className="group rounded-3xl border border-border bg-card p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg shadow-xs h-full">
           <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
             Reservas Activas
           </span>
-          <span className="text-2xl font-black text-foreground mt-2 block">{stats.totalBooked} alumnos</span>
+          <span className="text-2xl font-black text-foreground mt-2 block">
+            {stats.totalBooked} alumnos
+          </span>
         </div>
         <div className="group rounded-3xl border border-border bg-card p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg shadow-xs h-full">
           <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
@@ -8799,8 +9140,6 @@ function ClasesTab({
         </div>
       </div>
 
-
-
       {/* Modal Dialog: Crear / Editar Clase */}
       <Dialog open={showAddForm} onOpenChange={setShowAddForm}>
         <DialogContent className="max-w-xl max-h-[88vh] border border-border bg-slate-50 dark:bg-background rounded-3xl p-6 overflow-hidden flex flex-col">
@@ -8858,7 +9197,9 @@ function ClasesTab({
                       <SelectLabel>Fuerza y Musculación</SelectLabel>
                       <SelectItem value="CrossFit WOD">CrossFit WOD</SelectItem>
                       <SelectItem value="CrossFit">CrossFit</SelectItem>
-                      <SelectItem value="Entrenamiento Funcional">Entrenamiento Funcional</SelectItem>
+                      <SelectItem value="Entrenamiento Funcional">
+                        Entrenamiento Funcional
+                      </SelectItem>
                       <SelectItem value="Funcional HIIT">Funcional HIIT</SelectItem>
                       <SelectItem value="Levantamiento Olímpico">Levantamiento Olímpico</SelectItem>
                       <SelectItem value="Powerlifting">Powerlifting</SelectItem>
@@ -8883,7 +9224,9 @@ function ClasesTab({
                       <SelectItem value="Pilates Reformer">Pilates Reformer</SelectItem>
                       <SelectItem value="Pilates Mat">Pilates Mat</SelectItem>
                       <SelectItem value="Barré">Barré</SelectItem>
-                      <SelectItem value="Estiramiento / Flex">Estiramiento & Flexibilidad</SelectItem>
+                      <SelectItem value="Estiramiento / Flex">
+                        Estiramiento & Flexibilidad
+                      </SelectItem>
                       <SelectItem value="Meditación">Meditación & Mindfulness</SelectItem>
                     </SelectGroup>
                     <SelectGroup>
@@ -8897,293 +9240,294 @@ function ClasesTab({
                 </Select>
               </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between gap-1 flex-wrap">
-                  <label className="text-xs font-semibold text-muted-foreground">
-                    Instructor de Staff
-                  </label>
-                </div>
-                <Select value={staffId} onValueChange={setStaffId}>
-                  <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold">
-                    <SelectValue placeholder="Selecciona un entrenador..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {staffForClassOptions.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>
-                        {s.name} — <span className="opacity-75 font-normal text-xs">{s.specialty}</span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {name && filteredStaffForClass.length === 0 && (
-                  <p className="text-[10.5px] text-amber-600 dark:text-amber-400 font-medium pt-0.5">
-                    No hay entrenadores con especialidad en "{name}" cargada. Se muestran todos los profesores del staff.
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">
-                  Día de la Semana
-                </label>
-                <Select value={day.toString()} onValueChange={(val) => setDay(Number(val))}>
-                  <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold">
-                    <SelectValue placeholder="Selecciona un día..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="0">Lunes</SelectItem>
-                    <SelectItem value="1">Martes</SelectItem>
-                    <SelectItem value="2">Miércoles</SelectItem>
-                    <SelectItem value="3">Jueves</SelectItem>
-                    <SelectItem value="4">Viernes</SelectItem>
-                    <SelectItem value="5">Sábado</SelectItem>
-                    <SelectItem value="6">Domingo</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">
-                  Horario de la Clase
-                </label>
-                <div className="flex items-center gap-2">
-                  <Select value={startTime} onValueChange={setStartTime}>
-                    <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-2 py-2 text-xs text-foreground font-semibold">
-                      <SelectValue placeholder="Inicio" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[
-                        "07:00",
-                        "07:30",
-                        "08:00",
-                        "08:30",
-                        "09:00",
-                        "09:30",
-                        "10:00",
-                        "10:30",
-                        "11:00",
-                        "11:30",
-                        "12:00",
-                        "12:30",
-                        "13:00",
-                        "13:30",
-                        "14:00",
-                        "14:30",
-                        "15:00",
-                        "15:30",
-                        "16:00",
-                        "16:30",
-                        "17:00",
-                        "17:30",
-                        "18:00",
-                        "18:30",
-                        "19:00",
-                        "19:30",
-                        "20:00",
-                        "20:30",
-                        "21:00",
-                        "21:30",
-                        "22:00",
-                      ].map((t) => (
-                        <SelectItem key={t} value={t}>
-                          {t}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  <span className="text-xs font-bold text-muted-foreground">a</span>
-
-                  <Select value={endTime} onValueChange={setEndTime}>
-                    <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-2 py-2 text-xs text-foreground font-semibold">
-                      <SelectValue placeholder="Fin" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[
-                        "07:30",
-                        "08:00",
-                        "08:30",
-                        "09:00",
-                        "09:30",
-                        "10:00",
-                        "10:30",
-                        "11:00",
-                        "11:30",
-                        "12:00",
-                        "12:30",
-                        "13:00",
-                        "13:30",
-                        "14:00",
-                        "14:30",
-                        "15:00",
-                        "15:30",
-                        "16:00",
-                        "16:30",
-                        "17:00",
-                        "17:30",
-                        "18:00",
-                        "18:30",
-                        "19:00",
-                        "19:30",
-                        "20:00",
-                        "20:30",
-                        "21:00",
-                        "21:30",
-                        "22:00",
-                        "22:30",
-                      ].map((t) => (
-                        <SelectItem key={t} value={t}>
-                          {t}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">Sala / Salón</label>
-                <Select
-                  value={salaId}
-                  onValueChange={(val) => {
-                    setSalaId(val);
-                    const selectedSala = salasList.find((s) => s.id === val);
-                    if (selectedSala && selectedSala.capacity) {
-                      setCustomCapacity(selectedSala.capacity);
-                    }
-                  }}
-                >
-                  <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold">
-                    <SelectValue placeholder="Selecciona una sala..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {salasList.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>
-                        {s.name} (Capacidad: {s.capacity || "N/A"})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">
-                  Cupos / Capacidad Máxima
-                </label>
-                <Input
-                  type="number"
-                  required
-                  min="1"
-                  max="100"
-                  value={customCapacity}
-                  onChange={(e) => setCustomCapacity(Number(e.target.value))}
-                  className="h-10 rounded-xl text-sm font-semibold"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">
-                  Créditos Necesarios
-                </label>
-                <Input
-                  type="number"
-                  required
-                  min="1"
-                  value={creditsCost}
-                  onChange={(e) => setCreditsCost(e.target.value)}
-                  className="h-10 rounded-xl text-sm font-semibold"
-                />
-              </div>
-            </div>
-
-            {availabilityWarning && (
-              <div className="p-3 bg-secondary/ border border-border/ text-secondary-foreground rounded-xl text-xs font-semibold animate-fade-in flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 shrink-0" />
-                <span>{availabilityWarning}</span>
-              </div>
-            )}
-
-            {conflictWarning && (
-              <div className="p-3 bg-destructive/ border border-destructive/ text-destructive rounded-xl text-xs font-semibold animate-fade-in flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 shrink-0" />
-                <span>{conflictWarning}</span>
-              </div>
-            )}
-
-            {!editingClassId && (
-              <div className="p-3.5 border border-border/60 bg-secondary/15 rounded-2xl space-y-2.5">
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="isRecurrent"
-                    checked={isRecurrent}
-                    onCheckedChange={(checked) => setIsRecurrent(!!checked)}
-                  />
-                  <label
-                    htmlFor="isRecurrent"
-                    className="text-xs font-bold text-foreground cursor-pointer select-none flex items-center gap-1.5"
-                  >
-                    <Repeat className="h-3.5 w-3.5 text-primary" /> Programar como Clase Recurrente (semanal)
-                  </label>
-                </div>
-                {isRecurrent && (
-                  <div className="space-y-1 pl-6 animate-fade-in">
-                    <label className="text-[11px] text-muted-foreground font-semibold">
-                      Repetir semanalmente durante:
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between gap-1 flex-wrap">
+                    <label className="text-xs font-semibold text-muted-foreground">
+                      Instructor de Staff
                     </label>
-                    <div className="flex items-center gap-2">
-                      <Select
-                        value={recurrentWeeks.toString()}
-                        onValueChange={(val) => setRecurrentWeeks(Number(val))}
-                      >
-                        <SelectTrigger className="flex h-8 w-28 rounded-lg border border-border bg-background px-2 text-xs text-foreground font-bold">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {[2, 3, 4, 6, 8, 12].map((w) => (
-                            <SelectItem key={w} value={w.toString()}>
-                              {w} semanas
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <span className="text-[11px] text-muted-foreground">
-                        Generará {recurrentWeeks} clases en total.
-                      </span>
-                    </div>
                   </div>
-                )}
+                  <Select value={staffId} onValueChange={setStaffId}>
+                    <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold">
+                      <SelectValue placeholder="Selecciona un entrenador..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {staffForClassOptions.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.name} —{" "}
+                          <span className="opacity-75 font-normal text-xs">{s.specialty}</span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {name && filteredStaffForClass.length === 0 && (
+                    <p className="text-[10.5px] text-amber-600 dark:text-amber-400 font-medium pt-0.5">
+                      No hay entrenadores con especialidad en "{name}" cargada. Se muestran todos
+                      los profesores del staff.
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground">
+                    Día de la Semana
+                  </label>
+                  <Select value={day.toString()} onValueChange={(val) => setDay(Number(val))}>
+                    <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold">
+                      <SelectValue placeholder="Selecciona un día..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0">Lunes</SelectItem>
+                      <SelectItem value="1">Martes</SelectItem>
+                      <SelectItem value="2">Miércoles</SelectItem>
+                      <SelectItem value="3">Jueves</SelectItem>
+                      <SelectItem value="4">Viernes</SelectItem>
+                      <SelectItem value="5">Sábado</SelectItem>
+                      <SelectItem value="6">Domingo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            )}
 
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground">
+                    Horario de la Clase
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <Select value={startTime} onValueChange={setStartTime}>
+                      <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-2 py-2 text-xs text-foreground font-semibold">
+                        <SelectValue placeholder="Inicio" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[
+                          "07:00",
+                          "07:30",
+                          "08:00",
+                          "08:30",
+                          "09:00",
+                          "09:30",
+                          "10:00",
+                          "10:30",
+                          "11:00",
+                          "11:30",
+                          "12:00",
+                          "12:30",
+                          "13:00",
+                          "13:30",
+                          "14:00",
+                          "14:30",
+                          "15:00",
+                          "15:30",
+                          "16:00",
+                          "16:30",
+                          "17:00",
+                          "17:30",
+                          "18:00",
+                          "18:30",
+                          "19:00",
+                          "19:30",
+                          "20:00",
+                          "20:30",
+                          "21:00",
+                          "21:30",
+                          "22:00",
+                        ].map((t) => (
+                          <SelectItem key={t} value={t}>
+                            {t}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
 
+                    <span className="text-xs font-bold text-muted-foreground">a</span>
 
-            <DialogFooter className="pt-3 gap-2 sm:gap-0">
-              <Button
-                type="button"
-                variant="outline"
-                className="rounded-xl text-xs font-bold"
-                onClick={() => setShowAddForm(false)}
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                className="rounded-xl text-xs font-bold bg-primary text-primary-foreground"
-              >
-                {editingClassId ? "Guardar Cambios" : "Programar Clase"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </div>
-      </DialogContent>
-    </Dialog>
+                    <Select value={endTime} onValueChange={setEndTime}>
+                      <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-2 py-2 text-xs text-foreground font-semibold">
+                        <SelectValue placeholder="Fin" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[
+                          "07:30",
+                          "08:00",
+                          "08:30",
+                          "09:00",
+                          "09:30",
+                          "10:00",
+                          "10:30",
+                          "11:00",
+                          "11:30",
+                          "12:00",
+                          "12:30",
+                          "13:00",
+                          "13:30",
+                          "14:00",
+                          "14:30",
+                          "15:00",
+                          "15:30",
+                          "16:00",
+                          "16:30",
+                          "17:00",
+                          "17:30",
+                          "18:00",
+                          "18:30",
+                          "19:00",
+                          "19:30",
+                          "20:00",
+                          "20:30",
+                          "21:00",
+                          "21:30",
+                          "22:00",
+                          "22:30",
+                        ].map((t) => (
+                          <SelectItem key={t} value={t}>
+                            {t}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground">
+                    Sala / Salón
+                  </label>
+                  <Select
+                    value={salaId}
+                    onValueChange={(val) => {
+                      setSalaId(val);
+                      const selectedSala = salasList.find((s) => s.id === val);
+                      if (selectedSala && selectedSala.capacity) {
+                        setCustomCapacity(selectedSala.capacity);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground font-semibold">
+                      <SelectValue placeholder="Selecciona una sala..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {salasList.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.name} (Capacidad: {s.capacity || "N/A"})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground">
+                    Cupos / Capacidad Máxima
+                  </label>
+                  <Input
+                    type="number"
+                    required
+                    min="1"
+                    max="100"
+                    value={customCapacity}
+                    onChange={(e) => setCustomCapacity(Number(e.target.value))}
+                    className="h-10 rounded-xl text-sm font-semibold"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground">
+                    Créditos Necesarios
+                  </label>
+                  <Input
+                    type="number"
+                    required
+                    min="1"
+                    value={creditsCost}
+                    onChange={(e) => setCreditsCost(e.target.value)}
+                    className="h-10 rounded-xl text-sm font-semibold"
+                  />
+                </div>
+              </div>
+
+              {availabilityWarning && (
+                <div className="p-3 bg-secondary/ border border-border/ text-secondary-foreground rounded-xl text-xs font-semibold animate-fade-in flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  <span>{availabilityWarning}</span>
+                </div>
+              )}
+
+              {conflictWarning && (
+                <div className="p-3 bg-destructive/ border border-destructive/ text-destructive rounded-xl text-xs font-semibold animate-fade-in flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  <span>{conflictWarning}</span>
+                </div>
+              )}
+
+              {!editingClassId && (
+                <div className="p-3.5 border border-border/60 bg-secondary/15 rounded-2xl space-y-2.5">
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="isRecurrent"
+                      checked={isRecurrent}
+                      onCheckedChange={(checked) => setIsRecurrent(!!checked)}
+                    />
+                    <label
+                      htmlFor="isRecurrent"
+                      className="text-xs font-bold text-foreground cursor-pointer select-none flex items-center gap-1.5"
+                    >
+                      <Repeat className="h-3.5 w-3.5 text-primary" /> Programar como Clase
+                      Recurrente (semanal)
+                    </label>
+                  </div>
+                  {isRecurrent && (
+                    <div className="space-y-1 pl-6 animate-fade-in">
+                      <label className="text-[11px] text-muted-foreground font-semibold">
+                        Repetir semanalmente durante:
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <Select
+                          value={recurrentWeeks.toString()}
+                          onValueChange={(val) => setRecurrentWeeks(Number(val))}
+                        >
+                          <SelectTrigger className="flex h-8 w-28 rounded-lg border border-border bg-background px-2 text-xs text-foreground font-bold">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {[2, 3, 4, 6, 8, 12].map((w) => (
+                              <SelectItem key={w} value={w.toString()}>
+                                {w} semanas
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <span className="text-[11px] text-muted-foreground">
+                          Generará {recurrentWeeks} clases en total.
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <DialogFooter className="pt-3 gap-2 sm:gap-0">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="rounded-xl text-xs font-bold"
+                  onClick={() => setShowAddForm(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  className="rounded-xl text-xs font-bold bg-primary text-primary-foreground"
+                >
+                  {editingClassId ? "Guardar Cambios" : "Programar Clase"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Main content grid based on viewMode */}
       {viewMode === "list" ? (
@@ -9307,107 +9651,103 @@ function ClasesTab({
         <div className="space-y-4">
           {/* Weekly Calendar Grid Container */}
           <div className="rounded-3xl border border-border bg-card p-6 space-y-6 overflow-x-auto pb-4 transition-all duration-300 hover:border-foreground/30 hover:shadow-lg shadow-xs">
-              <div className="min-w-[680px] space-y-6">
-                {/* Grid Header (Days of the week) */}
-                <div className="grid grid-cols-8 gap-3 text-center select-none font-bold text-xs text-muted-foreground border-b border-border/40 pb-3">
-                  <div /> {/* Hour labels column spacer */}
-                  <div>LUN</div>
-                  <div>MAR</div>
-                  <div>MIÉ</div>
-                  <div>JUE</div>
-                  <div>VIE</div>
-                  <div>SÁB</div>
-                  <div>DOM</div>
-                </div>
+            <div className="min-w-[680px] space-y-6">
+              {/* Grid Header (Days of the week) */}
+              <div className="grid grid-cols-8 gap-3 text-center select-none font-bold text-xs text-muted-foreground border-b border-border/40 pb-3">
+                <div /> {/* Hour labels column spacer */}
+                <div>LUN</div>
+                <div>MAR</div>
+                <div>MIÉ</div>
+                <div>JUE</div>
+                <div>VIE</div>
+                <div>SÁB</div>
+                <div>DOM</div>
+              </div>
 
-                {/* Weekly Calendar Grid Rows */}
-                <div className="space-y-3">
-                  {(() => {
-                    const hoursList = Array.from(
-                      new Set(
-                        classesList
-                          .filter((c) => {
-                            const matchesWeek = (c.weekOffset || 0) === currentWeekOffset;
-                            return matchesWeek;
-                          })
-                          .map((c) => c.time.split("-")[0].trim()),
-                      ),
-                    ).sort();
-                    return hoursList.map((hour) => (
-                      <div key={hour} className="grid grid-cols-8 gap-3 items-center">
-                        {/* Hour Label */}
-                        <div className="text-right text-xs font-bold text-muted-foreground pr-1">
-                          {hour}
-                        </div>
+              {/* Weekly Calendar Grid Rows */}
+              <div className="space-y-3">
+                {(() => {
+                  const hoursList = Array.from(
+                    new Set(
+                      classesList
+                        .filter((c) => {
+                          const matchesWeek = (c.weekOffset || 0) === currentWeekOffset;
+                          return matchesWeek;
+                        })
+                        .map((c) => c.time.split("-")[0].trim()),
+                    ),
+                  ).sort();
+                  return hoursList.map((hour) => (
+                    <div key={hour} className="grid grid-cols-8 gap-3 items-center">
+                      {/* Hour Label */}
+                      <div className="text-right text-xs font-bold text-muted-foreground pr-1">
+                        {hour}
+                      </div>
 
-                        {/* Day Cells */}
-                        {[0, 1, 2, 3, 4, 5, 6].map((dayIndex) => {
-                          const classesInSlot = filteredClasses.filter((c) => {
-                            const startHour = c.time.split("-")[0].trim();
-                            return c.day === dayIndex && startHour === hour;
-                          });
+                      {/* Day Cells */}
+                      {[0, 1, 2, 3, 4, 5, 6].map((dayIndex) => {
+                        const classesInSlot = filteredClasses.filter((c) => {
+                          const startHour = c.time.split("-")[0].trim();
+                          return c.day === dayIndex && startHour === hour;
+                        });
 
-                          if (classesInSlot.length === 0) {
-                            return (
-                              <div
-                                key={`empty-${hour}-${dayIndex}`}
-                                className="border border-dashed border-border/60 rounded-xl h-[72px] bg-transparent"
-                              />
-                            );
-                          }
-
-                          const c = classesInSlot[0];
-                          const coach = staffList.find((s) => s.id === c.staffId);
-                          const instructorName = coach
-                            ? `${coach.name.split(" ")[0][0]}. ${coach.name.split(" ")[1] || ""}`
-                            : "Sin asignar";
-                          const isFull = c.booked >= c.capacity;
-                          const isSelected = selectedClass === c.id;
-
+                        if (classesInSlot.length === 0) {
                           return (
                             <div
-                              key={`class-${c.id}-${hour}-${dayIndex}`}
-                              onClick={() => {
-                                setSelectedClass(c.id);
-                              }}
-                              className={`border rounded-xl p-2.5 h-[72px] flex flex-col justify-between text-left cursor-pointer transition-all ${
-                                c.status === "cancelada"
-                                  ? "bg-destructive/ border-destructive/ text-destructive/80 dark:bg-destructive/ dark:border-destructive/ opacity-60"
-                                  : isFull
-                                    ? "bg-destructive border-destructive text-destructive dark:bg-destructive/ dark:border-destructive/ dark:text-destructive"
-                                    : "bg-card border-border text-foreground hover:border-muted-foreground/30 hover:bg-secondary/10"
-                              } ${
-                                isSelected
-                                  ? "ring-2 ring-primary ring-offset-2 ring-offset-card"
-                                  : ""
-                              }`}
-                            >
-                              <div className="min-w-0">
-                                <h4
-                                  className={`font-bold text-[11px] truncate leading-tight ${c.status === "cancelada" ? "text-destructive dark:text-destructive line-through" : "text-foreground"}`}
-                                >
-                                  {c.status === "cancelada" && "❌ "}
-                                  {c.name}
-                                </h4>
-                                <p className="text-[9.5px] text-muted-foreground truncate mt-0.5">
-                                  {instructorName}
-                                </p>
-                              </div>
-                              <span className="text-[10px] text-muted-foreground font-semibold">
-                                {c.status === "cancelada"
-                                  ? "Cancelada"
-                                  : `${c.booked}/${c.capacity}`}
-                              </span>
-                            </div>
+                              key={`empty-${hour}-${dayIndex}`}
+                              className="border border-dashed border-border/60 rounded-xl h-[72px] bg-transparent"
+                            />
                           );
-                        })}
-                      </div>
-                    ));
-                  })()}
-                </div>
+                        }
+
+                        const c = classesInSlot[0];
+                        const coach = staffList.find((s) => s.id === c.staffId);
+                        const instructorName = coach
+                          ? `${coach.name.split(" ")[0][0]}. ${coach.name.split(" ")[1] || ""}`
+                          : "Sin asignar";
+                        const isFull = c.booked >= c.capacity;
+                        const isSelected = selectedClass === c.id;
+
+                        return (
+                          <div
+                            key={`class-${c.id}-${hour}-${dayIndex}`}
+                            onClick={() => {
+                              setSelectedClass(c.id);
+                            }}
+                            className={`border rounded-xl p-2.5 h-[72px] flex flex-col justify-between text-left cursor-pointer transition-all ${
+                              c.status === "cancelada"
+                                ? "bg-destructive/ border-destructive/ text-destructive/80 dark:bg-destructive/ dark:border-destructive/ opacity-60"
+                                : isFull
+                                  ? "bg-destructive border-destructive text-destructive dark:bg-destructive/ dark:border-destructive/ dark:text-destructive"
+                                  : "bg-card border-border text-foreground hover:border-muted-foreground/30 hover:bg-secondary/10"
+                            } ${
+                              isSelected ? "ring-2 ring-primary ring-offset-2 ring-offset-card" : ""
+                            }`}
+                          >
+                            <div className="min-w-0">
+                              <h4
+                                className={`font-bold text-[11px] truncate leading-tight ${c.status === "cancelada" ? "text-destructive dark:text-destructive line-through" : "text-foreground"}`}
+                              >
+                                {c.status === "cancelada" && "❌ "}
+                                {c.name}
+                              </h4>
+                              <p className="text-[9.5px] text-muted-foreground truncate mt-0.5">
+                                {instructorName}
+                              </p>
+                            </div>
+                            <span className="text-[10px] text-muted-foreground font-semibold">
+                              {c.status === "cancelada" ? "Cancelada" : `${c.booked}/${c.capacity}`}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ));
+                })()}
               </div>
             </div>
           </div>
+        </div>
       )}
 
       {renderClassDetailSidebar()}
@@ -9531,8 +9871,6 @@ interface ConfigTabProps {
   setProtocols?: any;
 }
 
-
-
 function ConfigTab({
   staffList,
   setStaffList,
@@ -9618,8 +9956,6 @@ function ConfigTab({
   const [editStaffBranchId, setEditStaffBranchId] = useState("matriz");
   const [editStaffAvatarUrl, setEditStaffAvatarUrl] = useState<string | null>(null);
   const [editStaffDiplomas, setEditStaffDiplomas] = useState<string[]>([]);
-
-
 
   // Universal Delete Confirmation & Edit States (Salas, Cierres, Staff)
   const [deletingItem, setDeletingItem] = useState<{
@@ -9851,7 +10187,8 @@ function ConfigTab({
     e.preventDefault();
     if (!staffName) return;
 
-    const finalSpecialties = staffSpecialties.length > 0 ? staffSpecialties : [staffSpecialty || "General"];
+    const finalSpecialties =
+      staffSpecialties.length > 0 ? staffSpecialties : [staffSpecialty || "General"];
     const finalSpecialtyStr = staffSpecialty || finalSpecialties.join(", ");
 
     const newStaff = {
@@ -9919,9 +10256,7 @@ function ConfigTab({
     if (!editStaffName || !editingStaff) return;
 
     const finalSpecialties =
-      editStaffSpecialties.length > 0
-        ? editStaffSpecialties
-        : [editStaffSpecialty || "General"];
+      editStaffSpecialties.length > 0 ? editStaffSpecialties : [editStaffSpecialty || "General"];
     const finalSpecialtyStr = editStaffSpecialty || finalSpecialties.join(", ");
 
     setStaffList((prev) =>
@@ -10021,113 +10356,1025 @@ function ConfigTab({
       </div>
 
       <>
-          {/* Subtab 1: Basic Config & 7-Day Scheduler */}
-          {subTab === "basico" && (
-            <div className="space-y-6 max-w-3xl">
-              {/* Photos */}
-              <div className="rounded-3xl border border-border bg-card p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <div>
-                    <h3 className="font-bold text-sm">Galería de Fotos</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Sube imágenes de tu centro.
-                    </p>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="rounded-xl gap-1.5"
-                    onClick={() => gymFileRef.current?.click()}
+        {/* Subtab 1: Basic Config & 7-Day Scheduler */}
+        {subTab === "basico" && (
+          <div className="space-y-6 max-w-3xl">
+            {/* Photos */}
+            <div className="rounded-3xl border border-border bg-card p-6">
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h3 className="font-bold text-sm">Galería de Fotos</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Sube imágenes de tu centro.
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="rounded-xl gap-1.5"
+                  onClick={() => gymFileRef.current?.click()}
+                >
+                  <Plus className="h-4 w-4" /> Subir Fotos
+                </Button>
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  ref={gymFileRef}
+                  onChange={handleGymPhotosUpload}
+                  className="hidden"
+                />
+              </div>
+
+              <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
+                {gymPhotos.map((photo, index) => (
+                  <div
+                    key={index}
+                    className="relative aspect-video rounded-xl overflow-hidden border border-border group"
                   >
-                    <Plus className="h-4 w-4" /> Subir Fotos
-                  </Button>
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    ref={gymFileRef}
-                    onChange={handleGymPhotosUpload}
-                    className="hidden"
-                  />
+                    <img src={photo} alt={`Gym ${index}`} className="h-full w-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveGymPhoto(index)}
+                      className="absolute top-1.5 right-1.5 bg-black/60 hover:bg-black text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 7-Day Daily Hours Scheduler */}
+            <div className="rounded-3xl border border-border bg-card p-6 space-y-4">
+              <div>
+                <h3 className="font-bold text-sm">Horarios Semanales (7 Días)</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Configura individualmente cada día, soportando horarios cortados/partidos.
+                </p>
+              </div>
+
+              <div className="space-y-4 divide-y divide-border/60">
+                {weeklyHours.map((dayHour, dayIdx) => (
+                  <div
+                    key={dayHour.day}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between py-3 gap-3 first:pt-0"
+                  >
+                    <div className="w-24 text-sm font-bold text-foreground">{dayHour.day}</div>
+
+                    <div className="flex-1 space-y-2">
+                      {dayHour.intervals.map((interval, intervalIdx) => (
+                        <div key={intervalIdx} className="flex items-center gap-2">
+                          <input
+                            type="time"
+                            value={interval.from}
+                            onChange={(e) =>
+                              handleUpdateHourInterval(dayIdx, intervalIdx, "from", e.target.value)
+                            }
+                            className="px-2 py-1 rounded-lg border border-border bg-background text-xs focus-visible:outline-none"
+                          />
+                          <span className="text-xs text-muted-foreground">a</span>
+                          <input
+                            type="time"
+                            value={interval.to}
+                            onChange={(e) =>
+                              handleUpdateHourInterval(dayIdx, intervalIdx, "to", e.target.value)
+                            }
+                            className="px-2 py-1 rounded-lg border border-border bg-background text-xs focus-visible:outline-none"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveHourInterval(dayIdx, intervalIdx)}
+                            className="p-1.5 text-destructive hover:bg-destructive/ rounded-lg transition"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                      {dayHour.intervals.length === 0 && (
+                        <span className="text-xs text-muted-foreground italic bg-secondary/40 px-2.5 py-1 rounded-md inline-block">
+                          Cerrado
+                        </span>
+                      )}
+                    </div>
+
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="self-start sm:self-center text-xs gap-1 py-1 h-8 rounded-lg"
+                      onClick={() => handleAddHourInterval(dayIdx)}
+                    >
+                      <Plus className="h-3.5 w-3.5" /> Turno
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-6 max-w-2xl bg-card border border-border p-6 rounded-3xl">
+              <h3 className="font-bold text-sm">Perfil de la Sede</h3>
+              <form className="space-y-4 text-sm" onSubmit={(e) => e.preventDefault()}>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-muted-foreground">
+                      Nombre Comercial
+                    </label>
+                    <input
+                      type="text"
+                      className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm"
+                      defaultValue="Kraft Strength Club"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-muted-foreground">
+                      Dirección Física
+                    </label>
+                    <input
+                      type="text"
+                      className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm"
+                      defaultValue="Av. Santa Fe 3421, Palermo, CABA"
+                    />
+                  </div>
                 </div>
 
-                <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
-                  {gymPhotos.map((photo, index) => (
-                    <div
-                      key={index}
-                      className="relative aspect-video rounded-xl overflow-hidden border border-border group"
-                    >
-                      <img
-                        src={photo}
-                        alt={`Gym ${index}`}
-                        className="h-full w-full object-cover"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveGymPhoto(index)}
-                        className="absolute top-1.5 right-1.5 bg-black/60 hover:bg-black text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </div>
-                  ))}
+                {/* Social Media Inputs */}
+                <div className="grid gap-4 sm:grid-cols-3 border-t border-border/60 pt-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-muted-foreground">
+                      Instagram (Usuario)
+                    </label>
+                    <input
+                      type="text"
+                      value={instagram}
+                      onChange={(e) => setInstagram(e.target.value)}
+                      className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                      placeholder="kraft.strength"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-muted-foreground">
+                      TikTok (Usuario)
+                    </label>
+                    <input
+                      type="text"
+                      value={tiktok}
+                      onChange={(e) => setTiktok(e.target.value)}
+                      className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                      placeholder="kraft.strength"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-muted-foreground">
+                      WhatsApp (Número)
+                    </label>
+                    <input
+                      type="text"
+                      value={whatsapp}
+                      onChange={(e) => setWhatsapp(e.target.value)}
+                      className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                      placeholder="5491132421241"
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  className="rounded-xl font-bold bg-primary text-primary-foreground hover:bg-primary/95"
+                  onClick={() => {
+                    const saveBtn = document.getElementById("profile-save-badge");
+                    if (saveBtn) {
+                      saveBtn.classList.remove("hidden");
+                      setTimeout(() => saveBtn.classList.add("hidden"), 3000);
+                    }
+                  }}
+                >
+                  Guardar Cambios
+                </Button>
+                <span
+                  id="profile-save-badge"
+                  className="hidden text-xs font-bold text-primary animate-fade-in"
+                >
+                  ✅ Datos del gimnasio y redes sociales actualizados correctamente.
+                </span>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Subtab 2: Reservation & Cancellation Policies */}
+        {subTab === "politicas" && (
+          <div className="space-y-6 max-w-2xl bg-card border border-border p-6 rounded-3xl text-foreground">
+            <div>
+              <h3 className="font-bold text-sm flex items-center gap-2">
+                <ShieldAlert className="h-5 w-5 text-primary" /> Políticas de Reservas e
+                Inasistencias
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Define los límites y restricciones para cancelaciones y penalizaciones por faltas.
+              </p>
+            </div>
+
+            <div className="space-y-6 text-sm">
+              {/* Cancellation hours input */}
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-muted-foreground block">
+                  Tiempo límite de cancelación anticipada (Horas)
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="number"
+                    min="0"
+                    max="48"
+                    value={cancellationPolicyHours}
+                    onChange={(e) => setCancellationPolicyHours(parseInt(e.target.value) || 0)}
+                    className="flex h-10 w-24 rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                  />
+                  <span className="text-xs text-muted-foreground">
+                    Los alumnos sólo podrán cancelar la clase hasta {cancellationPolicyHours} horas
+                    antes del inicio sin penalización.
+                  </span>
                 </div>
               </div>
 
-              {/* 7-Day Daily Hours Scheduler */}
-              <div className="rounded-3xl border border-border bg-card p-6 space-y-4">
+              <Button
+                type="button"
+                className="rounded-xl font-bold bg-primary text-primary-foreground hover:bg-primary/95"
+                onClick={() => {
+                  const saveBadge = document.getElementById("policy-save-badge");
+                  if (saveBadge) {
+                    saveBadge.classList.remove("hidden");
+                    setTimeout(() => saveBadge.classList.add("hidden"), 3000);
+                  }
+                }}
+              >
+                Guardar Políticas
+              </Button>
+              <span
+                id="policy-save-badge"
+                className="hidden text-xs font-bold text-primary animate-fade-in block"
+              >
+                ✅ Políticas de cancelación e inasistencia actualizadas correctamente.
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Subtab 3: Amenities */}
+        {subTab === "amenities" && (
+          <div className="space-y-6 max-w-3xl bg-card border border-border p-6 rounded-3xl">
+            <div>
+              <h3 className="font-bold text-sm">Amenities y Servicios Adicionales</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Define los servicios de infraestructura que ofrece tu centro.
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              {amenityCategories.map((category) => (
+                <div key={category} className="space-y-3">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-1.5">
+                    {category}
+                  </h4>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {amenities
+                      .filter((a) => a.category === category)
+                      .map((a) => (
+                        <div
+                          key={a.id}
+                          className="flex items-center justify-between p-3.5 rounded-2xl bg-secondary/20 hover:bg-secondary/40 transition"
+                        >
+                          <div className="text-sm font-semibold">{a.name}</div>
+                          <input
+                            type="checkbox"
+                            checked={a.checked}
+                            onChange={() => handleToggleAmenity(a.id)}
+                            className="h-5 w-10 accent-primary rounded-full cursor-pointer"
+                          />
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Subtab: Equipamiento */}
+        {subTab === "equipamiento" && (
+          <div className="space-y-6 max-w-4xl bg-card border border-border p-6 rounded-3xl animate-fade-in text-foreground">
+            <div className="space-y-6">
+              {equipmentCategories.map((category) => (
+                <div key={category} className="space-y-3">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-primary border-b border-border/80 pb-1.5 flex items-center justify-between">
+                    <span>{category}</span>
+                    <span className="text-[10px] bg-secondary px-2 py-0.5 rounded-full font-normal text-muted-foreground">
+                      {equipment.filter((e) => e.category === category && e.checked).length} /{" "}
+                      {equipment.filter((e) => e.category === category).length} seleccionados
+                    </span>
+                  </h4>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {equipment
+                      .filter((e) => e.category === category)
+                      .map((e) => (
+                        <div
+                          key={e.id}
+                          onClick={() => handleToggleEquipment(e.id)}
+                          className={`flex items-center justify-between p-3.5 rounded-2xl border transition cursor-pointer ${
+                            e.checked
+                              ? "bg-primary/5 border-primary/40 text-foreground"
+                              : "bg-secondary/20 border-transparent text-muted-foreground hover:bg-secondary/40 hover:text-foreground"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 pr-2 overflow-hidden flex-1">
+                            <div className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 bg-secondary border border-border/60">
+                              {e.photo ? (
+                                <img
+                                  src={e.photo}
+                                  alt={e.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                                  <Dumbbell className="w-5 h-5" />
+                                </div>
+                              )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <span className="text-sm font-semibold truncate block">{e.name}</span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center shrink-0 pl-2">
+                            <input
+                              type="checkbox"
+                              checked={e.checked}
+                              onChange={() => {}} // Controlled by parent div click
+                              className="h-5 w-5 accent-primary rounded cursor-pointer shrink-0 pointer-events-none"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Subtab 4: Requirements */}
+        {subTab === "requisitos" && (
+          <div className="space-y-6 max-w-3xl bg-card border border-border p-6 rounded-3xl">
+            <div>
+              <h3 className="font-bold text-sm">Normas y Requisitos de Ingreso</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Controla las exigencias de higiene y documentación.
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              {requirementCategories.map((category) => (
+                <div key={category} className="space-y-3">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-1.5">
+                    {category}
+                  </h4>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {requirements
+                      .filter((r) => r.category === category)
+                      .map((r) => (
+                        <div
+                          key={r.id}
+                          className="flex items-center justify-between p-3.5 rounded-2xl bg-secondary/20 hover:bg-secondary/40 transition"
+                        >
+                          <div className="text-sm font-semibold">{r.name}</div>
+                          <input
+                            type="checkbox"
+                            checked={r.checked}
+                            onChange={() => handleToggleRequirement(r.id)}
+                            className="h-5 w-10 accent-primary rounded-full cursor-pointer"
+                          />
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Subtab 5: Staff */}
+        {subTab === "staff" && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card border border-border p-6 rounded-3xl">
+              <div>
+                <h3 className="font-bold text-sm">Staff</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Administra los entrenadores y coaches de tu sede.
+                </p>
+              </div>
+              <Button
+                onClick={() => setIsCreateStaffOpen(true)}
+                className="rounded-xl font-bold text-xs gap-1.5 shrink-0"
+              >
+                <Plus className="h-4 w-4" /> Añadir Coach / Profesor
+              </Button>
+            </div>
+
+            <Dialog open={isCreateStaffOpen} onOpenChange={setIsCreateStaffOpen}>
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto border border-border bg-card">
+                <DialogHeader>
+                  <DialogTitle>Añadir Profesor / Coach</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleAddStaff} className="space-y-4 pt-2">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-muted-foreground">
+                        Nombre y Apellido
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={staffName}
+                        onChange={(e) => setStaffName(e.target.value)}
+                        className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                        placeholder="Juan Gómez"
+                      />
+                    </div>
+                    <div className="space-y-2 sm:col-span-2">
+                      <label className="text-xs font-semibold text-muted-foreground block">
+                        Actividades / Especialidades que dicta (Selecciona 1 o varias)
+                      </label>
+
+                      {/* Selector de Chips elegidos */}
+                      <div className="flex flex-wrap gap-1.5 min-h-[38px] p-2 rounded-xl border border-border bg-background items-center">
+                        {staffSpecialties.map((spec) => (
+                          <span
+                            key={spec}
+                            className="inline-flex items-center gap-1 bg-primary/10 text-primary border border-primary/20 text-[11px] font-bold px-2.5 py-0.5 rounded-full"
+                          >
+                            {spec}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setStaffSpecialties((prev) => prev.filter((s) => s !== spec))
+                              }
+                              className="hover:text-destructive text-primary/70 transition-colors ml-0.5"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
+                        {staffSpecialties.length === 0 && (
+                          <span className="text-xs text-muted-foreground italic">
+                            Haz clic en las actividades de abajo para vincularlas a este profesor...
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Botones de Selección Rápida */}
+                      <div className="flex flex-wrap gap-1 pt-1 max-h-[130px] overflow-y-auto custom-scrollbar p-2 bg-secondary/20 border border-border/40 rounded-xl">
+                        {STAFF_SPECIALTY_PRESETS.map((preset) => {
+                          const isSelected = staffSpecialties.includes(preset);
+                          return (
+                            <button
+                              key={preset}
+                              type="button"
+                              onClick={() => {
+                                if (isSelected) {
+                                  setStaffSpecialties((prev) => prev.filter((s) => s !== preset));
+                                } else {
+                                  setStaffSpecialties((prev) => [...prev, preset]);
+                                }
+                              }}
+                              className={cn(
+                                "text-[10.5px] font-bold px-2.5 py-1 rounded-lg border transition-all select-none",
+                                isSelected
+                                  ? "bg-primary text-primary-foreground border-primary shadow-2xs"
+                                  : "bg-background border-border/60 text-muted-foreground hover:bg-secondary hover:text-foreground",
+                              )}
+                            >
+                              {isSelected ? "✓ " : "+ "}
+                              {preset}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-muted-foreground">
+                      Certificaciones y Títulos (separados por comas)
+                    </label>
+                    <input
+                      type="text"
+                      value={staffCerts}
+                      onChange={(e) => setStaffCerts(e.target.value)}
+                      className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                      placeholder="CF-L1, Prof. Educación Física, Guardavidas"
+                    />
+                  </div>
+
+                  <div className="border-t border-border/40 pt-4 space-y-4">
+                    <div>
+                      <h4 className="text-xs font-bold text-muted-foreground uppercase">
+                        Disponibilidad Horaria Semanal
+                      </h4>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        Define los días y franjas horarias en los que el profesor puede dictar
+                        clases.
+                      </p>
+                    </div>
+
+                    <div className="space-y-3">
+                      {newStaffAvails.map((dayAvail, dayIdx) => (
+                        <div
+                          key={dayAvail.day}
+                          className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-2xl bg-secondary/10 border border-border/40 text-xs text-foreground"
+                        >
+                          <span className="font-bold w-20 text-foreground shrink-0">
+                            {dayAvail.day}
+                          </span>
+
+                          <div className="flex-1 space-y-2">
+                            {dayAvail.intervals.map((interval, intervalIdx) => (
+                              <div key={intervalIdx} className="flex items-center gap-2">
+                                <input
+                                  type="time"
+                                  value={interval.from}
+                                  onChange={(e) =>
+                                    handleUpdateStaffAvailInterval(
+                                      false,
+                                      dayIdx,
+                                      intervalIdx,
+                                      "from",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="px-2 py-1 rounded-lg border border-border bg-background text-xs text-foreground focus-visible:outline-none"
+                                />
+                                <span className="text-[10px] text-muted-foreground">a</span>
+                                <input
+                                  type="time"
+                                  value={interval.to}
+                                  onChange={(e) =>
+                                    handleUpdateStaffAvailInterval(
+                                      false,
+                                      dayIdx,
+                                      intervalIdx,
+                                      "to",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="px-2 py-1 rounded-lg border border-border bg-background text-xs text-foreground focus-visible:outline-none"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleRemoveStaffAvailInterval(false, dayIdx, intervalIdx)
+                                  }
+                                  className="p-1 text-destructive hover:bg-destructive/ rounded transition"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </button>
+                              </div>
+                            ))}
+                            {dayAvail.intervals.length === 0 && (
+                              <span className="text-[10px] text-muted-foreground italic bg-secondary/40 px-2 py-0.5 rounded inline-block">
+                                No disponible
+                              </span>
+                            )}
+                          </div>
+
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            className="self-start sm:self-center text-[10px] gap-1 py-1 h-7 rounded-lg"
+                            onClick={() => handleAddStaffAvailInterval(false, dayIdx)}
+                          >
+                            <Plus className="h-3 w-3" /> Turno
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <label className="text-xs font-semibold text-muted-foreground block">
+                        Foto de Perfil
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <div className="h-12 w-12 rounded-full overflow-hidden border border-border bg-muted flex items-center justify-center shrink-0">
+                          {staffAvatarUrl ? (
+                            <img
+                              src={staffAvatarUrl}
+                              alt="Preview"
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <Users className="h-5 w-5 text-muted-foreground" />
+                          )}
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="rounded-xl"
+                          onClick={() => coachAvatarRef.current?.click()}
+                        >
+                          Subir Foto
+                        </Button>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          ref={coachAvatarRef}
+                          onChange={handleCoachAvatarUpload}
+                          className="hidden"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-xs font-semibold text-muted-foreground block">
+                        Adjuntar Diplomas / Certificaciones
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="rounded-xl gap-1.5"
+                          onClick={() => coachCertsRef.current?.click()}
+                        >
+                          <Plus className="h-4 w-4" /> Subir Certificados
+                        </Button>
+                        <input
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          ref={coachCertsRef}
+                          onChange={handleCoachDiplomasUpload}
+                          className="hidden"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {staffDiplomas.length > 0 && (
+                    <div className="space-y-1.5 border-t border-border/60 pt-3">
+                      <label className="text-xs font-semibold text-muted-foreground block">
+                        Diplomas Adjuntos ({staffDiplomas.length})
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {staffDiplomas.map((url, index) => (
+                          <div
+                            key={index}
+                            className="relative h-12 w-16 rounded-lg overflow-hidden border border-border group"
+                          >
+                            <img src={url} alt="Diploma" className="h-full w-full object-cover" />
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveDiplomaPreview(index)}
+                              className="absolute top-0.5 right-0.5 bg-black/60 text-white p-0.5 rounded-full hover:bg-black transition"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex justify-end gap-2 pt-4 border-t border-border">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="rounded-xl"
+                      onClick={() => setIsCreateStaffOpen(false)}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button type="submit" className="rounded-xl">
+                      Añadir al Staff
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
+
+            <div className="rounded-3xl border border-border bg-card p-6">
+              <h3 className="text-sm font-bold text-muted-foreground uppercase mb-4">
+                Staff Registrado
+              </h3>
+              <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+                {staffList.map((s) => (
+                  <div
+                    key={s.id}
+                    className="relative p-4 border border-border rounded-2xl bg-secondary/10 flex flex-col justify-between min-h-[140px]"
+                  >
+                    <div className="absolute top-2 right-2 flex gap-1 z-10">
+                      <button
+                        type="button"
+                        onClick={() => handleStartEditStaff(s)}
+                        className="p-1.5 rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground transition"
+                        title="Editar miembro"
+                      >
+                        <Edit2 className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDeletingItem({ type: "staff", id: s.id, name: s.name });
+                          setDeleteConfirmText("");
+                        }}
+                        className="p-1.5 rounded-full hover:bg-destructive/ text-destructive transition"
+                        title="Eliminar miembro"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={s.photo}
+                        alt={s.name}
+                        className="h-12 w-12 rounded-full object-cover border border-border shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <div className="text-xs font-bold text-foreground truncate">{s.name}</div>
+                        <div className="text-[10px] text-muted-foreground truncate">
+                          {s.specialty}
+                        </div>
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {s.role && (
+                            <span className="text-[8px] bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+                              {s.role === "coach"
+                                ? "Coach"
+                                : s.role === "receptionist"
+                                  ? "Recep"
+                                  : "Manager"}
+                            </span>
+                          )}
+                        </div>
+                        <div className="mt-1.5 flex flex-wrap gap-1">
+                          {s.certifications.map((c) => (
+                            <span
+                              key={c}
+                              className="text-[8px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-bold"
+                            >
+                              {c}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Availability details */}
+                    {s.availability &&
+                      s.availability.some((a) => a.intervals && a.intervals.length > 0) && (
+                        <div className="mt-3.5 border-t border-border/40 pt-2 text-[10px] space-y-1 bg-secondary/5 p-2 rounded-xl">
+                          <div
+                            className="text-muted-foreground font-medium line-clamp-2"
+                            title={s.availability
+                              .filter((a) => a.intervals.length > 0)
+                              .map(
+                                (a) =>
+                                  `${a.day}: ${a.intervals.map((i) => `${i.from}-${i.to}`).join(", ")}`,
+                              )
+                              .join("\n")}
+                          >
+                            <span className="font-bold text-foreground">Disponibilidad:</span>{" "}
+                            {s.availability
+                              .filter((a) => a.intervals.length > 0)
+                              .map(
+                                (a) =>
+                                  `${a.day.slice(0, 3)} (${a.intervals.map((i) => `${i.from}-${i.to}`).join(",")})`,
+                              )
+                              .join(" | ")}
+                          </div>
+                        </div>
+                      )}
+
+                    {s.certificationImages && s.certificationImages.length > 0 && (
+                      <button
+                        onClick={() => setActiveCertificationsViewer(s.certificationImages || [])}
+                        className="mt-3 text-[10px] font-bold text-primary hover:underline self-start flex items-center gap-1"
+                      >
+                        <Eye className="h-3 w-3" /> Ver Certificados ({s.certificationImages.length}
+                        )
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Diplomas Viewer Modal */}
+        {activeCertificationsViewer && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 z-50 animate-fade-in">
+            <div className="relative bg-card border border-border w-full max-w-[600px] rounded-3xl p-6 flex flex-col">
+              <button
+                onClick={() => setActiveCertificationsViewer(null)}
+                className="absolute right-4 top-4 p-2 rounded-full hover:bg-secondary transition z-10"
+              >
+                <X className="h-5 w-5" />
+              </button>
+
+              <h3 className="text-lg font-bold tracking-tight mb-4 flex items-center gap-2">
+                <FileText className="h-5 w-5 text-primary" /> Diplomas y Certificaciones
+              </h3>
+
+              <div className="grid gap-3 grid-cols-2 overflow-y-auto max-h-[400px]">
+                {activeCertificationsViewer.map((url, index) => (
+                  <div
+                    key={index}
+                    className="border border-border rounded-xl overflow-hidden aspect-video bg-muted relative group"
+                  >
+                    <img
+                      src={url}
+                      alt={`Diploma ${index}`}
+                      className="h-full w-full object-cover"
+                    />
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition text-white text-xs font-bold gap-1"
+                    >
+                      <Eye className="h-4 w-4" /> Ver pantalla completa
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Staff Modal */}
+        <Dialog open={!!editingStaff} onOpenChange={(open) => !open && setEditingStaff(null)}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto border border-border bg-card">
+            <DialogHeader>
+              <DialogTitle>Editar Profesor / Coach</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleSaveEditStaff} className="space-y-4 pt-2">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground">
+                    Nombre y Apellido
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editStaffName}
+                    onChange={(e) => setEditStaffName(e.target.value)}
+                    className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-2 sm:col-span-2">
+                  <label className="text-xs font-semibold text-muted-foreground block">
+                    Actividades / Especialidades que dicta (Selecciona 1 o varias)
+                  </label>
+
+                  {/* Selector de Chips elegidos */}
+                  <div className="flex flex-wrap gap-1.5 min-h-[38px] p-2 rounded-xl border border-border bg-background items-center">
+                    {editStaffSpecialties.map((spec) => (
+                      <span
+                        key={spec}
+                        className="inline-flex items-center gap-1 bg-primary/10 text-primary border border-primary/20 text-[11px] font-bold px-2.5 py-0.5 rounded-full"
+                      >
+                        {spec}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setEditStaffSpecialties((prev) => prev.filter((s) => s !== spec))
+                          }
+                          className="hover:text-destructive text-primary/70 transition-colors ml-0.5"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                    {editStaffSpecialties.length === 0 && (
+                      <span className="text-xs text-muted-foreground italic">
+                        Haz clic en las actividades de abajo para vincularlas a este profesor...
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Botones de Selección Rápida */}
+                  <div className="flex flex-wrap gap-1 pt-1 max-h-[130px] overflow-y-auto custom-scrollbar p-2 bg-secondary/20 border border-border/40 rounded-xl">
+                    {STAFF_SPECIALTY_PRESETS.map((preset) => {
+                      const isSelected = editStaffSpecialties.includes(preset);
+                      return (
+                        <button
+                          key={preset}
+                          type="button"
+                          onClick={() => {
+                            if (isSelected) {
+                              setEditStaffSpecialties((prev) => prev.filter((s) => s !== preset));
+                            } else {
+                              setEditStaffSpecialties((prev) => [...prev, preset]);
+                            }
+                          }}
+                          className={cn(
+                            "text-[10.5px] font-bold px-2.5 py-1 rounded-lg border transition-all select-none",
+                            isSelected
+                              ? "bg-primary text-primary-foreground border-primary shadow-2xs"
+                              : "bg-background border-border/60 text-muted-foreground hover:bg-secondary hover:text-foreground",
+                          )}
+                        >
+                          {isSelected ? "✓ " : "+ "}
+                          {preset}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Certificaciones y Títulos (separados por comas)
+                </label>
+                <input
+                  type="text"
+                  value={editStaffCerts}
+                  onChange={(e) => setEditStaffCerts(e.target.value)}
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                />
+              </div>
+
+              <div className="border-t border-border/40 pt-4 space-y-4">
                 <div>
-                  <h3 className="font-bold text-sm">Horarios Semanales (7 Días)</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Configura individualmente cada día, soportando horarios cortados/partidos.
+                  <h4 className="text-xs font-bold text-muted-foreground uppercase">
+                    Disponibilidad Horaria Semanal
+                  </h4>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                    Define los días y franjas horarias en los que el profesor puede dictar clases.
                   </p>
                 </div>
 
-                <div className="space-y-4 divide-y divide-border/60">
-                  {weeklyHours.map((dayHour, dayIdx) => (
+                <div className="space-y-3">
+                  {editStaffAvails.map((dayAvail, dayIdx) => (
                     <div
-                      key={dayHour.day}
-                      className="flex flex-col sm:flex-row sm:items-center justify-between py-3 gap-3 first:pt-0"
+                      key={dayAvail.day}
+                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-2xl bg-secondary/10 border border-border/40 text-xs text-foreground"
                     >
-                      <div className="w-24 text-sm font-bold text-foreground">{dayHour.day}</div>
+                      <span className="font-bold w-20 text-foreground shrink-0">
+                        {dayAvail.day}
+                      </span>
 
                       <div className="flex-1 space-y-2">
-                        {dayHour.intervals.map((interval, intervalIdx) => (
+                        {dayAvail.intervals.map((interval, intervalIdx) => (
                           <div key={intervalIdx} className="flex items-center gap-2">
                             <input
                               type="time"
                               value={interval.from}
                               onChange={(e) =>
-                                handleUpdateHourInterval(
+                                handleUpdateStaffAvailInterval(
+                                  true,
                                   dayIdx,
                                   intervalIdx,
                                   "from",
                                   e.target.value,
                                 )
                               }
-                              className="px-2 py-1 rounded-lg border border-border bg-background text-xs focus-visible:outline-none"
+                              className="px-2 py-1 rounded-lg border border-border bg-background text-xs text-foreground focus-visible:outline-none"
                             />
-                            <span className="text-xs text-muted-foreground">a</span>
+                            <span className="text-[10px] text-muted-foreground">a</span>
                             <input
                               type="time"
                               value={interval.to}
                               onChange={(e) =>
-                                handleUpdateHourInterval(dayIdx, intervalIdx, "to", e.target.value)
+                                handleUpdateStaffAvailInterval(
+                                  true,
+                                  dayIdx,
+                                  intervalIdx,
+                                  "to",
+                                  e.target.value,
+                                )
                               }
-                              className="px-2 py-1 rounded-lg border border-border bg-background text-xs focus-visible:outline-none"
+                              className="px-2 py-1 rounded-lg border border-border bg-background text-xs text-foreground focus-visible:outline-none"
                             />
                             <button
                               type="button"
-                              onClick={() => handleRemoveHourInterval(dayIdx, intervalIdx)}
-                              className="p-1.5 text-destructive hover:bg-destructive/ rounded-lg transition"
+                              onClick={() =>
+                                handleRemoveStaffAvailInterval(true, dayIdx, intervalIdx)
+                              }
+                              className="p-1 text-destructive hover:bg-destructive/ rounded transition"
                             >
-                              <Trash2 className="h-3.5 w-3.5" />
+                              <Trash2 className="h-3 w-3" />
                             </button>
                           </div>
                         ))}
-                        {dayHour.intervals.length === 0 && (
-                          <span className="text-xs text-muted-foreground italic bg-secondary/40 px-2.5 py-1 rounded-md inline-block">
-                            Cerrado
+                        {dayAvail.intervals.length === 0 && (
+                          <span className="text-[10px] text-muted-foreground italic bg-secondary/40 px-2 py-0.5 rounded inline-block">
+                            No disponible
                           </span>
                         )}
                       </div>
@@ -10136,2009 +11383,1114 @@ function ConfigTab({
                         type="button"
                         size="sm"
                         variant="ghost"
-                        className="self-start sm:self-center text-xs gap-1 py-1 h-8 rounded-lg"
-                        onClick={() => handleAddHourInterval(dayIdx)}
+                        className="self-start sm:self-center text-[10px] gap-1 py-1 h-7 rounded-lg"
+                        onClick={() => handleAddStaffAvailInterval(true, dayIdx)}
                       >
-                        <Plus className="h-3.5 w-3.5" /> Turno
+                        <Plus className="h-3 w-3" /> Turno
                       </Button>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="space-y-6 max-w-2xl bg-card border border-border p-6 rounded-3xl">
-                <h3 className="font-bold text-sm">Perfil de la Sede</h3>
-                <form className="space-y-4 text-sm" onSubmit={(e) => e.preventDefault()}>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-muted-foreground">
-                        Nombre Comercial
-                      </label>
-                      <input
-                        type="text"
-                        className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm"
-                        defaultValue="Kraft Strength Club"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-muted-foreground">
-                        Dirección Física
-                      </label>
-                      <input
-                        type="text"
-                        className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm"
-                        defaultValue="Av. Santa Fe 3421, Palermo, CABA"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Social Media Inputs */}
-                  <div className="grid gap-4 sm:grid-cols-3 border-t border-border/60 pt-4">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-muted-foreground">
-                        Instagram (Usuario)
-                      </label>
-                      <input
-                        type="text"
-                        value={instagram}
-                        onChange={(e) => setInstagram(e.target.value)}
-                        className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
-                        placeholder="kraft.strength"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-muted-foreground">
-                        TikTok (Usuario)
-                      </label>
-                      <input
-                        type="text"
-                        value={tiktok}
-                        onChange={(e) => setTiktok(e.target.value)}
-                        className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
-                        placeholder="kraft.strength"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-muted-foreground">
-                        WhatsApp (Número)
-                      </label>
-                      <input
-                        type="text"
-                        value={whatsapp}
-                        onChange={(e) => setWhatsapp(e.target.value)}
-                        className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
-                        placeholder="5491132421241"
-                      />
-                    </div>
-                  </div>
-
-                  <Button
-                    type="button"
-                    className="rounded-xl font-bold bg-primary text-primary-foreground hover:bg-primary/95"
-                    onClick={() => {
-                      const saveBtn = document.getElementById("profile-save-badge");
-                      if (saveBtn) {
-                        saveBtn.classList.remove("hidden");
-                        setTimeout(() => saveBtn.classList.add("hidden"), 3000);
-                      }
-                    }}
-                  >
-                    Guardar Cambios
-                  </Button>
-                  <span
-                    id="profile-save-badge"
-                    className="hidden text-xs font-bold text-primary animate-fade-in"
-                  >
-                    ✅ Datos del gimnasio y redes sociales actualizados correctamente.
-                  </span>
-                </form>
-              </div>
-            </div>
-          )}
-
-          {/* Subtab 2: Reservation & Cancellation Policies */}
-          {subTab === "politicas" && (
-            <div className="space-y-6 max-w-2xl bg-card border border-border p-6 rounded-3xl text-foreground">
-              <div>
-                <h3 className="font-bold text-sm flex items-center gap-2">
-                  <ShieldAlert className="h-5 w-5 text-primary" /> Políticas de Reservas e
-                  Inasistencias
-                </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Define los límites y restricciones para cancelaciones y penalizaciones por faltas.
-                </p>
-              </div>
-
-              <div className="space-y-6 text-sm">
-                {/* Cancellation hours input */}
+              <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <label className="text-xs font-semibold text-muted-foreground block">
-                    Tiempo límite de cancelación anticipada (Horas)
+                    Foto de Perfil
                   </label>
                   <div className="flex items-center gap-3">
-                    <input
-                      type="number"
-                      min="0"
-                      max="48"
-                      value={cancellationPolicyHours}
-                      onChange={(e) => setCancellationPolicyHours(parseInt(e.target.value) || 0)}
-                      className="flex h-10 w-24 rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
-                    />
-                    <span className="text-xs text-muted-foreground">
-                      Los alumnos sólo podrán cancelar la clase hasta {cancellationPolicyHours}{" "}
-                      horas antes del inicio sin penalización.
-                    </span>
-                  </div>
-                </div>
-
-
-
-                <Button
-                  type="button"
-                  className="rounded-xl font-bold bg-primary text-primary-foreground hover:bg-primary/95"
-                  onClick={() => {
-                    const saveBadge = document.getElementById("policy-save-badge");
-                    if (saveBadge) {
-                      saveBadge.classList.remove("hidden");
-                      setTimeout(() => saveBadge.classList.add("hidden"), 3000);
-                    }
-                  }}
-                >
-                  Guardar Políticas
-                </Button>
-                <span
-                  id="policy-save-badge"
-                  className="hidden text-xs font-bold text-primary animate-fade-in block"
-                >
-                  ✅ Políticas de cancelación e inasistencia actualizadas correctamente.
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* Subtab 3: Amenities */}
-          {subTab === "amenities" && (
-            <div className="space-y-6 max-w-3xl bg-card border border-border p-6 rounded-3xl">
-              <div>
-                <h3 className="font-bold text-sm">Amenities y Servicios Adicionales</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Define los servicios de infraestructura que ofrece tu centro.
-                </p>
-              </div>
-
-              <div className="space-y-6">
-                {amenityCategories.map((category) => (
-                  <div key={category} className="space-y-3">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-1.5">
-                      {category}
-                    </h4>
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      {amenities
-                        .filter((a) => a.category === category)
-                        .map((a) => (
-                          <div
-                            key={a.id}
-                            className="flex items-center justify-between p-3.5 rounded-2xl bg-secondary/20 hover:bg-secondary/40 transition"
-                          >
-                            <div className="text-sm font-semibold">{a.name}</div>
-                            <input
-                              type="checkbox"
-                              checked={a.checked}
-                              onChange={() => handleToggleAmenity(a.id)}
-                              className="h-5 w-10 accent-primary rounded-full cursor-pointer"
-                            />
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Subtab: Equipamiento */}
-          {subTab === "equipamiento" && (
-            <div className="space-y-6 max-w-4xl bg-card border border-border p-6 rounded-3xl animate-fade-in text-foreground">
-              <div className="space-y-6">
-                {equipmentCategories.map((category) => (
-                  <div key={category} className="space-y-3">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-primary border-b border-border/80 pb-1.5 flex items-center justify-between">
-                      <span>{category}</span>
-                      <span className="text-[10px] bg-secondary px-2 py-0.5 rounded-full font-normal text-muted-foreground">
-                        {equipment.filter((e) => e.category === category && e.checked).length} /{" "}
-                        {equipment.filter((e) => e.category === category).length} seleccionados
-                      </span>
-                    </h4>
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      {equipment
-                        .filter((e) => e.category === category)
-                        .map((e) => (
-                          <div
-                            key={e.id}
-                            onClick={() => handleToggleEquipment(e.id)}
-                            className={`flex items-center justify-between p-3.5 rounded-2xl border transition cursor-pointer ${
-                              e.checked
-                                ? "bg-primary/5 border-primary/40 text-foreground"
-                                : "bg-secondary/20 border-transparent text-muted-foreground hover:bg-secondary/40 hover:text-foreground"
-                            }`}
-                          >
-                            <div className="flex items-center gap-3 pr-2 overflow-hidden flex-1">
-                              <div className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 bg-secondary border border-border/60">
-                                {e.photo ? (
-                                  <img
-                                    src={e.photo}
-                                    alt={e.name}
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                                    <Dumbbell className="w-5 h-5" />
-                                  </div>
-                                )}
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <span className="text-sm font-semibold truncate block">
-                                  {e.name}
-                                </span>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center shrink-0 pl-2">
-                              <input
-                                type="checkbox"
-                                checked={e.checked}
-                                onChange={() => {}} // Controlled by parent div click
-                                className="h-5 w-5 accent-primary rounded cursor-pointer shrink-0 pointer-events-none"
-                              />
-                            </div>
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Subtab 4: Requirements */}
-          {subTab === "requisitos" && (
-            <div className="space-y-6 max-w-3xl bg-card border border-border p-6 rounded-3xl">
-              <div>
-                <h3 className="font-bold text-sm">Normas y Requisitos de Ingreso</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Controla las exigencias de higiene y documentación.
-                </p>
-              </div>
-
-              <div className="space-y-6">
-                {requirementCategories.map((category) => (
-                  <div key={category} className="space-y-3">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-1.5">
-                      {category}
-                    </h4>
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      {requirements
-                        .filter((r) => r.category === category)
-                        .map((r) => (
-                          <div
-                            key={r.id}
-                            className="flex items-center justify-between p-3.5 rounded-2xl bg-secondary/20 hover:bg-secondary/40 transition"
-                          >
-                            <div className="text-sm font-semibold">{r.name}</div>
-                            <input
-                              type="checkbox"
-                              checked={r.checked}
-                              onChange={() => handleToggleRequirement(r.id)}
-                              className="h-5 w-10 accent-primary rounded-full cursor-pointer"
-                            />
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Subtab 5: Staff */}
-          {subTab === "staff" && (
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card border border-border p-6 rounded-3xl">
-                <div>
-                  <h3 className="font-bold text-sm">Staff</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Administra los entrenadores y coaches de tu sede.
-                  </p>
-                </div>
-                <Button
-                  onClick={() => setIsCreateStaffOpen(true)}
-                  className="rounded-xl font-bold text-xs gap-1.5 shrink-0"
-                >
-                  <Plus className="h-4 w-4" /> Añadir Coach / Profesor
-                </Button>
-              </div>
-
-              <Dialog open={isCreateStaffOpen} onOpenChange={setIsCreateStaffOpen}>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto border border-border bg-card">
-                  <DialogHeader>
-                    <DialogTitle>Añadir Profesor / Coach</DialogTitle>
-                  </DialogHeader>
-                  <form onSubmit={handleAddStaff} className="space-y-4 pt-2">
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-muted-foreground">
-                          Nombre y Apellido
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={staffName}
-                          onChange={(e) => setStaffName(e.target.value)}
-                          className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
-                          placeholder="Juan Gómez"
-                        />
-                      </div>
-                      <div className="space-y-2 sm:col-span-2">
-                        <label className="text-xs font-semibold text-muted-foreground block">
-                          Actividades / Especialidades que dicta (Selecciona 1 o varias)
-                        </label>
-                        
-                        {/* Selector de Chips elegidos */}
-                        <div className="flex flex-wrap gap-1.5 min-h-[38px] p-2 rounded-xl border border-border bg-background items-center">
-                          {staffSpecialties.map((spec) => (
-                            <span
-                              key={spec}
-                              className="inline-flex items-center gap-1 bg-primary/10 text-primary border border-primary/20 text-[11px] font-bold px-2.5 py-0.5 rounded-full"
-                            >
-                              {spec}
-                              <button
-                                type="button"
-                                onClick={() => setStaffSpecialties((prev) => prev.filter((s) => s !== spec))}
-                                className="hover:text-destructive text-primary/70 transition-colors ml-0.5"
-                              >
-                                ×
-                              </button>
-                            </span>
-                          ))}
-                          {staffSpecialties.length === 0 && (
-                            <span className="text-xs text-muted-foreground italic">
-                              Haz clic en las actividades de abajo para vincularlas a este profesor...
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Botones de Selección Rápida */}
-                        <div className="flex flex-wrap gap-1 pt-1 max-h-[130px] overflow-y-auto custom-scrollbar p-2 bg-secondary/20 border border-border/40 rounded-xl">
-                          {STAFF_SPECIALTY_PRESETS.map((preset) => {
-                            const isSelected = staffSpecialties.includes(preset);
-                            return (
-                              <button
-                                key={preset}
-                                type="button"
-                                onClick={() => {
-                                  if (isSelected) {
-                                    setStaffSpecialties((prev) => prev.filter((s) => s !== preset));
-                                  } else {
-                                    setStaffSpecialties((prev) => [...prev, preset]);
-                                  }
-                                }}
-                                className={cn(
-                                  "text-[10.5px] font-bold px-2.5 py-1 rounded-lg border transition-all select-none",
-                                  isSelected
-                                    ? "bg-primary text-primary-foreground border-primary shadow-2xs"
-                                    : "bg-background border-border/60 text-muted-foreground hover:bg-secondary hover:text-foreground",
-                                )}
-                              >
-                                {isSelected ? "✓ " : "+ "}{preset}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-muted-foreground">
-                        Certificaciones y Títulos (separados por comas)
-                      </label>
-                      <input
-                        type="text"
-                        value={staffCerts}
-                        onChange={(e) => setStaffCerts(e.target.value)}
-                        className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
-                        placeholder="CF-L1, Prof. Educación Física, Guardavidas"
-                      />
-                    </div>
-
-
-
-
-
-                    <div className="border-t border-border/40 pt-4 space-y-4">
-                      <div>
-                        <h4 className="text-xs font-bold text-muted-foreground uppercase">
-                          Disponibilidad Horaria Semanal
-                        </h4>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">
-                          Define los días y franjas horarias en los que el profesor puede dictar
-                          clases.
-                        </p>
-                      </div>
-
-                      <div className="space-y-3">
-                        {newStaffAvails.map((dayAvail, dayIdx) => (
-                          <div
-                            key={dayAvail.day}
-                            className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-2xl bg-secondary/10 border border-border/40 text-xs text-foreground"
-                          >
-                            <span className="font-bold w-20 text-foreground shrink-0">
-                              {dayAvail.day}
-                            </span>
-
-                            <div className="flex-1 space-y-2">
-                              {dayAvail.intervals.map((interval, intervalIdx) => (
-                                <div key={intervalIdx} className="flex items-center gap-2">
-                                  <input
-                                    type="time"
-                                    value={interval.from}
-                                    onChange={(e) =>
-                                      handleUpdateStaffAvailInterval(
-                                        false,
-                                        dayIdx,
-                                        intervalIdx,
-                                        "from",
-                                        e.target.value,
-                                      )
-                                    }
-                                    className="px-2 py-1 rounded-lg border border-border bg-background text-xs text-foreground focus-visible:outline-none"
-                                  />
-                                  <span className="text-[10px] text-muted-foreground">a</span>
-                                  <input
-                                    type="time"
-                                    value={interval.to}
-                                    onChange={(e) =>
-                                      handleUpdateStaffAvailInterval(
-                                        false,
-                                        dayIdx,
-                                        intervalIdx,
-                                        "to",
-                                        e.target.value,
-                                      )
-                                    }
-                                    className="px-2 py-1 rounded-lg border border-border bg-background text-xs text-foreground focus-visible:outline-none"
-                                  />
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      handleRemoveStaffAvailInterval(false, dayIdx, intervalIdx)
-                                    }
-                                    className="p-1 text-destructive hover:bg-destructive/ rounded transition"
-                                  >
-                                    <Trash2 className="h-3 w-3" />
-                                  </button>
-                                </div>
-                              ))}
-                              {dayAvail.intervals.length === 0 && (
-                                <span className="text-[10px] text-muted-foreground italic bg-secondary/40 px-2 py-0.5 rounded inline-block">
-                                  No disponible
-                                </span>
-                              )}
-                            </div>
-
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="ghost"
-                              className="self-start sm:self-center text-[10px] gap-1 py-1 h-7 rounded-lg"
-                              onClick={() => handleAddStaffAvailInterval(false, dayIdx)}
-                            >
-                              <Plus className="h-3 w-3" /> Turno
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="space-y-2">
-                        <label className="text-xs font-semibold text-muted-foreground block">
-                          Foto de Perfil
-                        </label>
-                        <div className="flex items-center gap-3">
-                          <div className="h-12 w-12 rounded-full overflow-hidden border border-border bg-muted flex items-center justify-center shrink-0">
-                            {staffAvatarUrl ? (
-                              <img
-                                src={staffAvatarUrl}
-                                alt="Preview"
-                                className="h-full w-full object-cover"
-                              />
-                            ) : (
-                              <Users className="h-5 w-5 text-muted-foreground" />
-                            )}
-                          </div>
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            className="rounded-xl"
-                            onClick={() => coachAvatarRef.current?.click()}
-                          >
-                            Subir Foto
-                          </Button>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            ref={coachAvatarRef}
-                            onChange={handleCoachAvatarUpload}
-                            className="hidden"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-xs font-semibold text-muted-foreground block">
-                          Adjuntar Diplomas / Certificaciones
-                        </label>
-                        <div className="flex items-center gap-3">
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            className="rounded-xl gap-1.5"
-                            onClick={() => coachCertsRef.current?.click()}
-                          >
-                            <Plus className="h-4 w-4" /> Subir Certificados
-                          </Button>
-                          <input
-                            type="file"
-                            multiple
-                            accept="image/*"
-                            ref={coachCertsRef}
-                            onChange={handleCoachDiplomasUpload}
-                            className="hidden"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {staffDiplomas.length > 0 && (
-                      <div className="space-y-1.5 border-t border-border/60 pt-3">
-                        <label className="text-xs font-semibold text-muted-foreground block">
-                          Diplomas Adjuntos ({staffDiplomas.length})
-                        </label>
-                        <div className="flex flex-wrap gap-2">
-                          {staffDiplomas.map((url, index) => (
-                            <div
-                              key={index}
-                              className="relative h-12 w-16 rounded-lg overflow-hidden border border-border group"
-                            >
-                              <img src={url} alt="Diploma" className="h-full w-full object-cover" />
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveDiplomaPreview(index)}
-                                className="absolute top-0.5 right-0.5 bg-black/60 text-white p-0.5 rounded-full hover:bg-black transition"
-                              >
-                                <X className="h-3 w-3" />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="flex justify-end gap-2 pt-4 border-t border-border">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="rounded-xl"
-                        onClick={() => setIsCreateStaffOpen(false)}
-                      >
-                        Cancelar
-                      </Button>
-                      <Button type="submit" className="rounded-xl">
-                        Añadir al Staff
-                      </Button>
-                    </div>
-                  </form>
-                </DialogContent>
-              </Dialog>
-
-              <div className="rounded-3xl border border-border bg-card p-6">
-                <h3 className="text-sm font-bold text-muted-foreground uppercase mb-4">
-                  Staff Registrado
-                </h3>
-                <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-                  {staffList.map((s) => (
-                    <div
-                      key={s.id}
-                      className="relative p-4 border border-border rounded-2xl bg-secondary/10 flex flex-col justify-between min-h-[140px]"
-                    >
-                      <div className="absolute top-2 right-2 flex gap-1 z-10">
-                        <button
-                          type="button"
-                          onClick={() => handleStartEditStaff(s)}
-                          className="p-1.5 rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground transition"
-                          title="Editar miembro"
-                        >
-                          <Edit2 className="h-3.5 w-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setDeletingItem({ type: "staff", id: s.id, name: s.name });
-                            setDeleteConfirmText("");
-                          }}
-                          className="p-1.5 rounded-full hover:bg-destructive/ text-destructive transition"
-                          title="Eliminar miembro"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-
-                      <div className="flex items-center gap-3">
+                    <div className="h-12 w-12 rounded-full overflow-hidden border border-border bg-muted flex items-center justify-center shrink-0">
+                      {editStaffAvatarUrl ? (
                         <img
-                          src={s.photo}
-                          alt={s.name}
-                          className="h-12 w-12 rounded-full object-cover border border-border shrink-0"
+                          src={editStaffAvatarUrl}
+                          alt="Edit Preview"
+                          className="h-full w-full object-cover"
                         />
-                        <div className="min-w-0">
-                          <div className="text-xs font-bold text-foreground truncate">{s.name}</div>
-                          <div className="text-[10px] text-muted-foreground truncate">
-                            {s.specialty}
-                          </div>
-                          <div className="mt-1 flex flex-wrap gap-1">
-                            {s.role && (
-                              <span className="text-[8px] bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
-                                {s.role === "coach"
-                                  ? "Coach"
-                                  : s.role === "receptionist"
-                                    ? "Recep"
-                                    : "Manager"}
-                              </span>
-                            )}
-                          </div>
-                          <div className="mt-1.5 flex flex-wrap gap-1">
-                            {s.certifications.map((c) => (
-                              <span
-                                key={c}
-                                className="text-[8px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-bold"
-                              >
-                                {c}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Availability details */}
-                      {s.availability &&
-                        s.availability.some((a) => a.intervals && a.intervals.length > 0) && (
-                          <div className="mt-3.5 border-t border-border/40 pt-2 text-[10px] space-y-1 bg-secondary/5 p-2 rounded-xl">
-                            <div
-                              className="text-muted-foreground font-medium line-clamp-2"
-                              title={s.availability
-                                .filter((a) => a.intervals.length > 0)
-                                .map(
-                                  (a) =>
-                                    `${a.day}: ${a.intervals.map((i) => `${i.from}-${i.to}`).join(", ")}`,
-                                )
-                                .join("\n")}
-                            >
-                              <span className="font-bold text-foreground">Disponibilidad:</span>{" "}
-                              {s.availability
-                                .filter((a) => a.intervals.length > 0)
-                                .map(
-                                  (a) =>
-                                    `${a.day.slice(0, 3)} (${a.intervals.map((i) => `${i.from}-${i.to}`).join(",")})`,
-                                )
-                                .join(" | ")}
-                            </div>
-                          </div>
-                        )}
-
-                      {s.certificationImages && s.certificationImages.length > 0 && (
-                        <button
-                          onClick={() => setActiveCertificationsViewer(s.certificationImages || [])}
-                          className="mt-3 text-[10px] font-bold text-primary hover:underline self-start flex items-center gap-1"
-                        >
-                          <Eye className="h-3 w-3" /> Ver Certificados (
-                          {s.certificationImages.length})
-                        </button>
+                      ) : (
+                        <Users className="h-5 w-5 text-muted-foreground" />
                       )}
                     </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Diplomas Viewer Modal */}
-          {activeCertificationsViewer && (
-            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 z-50 animate-fade-in">
-              <div className="relative bg-card border border-border w-full max-w-[600px] rounded-3xl p-6 flex flex-col">
-                <button
-                  onClick={() => setActiveCertificationsViewer(null)}
-                  className="absolute right-4 top-4 p-2 rounded-full hover:bg-secondary transition z-10"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-
-                <h3 className="text-lg font-bold tracking-tight mb-4 flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-primary" /> Diplomas y Certificaciones
-                </h3>
-
-                <div className="grid gap-3 grid-cols-2 overflow-y-auto max-h-[400px]">
-                  {activeCertificationsViewer.map((url, index) => (
-                    <div
-                      key={index}
-                      className="border border-border rounded-xl overflow-hidden aspect-video bg-muted relative group"
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="rounded-xl"
+                      onClick={() => editCoachAvatarRef.current?.click()}
                     >
-                      <img
-                        src={url}
-                        alt={`Diploma ${index}`}
-                        className="h-full w-full object-cover"
-                      />
-                      <a
-                        href={url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition text-white text-xs font-bold gap-1"
-                      >
-                        <Eye className="h-4 w-4" /> Ver pantalla completa
-                      </a>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Edit Staff Modal */}
-          <Dialog open={!!editingStaff} onOpenChange={(open) => !open && setEditingStaff(null)}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto border border-border bg-card">
-              <DialogHeader>
-                <DialogTitle>Editar Profesor / Coach</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleSaveEditStaff} className="space-y-4 pt-2">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-muted-foreground">
-                      Nombre y Apellido
-                    </label>
+                      Subir Foto
+                    </Button>
                     <input
-                      type="text"
-                      required
-                      value={editStaffName}
-                      onChange={(e) => setEditStaffName(e.target.value)}
-                      className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                      type="file"
+                      accept="image/*"
+                      ref={editCoachAvatarRef}
+                      onChange={handleEditCoachAvatarUpload}
+                      className="hidden"
                     />
                   </div>
-
-                  <div className="space-y-2 sm:col-span-2">
-                    <label className="text-xs font-semibold text-muted-foreground block">
-                      Actividades / Especialidades que dicta (Selecciona 1 o varias)
-                    </label>
-                    
-                    {/* Selector de Chips elegidos */}
-                    <div className="flex flex-wrap gap-1.5 min-h-[38px] p-2 rounded-xl border border-border bg-background items-center">
-                      {editStaffSpecialties.map((spec) => (
-                        <span
-                          key={spec}
-                          className="inline-flex items-center gap-1 bg-primary/10 text-primary border border-primary/20 text-[11px] font-bold px-2.5 py-0.5 rounded-full"
-                        >
-                          {spec}
-                          <button
-                            type="button"
-                            onClick={() => setEditStaffSpecialties((prev) => prev.filter((s) => s !== spec))}
-                            className="hover:text-destructive text-primary/70 transition-colors ml-0.5"
-                          >
-                            ×
-                          </button>
-                        </span>
-                      ))}
-                      {editStaffSpecialties.length === 0 && (
-                        <span className="text-xs text-muted-foreground italic">
-                          Haz clic en las actividades de abajo para vincularlas a este profesor...
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Botones de Selección Rápida */}
-                    <div className="flex flex-wrap gap-1 pt-1 max-h-[130px] overflow-y-auto custom-scrollbar p-2 bg-secondary/20 border border-border/40 rounded-xl">
-                      {STAFF_SPECIALTY_PRESETS.map((preset) => {
-                        const isSelected = editStaffSpecialties.includes(preset);
-                        return (
-                          <button
-                            key={preset}
-                            type="button"
-                            onClick={() => {
-                              if (isSelected) {
-                                setEditStaffSpecialties((prev) => prev.filter((s) => s !== preset));
-                              } else {
-                                setEditStaffSpecialties((prev) => [...prev, preset]);
-                              }
-                            }}
-                            className={cn(
-                              "text-[10.5px] font-bold px-2.5 py-1 rounded-lg border transition-all select-none",
-                              isSelected
-                                ? "bg-primary text-primary-foreground border-primary shadow-2xs"
-                                : "bg-background border-border/60 text-muted-foreground hover:bg-secondary hover:text-foreground",
-                            )}
-                          >
-                            {isSelected ? "✓ " : "+ "}{preset}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">
-                    Certificaciones y Títulos (separados por comas)
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-muted-foreground block">
+                    Adjuntar Diplomas / Certificaciones
                   </label>
-                  <input
-                    type="text"
-                    value={editStaffCerts}
-                    onChange={(e) => setEditStaffCerts(e.target.value)}
-                    className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none"
-                  />
-                </div>
-
-                <div className="border-t border-border/40 pt-4 space-y-4">
-                  <div>
-                    <h4 className="text-xs font-bold text-muted-foreground uppercase">
-                      Disponibilidad Horaria Semanal
-                    </h4>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">
-                      Define los días y franjas horarias en los que el profesor puede dictar clases.
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="rounded-xl gap-1.5"
+                      onClick={() => editCoachCertsRef.current?.click()}
+                    >
+                      <Plus className="h-4 w-4" /> Subir Certificados
+                    </Button>
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      ref={editCoachCertsRef}
+                      onChange={handleEditCoachDiplomasUpload}
+                      className="hidden"
+                    />
                   </div>
+                </div>
+              </div>
 
-                  <div className="space-y-3">
-                    {editStaffAvails.map((dayAvail, dayIdx) => (
+              {editStaffDiplomas.length > 0 && (
+                <div className="space-y-1.5 border-t border-border/60 pt-3">
+                  <label className="text-xs font-semibold text-muted-foreground block">
+                    Diplomas Adjuntos ({editStaffDiplomas.length})
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {editStaffDiplomas.map((url, index) => (
                       <div
-                        key={dayAvail.day}
-                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-2xl bg-secondary/10 border border-border/40 text-xs text-foreground"
+                        key={index}
+                        className="relative h-12 w-16 rounded-lg overflow-hidden border border-border group shrink-0"
                       >
-                        <span className="font-bold w-20 text-foreground shrink-0">
-                          {dayAvail.day}
-                        </span>
-
-                        <div className="flex-1 space-y-2">
-                          {dayAvail.intervals.map((interval, intervalIdx) => (
-                            <div key={intervalIdx} className="flex items-center gap-2">
-                              <input
-                                type="time"
-                                value={interval.from}
-                                onChange={(e) =>
-                                  handleUpdateStaffAvailInterval(
-                                    true,
-                                    dayIdx,
-                                    intervalIdx,
-                                    "from",
-                                    e.target.value,
-                                  )
-                                }
-                                className="px-2 py-1 rounded-lg border border-border bg-background text-xs text-foreground focus-visible:outline-none"
-                              />
-                              <span className="text-[10px] text-muted-foreground">a</span>
-                              <input
-                                type="time"
-                                value={interval.to}
-                                onChange={(e) =>
-                                  handleUpdateStaffAvailInterval(
-                                    true,
-                                    dayIdx,
-                                    intervalIdx,
-                                    "to",
-                                    e.target.value,
-                                  )
-                                }
-                                className="px-2 py-1 rounded-lg border border-border bg-background text-xs text-foreground focus-visible:outline-none"
-                              />
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  handleRemoveStaffAvailInterval(true, dayIdx, intervalIdx)
-                                }
-                                className="p-1 text-destructive hover:bg-destructive/ rounded transition"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </button>
-                            </div>
-                          ))}
-                          {dayAvail.intervals.length === 0 && (
-                            <span className="text-[10px] text-muted-foreground italic bg-secondary/40 px-2 py-0.5 rounded inline-block">
-                              No disponible
-                            </span>
-                          )}
-                        </div>
-
-                        <Button
+                        <img src={url} alt="Diploma" className="h-full w-full object-cover" />
+                        <button
                           type="button"
-                          size="sm"
-                          variant="ghost"
-                          className="self-start sm:self-center text-[10px] gap-1 py-1 h-7 rounded-lg"
-                          onClick={() => handleAddStaffAvailInterval(true, dayIdx)}
+                          onClick={() => handleRemoveEditDiploma(index)}
+                          className="absolute top-0.5 right-0.5 bg-black/60 text-white p-0.5 rounded-full hover:bg-black transition"
                         >
-                          <Plus className="h-3 w-3" /> Turno
-                        </Button>
+                          <X className="h-3 w-3" />
+                        </button>
                       </div>
                     ))}
                   </div>
                 </div>
+              )}
 
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-muted-foreground block">
-                      Foto de Perfil
-                    </label>
-                    <div className="flex items-center gap-3">
-                      <div className="h-12 w-12 rounded-full overflow-hidden border border-border bg-muted flex items-center justify-center shrink-0">
-                        {editStaffAvatarUrl ? (
-                          <img
-                            src={editStaffAvatarUrl}
-                            alt="Edit Preview"
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <Users className="h-5 w-5 text-muted-foreground" />
-                        )}
-                      </div>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        className="rounded-xl"
-                        onClick={() => editCoachAvatarRef.current?.click()}
-                      >
-                        Subir Foto
-                      </Button>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        ref={editCoachAvatarRef}
-                        onChange={handleEditCoachAvatarUpload}
-                        className="hidden"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-muted-foreground block">
-                      Adjuntar Diplomas / Certificaciones
-                    </label>
-                    <div className="flex items-center gap-3">
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        className="rounded-xl gap-1.5"
-                        onClick={() => editCoachCertsRef.current?.click()}
-                      >
-                        <Plus className="h-4 w-4" /> Subir Certificados
-                      </Button>
-                      <input
-                        type="file"
-                        multiple
-                        accept="image/*"
-                        ref={editCoachCertsRef}
-                        onChange={handleEditCoachDiplomasUpload}
-                        className="hidden"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {editStaffDiplomas.length > 0 && (
-                  <div className="space-y-1.5 border-t border-border/60 pt-3">
-                    <label className="text-xs font-semibold text-muted-foreground block">
-                      Diplomas Adjuntos ({editStaffDiplomas.length})
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {editStaffDiplomas.map((url, index) => (
-                        <div
-                          key={index}
-                          className="relative h-12 w-16 rounded-lg overflow-hidden border border-border group shrink-0"
-                        >
-                          <img src={url} alt="Diploma" className="h-full w-full object-cover" />
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveEditDiploma(index)}
-                            className="absolute top-0.5 right-0.5 bg-black/60 text-white p-0.5 rounded-full hover:bg-black transition"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex justify-end gap-2 pt-4 border-t border-border">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="rounded-xl"
-                    onClick={() => setEditingStaff(null)}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button type="submit" className="rounded-xl">
-                    Guardar Cambios
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
-
-          {/* Universal Delete AlertDialog */}
-          {deletingItem && (
-            <AlertDialog open={!!deletingItem} onOpenChange={(open) => !open && setDeletingItem(null)}>
-              <AlertDialogContent className="sm:max-w-md border border-border bg-card p-6 rounded-3xl shadow-2xl">
-                <AlertDialogHeader>
-                  <AlertDialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
-                    <Trash2 className="h-5 w-5 text-rose-600" /> Confirmar Eliminación
-                  </AlertDialogTitle>
-                  <AlertDialogDescription className="text-xs text-muted-foreground pt-1 leading-relaxed">
-                    Estás a punto de eliminar <strong>"{deletingItem?.name}"</strong> del sistema. Para confirmar la eliminación definitiva, escribe la palabra clave <strong>ELIMINAR</strong> a continuación:
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-
-                <div className="py-2 space-y-2">
-                  <input
-                    type="text"
-                    value={deleteConfirmText}
-                    onChange={(e) => setDeleteConfirmText(e.target.value)}
-                    className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-center focus-visible:outline-none font-bold text-foreground placeholder:font-normal"
-                    placeholder="Escribe ELIMINAR para confirmar"
-                  />
-                </div>
-
-                <AlertDialogFooter className="gap-2 pt-2">
-                  <AlertDialogCancel
-                    onClick={() => setDeletingItem(null)}
-                    className="rounded-xl text-xs font-bold border-border"
-                  >
-                    Cancelar
-                  </AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleConfirmRemoveItem}
-                    disabled={deleteConfirmText.trim().toLowerCase() !== "eliminar"}
-                    className="rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-xs disabled:opacity-50"
-                  >
-                    Sí, Eliminar
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
-          {/* ponytail: Sucursales / Sedes subtab removed per user request */}
-
-          {/* Subtab: Salas / Salones de Sede */}
-          {subTab === "salas" && (
-            <div className="space-y-6 max-w-2xl bg-card border border-border p-6 rounded-3xl animate-fade-up text-foreground">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <h3 className="font-bold text-sm">Salas y Salones de la Sede</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Administra los espacios físicos de esta sede (ej: Sala de musculación, estudio
-                    de yoga, box de CrossFit). Cada sala limita el cupo y organiza el calendario de
-                    clases.
-                  </p>
-                </div>
+              <div className="flex justify-end gap-2 pt-4 border-t border-border">
                 <Button
-                  onClick={() => setIsCreateSalaOpen(true)}
-                  size="sm"
-                  className="rounded-xl font-bold text-xs gap-1.5 shrink-0"
+                  type="button"
+                  variant="outline"
+                  className="rounded-xl"
+                  onClick={() => setEditingStaff(null)}
                 >
-                  <Plus className="h-4 w-4" /> Agregar Sala / Salón
+                  Cancelar
+                </Button>
+                <Button type="submit" className="rounded-xl">
+                  Guardar Cambios
                 </Button>
               </div>
+            </form>
+          </DialogContent>
+        </Dialog>
 
-              <Dialog open={isCreateSalaOpen} onOpenChange={setIsCreateSalaOpen}>
-                <DialogContent className="max-w-lg border border-border bg-card">
-                  <DialogHeader>
-                    <DialogTitle>Agregar Sala / Salón</DialogTitle>
-                  </DialogHeader>
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      if (!newSalaName) return;
-                      setSalasList((prev) => [
-                        ...prev,
-                        {
-                          id: Math.random().toString(),
-                          name: newSalaName,
-                          capacity: newSalaCapacity ? parseInt(newSalaCapacity) : undefined,
-                          description: newSalaDescription || undefined,
-                        },
-                      ]);
-                      setNewSalaName("");
-                      setNewSalaCapacity("");
-                      setNewSalaDescription("");
-                      setIsCreateSalaOpen(false);
-                    }}
-                    className="space-y-4 pt-2"
-                  >
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="space-y-1">
-                        <label className="text-xs text-muted-foreground font-semibold">
-                          Nombre de la Sala
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={newSalaName}
-                          onChange={(e) => setNewSalaName(e.target.value)}
-                          className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none text-foreground"
-                          placeholder="Ej: Box CrossFit 2"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs text-muted-foreground font-semibold">
-                          Capacidad de Referencia (Alumnos)
-                        </label>
-                        <input
-                          type="number"
-                          value={newSalaCapacity}
-                          onChange={(e) => setNewSalaCapacity(e.target.value)}
-                          className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none text-foreground"
-                          placeholder="Ej: 15"
-                        />
-                      </div>
-                    </div>
+        {/* Universal Delete AlertDialog */}
+        {deletingItem && (
+          <AlertDialog
+            open={!!deletingItem}
+            onOpenChange={(open) => !open && setDeletingItem(null)}
+          >
+            <AlertDialogContent className="sm:max-w-md border border-border bg-card p-6 rounded-3xl shadow-2xl">
+              <AlertDialogHeader>
+                <AlertDialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+                  <Trash2 className="h-5 w-5 text-rose-600" /> Confirmar Eliminación
+                </AlertDialogTitle>
+                <AlertDialogDescription className="text-xs text-muted-foreground pt-1 leading-relaxed">
+                  Estás a punto de eliminar <strong>"{deletingItem?.name}"</strong> del sistema.
+                  Para confirmar la eliminación definitiva, escribe la palabra clave{" "}
+                  <strong>ELIMINAR</strong> a continuación:
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+
+              <div className="py-2 space-y-2">
+                <input
+                  type="text"
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  className="flex h-10 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-center focus-visible:outline-none font-bold text-foreground placeholder:font-normal"
+                  placeholder="Escribe ELIMINAR para confirmar"
+                />
+              </div>
+
+              <AlertDialogFooter className="gap-2 pt-2">
+                <AlertDialogCancel
+                  onClick={() => setDeletingItem(null)}
+                  className="rounded-xl text-xs font-bold border-border"
+                >
+                  Cancelar
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleConfirmRemoveItem}
+                  disabled={deleteConfirmText.trim().toLowerCase() !== "eliminar"}
+                  className="rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-xs disabled:opacity-50"
+                >
+                  Sí, Eliminar
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
+        {/* ponytail: Sucursales / Sedes subtab removed per user request */}
+
+        {/* Subtab: Salas / Salones de Sede */}
+        {subTab === "salas" && (
+          <div className="space-y-6 max-w-2xl bg-card border border-border p-6 rounded-3xl animate-fade-up text-foreground">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="font-bold text-sm">Salas y Salones de la Sede</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Administra los espacios físicos de esta sede (ej: Sala de musculación, estudio de
+                  yoga, box de CrossFit). Cada sala limita el cupo y organiza el calendario de
+                  clases.
+                </p>
+              </div>
+              <Button
+                onClick={() => setIsCreateSalaOpen(true)}
+                size="sm"
+                className="rounded-xl font-bold text-xs gap-1.5 shrink-0"
+              >
+                <Plus className="h-4 w-4" /> Agregar Sala / Salón
+              </Button>
+            </div>
+
+            <Dialog open={isCreateSalaOpen} onOpenChange={setIsCreateSalaOpen}>
+              <DialogContent className="max-w-lg border border-border bg-card">
+                <DialogHeader>
+                  <DialogTitle>Agregar Sala / Salón</DialogTitle>
+                </DialogHeader>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (!newSalaName) return;
+                    setSalasList((prev) => [
+                      ...prev,
+                      {
+                        id: Math.random().toString(),
+                        name: newSalaName,
+                        capacity: newSalaCapacity ? parseInt(newSalaCapacity) : undefined,
+                        description: newSalaDescription || undefined,
+                      },
+                    ]);
+                    setNewSalaName("");
+                    setNewSalaCapacity("");
+                    setNewSalaDescription("");
+                    setIsCreateSalaOpen(false);
+                  }}
+                  className="space-y-4 pt-2"
+                >
+                  <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-1">
                       <label className="text-xs text-muted-foreground font-semibold">
-                        Descripción o Equipamiento (Opcional)
-                      </label>
-                      <input
-                        type="text"
-                        value={newSalaDescription}
-                        onChange={(e) => setNewSalaDescription(e.target.value)}
-                        className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none text-foreground"
-                        placeholder="Ej: Equipado con 12 plataformas y racks olímpicos"
-                      />
-                    </div>
-                    <div className="flex justify-end gap-2 pt-4 border-t border-border">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="rounded-xl"
-                        onClick={() => setIsCreateSalaOpen(false)}
-                      >
-                        Cancelar
-                      </Button>
-                      <Button type="submit" size="sm" className="rounded-xl">
-                        Guardar Sala
-                      </Button>
-                    </div>
-                  </form>
-                </DialogContent>
-              </Dialog>
-
-              {/* Edit Sala Dialog */}
-              <Dialog open={!!editingSala} onOpenChange={(o) => !o && setEditingSala(null)}>
-                <DialogContent className="max-w-md border border-border bg-card">
-                  <DialogHeader>
-                    <DialogTitle>Editar Sala / Salón</DialogTitle>
-                  </DialogHeader>
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      if (!editingSala || !editingSala.name) return;
-                      setSalasList((prev) =>
-                        prev.map((s) => (s.id === editingSala.id ? editingSala : s)),
-                      );
-                      setEditingSala(null);
-                    }}
-                    className="space-y-4 pt-2 text-sm"
-                  >
-                    <div className="space-y-1">
-                      <label className="text-xs text-muted-foreground font-semibold">
-                        Nombre del Salón
+                        Nombre de la Sala
                       </label>
                       <input
                         type="text"
                         required
-                        value={editingSala?.name || ""}
-                        onChange={(e) => setEditingSala({ ...editingSala, name: e.target.value })}
+                        value={newSalaName}
+                        onChange={(e) => setNewSalaName(e.target.value)}
                         className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none text-foreground"
+                        placeholder="Ej: Box CrossFit 2"
                       />
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs text-muted-foreground font-semibold">
-                        Capacidad Máxima (Alumnos)
+                        Capacidad de Referencia (Alumnos)
                       </label>
                       <input
                         type="number"
-                        min="1"
-                        value={editingSala?.capacity || ""}
+                        value={newSalaCapacity}
+                        onChange={(e) => setNewSalaCapacity(e.target.value)}
+                        className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none text-foreground"
+                        placeholder="Ej: 15"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-muted-foreground font-semibold">
+                      Descripción o Equipamiento (Opcional)
+                    </label>
+                    <input
+                      type="text"
+                      value={newSalaDescription}
+                      onChange={(e) => setNewSalaDescription(e.target.value)}
+                      className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none text-foreground"
+                      placeholder="Ej: Equipado con 12 plataformas y racks olímpicos"
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2 pt-4 border-t border-border">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl"
+                      onClick={() => setIsCreateSalaOpen(false)}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button type="submit" size="sm" className="rounded-xl">
+                      Guardar Sala
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
+
+            {/* Edit Sala Dialog */}
+            <Dialog open={!!editingSala} onOpenChange={(o) => !o && setEditingSala(null)}>
+              <DialogContent className="max-w-md border border-border bg-card">
+                <DialogHeader>
+                  <DialogTitle>Editar Sala / Salón</DialogTitle>
+                </DialogHeader>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (!editingSala || !editingSala.name) return;
+                    setSalasList((prev) =>
+                      prev.map((s) => (s.id === editingSala.id ? editingSala : s)),
+                    );
+                    setEditingSala(null);
+                  }}
+                  className="space-y-4 pt-2 text-sm"
+                >
+                  <div className="space-y-1">
+                    <label className="text-xs text-muted-foreground font-semibold">
+                      Nombre del Salón
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={editingSala?.name || ""}
+                      onChange={(e) => setEditingSala({ ...editingSala, name: e.target.value })}
+                      className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none text-foreground"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-muted-foreground font-semibold">
+                      Capacidad Máxima (Alumnos)
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={editingSala?.capacity || ""}
+                      onChange={(e) =>
+                        setEditingSala({
+                          ...editingSala,
+                          capacity: e.target.value ? parseInt(e.target.value) : undefined,
+                        })
+                      }
+                      className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none text-foreground"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-muted-foreground font-semibold">
+                      Descripción o Equipamiento (Opcional)
+                    </label>
+                    <input
+                      type="text"
+                      value={editingSala?.description || ""}
+                      onChange={(e) =>
+                        setEditingSala({ ...editingSala, description: e.target.value })
+                      }
+                      className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none text-foreground"
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2 pt-4 border-t border-border">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl"
+                      onClick={() => setEditingSala(null)}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button type="submit" size="sm" className="rounded-xl">
+                      Guardar Cambios
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
+
+            {/* Rooms list */}
+            <div className="border-t border-border pt-4">
+              <h4 className="text-xs font-bold text-muted-foreground uppercase mb-3">
+                Salas Registradas
+              </h4>
+              <div className="divide-y divide-border/60">
+                {salasList.map((sala) => (
+                  <div key={sala.id} className="py-3.5 flex items-center justify-between">
+                    <div>
+                      <div className="text-sm font-semibold text-foreground flex items-center gap-2">
+                        <DoorOpen className="h-4 w-4 text-primary shrink-0" />
+                        {sala.name}
+                      </div>
+                      {sala.description && (
+                        <div className="text-xs text-muted-foreground mt-0.5">
+                          {sala.description}
+                        </div>
+                      )}
+                      <div className="flex gap-3 mt-1 text-[10px] text-muted-foreground">
+                        <span>👥 Capacidad sugerida: {sala.capacity || "Sin límite"} alumnos</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setEditingSala({ ...sala })}
+                        className="p-1.5 text-muted-foreground hover:bg-secondary rounded-lg transition"
+                        title="Editar sala"
+                      >
+                        <Edit2 className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDeletingItem({ type: "sala", id: sala.id, name: sala.name });
+                          setDeleteConfirmText("");
+                        }}
+                        className="p-1.5 text-destructive hover:bg-destructive/ rounded-lg transition"
+                        title="Eliminar sala"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {salasList.length === 0 && (
+                  <p className="text-xs text-muted-foreground italic py-3 text-center font-medium">
+                    No hay salas registradas.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {subTab === "cierres" && (
+          <div className="space-y-6 max-w-2xl bg-card border border-border p-6 rounded-3xl animate-fade-up text-foreground">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="font-bold text-sm">Calendario de Días de Cierre</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Establece feriados, festivos o jornadas de mantenimiento técnico/edilicio para
+                  suspender reservas automáticamente.
+                </p>
+              </div>
+              <Button
+                onClick={() => setIsCreateCierreOpen(true)}
+                size="sm"
+                className="rounded-xl font-bold text-xs gap-1 shrink-0"
+              >
+                <Plus className="h-4 w-4" /> Agregar Día de Cierre
+              </Button>
+            </div>
+
+            <Dialog open={isCreateCierreOpen} onOpenChange={setIsCreateCierreOpen}>
+              <DialogContent className="max-w-md border border-border bg-card">
+                <DialogHeader>
+                  <DialogTitle>Agregar Día de Cierre</DialogTitle>
+                </DialogHeader>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (!newBlackoutDate || !newBlackoutReason) return;
+                    setBlackoutDays((prev) => [
+                      ...prev,
+                      {
+                        id: Math.random().toString(),
+                        date: newBlackoutDate,
+                        reason: newBlackoutReason,
+                      },
+                    ]);
+                    setNewBlackoutDate("");
+                    setNewBlackoutReason("");
+                    setIsCreateCierreOpen(false);
+                  }}
+                  className="space-y-4 pt-2 text-sm"
+                >
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-1">
+                      <label className="text-xs text-muted-foreground font-semibold">
+                        Fecha de Cierre
+                      </label>
+                      <input
+                        type="date"
+                        required
+                        value={newBlackoutDate}
+                        onChange={(e) => setNewBlackoutDate(e.target.value)}
+                        className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none text-foreground"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs text-muted-foreground font-semibold">
+                        Motivo del Cierre
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={newBlackoutReason}
+                        onChange={(e) => setNewBlackoutReason(e.target.value)}
+                        className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none text-foreground"
+                        placeholder="Ej: Feriado Nacional o Desinfección"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-2 pt-4 border-t border-border">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl"
+                      onClick={() => setIsCreateCierreOpen(false)}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button type="submit" size="sm" className="rounded-xl font-bold text-xs">
+                      Guardar Día
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
+
+            {/* Edit Cierre Dialog */}
+            <Dialog open={!!editingCierre} onOpenChange={(o) => !o && setEditingCierre(null)}>
+              <DialogContent className="max-w-md border border-border bg-card">
+                <DialogHeader>
+                  <DialogTitle>Editar Día de Cierre</DialogTitle>
+                </DialogHeader>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (!editingCierre || !editingCierre.date || !editingCierre.reason) return;
+                    setBlackoutDays((prev) =>
+                      prev.map((c) => (c.id === editingCierre.id ? editingCierre : c)),
+                    );
+                    setEditingCierre(null);
+                  }}
+                  className="space-y-4 pt-2 text-sm"
+                >
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-1">
+                      <label className="text-xs text-muted-foreground font-semibold">
+                        Fecha de Cierre
+                      </label>
+                      <input
+                        type="date"
+                        required
+                        value={editingCierre?.date || ""}
                         onChange={(e) =>
-                          setEditingSala({
-                            ...editingSala,
-                            capacity: e.target.value ? parseInt(e.target.value) : undefined,
-                          })
+                          setEditingCierre({ ...editingCierre, date: e.target.value })
                         }
                         className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none text-foreground"
                       />
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs text-muted-foreground font-semibold">
-                        Descripción o Equipamiento (Opcional)
+                        Motivo del Cierre
                       </label>
                       <input
                         type="text"
-                        value={editingSala?.description || ""}
+                        required
+                        value={editingCierre?.reason || ""}
                         onChange={(e) =>
-                          setEditingSala({ ...editingSala, description: e.target.value })
+                          setEditingCierre({ ...editingCierre, reason: e.target.value })
                         }
                         className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none text-foreground"
                       />
                     </div>
-                    <div className="flex justify-end gap-2 pt-4 border-t border-border">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="rounded-xl"
-                        onClick={() => setEditingSala(null)}
-                      >
-                        Cancelar
-                      </Button>
-                      <Button type="submit" size="sm" className="rounded-xl">
-                        Guardar Cambios
-                      </Button>
-                    </div>
-                  </form>
-                </DialogContent>
-              </Dialog>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-4 border-t border-border">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl"
+                      onClick={() => setEditingCierre(null)}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button type="submit" size="sm" className="rounded-xl font-bold text-xs">
+                      Guardar Cambios
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
 
-              {/* Rooms list */}
-              <div className="border-t border-border pt-4">
-                <h4 className="text-xs font-bold text-muted-foreground uppercase mb-3">
-                  Salas Registradas
-                </h4>
-                <div className="divide-y divide-border/60">
-                  {salasList.map((sala) => (
-                      <div key={sala.id} className="py-3.5 flex items-center justify-between">
-                        <div>
-                          <div className="text-sm font-semibold text-foreground flex items-center gap-2">
-                            <DoorOpen className="h-4 w-4 text-primary shrink-0" />
-                            {sala.name}
-                          </div>
-                          {sala.description && (
-                            <div className="text-xs text-muted-foreground mt-0.5">
-                              {sala.description}
-                            </div>
-                          )}
-                          <div className="flex gap-3 mt-1 text-[10px] text-muted-foreground">
-                            <span>
-                              👥 Capacidad sugerida: {sala.capacity || "Sin límite"} alumnos
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1 shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => setEditingSala({ ...sala })}
-                            className="p-1.5 text-muted-foreground hover:bg-secondary rounded-lg transition"
-                            title="Editar sala"
-                          >
-                            <Edit2 className="h-3.5 w-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setDeletingItem({ type: "sala", id: sala.id, name: sala.name });
-                              setDeleteConfirmText("");
-                            }}
-                            className="p-1.5 text-destructive hover:bg-destructive/ rounded-lg transition"
-                            title="Eliminar sala"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  {salasList.length === 0 && (
-                    <p className="text-xs text-muted-foreground italic py-3 text-center font-medium">
-                      No hay salas registradas.
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-
-          {subTab === "cierres" && (
-            <div className="space-y-6 max-w-2xl bg-card border border-border p-6 rounded-3xl animate-fade-up text-foreground">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <h3 className="font-bold text-sm">Calendario de Días de Cierre</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Establece feriados, festivos o jornadas de mantenimiento técnico/edilicio para
-                    suspender reservas automáticamente.
-                  </p>
-                </div>
-                <Button
-                  onClick={() => setIsCreateCierreOpen(true)}
-                  size="sm"
-                  className="rounded-xl font-bold text-xs gap-1 shrink-0"
-                >
-                  <Plus className="h-4 w-4" /> Agregar Día de Cierre
-                </Button>
-              </div>
-
-              <Dialog open={isCreateCierreOpen} onOpenChange={setIsCreateCierreOpen}>
-                <DialogContent className="max-w-md border border-border bg-card">
-                  <DialogHeader>
-                    <DialogTitle>Agregar Día de Cierre</DialogTitle>
-                  </DialogHeader>
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      if (!newBlackoutDate || !newBlackoutReason) return;
-                      setBlackoutDays((prev) => [
-                        ...prev,
-                        {
-                          id: Math.random().toString(),
-                          date: newBlackoutDate,
-                          reason: newBlackoutReason,
-                        },
-                      ]);
-                      setNewBlackoutDate("");
-                      setNewBlackoutReason("");
-                      setIsCreateCierreOpen(false);
-                    }}
-                    className="space-y-4 pt-2 text-sm"
-                  >
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="space-y-1">
-                        <label className="text-xs text-muted-foreground font-semibold">
-                          Fecha de Cierre
-                        </label>
-                        <input
-                          type="date"
-                          required
-                          value={newBlackoutDate}
-                          onChange={(e) => setNewBlackoutDate(e.target.value)}
-                          className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none text-foreground"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs text-muted-foreground font-semibold">
-                          Motivo del Cierre
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={newBlackoutReason}
-                          onChange={(e) => setNewBlackoutReason(e.target.value)}
-                          className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none text-foreground"
-                          placeholder="Ej: Feriado Nacional o Desinfección"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex justify-end gap-2 pt-4 border-t border-border">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="rounded-xl"
-                        onClick={() => setIsCreateCierreOpen(false)}
-                      >
-                        Cancelar
-                      </Button>
-                      <Button type="submit" size="sm" className="rounded-xl font-bold text-xs">
-                        Guardar Día
-                      </Button>
-                    </div>
-                  </form>
-                </DialogContent>
-              </Dialog>
-
-              {/* Edit Cierre Dialog */}
-              <Dialog open={!!editingCierre} onOpenChange={(o) => !o && setEditingCierre(null)}>
-                <DialogContent className="max-w-md border border-border bg-card">
-                  <DialogHeader>
-                    <DialogTitle>Editar Día de Cierre</DialogTitle>
-                  </DialogHeader>
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      if (!editingCierre || !editingCierre.date || !editingCierre.reason) return;
-                      setBlackoutDays((prev) =>
-                        prev.map((c) => (c.id === editingCierre.id ? editingCierre : c)),
-                      );
-                      setEditingCierre(null);
-                    }}
-                    className="space-y-4 pt-2 text-sm"
-                  >
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="space-y-1">
-                        <label className="text-xs text-muted-foreground font-semibold">
-                          Fecha de Cierre
-                        </label>
-                        <input
-                          type="date"
-                          required
-                          value={editingCierre?.date || ""}
-                          onChange={(e) =>
-                            setEditingCierre({ ...editingCierre, date: e.target.value })
-                          }
-                          className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none text-foreground"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs text-muted-foreground font-semibold">
-                          Motivo del Cierre
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={editingCierre?.reason || ""}
-                          onChange={(e) =>
-                            setEditingCierre({ ...editingCierre, reason: e.target.value })
-                          }
-                          className="flex h-9 w-full rounded-xl border border-border bg-background px-3 text-xs focus-visible:outline-none text-foreground"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex justify-end gap-2 pt-4 border-t border-border">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="rounded-xl"
-                        onClick={() => setEditingCierre(null)}
-                      >
-                        Cancelar
-                      </Button>
-                      <Button type="submit" size="sm" className="rounded-xl font-bold text-xs">
-                        Guardar Cambios
-                      </Button>
-                    </div>
-                  </form>
-                </DialogContent>
-              </Dialog>
-
-              {/* Closures list */}
-              <div className="space-y-3 border-t border-border pt-4">
-                <h4 className="text-xs font-bold text-muted-foreground uppercase">
-                  Fechas de Cierre Programadas
-                </h4>
-                <div className="divide-y divide-border">
-                  {blackoutDays.map((b) => (
-                    <div key={b.id} className="py-3.5 flex items-center justify-between">
-                      <div>
-                        <div className="text-sm font-semibold text-foreground">{b.reason}</div>
-                        <div className="text-xs text-muted-foreground">
-                          📅 {b.date}{" "}
-                          {b.date === "2026-06-29" && (
-                            <span className="text-[10px] bg-destructive/ text-destructive font-bold px-1.5 py-0.5 rounded ml-1.5 uppercase">
-                              Hoy
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => setEditingCierre({ ...b })}
-                          className="p-1.5 text-muted-foreground hover:bg-secondary rounded-lg transition"
-                          title="Editar día de cierre"
-                        >
-                          <Edit2 className="h-3.5 w-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setDeletingItem({
-                              type: "cierre",
-                              id: b.id,
-                              name: `${b.reason} (${b.date})`,
-                            });
-                            setDeleteConfirmText("");
-                          }}
-                          className="p-1.5 text-destructive hover:bg-destructive/ rounded-lg transition"
-                          title="Eliminar día de cierre"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                  {blackoutDays.length === 0 && (
-                    <p className="text-xs text-muted-foreground italic py-3">
-                      No hay días de cierre configurados.
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Subtab 9: Métodos de Cobro & Mercado Pago OAuth */}
-          {subTab === "metodos_pago" && (
-            <div className="space-y-8 max-w-4xl animate-fade-up text-foreground">
-              {/* Encabezado */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-4">
-                <div>
-                  <h3 className="font-bold text-lg text-foreground flex items-center gap-2">
-                    <Wallet className="h-5 w-5 text-primary" /> Métodos de Cobro y Pagos Digitales
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                    Activa y gestiona las pasarelas de pago digitales y cobros presenciales habilitados para tu gimnasio.
-                  </p>
-                </div>
-              </div>
-
-              {/* Tarjeta Destacada: Mercado Pago Integración OAuth */}
-              <div className="rounded-3xl border border-[#009EE3]/30 bg-gradient-to-b from-[#009EE3]/5 to-card p-6 shadow-xs space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-2xl bg-[#009EE3] text-white flex items-center justify-center font-black text-xl shadow-md shrink-0">
-                      <Zap className="h-6 w-6 fill-white" />
-                    </div>
+            {/* Closures list */}
+            <div className="space-y-3 border-t border-border pt-4">
+              <h4 className="text-xs font-bold text-muted-foreground uppercase">
+                Fechas de Cierre Programadas
+              </h4>
+              <div className="divide-y divide-border">
+                {blackoutDays.map((b) => (
+                  <div key={b.id} className="py-3.5 flex items-center justify-between">
                     <div>
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-extrabold text-base text-foreground">Mercado Pago</h4>
-                        {mpConnected ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-black bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full uppercase">
-                            <CheckCircle2 className="h-3 w-3" /> Conectado
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-black bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full uppercase">
-                            <AlertCircle className="h-3 w-3" /> No Vinculado
+                      <div className="text-sm font-semibold text-foreground">{b.reason}</div>
+                      <div className="text-xs text-muted-foreground">
+                        📅 {b.date}{" "}
+                        {b.date === "2026-06-29" && (
+                          <span className="text-[10px] bg-destructive/ text-destructive font-bold px-1.5 py-0.5 rounded ml-1.5 uppercase">
+                            Hoy
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        Permite que tus alumnos paguen con tarjetas de crédito, débito, dinero en cuenta o suscripciones automáticas.
-                      </p>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setEditingCierre({ ...b })}
+                        className="p-1.5 text-muted-foreground hover:bg-secondary rounded-lg transition"
+                        title="Editar día de cierre"
+                      >
+                        <Edit2 className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDeletingItem({
+                            type: "cierre",
+                            id: b.id,
+                            name: `${b.reason} (${b.date})`,
+                          });
+                          setDeleteConfirmText("");
+                        }}
+                        className="p-1.5 text-destructive hover:bg-destructive/ rounded-lg transition"
+                        title="Eliminar día de cierre"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     </div>
                   </div>
+                ))}
+                {blackoutDays.length === 0 && (
+                  <p className="text-xs text-muted-foreground italic py-3">
+                    No hay días de cierre configurados.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs font-bold text-muted-foreground">Habilitar MP:</span>
-                    <Switch
-                      checked={mpEnabled}
-                      onCheckedChange={setMpEnabled}
-                    />
+        {/* Subtab 9: Métodos de Cobro & Mercado Pago OAuth */}
+        {subTab === "metodos_pago" && (
+          <div className="space-y-8 max-w-4xl animate-fade-up text-foreground">
+            {/* Encabezado */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-4">
+              <div>
+                <h3 className="font-bold text-lg text-foreground flex items-center gap-2">
+                  <Wallet className="h-5 w-5 text-primary" /> Métodos de Cobro y Pagos Digitales
+                </h3>
+                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                  Activa y gestiona las pasarelas de pago digitales y cobros presenciales
+                  habilitados para tu gimnasio.
+                </p>
+              </div>
+            </div>
+
+            {/* Tarjeta Destacada: Mercado Pago Integración OAuth */}
+            <div className="rounded-3xl border border-[#009EE3]/30 bg-gradient-to-b from-[#009EE3]/5 to-card p-6 shadow-xs space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-2xl bg-[#009EE3] text-white flex items-center justify-center font-black text-xl shadow-md shrink-0">
+                    <Zap className="h-6 w-6 fill-white" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-extrabold text-base text-foreground">Mercado Pago</h4>
+                      {mpConnected ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-black bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full uppercase">
+                          <CheckCircle2 className="h-3 w-3" /> Conectado
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-black bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full uppercase">
+                          <AlertCircle className="h-3 w-3" /> No Vinculado
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Permite que tus alumnos paguen con tarjetas de crédito, débito, dinero en
+                      cuenta o suscripciones automáticas.
+                    </p>
                   </div>
                 </div>
 
-                {/* Status Box & OAuth Action */}
-                {!mpConnected ? (
-                  <div className="rounded-2xl border border-dashed border-[#009EE3]/40 bg-card p-5 space-y-4">
-                    <div className="space-y-1">
-                      <h5 className="font-bold text-xs text-foreground uppercase tracking-wider text-muted-foreground/80">
-                        Vinculación con Mercado Pago
-                      </h5>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        Conecta tu cuenta de Mercado Pago para que tus usuarios puedan abonar sus membresías y pases directamente desde Shakerfy.
-                      </p>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-3 pt-1">
-                      <Button
-                        type="button"
-                        onClick={handleConnectMercadoPago}
-                        disabled={mpIsConnecting}
-                        className="bg-[#009EE3] hover:bg-[#0089C7] text-white font-bold rounded-xl px-5 h-11 shadow-sm gap-2 text-xs"
-                      >
-                        <Zap className="h-4 w-4 fill-white" />
-                        {mpIsConnecting ? "Conectando..." : "Conectar con Mercado Pago"}
-                      </Button>
-                      <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
-                        <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" /> Conexión segura de cuenta
-                      </span>
-                    </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-bold text-muted-foreground">Habilitar MP:</span>
+                  <Switch checked={mpEnabled} onCheckedChange={setMpEnabled} />
+                </div>
+              </div>
+
+              {/* Status Box & OAuth Action */}
+              {!mpConnected ? (
+                <div className="rounded-2xl border border-dashed border-[#009EE3]/40 bg-card p-5 space-y-4">
+                  <div className="space-y-1">
+                    <h5 className="font-bold text-xs text-foreground uppercase tracking-wider text-muted-foreground/80">
+                      Vinculación con Mercado Pago
+                    </h5>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Conecta tu cuenta de Mercado Pago para que tus usuarios puedan abonar sus
+                      membresías y pases directamente desde Shakerfy.
+                    </p>
                   </div>
-                ) : (
-                  <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/50 pb-4">
-                      <div>
-                        <span className="text-[10.5px] font-bold uppercase text-muted-foreground tracking-wider block mb-0.5">
-                          Cuenta Conectada
+                  <div className="flex flex-wrap items-center gap-3 pt-1">
+                    <Button
+                      type="button"
+                      onClick={handleConnectMercadoPago}
+                      disabled={mpIsConnecting}
+                      className="bg-[#009EE3] hover:bg-[#0089C7] text-white font-bold rounded-xl px-5 h-11 shadow-sm gap-2 text-xs"
+                    >
+                      <Zap className="h-4 w-4 fill-white" />
+                      {mpIsConnecting ? "Conectando..." : "Conectar con Mercado Pago"}
+                    </Button>
+                    <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
+                      <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" /> Conexión segura de
+                      cuenta
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/50 pb-4">
+                    <div>
+                      <span className="text-[10.5px] font-bold uppercase text-muted-foreground tracking-wider block mb-0.5">
+                        Cuenta Conectada
+                      </span>
+                      <div className="text-sm font-extrabold text-foreground flex items-center gap-2">
+                        {mpAccountInfo?.merchantName}
+                        <span className="text-xs font-semibold text-muted-foreground font-mono">
+                          ({mpAccountInfo?.accountId})
                         </span>
-                        <div className="text-sm font-extrabold text-foreground flex items-center gap-2">
-                          {mpAccountInfo?.merchantName}
-                          <span className="text-xs font-semibold text-muted-foreground font-mono">
-                            ({mpAccountInfo?.accountId})
-                          </span>
-                        </div>
-                        <div className="text-xs text-muted-foreground mt-0.5">
-                          Email: <strong className="text-foreground">{mpAccountInfo?.email}</strong> · Vinculado el {mpAccountInfo?.linkedDate}
-                        </div>
                       </div>
+                      <div className="text-xs text-muted-foreground mt-0.5">
+                        Email: <strong className="text-foreground">{mpAccountInfo?.email}</strong> ·
+                        Vinculado el {mpAccountInfo?.linkedDate}
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleDisconnectMercadoPago}
+                      className="rounded-xl text-xs font-bold border-rose-500/30 text-rose-600 hover:bg-rose-500/10 hover:text-rose-700 h-9 gap-1.5"
+                    >
+                      <Unlink className="h-3.5 w-3.5" /> Desconectar Cuenta
+                    </Button>
+                  </div>
+
+                  {/* Webhook notification URL listener */}
+                  <div className="pt-1">
+                    <span className="text-[10.5px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
+                      URL de Webhook Notificaciones
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="text"
+                        readOnly
+                        value="https://api.shakerfy.com/v1/webhooks/mercadopago"
+                        className="h-9 font-mono text-xs bg-background border-border text-foreground rounded-xl"
+                      />
                       <Button
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={handleDisconnectMercadoPago}
-                        className="rounded-xl text-xs font-bold border-rose-500/30 text-rose-600 hover:bg-rose-500/10 hover:text-rose-700 h-9 gap-1.5"
+                        onClick={() => {
+                          navigator.clipboard.writeText(
+                            "https://api.shakerfy.com/v1/webhooks/mercadopago",
+                          );
+                          toast.success("✓ URL de Webhook copiada");
+                        }}
+                        className="h-9 rounded-xl text-xs font-bold gap-1 shrink-0"
                       >
-                        <Unlink className="h-3.5 w-3.5" /> Desconectar Cuenta
+                        <Copy className="h-3.5 w-3.5" /> Copiar
                       </Button>
                     </div>
+                  </div>
 
-                    {/* Webhook notification URL listener */}
-                    <div className="pt-1">
-                      <span className="text-[10.5px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
-                        URL de Webhook Notificaciones
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <Input
-                          type="text"
-                          readOnly
-                          value="https://api.shakerfy.com/v1/webhooks/mercadopago"
-                          className="h-9 font-mono text-xs bg-background border-border text-foreground rounded-xl"
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            navigator.clipboard.writeText("https://api.shakerfy.com/v1/webhooks/mercadopago");
-                            toast.success("✓ URL de Webhook copiada");
-                          }}
-                          className="h-9 rounded-xl text-xs font-bold gap-1 shrink-0"
-                        >
-                          <Copy className="h-3.5 w-3.5" /> Copiar
-                        </Button>
+                  {/* Advanced Mercado Pago Switches */}
+                  <div className="grid gap-4 sm:grid-cols-3 pt-3 border-t border-border/40">
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/20 border border-border/40">
+                      <div className="space-y-0.5">
+                        <Label className="text-xs font-bold text-foreground">
+                          Suscripciones Recurrentes
+                        </Label>
+                        <p className="text-[10px] text-muted-foreground">
+                          Débito automático mensual
+                        </p>
                       </div>
+                      <Switch
+                        checked={mpSubscriptionsEnabled}
+                        onCheckedChange={setMpSubscriptionsEnabled}
+                      />
                     </div>
-
-                    {/* Advanced Mercado Pago Switches */}
-                    <div className="grid gap-4 sm:grid-cols-3 pt-3 border-t border-border/40">
-                      <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/20 border border-border/40">
-                        <div className="space-y-0.5">
-                          <Label className="text-xs font-bold text-foreground">Suscripciones Recurrentes</Label>
-                          <p className="text-[10px] text-muted-foreground">Débito automático mensual</p>
-                        </div>
-                        <Switch
-                          checked={mpSubscriptionsEnabled}
-                          onCheckedChange={setMpSubscriptionsEnabled}
-                        />
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/20 border border-border/40">
+                      <div className="space-y-0.5">
+                        <Label className="text-xs font-bold text-foreground">Aceptar Cuotas</Label>
+                        <p className="text-[10px] text-muted-foreground">
+                          Habilitar tarjetas en cuotas
+                        </p>
                       </div>
-                      <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/20 border border-border/40">
-                        <div className="space-y-0.5">
-                          <Label className="text-xs font-bold text-foreground">Aceptar Cuotas</Label>
-                          <p className="text-[10px] text-muted-foreground">Habilitar tarjetas en cuotas</p>
-                        </div>
-                        <Switch
-                          checked={mpInstallmentsEnabled}
-                          onCheckedChange={setMpInstallmentsEnabled}
-                        />
+                      <Switch
+                        checked={mpInstallmentsEnabled}
+                        onCheckedChange={setMpInstallmentsEnabled}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/20 border border-border/40">
+                      <div className="space-y-0.5">
+                        <Label className="text-xs font-bold text-foreground">
+                          Modo Sandbox (Pruebas)
+                        </Label>
+                        <p className="text-[10px] text-muted-foreground">Usar credenciales TEST</p>
                       </div>
-                      <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/20 border border-border/40">
-                        <div className="space-y-0.5">
-                          <Label className="text-xs font-bold text-foreground">Modo Sandbox (Pruebas)</Label>
-                          <p className="text-[10px] text-muted-foreground">Usar credenciales TEST</p>
-                        </div>
-                        <Switch
-                          checked={mpUseSandbox}
-                          onCheckedChange={(val) => {
-                            setMpUseSandbox(val);
-                            toast.info(val ? "Modo Sandbox activado para pruebas." : "Modo Producción activado.");
-                          }}
-                        />
-                      </div>
+                      <Switch
+                        checked={mpUseSandbox}
+                        onCheckedChange={(val) => {
+                          setMpUseSandbox(val);
+                          toast.info(
+                            val
+                              ? "Modo Sandbox activado para pruebas."
+                              : "Modo Producción activado.",
+                          );
+                        }}
+                      />
                     </div>
                   </div>
-                )}
+                </div>
+              )}
+            </div>
+
+            {/* Tarjeta: Métodos Manuales y Presenciales */}
+            <div className="rounded-3xl border border-border bg-card p-6 shadow-xs space-y-6">
+              <div>
+                <h4 className="font-bold text-sm text-foreground uppercase tracking-wider text-muted-foreground/80">
+                  Cobros Presenciales & Métodos Manuales
+                </h4>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Habilita las opciones de cobro recibidas en recepción o mostrador.
+                </p>
               </div>
 
-              {/* Tarjeta: Métodos Manuales y Presenciales */}
-              <div className="rounded-3xl border border-border bg-card p-6 shadow-xs space-y-6">
-                <div>
-                  <h4 className="font-bold text-sm text-foreground uppercase tracking-wider text-muted-foreground/80">
-                    Cobros Presenciales & Métodos Manuales
-                  </h4>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Habilita las opciones de cobro recibidas en recepción o mostrador.
+              <div className="grid gap-4 md:grid-cols-3">
+                {/* Efectivo */}
+                <div className="rounded-2xl border border-border bg-background p-4 flex flex-col justify-between space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                        <DollarSign className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <h5 className="font-bold text-xs text-foreground">Efectivo</h5>
+                        <span className="text-[10px] text-muted-foreground">
+                          En mostrador / caja
+                        </span>
+                      </div>
+                    </div>
+                    <Switch checked={cashEnabled} onCheckedChange={setCashEnabled} />
+                  </div>
+                  <p className="text-[11px] text-muted-foreground leading-snug">
+                    Permite registrar cobros de membresías en dinero en efectivo en el
+                    establecimiento.
                   </p>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-3">
-                  {/* Efectivo */}
-                  <div className="rounded-2xl border border-border bg-background p-4 flex flex-col justify-between space-y-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                          <DollarSign className="h-4 w-4" />
-                        </div>
-                        <div>
-                          <h5 className="font-bold text-xs text-foreground">Efectivo</h5>
-                          <span className="text-[10px] text-muted-foreground">En mostrador / caja</span>
-                        </div>
+                {/* POS Terminal */}
+                <div className="rounded-2xl border border-border bg-background p-4 flex flex-col justify-between space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                        <CreditCard className="h-4 w-4" />
                       </div>
-                      <Switch
-                        checked={cashEnabled}
-                        onCheckedChange={setCashEnabled}
-                      />
-                    </div>
-                    <p className="text-[11px] text-muted-foreground leading-snug">
-                      Permite registrar cobros de membresías en dinero en efectivo en el establecimiento.
-                    </p>
-                  </div>
-
-                  {/* POS Terminal */}
-                  <div className="rounded-2xl border border-border bg-background p-4 flex flex-col justify-between space-y-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <div className="p-2 rounded-xl bg-primary/10 text-primary">
-                          <CreditCard className="h-4 w-4" />
-                        </div>
-                        <div>
-                          <h5 className="font-bold text-xs text-foreground">Tarjeta en POS</h5>
-                          <span className="text-[10px] text-muted-foreground">Terminal de red local</span>
-                        </div>
+                      <div>
+                        <h5 className="font-bold text-xs text-foreground">Tarjeta en POS</h5>
+                        <span className="text-[10px] text-muted-foreground">
+                          Terminal de red local
+                        </span>
                       </div>
-                      <Switch
-                        checked={posEnabled}
-                        onCheckedChange={setPosEnabled}
-                      />
                     </div>
-                    <p className="text-[11px] text-muted-foreground leading-snug">
-                      Procesa tarjetas de débito/crédito con la posnet física del local.
-                    </p>
+                    <Switch checked={posEnabled} onCheckedChange={setPosEnabled} />
                   </div>
-
-                  {/* Transferencia Bancaria */}
-                  <div className="rounded-2xl border border-border bg-background p-4 flex flex-col justify-between space-y-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <div className="p-2 rounded-xl bg-blue-500/10 text-blue-500">
-                          <Building2 className="h-4 w-4" />
-                        </div>
-                        <div>
-                          <h5 className="font-bold text-xs text-foreground">Transferencia</h5>
-                          <span className="text-[10px] text-muted-foreground">CBU / CVU / Alias</span>
-                        </div>
-                      </div>
-                      <Switch
-                        checked={transferEnabled}
-                        onCheckedChange={setTransferEnabled}
-                      />
-                    </div>
-                    <p className="text-[11px] text-muted-foreground leading-snug">
-                      Muestra los datos bancarios del gimnasio para transferencias directas de alumnos.
-                    </p>
-                  </div>
+                  <p className="text-[11px] text-muted-foreground leading-snug">
+                    Procesa tarjetas de débito/crédito con la posnet física del local.
+                  </p>
                 </div>
 
-                {/* Formulario Datos Bancarios si Transferencia está activa */}
-                {transferEnabled && (
-                  <div className="rounded-2xl border border-border/80 bg-secondary/15 p-5 space-y-4 pt-4">
-                    <h5 className="font-bold text-xs text-foreground uppercase tracking-wider text-muted-foreground/80 flex items-center gap-1.5">
-                      <Building2 className="h-3.5 w-3.5 text-primary" /> Datos de la Cuenta Bancaria (CBU / Alias)
-                    </h5>
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground font-semibold">Alias Bancario</Label>
-                        <Input
-                          type="text"
-                          value={bankDetails.alias}
-                          onChange={(e) => setBankDetails({ ...bankDetails, alias: e.target.value })}
-                          placeholder="Ej: GIMNASIO.SHAKERFY"
-                          className="h-9 text-xs rounded-xl bg-background border-border text-foreground font-bold"
-                        />
+                {/* Transferencia Bancaria */}
+                <div className="rounded-2xl border border-border bg-background p-4 flex flex-col justify-between space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 rounded-xl bg-blue-500/10 text-blue-500">
+                        <Building2 className="h-4 w-4" />
                       </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground font-semibold">CBU / CVU (22 dígitos)</Label>
-                        <Input
-                          type="text"
-                          value={bankDetails.cbu}
-                          onChange={(e) => setBankDetails({ ...bankDetails, cbu: e.target.value })}
-                          placeholder="Ej: 0000003100049281749281"
-                          className="h-9 text-xs rounded-xl bg-background border-border text-foreground font-mono"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground font-semibold">Banco / Entidad Financiera</Label>
-                        <Input
-                          type="text"
-                          value={bankDetails.bankName}
-                          onChange={(e) => setBankDetails({ ...bankDetails, bankName: e.target.value })}
-                          placeholder="Ej: Banco Galicia / Mercado Pago"
-                          className="h-9 text-xs rounded-xl bg-background border-border text-foreground"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground font-semibold">Titular de la Cuenta</Label>
-                        <Input
-                          type="text"
-                          value={bankDetails.accountHolder}
-                          onChange={(e) => setBankDetails({ ...bankDetails, accountHolder: e.target.value })}
-                          placeholder="Ej: Shakerfy Gym SRL"
-                          className="h-9 text-xs rounded-xl bg-background border-border text-foreground font-semibold"
-                        />
+                      <div>
+                        <h5 className="font-bold text-xs text-foreground">Transferencia</h5>
+                        <span className="text-[10px] text-muted-foreground">CBU / CVU / Alias</span>
                       </div>
                     </div>
+                    <Switch checked={transferEnabled} onCheckedChange={setTransferEnabled} />
                   </div>
-                )}
+                  <p className="text-[11px] text-muted-foreground leading-snug">
+                    Muestra los datos bancarios del gimnasio para transferencias directas de
+                    alumnos.
+                  </p>
+                </div>
               </div>
 
-              {/* General Save Confirmation */}
-              <div className="flex justify-end pt-2">
-                <Button
-                  type="button"
-                  onClick={() => toast.success("✓ Ajustes de Métodos de Cobro guardados con éxito.")}
-                  className="rounded-xl text-xs font-bold px-6 h-10 bg-primary text-primary-foreground shadow-sm gap-1.5"
-                >
-                  <Save className="h-4 w-4" /> Guardar Métodos de Cobro
-                </Button>
+              {/* Formulario Datos Bancarios si Transferencia está activa */}
+              {transferEnabled && (
+                <div className="rounded-2xl border border-border/80 bg-secondary/15 p-5 space-y-4 pt-4">
+                  <h5 className="font-bold text-xs text-foreground uppercase tracking-wider text-muted-foreground/80 flex items-center gap-1.5">
+                    <Building2 className="h-3.5 w-3.5 text-primary" /> Datos de la Cuenta Bancaria
+                    (CBU / Alias)
+                  </h5>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground font-semibold">
+                        Alias Bancario
+                      </Label>
+                      <Input
+                        type="text"
+                        value={bankDetails.alias}
+                        onChange={(e) => setBankDetails({ ...bankDetails, alias: e.target.value })}
+                        placeholder="Ej: GIMNASIO.SHAKERFY"
+                        className="h-9 text-xs rounded-xl bg-background border-border text-foreground font-bold"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground font-semibold">
+                        CBU / CVU (22 dígitos)
+                      </Label>
+                      <Input
+                        type="text"
+                        value={bankDetails.cbu}
+                        onChange={(e) => setBankDetails({ ...bankDetails, cbu: e.target.value })}
+                        placeholder="Ej: 0000003100049281749281"
+                        className="h-9 text-xs rounded-xl bg-background border-border text-foreground font-mono"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground font-semibold">
+                        Banco / Entidad Financiera
+                      </Label>
+                      <Input
+                        type="text"
+                        value={bankDetails.bankName}
+                        onChange={(e) =>
+                          setBankDetails({ ...bankDetails, bankName: e.target.value })
+                        }
+                        placeholder="Ej: Banco Galicia / Mercado Pago"
+                        className="h-9 text-xs rounded-xl bg-background border-border text-foreground"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground font-semibold">
+                        Titular de la Cuenta
+                      </Label>
+                      <Input
+                        type="text"
+                        value={bankDetails.accountHolder}
+                        onChange={(e) =>
+                          setBankDetails({ ...bankDetails, accountHolder: e.target.value })
+                        }
+                        placeholder="Ej: Shakerfy Gym SRL"
+                        className="h-9 text-xs rounded-xl bg-background border-border text-foreground font-semibold"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* General Save Confirmation */}
+            <div className="flex justify-end pt-2">
+              <Button
+                type="button"
+                onClick={() => toast.success("✓ Ajustes de Métodos de Cobro guardados con éxito.")}
+                className="rounded-xl text-xs font-bold px-6 h-10 bg-primary text-primary-foreground shadow-sm gap-1.5"
+              >
+                <Save className="h-4 w-4" /> Guardar Métodos de Cobro
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Modal Crear Equipamiento */}
+        <Dialog open={isCreateEquipmentOpen} onOpenChange={setIsCreateEquipmentOpen}>
+          <DialogContent className="max-w-md rounded-3xl border border-border bg-card">
+            <DialogHeader>
+              <DialogTitle className="text-lg">Añadir Nuevo Equipamiento</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-3 text-sm">
+              <div className="space-y-1.5">
+                <Label htmlFor="equip-name">Nombre o Descripción del Equipo</Label>
+                <Input
+                  id="equip-name"
+                  placeholder="Ej. Escaladora StairMaster, Banco Scott..."
+                  value={newEquipName}
+                  onChange={(e) => setNewEquipName(e.target.value)}
+                  className="rounded-xl"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="equip-cat">Categoría</Label>
+                <Select value={newEquipCategory} onValueChange={setNewEquipCategory}>
+                  <SelectTrigger className="rounded-xl pl-3.5 pr-9">
+                    <SelectValue placeholder="Seleccionar categoría" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="Musculación & Peso Libre">
+                      Musculación & Peso Libre
+                    </SelectItem>
+                    <SelectItem value="Máquinas Guiadas & Poleas">
+                      Máquinas Guiadas & Poleas
+                    </SelectItem>
+                    <SelectItem value="Cardio & Acondicionamiento">
+                      Cardio & Acondicionamiento
+                    </SelectItem>
+                    <SelectItem value="Funcional & Movilidad">Funcional & Movilidad</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="equip-photo">URL de Fotografía Ilustrativa (Opcional)</Label>
+                <Input
+                  id="equip-photo"
+                  placeholder="https://images.unsplash.com/..."
+                  value={newEquipPhoto}
+                  onChange={(e) => setNewEquipPhoto(e.target.value)}
+                  className="rounded-xl font-mono text-xs"
+                />
               </div>
             </div>
-          )}
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button
+                variant="outline"
+                className="rounded-xl"
+                onClick={() => setIsCreateEquipmentOpen(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                className="rounded-xl font-semibold"
+                disabled={!newEquipName.trim()}
+                onClick={() => {
+                  const newId = "equip-" + Date.now();
+                  const defaultPhoto =
+                    "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?auto=format&fit=crop&w=300&q=80";
+                  setEquipment((prev) => [
+                    ...prev,
+                    {
+                      id: newId,
+                      name: newEquipName.trim(),
+                      category: newEquipCategory,
+                      checked: true,
+                      photo: newEquipPhoto.trim() || defaultPhoto,
+                    },
+                  ]);
+                  setNewEquipName("");
+                  setNewEquipPhoto("");
+                  setIsCreateEquipmentOpen(false);
+                }}
+              >
+                Añadir a la Lista
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
-          {/* Modal Crear Equipamiento */}
-          <Dialog open={isCreateEquipmentOpen} onOpenChange={setIsCreateEquipmentOpen}>
-            <DialogContent className="max-w-md rounded-3xl border border-border bg-card">
-              <DialogHeader>
-                <DialogTitle className="text-lg">Añadir Nuevo Equipamiento</DialogTitle>
-              </DialogHeader>
+        {/* Modal Editar / Subir Imagen Equipamiento */}
+        <Dialog
+          open={!!editingEquipPhoto}
+          onOpenChange={(open) => !open && setEditingEquipPhoto(null)}
+        >
+          <DialogContent className="max-w-md rounded-3xl border border-border bg-card">
+            <DialogHeader>
+              <DialogTitle className="text-lg">Cambiar Imagen del Equipamiento</DialogTitle>
+            </DialogHeader>
+            {editingEquipPhoto && (
               <div className="space-y-4 py-3 text-sm">
-                <div className="space-y-1.5">
-                  <Label htmlFor="equip-name">Nombre o Descripción del Equipo</Label>
-                  <Input
-                    id="equip-name"
-                    placeholder="Ej. Escaladora StairMaster, Banco Scott..."
-                    value={newEquipName}
-                    onChange={(e) => setNewEquipName(e.target.value)}
-                    className="rounded-xl"
-                  />
+                <div className="flex items-center gap-3 p-3 rounded-2xl bg-secondary/30 border border-border/60">
+                  <div className="w-16 h-16 rounded-xl overflow-hidden bg-secondary shrink-0 border border-border/80">
+                    {editingEquipPhoto.photo ? (
+                      <img
+                        src={editingEquipPhoto.photo}
+                        alt={editingEquipPhoto.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                        <Dumbbell className="w-6 h-6" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="font-bold text-foreground text-sm truncate">
+                      {editingEquipPhoto.name}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      Sube la URL de la imagen representativa o fotografía de tu equipo.
+                    </div>
+                  </div>
                 </div>
+
                 <div className="space-y-1.5">
-                  <Label htmlFor="equip-cat">Categoría</Label>
-                  <Select value={newEquipCategory} onValueChange={setNewEquipCategory}>
-                    <SelectTrigger className="rounded-xl pl-3.5 pr-9">
-                      <SelectValue placeholder="Seleccionar categoría" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl">
-                      <SelectItem value="Musculación & Peso Libre">
-                        Musculación & Peso Libre
-                      </SelectItem>
-                      <SelectItem value="Máquinas Guiadas & Poleas">
-                        Máquinas Guiadas & Poleas
-                      </SelectItem>
-                      <SelectItem value="Cardio & Acondicionamiento">
-                        Cardio & Acondicionamiento
-                      </SelectItem>
-                      <SelectItem value="Funcional & Movilidad">Funcional & Movilidad</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="equip-photo">URL de Fotografía Ilustrativa (Opcional)</Label>
+                  <Label htmlFor="edit-equip-photo">URL de la Fotografía (o Unsplash)</Label>
                   <Input
-                    id="equip-photo"
+                    id="edit-equip-photo"
                     placeholder="https://images.unsplash.com/..."
-                    value={newEquipPhoto}
-                    onChange={(e) => setNewEquipPhoto(e.target.value)}
+                    value={editingEquipPhoto.photo}
+                    onChange={(e) =>
+                      setEditingEquipPhoto({ ...editingEquipPhoto, photo: e.target.value })
+                    }
                     className="rounded-xl font-mono text-xs"
                   />
                 </div>
               </div>
-              <DialogFooter className="gap-2 sm:gap-0">
-                <Button
-                  variant="outline"
-                  className="rounded-xl"
-                  onClick={() => setIsCreateEquipmentOpen(false)}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  className="rounded-xl font-semibold"
-                  disabled={!newEquipName.trim()}
-                  onClick={() => {
-                    const newId = "equip-" + Date.now();
-                    const defaultPhoto =
-                      "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?auto=format&fit=crop&w=300&q=80";
-                    setEquipment((prev) => [
-                      ...prev,
-                      {
-                        id: newId,
-                        name: newEquipName.trim(),
-                        category: newEquipCategory,
-                        checked: true,
-                        photo: newEquipPhoto.trim() || defaultPhoto,
-                      },
-                    ]);
-                    setNewEquipName("");
-                    setNewEquipPhoto("");
-                    setIsCreateEquipmentOpen(false);
-                  }}
-                >
-                  Añadir a la Lista
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-
-          {/* Modal Editar / Subir Imagen Equipamiento */}
-          <Dialog
-            open={!!editingEquipPhoto}
-            onOpenChange={(open) => !open && setEditingEquipPhoto(null)}
-          >
-            <DialogContent className="max-w-md rounded-3xl border border-border bg-card">
-              <DialogHeader>
-                <DialogTitle className="text-lg">Cambiar Imagen del Equipamiento</DialogTitle>
-              </DialogHeader>
-              {editingEquipPhoto && (
-                <div className="space-y-4 py-3 text-sm">
-                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-secondary/30 border border-border/60">
-                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-secondary shrink-0 border border-border/80">
-                      {editingEquipPhoto.photo ? (
-                        <img
-                          src={editingEquipPhoto.photo}
-                          alt={editingEquipPhoto.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                          <Dumbbell className="w-6 h-6" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="font-bold text-foreground text-sm truncate">
-                        {editingEquipPhoto.name}
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-0.5">
-                        Sube la URL de la imagen representativa o fotografía de tu equipo.
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label htmlFor="edit-equip-photo">URL de la Fotografía (o Unsplash)</Label>
-                    <Input
-                      id="edit-equip-photo"
-                      placeholder="https://images.unsplash.com/..."
-                      value={editingEquipPhoto.photo}
-                      onChange={(e) =>
-                        setEditingEquipPhoto({ ...editingEquipPhoto, photo: e.target.value })
-                      }
-                      className="rounded-xl font-mono text-xs"
-                    />
-                  </div>
-                </div>
-              )}
-              <DialogFooter className="gap-2 sm:gap-0">
-                <Button
-                  variant="outline"
-                  className="rounded-xl"
-                  onClick={() => setEditingEquipPhoto(null)}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  className="rounded-xl font-semibold"
-                  onClick={() => {
-                    if (!editingEquipPhoto) return;
-                    setEquipment((prev) =>
-                      prev.map((e) =>
-                        e.id === editingEquipPhoto.id
-                          ? { ...e, photo: editingEquipPhoto.photo.trim() }
-                          : e,
-                      ),
-                    );
-                    setEditingEquipPhoto(null);
-                  }}
-                >
-                  Guardar Imagen
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </>
+            )}
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button
+                variant="outline"
+                className="rounded-xl"
+                onClick={() => setEditingEquipPhoto(null)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                className="rounded-xl font-semibold"
+                onClick={() => {
+                  if (!editingEquipPhoto) return;
+                  setEquipment((prev) =>
+                    prev.map((e) =>
+                      e.id === editingEquipPhoto.id
+                        ? { ...e, photo: editingEquipPhoto.photo.trim() }
+                        : e,
+                    ),
+                  );
+                  setEditingEquipPhoto(null);
+                }}
+              >
+                Guardar Imagen
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </>
     </div>
   );
 }
@@ -12150,12 +12502,42 @@ function AyudaTab() {
   const [searchTerm, setSearchTerm] = useState("");
 
   const modules = [
-    { id: "asistencias", name: "Asistencias", icon: Activity, desc: "Control de acceso, aforo en vivo y prevención de bajas" },
-    { id: "clases", name: "Clases", icon: Calendar, desc: "Programación horaria, cupos y sustitución de coaches" },
-    { id: "miembros", name: "Miembros", icon: Users, desc: "Base de alumnos, cobro de cuotas y legajos de salud" },
-    { id: "membresias", name: "Membresías", icon: CreditCard, desc: "Planes, precios, pases por créditos y promociones" },
-    { id: "reseñas", name: "Reseñas", icon: MessageCircle, desc: "Reputación en el marketplace y buzón de sugerencias" },
-    { id: "config", name: "Configuración", icon: Settings, desc: "Ajustes de la sede, staff, salas y Mercado Pago" },
+    {
+      id: "asistencias",
+      name: "Asistencias",
+      icon: Activity,
+      desc: "Control de acceso, aforo en vivo y prevención de bajas",
+    },
+    {
+      id: "clases",
+      name: "Clases",
+      icon: Calendar,
+      desc: "Programación horaria, cupos y sustitución de coaches",
+    },
+    {
+      id: "miembros",
+      name: "Miembros",
+      icon: Users,
+      desc: "Base de alumnos, cobro de cuotas y legajos de salud",
+    },
+    {
+      id: "membresias",
+      name: "Membresías",
+      icon: CreditCard,
+      desc: "Planes, precios, pases por créditos y promociones",
+    },
+    {
+      id: "reseñas",
+      name: "Reseñas",
+      icon: MessageCircle,
+      desc: "Reputación en el marketplace y buzón de sugerencias",
+    },
+    {
+      id: "config",
+      name: "Configuración",
+      icon: Settings,
+      desc: "Ajustes de la sede, staff, salas y Mercado Pago",
+    },
   ];
 
   const guideData = {
@@ -12265,9 +12647,7 @@ function AyudaTab() {
         {
           heading: "1. PANEL DE KPIS DEL ALUMNADO",
           text: "Indicadores clave del estado de la base de socios:",
-          bullets: [
-            "Contadores de Alumnos Activos, En Deuda, Apto Vencido y Riesgo de Baja.",
-          ],
+          bullets: ["Contadores de Alumnos Activos, En Deuda, Apto Vencido y Riesgo de Baja."],
         },
         {
           heading: "2. ALTA Y LEGAJO COMPLETO DEL ALUMNO",
@@ -12297,9 +12677,7 @@ function AyudaTab() {
         {
           heading: "5. EXPORTACIÓN DE DATOS",
           text: "Descarga de reportes:",
-          bullets: [
-            "Exportar CSV con la nómina filtrada de alumnos para gestión administrativa.",
-          ],
+          bullets: ["Exportar CSV con la nómina filtrada de alumnos para gestión administrativa."],
         },
       ],
     },
@@ -12449,7 +12827,8 @@ function AyudaTab() {
             </h2>
           </div>
           <p className="text-xs text-muted-foreground leading-relaxed pl-1">
-            Guía explicativa paso a paso para operar eficientemente cada módulo de Studio Pulse Smart.
+            Guía explicativa paso a paso para operar eficientemente cada módulo de Studio Pulse
+            Smart.
           </p>
         </div>
 
@@ -12482,9 +12861,7 @@ function AyudaTab() {
               <div className="flex items-center justify-between mb-2">
                 <div
                   className={`p-2 rounded-xl ${
-                    isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary text-foreground"
+                    isActive ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -12528,9 +12905,7 @@ function AyudaTab() {
                 <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 border-b border-border/50 pb-2">
                   {sec.heading}
                 </h4>
-                <p className="text-xs font-medium text-foreground leading-relaxed">
-                  {sec.text}
-                </p>
+                <p className="text-xs font-medium text-foreground leading-relaxed">{sec.text}</p>
                 <ul className="space-y-2 text-xs text-muted-foreground">
                   {sec.bullets.map((b, bIdx) => (
                     <li key={bIdx} className="flex items-start gap-2 leading-relaxed">
@@ -12553,4 +12928,3 @@ function AyudaTab() {
     </div>
   );
 }
-

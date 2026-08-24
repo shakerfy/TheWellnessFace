@@ -20,16 +20,13 @@ interface MindfulBreathingModalProps {
 type BreathPhase = "inhale" | "hold" | "exhale" | "rest";
 
 const INHALE_DURATION = 4; // 4 seconds
-const HOLD_DURATION = 4;   // 4 seconds
+const HOLD_DURATION = 4; // 4 seconds
 const EXHALE_DURATION = 4; // 4 seconds
-const REST_DURATION = 4;   // 4 seconds (4-4-4-4 Box Breathing)
+const REST_DURATION = 4; // 4 seconds (4-4-4-4 Box Breathing)
 const CYCLE_DURATION = INHALE_DURATION + HOLD_DURATION + EXHALE_DURATION + REST_DURATION; // 16s
 const TOTAL_CYCLES = 4; // 4 cycles = ~64 seconds
 
-const PHASE_CONFIG: Record<
-  BreathPhase,
-  { label: string; text: string; subtext: string }
-> = {
+const PHASE_CONFIG: Record<BreathPhase, { label: string; text: string; subtext: string }> = {
   inhale: {
     label: "INHALA",
     text: "Inhala profundamente",
@@ -91,7 +88,7 @@ export function MindfulBreathingModal({
     setCurrentCycle(1);
     setIsCompleted(false);
 
-    const MIN_SCALE = 0.70;
+    const MIN_SCALE = 0.7;
     if (orbRef.current) orbRef.current.style.transform = `scale(${MIN_SCALE})`;
     if (halo1Ref.current) {
       halo1Ref.current.style.transform = `scale(0.65)`;
@@ -110,7 +107,7 @@ export function MindfulBreathingModal({
       return;
     }
 
-    const MIN_SCALE = 0.70;
+    const MIN_SCALE = 0.7;
     const MAX_SCALE = 1.25;
 
     let lastPhase: BreathPhase = "inhale";
@@ -127,10 +124,7 @@ export function MindfulBreathingModal({
         return;
       }
 
-      const cycleNum = Math.min(
-        TOTAL_CYCLES,
-        Math.floor(elapsed / CYCLE_DURATION) + 1
-      );
+      const cycleNum = Math.min(TOTAL_CYCLES, Math.floor(elapsed / CYCLE_DURATION) + 1);
       const cycleTime = elapsed % CYCLE_DURATION;
 
       let currentPhase: BreathPhase = "inhale";
@@ -157,8 +151,7 @@ export function MindfulBreathingModal({
         phaseSec = Math.max(1, Math.ceil(EXHALE_DURATION - phaseTime));
       } else {
         currentPhase = "rest";
-        const phaseTime =
-          cycleTime - (INHALE_DURATION + HOLD_DURATION + EXHALE_DURATION);
+        const phaseTime = cycleTime - (INHALE_DURATION + HOLD_DURATION + EXHALE_DURATION);
         scale = MIN_SCALE;
         phaseSec = Math.max(1, Math.ceil(REST_DURATION - phaseTime));
       }
@@ -169,7 +162,7 @@ export function MindfulBreathingModal({
 
       const scaleNormalized = (scale - MIN_SCALE) / (MAX_SCALE - MIN_SCALE);
       if (halo1Ref.current) {
-        halo1Ref.current.style.transform = `scale(${0.65 + 0.50 * scaleNormalized})`;
+        halo1Ref.current.style.transform = `scale(${0.65 + 0.5 * scaleNormalized})`;
         halo1Ref.current.style.opacity = `${0.1 + 0.5 * scaleNormalized}`;
       }
       if (halo2Ref.current) {
@@ -251,10 +244,10 @@ export function MindfulBreathingModal({
                 !isStarted
                   ? "w-3 bg-secondary border border-border/50"
                   : idx + 1 < currentCycle || isCompleted
-                  ? "w-7 bg-foreground"
-                  : idx + 1 === currentCycle
-                  ? "w-7 bg-foreground/60"
-                  : "w-3 bg-secondary border border-border/50"
+                    ? "w-7 bg-foreground"
+                    : idx + 1 === currentCycle
+                      ? "w-7 bg-foreground/60"
+                      : "w-3 bg-secondary border border-border/50",
               )}
             />
           ))}
@@ -281,7 +274,7 @@ export function MindfulBreathingModal({
               "relative z-10 w-32 h-32 rounded-full flex flex-col items-center justify-center border border-foreground/20 select-none shadow-xl will-change-transform transition-colors duration-500",
               isExpanded
                 ? "bg-gradient-to-tr from-foreground/15 via-foreground/25 to-foreground/35 shadow-foreground/10"
-                : "bg-gradient-to-tr from-secondary via-secondary/80 to-secondary/60 shadow-none"
+                : "bg-gradient-to-tr from-secondary via-secondary/80 to-secondary/60 shadow-none",
             )}
           >
             {!isStarted ? (
@@ -305,20 +298,18 @@ export function MindfulBreathingModal({
         <div className="min-h-[60px] flex flex-col items-center justify-center space-y-1 text-center">
           {!isStarted ? (
             <>
-              <h3 className="text-base font-bold text-foreground">
-                Toma una postura cómoda
-              </h3>
+              <h3 className="text-base font-bold text-foreground">Toma una postura cómoda</h3>
               <p className="text-xs text-muted-foreground max-w-xs leading-snug">
-                Relaja los hombros, apoya los pies y presiona comenzar para guiar 4 ciclos de respiración (1 min).
+                Relaja los hombros, apoya los pies y presiona comenzar para guiar 4 ciclos de
+                respiración (1 min).
               </p>
             </>
           ) : isCompleted ? (
             <>
-              <h3 className="text-base font-bold text-foreground">
-                Pausa completada
-              </h3>
+              <h3 className="text-base font-bold text-foreground">Pausa completada</h3>
               <p className="text-xs text-muted-foreground max-w-xs">
-                Has finalizado los 4 ciclos. Ahora puedes continuar con tu registro y disfrutar tu comida con presencia.
+                Has finalizado los 4 ciclos. Ahora puedes continuar con tu registro y disfrutar tu
+                comida con presencia.
               </p>
             </>
           ) : (

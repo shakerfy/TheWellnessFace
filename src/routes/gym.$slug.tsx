@@ -339,13 +339,8 @@ function GymPage() {
               <span className="inline-flex items-center gap-1.5">
                 <Users className="h-3.5 w-3.5 text-primary" />
                 <span>
-                  Aforo:{" "}
-                  <strong className="text-foreground font-semibold">
-                    42 / 80
-                  </strong>{" "}
-                  <span className="text-xs text-muted-foreground">
-                    (52%)
-                  </span>
+                  Aforo: <strong className="text-foreground font-semibold">42 / 80</strong>{" "}
+                  <span className="text-xs text-muted-foreground">(52%)</span>
                 </span>
               </span>
             </div>
@@ -714,7 +709,6 @@ function GymPage() {
                   ))}
                 </div>
               </div>
-
             </div>
           </div>
 
