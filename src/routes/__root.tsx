@@ -83,21 +83,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Shakerfy — Encuentra tu gimnasio con IA" },
+      { title: "The Wellness Face — Tu bienestar consciente con IA" },
       {
         name: "description",
         content:
-          "Shakerfy es el buscador con IA de gimnasios, fitness centers y studios. Descubre, reserva y gestiona tu membres\u00eda.",
+          "The Wellness Face es la plataforma integral de bienestar consciente con IA. Nutrición somática, entrenamientos adaptativos y recuperación.",
       },
-      { name: "author", content: "Shakerfy" },
-      { property: "og:title", content: "Shakerfy — Encuentra tu gimnasio con IA" },
+      { name: "author", content: "The Wellness Face" },
+      { property: "og:title", content: "The Wellness Face — Tu bienestar consciente con IA" },
       {
         property: "og:description",
-        content: "Buscador con IA de gimnasios, fitness centers y studios.",
+        content: "Plataforma integral de bienestar consciente con IA. Nutrición, entrenamiento y recuperación.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: "Shakerfy" },
+      { name: "twitter:title", content: "The Wellness Face" },
     ],
     links: [
       {

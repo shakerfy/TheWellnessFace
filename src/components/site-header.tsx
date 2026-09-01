@@ -269,12 +269,12 @@ export function SiteFooter() {
         <div>
           <Link to="/" className="flex items-center gap-2">
             <span className="text-xl sm:text-2xl font-bebas tracking-wider text-foreground uppercase select-none">
-              Shakerfy
+              The Wellness Face
             </span>
           </Link>
           <p className="mt-4 max-w-xs text-sm text-muted-foreground">
-            El buscador con IA de gimnasios, fitness centers y studios. Encuentra, reserva y
-            gestiona tu entrenamiento.
+            Plataforma integral de bienestar consciente con IA. Nutrición somática, entrenamientos
+            adaptativos y recuperación.
           </p>
         </div>
         {[
@@ -298,7 +298,7 @@ export function SiteFooter() {
       </div>
       <div className="border-t border-border/60">
         <div className="mx-auto flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between px-6 py-5 text-xs text-muted-foreground text-center sm:text-left">
-          <span>© {new Date().getFullYear()} Shakerfy. Todos los derechos reservados.</span>
+          <span>© {new Date().getFullYear()} The Wellness Face. Todos los derechos reservados.</span>
           <span>Hecho con precisión.</span>
         </div>
       </div>

@@ -1,4 +1,4 @@
-# 🧭 El Norte — The Wellness Face (Studio Pulse Smart)
+# 🧭 El Norte — The Wellness Face
 
 > **Documento vivo de referencia y aprendizaje continuo.**  
 > Este archivo resume la brújula estratégica del producto, las decisiones de diseño arquitectónico consolidadas, los errores superados y las mejores prácticas para mantener el código limpio, escalable y sin fricción.

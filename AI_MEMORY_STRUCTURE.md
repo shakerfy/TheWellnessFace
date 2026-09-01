@@ -1,5 +1,5 @@
 # 🧠 Estructura y Funcionamiento de la Memoria de la IA
-### Shakerfy / Studio Pulse Smart
+### The Wellness Face
 
 ---
 

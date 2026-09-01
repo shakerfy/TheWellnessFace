@@ -1,6 +1,6 @@
-# Shakerfy — Buscador de Gimnasios con IA 🏋️‍♂️✨
+# The Wellness Face — Plataforma Integral de Bienestar con IA 🧘‍♂️✨
 
-**Shakerfy** es un buscador inteligente de gimnasios, fitness centers y studios en Buenos Aires. Permite a los usuarios buscar y comparar opciones en lenguaje natural mediante inteligencia artificial, ver perfiles detallados, y reservar pases de prueba o clases.
+**The Wellness Face** es una plataforma integral de bienestar consciente impulsada por inteligencia artificial. Integra nutrición somática con porciones visuales, prescripción de entrenamientos biomecánicos personalizados, seguimiento del descanso circadiano y gestión inteligente de membresías y centros deportivos.
 
 ---
 

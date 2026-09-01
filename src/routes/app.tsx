@@ -2685,7 +2685,7 @@ function ConfigTab() {
           </DialogHeader>
           <div className="py-4 space-y-3 text-xs text-muted-foreground leading-relaxed max-h-[55vh] overflow-y-auto custom-scrollbar">
             <p className="font-semibold text-foreground">
-              En Shakerfy nos tomamos tu privacidad y la seguridad de tus datos biológicos con
+              En The Wellness Face nos tomamos tu privacidad y la seguridad de tus datos biológicos con
               máxima seriedad.
             </p>
             <p>
@@ -2721,7 +2721,7 @@ function ConfigTab() {
           </DialogHeader>
           <div className="py-4 space-y-3 text-xs text-muted-foreground leading-relaxed max-h-[55vh] overflow-y-auto custom-scrollbar">
             <p className="font-semibold text-foreground">
-              Al utilizar la plataforma Shakerfy y el motor AI Coach, aceptas los siguientes
+              Al utilizar la plataforma The Wellness Face y el motor AI Coach, aceptas los siguientes
               términos de servicio:
             </p>
             <p>
@@ -2746,12 +2746,12 @@ function ConfigTab() {
         </DialogContent>
       </Dialog>
 
-      {/* MODAL: CONTACTAR CON SHAKERFY */}
+      {/* MODAL: CONTACTAR CON THE WELLNESS FACE */}
       <Dialog open={contactModalOpen} onOpenChange={setContactModalOpen}>
         <DialogContent className="sm:max-w-md rounded-3xl p-6 sm:p-8 border border-border bg-card text-center">
           <DialogHeader className="pb-3 border-b border-border/40">
             <DialogTitle className="text-base font-bold flex items-center justify-center gap-2 text-foreground">
-              <MessageSquare className="w-5 h-5 text-teal-500" /> Contactar con Shakerfy
+              <MessageSquare className="w-5 h-5 text-teal-500" /> Contactar con The Wellness Face
             </DialogTitle>
           </DialogHeader>
           <div className="py-4 space-y-4 text-xs">
@@ -2770,10 +2770,10 @@ function ConfigTab() {
               </a>
 
               <a
-                href="mailto:soporte@shakerfy.com"
+                href="mailto:soporte@thewellnessface.com"
                 className="flex items-center justify-center gap-2 p-3.5 rounded-2xl border border-border bg-background font-semibold hover:bg-secondary transition text-foreground"
               >
-                <Info className="w-4 h-4 text-indigo-500" /> Email: soporte@shakerfy.com
+                <Info className="w-4 h-4 text-indigo-500" /> Email: soporte@thewellnessface.com
               </a>
             </div>
           </div>
@@ -2809,7 +2809,7 @@ function ConfigTab() {
         <AlertDialogContent className="rounded-3xl p-6 sm:p-8 border border-rose-500/30 bg-card">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-lg font-bold text-rose-500 flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-rose-500" /> ¿Eliminar cuenta de Shakerfy?
+              <AlertTriangle className="w-5 h-5 text-rose-500" /> ¿Eliminar cuenta de The Wellness Face?
             </AlertDialogTitle>
             <AlertDialogDescription className="text-xs text-muted-foreground pt-1 leading-relaxed">
               Esta acción es <strong>definitiva e irreversible</strong>. Se borrarán de manera
@@ -4177,7 +4177,7 @@ function DiarioTab() {
       date: dateStr,
       time: timeStr,
       title: title,
-      subtitle: `Sugerencia Shakerfy AI • ${contextBadge}`,
+      subtitle: `Sugerencia Wellness AI • ${contextBadge}`,
       contextBadge: contextBadge,
       narrative: desc,
       desc: desc,
@@ -4207,7 +4207,7 @@ function DiarioTab() {
     const newSuggestion = generateContextualAiFoodSuggestion();
     setTimeout(() => {
       setUserTimelineItems((prev) => [newSuggestion, ...prev]);
-      toast.success("✨ ¡Shakerfy AI generó una nueva sugerencia para tu momento!");
+      toast.success("✨ ¡The Wellness Face generó una sugerencia adaptada para tu momento!");
     }, 700);
   }, [generateContextualAiFoodSuggestion]);
 

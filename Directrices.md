@@ -1,6 +1,7 @@
 # Directrices del Motor de Generación de Workouts con IA
+### The Wellness Face
 
-> Documento oficial de referencia para la generación y prescripción de rutinas en **Shakerfy / Studio Pulse Smart**.
+> Documento oficial de referencia para la generación y prescripción de rutinas en **The Wellness Face**.
 > Basado estrictamente en la arquitectura y módulos reales del proyecto (`src/lib/muscle-recovery.ts`, `src/components/custom-workout-tab.tsx` y `src/routes/app.tsx`).
 
 ---

@@ -11,7 +11,7 @@
 
 <!-- LOVABLE:END -->
 
-# 🎨 Reglas Oficiales de Diseño UI/UX — Shakerfy / Studio Pulse Smart
+# 🎨 Reglas Oficiales de Diseño UI/UX — The Wellness Face
 
 ## 1. 🥇 Estándar Mandatorio de Componentes (Shadcn/ui & Radix UI)
 
@@ -51,7 +51,7 @@
 
 - Utilizar la clase `.custom-scrollbar` (barra de 7px, redondeada _pill radius_ `9999px`, pista transparente) y `overflow-hidden` en el contenedor para evitar scrollbars toscas del navegador.
 
-## 8. 🧠 Reglas de IA Ética, Responsable y Nutricional (Shakerfy AI)
+## 8. 🧠 Reglas de IA Ética, Responsable y Nutricional (The Wellness Face AI)
 
 - **Reconocimiento Exclusivo de "Shake for AI":** La acción de agitar el dispositivo (_Shake for AI_) está reservada **exclusivamente** para generar sugerencias nutricionales contextuales del momento.
 - **Integración del Perfil Biométrico:** Los algoritmos deben calcular los requerimientos basales tomando estrictamente las variables del perfil (Edad, Sexo, Altura, Peso, Nivel de Actividad y Objetivo Biológico).
