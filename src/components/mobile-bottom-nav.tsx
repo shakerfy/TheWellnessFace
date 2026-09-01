@@ -45,8 +45,12 @@ export function MobileBottomNav() {
     };
   }, []);
 
-  // Hide mobile bottom nav on gym admin dashboard and standalone full-screen camera scanner flow
-  if (pathname.startsWith("/dashboard") || pathname.startsWith("/scan")) {
+  // Hide mobile bottom nav on gym admin dashboard, standalone full-screen camera scanner flow, and dedicated workout flow
+  if (
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/scan") ||
+    (pathname === "/app" && currentTab === "entrenamiento")
+  ) {
     return null;
   }
 

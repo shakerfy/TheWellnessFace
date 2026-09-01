@@ -66,3 +66,18 @@
 - **Fit del Momento (Renderizado Condicional por Excepción):** Los badges contextuales (_"Ideal Post-Entreno"_, _"Digestión Nocturna"_) solo se renderizan cuando existe una oportunidad biológica o una consideración fisiológica genuina; en comidas habituales sin evento especial, se mantiene el silencio visual para evitar saturación y sobre-análisis.
 - **Foco en Fisiología Somática:** La comunicación se centra exclusivamente en variables de confort y rendimiento (energía sostenida, saciedad, confort digestivo, recuperación muscular y descanso nocturno), nunca en peso corporal, porcentaje graso o estética punitiva.
 - **Blindaje Legal & Scope of Practice:** La IA opera estrictamente como un asistente educativo y de hábitos de bienestar. No emite diagnósticos médicos, no prescribe dietoterapia clínica para patologías y mantiene visible el descargo de responsabilidad legal (_Educational & Wellness Disclaimer_).
+
+## 10. ⚡ Estándar de Interacción "Frictionless & Gesture-First"
+
+- **Regla de los 2 Toques (Two-Tap Rule):** Ninguna acción cotidiana o frecuente (anotar peso, marcar una serie, registrar un alimento, cambiar un estado) puede requerir más de 2 toques desde la vista activa. Prohibido anidar menús dentro de menús para flujos de registro diario.
+- **Edición In-Place Obligatoria:** Los campos simples y editables (repeticiones, peso/carga, minutos, porciones, notas) deben ser **inputs nativos directos** dentro de la tarjeta (`[ 12 reps ] • [ 24 kg ]`). Prohibido abrir diálogos modales o popups solo para modificar valores numéricos.
+- **Gestos Nativos Primero (Gesture-First):**
+  - *Swipe-to-Delete:* Toda eliminación en listas debe soportar deslizamiento horizontal a la izquierda (`diffX < -70px`) revelando fondo rojo destructivo (`bg-rose-600`) con respuesta háptica inmediata.
+  - *Live Drag-to-Reorder:* Todo reordenamiento debe mutar la posición en tiempo real (`onDragEnter` live layout shifting), haciendo que los demás elementos se desplacen fluidamente mientras se arrastra.
+  - *Swipe-down to Dismiss:* Los paneles inferiores, modales y drawers deben poder cerrarse deslizándolos hacia abajo.
+  - *Shake for AI:* Reservado exclusivamente para disparar la recomendación nutricional biológica contextual.
+- **Ergonomía de la Zona del Pulgar (Thumb-Zone Priority):** Las acciones primarias clave (iniciar, finalizar, guardar sesión, escanear) deben ubicarse en una barra flotante fija al pie (`fixed bottom-6 z-40`). Las áreas táctiles mínimas para botones de acción deben ser de al menos **44×44 px**.
+- **Filosofía "Deshacer" sobre Alertas Bloqueantes (Undo-First):** Al eliminar o realizar acciones reversibles rutinarias, se ejecuta la acción de inmediato y se ofrece un Toast con botón "Deshacer" (4s). Prohibido interrumpir al usuario con diálogos de confirmación para acciones cotidianas.
+- **Píldora de Acciones Secundarias (Action Pill Pattern):** Cuando un elemento requiera múltiples acciones auxiliares (ej. cambiar, duplicar, eliminar), deben agruparse en una cápsula compacta de iconos (`rounded-full bg-secondary/50 border border-border/70 p-1 gap-1`), sin textos redundantes.
+- **Feedback Multisensorial Obligatorio:** Integrar micro-vibraciones hápticas (`navigator.vibrate`) en swaps, eliminaciones y confirmaciones, y síntesis sonora con Web Audio API al completar temporizadores o descansos (sin dependencias de archivos `.mp3` pesados).
+- **Auto-Guardado Silencioso:** Los cambios en campos de texto, selectores y switches se persisten automáticamente al cambiar de valor; el usuario nunca debe buscar un botón de "Guardar cambios".

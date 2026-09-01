@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from "react"
 import { toast } from "sonner";
 import { SiteHeader } from "@/components/site-header";
 import { BioStateCard } from "@/components/bio-state-card";
+import { JournalInsightsDashboard } from "@/components/journal-insights";
 import { calculateTimingFit, type TimingFit } from "@/lib/timing-fit";
 import { Index } from "./index";
 import { GYMS } from "@/lib/gyms";
@@ -98,6 +99,8 @@ import {
   HeartPulse,
   Timer,
   Users,
+  BatteryCharging,
+  ChefHat,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -132,6 +135,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { MindfulBreathingModal } from "@/components/mindful-breathing-modal";
+import { MuscleRecoveryTab } from "@/components/muscle-recovery-tab";
+import { CustomWorkoutTab } from "@/components/custom-workout-tab";
+import { updateMuscleRecoveryForActivity, MUSCLE_GROUPS } from "@/lib/muscle-recovery";
 import {
   Dialog,
   DialogContent,
@@ -149,36 +155,6 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ReferenceLine,
-  BarChart,
-  Bar,
-  Cell,
-  RadarChart,
-  Radar,
-  PolarGrid,
-  PieChart,
-  Pie,
-  RadialBarChart,
-  RadialBar,
-  PolarRadiusAxis,
-  PolarAngleAxis,
-  Label,
-} from "recharts";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
-  type ChartConfig,
-} from "@/components/ui/chart";
 
 export const Route = createFileRoute("/app")({
   component: StudentDashboard,
@@ -187,6 +163,7 @@ export const Route = createFileRoute("/app")({
 const TABS = [
   { id: "inicio", label: "Inicio", icon: User },
   { id: "diario", label: "AI Coach", icon: Sparkles },
+  { id: "entrenamiento", label: "Entrenamiento", icon: Dumbbell },
   { id: "clases", label: "Check-in", icon: QrCode },
   { id: "favoritos", label: "Favoritos", icon: Heart },
   { id: "progreso", label: "Mi Progreso", icon: BarChart3 },
@@ -220,12 +197,6 @@ function StudentDashboard() {
   const [qrOpen, setQrOpen] = useState(false);
   const [scannerModalOpen, setScannerModalOpen] = useState(false);
   const [qrTimer, setQrTimer] = useState(60);
-  const [globalQuickLogOpen, setGlobalQuickLogOpen] = useState(false);
-
-  const [globalLogWeightOpen, setGlobalLogWeightOpen] = useState(false);
-  const [globalCheatDaysOpen, setGlobalCheatDaysOpen] = useState(false);
-  const [globalWeightInput, setGlobalWeightInput] = useState("72.4");
-  const [globalCheatCount, setGlobalCheatCount] = useState(2);
 
   // Global Shake / Accelerometer Detection
   useEffect(() => {
@@ -321,7 +292,7 @@ function StudentDashboard() {
 
   return (
     <div
-      className={`min-h-screen ${activeTab === "diario" ? "bg-slate-50/70 dark:bg-background" : "bg-background"} text-foreground flex flex-col transition-colors duration-200 w-full`}
+      className={`min-h-screen ${activeTab === "diario" || activeTab === "entrenamiento" ? "bg-slate-50/70 dark:bg-background" : "bg-background"} text-foreground flex flex-col transition-colors duration-200 w-full`}
     >
       {/* Site Header with User Dropdown Menu always visible at top */}
       <SiteHeader />
@@ -333,6 +304,9 @@ function StudentDashboard() {
         >
           {activeTab === "inicio" && <InicioTab />}
           {activeTab === "diario" && <DiarioTab />}
+          {activeTab === "entrenamiento" && (
+            <CustomWorkoutTab onBack={() => setActiveTab("diario")} />
+          )}
           {activeTab === "clases" && (
             <ClasesTab
               onOpenQr={() => setQrOpen(true)}
@@ -542,274 +516,6 @@ function StudentDashboard() {
         </div>
       )}
 
-      {/* GLOBAL FLOATING ACTION BUTTON (FAB) & SHAKE AI */}
-      <div className="fixed bottom-20 md:bottom-8 right-4 sm:right-6 md:right-8 z-40 flex items-center gap-2.5">
-        <button
-          type="button"
-          onClick={() => {
-            setActiveTab("diario");
-          }}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-slate-100 dark:bg-card border border-border shadow-md hover:shadow-lg text-foreground font-bold text-xs sm:text-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-foreground/30 active:scale-95 cursor-pointer select-none"
-          title="AI Coach"
-        >
-          <Sparkles className="w-4 h-4 stroke-[2] text-foreground" />
-          <span>AI Coach</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setGlobalQuickLogOpen(true)}
-          className="w-12 h-12 rounded-full bg-slate-950 text-white dark:bg-foreground dark:text-background flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer shrink-0"
-          title="Acciones rápidas / Registro"
-        >
-          <Plus className="w-6 h-6 stroke-[2.5]" />
-        </button>
-      </div>
-
-      {/* GLOBAL MODAL: QUICK ACTION MENU */}
-      <Dialog open={globalQuickLogOpen} onOpenChange={setGlobalQuickLogOpen}>
-        <DialogContent className="sm:max-w-md rounded-3xl p-6 border border-border bg-card">
-          <DialogHeader className="pb-3 border-b border-border/40 text-left">
-            <DialogTitle className="text-base font-bold flex items-center gap-2 text-foreground">
-              <Plus className="w-5 h-5 text-foreground" /> Registro Rápido
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
-              Selecciona la acción que deseas realizar.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-3 space-y-2.5">
-            {/* 1. HERO: AI COACH DIARIO */}
-            <button
-              type="button"
-              onClick={() => {
-                setGlobalQuickLogOpen(false);
-                setActiveTab("diario");
-              }}
-              className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-gradient-to-r from-purple-500/15 via-primary/15 to-purple-500/10 hover:from-purple-500/25 hover:to-primary/25 transition-all border border-primary/35 text-left group cursor-pointer shadow-xs"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
-                  <Sparkles className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-bold text-foreground block">
-                      Shake & Build AI
-                    </span>
-                    <Badge className="bg-primary text-white text-[9px] font-extrabold px-1.5 py-0 h-4 shadow-none">
-                      MOTOR 3 BLOQUES
-                    </Badge>
-                  </div>
-                  <span className="text-[10px] text-muted-foreground">
-                    Sugerencia nutricional contextual o agita tu móvil
-                  </span>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-primary group-hover:translate-x-0.5 transition" />
-            </button>
-
-            {/* 2. ESCANEAR COMIDA CON IA */}
-            <button
-              type="button"
-              onClick={() => {
-                setGlobalQuickLogOpen(false);
-                navigate({ to: "/scan" });
-              }}
-              className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-secondary/50 hover:bg-secondary transition border border-border text-left group cursor-pointer"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
-                  <Camera className="w-5 h-5" />
-                </div>
-                <div>
-                  <span className="text-xs font-bold text-foreground block">
-                    Escanear Comida con IA
-                  </span>
-                  <span className="text-[10px] text-muted-foreground">
-                    Foto instantánea y análisis ICN
-                  </span>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition" />
-            </button>
-
-            {/* 3. REGISTRAR PESO */}
-            <button
-              type="button"
-              onClick={() => {
-                setGlobalQuickLogOpen(false);
-                setGlobalLogWeightOpen(true);
-              }}
-              className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-secondary/50 hover:bg-secondary transition border border-border text-left group cursor-pointer"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
-                  <Scale className="w-5 h-5" />
-                </div>
-                <div>
-                  <span className="text-xs font-bold text-foreground block">Registrar Peso</span>
-                  <span className="text-[10px] text-muted-foreground">
-                    Actualiza tu peso corporal de hoy
-                  </span>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition" />
-            </button>
-
-            {/* 4. ANOTAR CHEAT DAY / COMIDA LIBRE */}
-            <button
-              type="button"
-              onClick={() => {
-                setGlobalQuickLogOpen(false);
-                setGlobalCheatDaysOpen(true);
-              }}
-              className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-secondary/50 hover:bg-secondary transition border border-border text-left group cursor-pointer"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
-                  <Apple className="w-5 h-5" />
-                </div>
-                <div>
-                  <span className="text-xs font-bold text-foreground block">
-                    Anotar Cheat Day / Comida Libre
-                  </span>
-                  <span className="text-[10px] text-muted-foreground">
-                    Registra un día o comida libre
-                  </span>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition" />
-            </button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* GLOBAL MODAL: SHAKE & BUILD (MOTOR 3 BLOQUES) */}
-
-      {/* GLOBAL MODAL: REGISTRAR PESO */}
-      <Dialog open={globalLogWeightOpen} onOpenChange={setGlobalLogWeightOpen}>
-        <DialogContent className="sm:max-w-md rounded-3xl p-6 border border-border bg-card">
-          <DialogHeader className="pb-3 border-b border-border/40 text-left">
-            <DialogTitle className="text-base font-bold flex items-center gap-2 text-foreground">
-              <Scale className="w-5 h-5 text-emerald-500" /> Registrar Peso Actual
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
-              Mantén actualizado tu progreso corporal diario.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4 space-y-4 text-left">
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-foreground">Peso (kg)</label>
-              <input
-                type="number"
-                step="0.1"
-                value={globalWeightInput}
-                onChange={(e) => setGlobalWeightInput(e.target.value)}
-                placeholder="72.4"
-                className="w-full px-4 py-3 rounded-2xl bg-secondary border border-border font-extrabold text-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-            </div>
-            <div className="flex gap-2">
-              {["68.0", "70.5", "72.4", "75.0"].map((quickVal) => (
-                <button
-                  key={quickVal}
-                  type="button"
-                  onClick={() => setGlobalWeightInput(quickVal)}
-                  className="flex-1 py-1.5 rounded-xl bg-secondary/70 hover:bg-secondary text-xs font-bold text-muted-foreground hover:text-foreground border border-border/40 transition cursor-pointer"
-                >
-                  {quickVal} kg
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="pt-3 border-t border-border/40 flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setGlobalLogWeightOpen(false)}
-              className="rounded-xl font-semibold cursor-pointer"
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={() => {
-                setGlobalLogWeightOpen(false);
-                if (typeof window !== "undefined") {
-                  try {
-                    localStorage.setItem("shakerfy_user_weight", globalWeightInput);
-                  } catch (_) {}
-                }
-                toast.success(`Peso actualizado a ${globalWeightInput} kg`);
-              }}
-              className="rounded-xl font-bold bg-emerald-500 hover:bg-emerald-600 text-white cursor-pointer"
-            >
-              Guardar Peso
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* GLOBAL MODAL: CHEAT DAYS */}
-      <Dialog open={globalCheatDaysOpen} onOpenChange={setGlobalCheatDaysOpen}>
-        <DialogContent className="sm:max-w-md rounded-3xl p-6 border border-border bg-card text-left">
-          <DialogHeader className="pb-3 border-b border-border/40 text-left">
-            <DialogTitle className="text-base font-bold flex items-center gap-2 text-foreground">
-              <Apple className="w-5 h-5 text-indigo-500" /> Registro de Días / Comidas Libres
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
-              Registra comidas libres dentro de tu plan de hábitos conscientes.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4 space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-2xl bg-secondary/50 border border-border">
-              <div>
-                <span className="text-xs font-bold text-foreground block">
-                  Cheat Meals esta semana
-                </span>
-                <span className="text-[10px] text-muted-foreground">
-                  Permitidos recomendados: 2 por semana
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8 rounded-full cursor-pointer"
-                  onClick={() => setGlobalCheatCount(Math.max(0, globalCheatCount - 1))}
-                >
-                  -
-                </Button>
-                <span className="font-mono font-bold text-base">{globalCheatCount}</span>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8 rounded-full cursor-pointer"
-                  onClick={() => setGlobalCheatCount(globalCheatCount + 1)}
-                >
-                  +
-                </Button>
-              </div>
-            </div>
-          </div>
-          <div className="pt-3 border-t border-border/40 flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setGlobalCheatDaysOpen(false)}
-              className="rounded-xl font-semibold cursor-pointer"
-            >
-              Cerrar
-            </Button>
-            <Button
-              onClick={() => {
-                setGlobalCheatDaysOpen(false);
-                toast.success("Comidas libres actualizadas");
-              }}
-              className="rounded-xl font-bold bg-indigo-500 hover:bg-indigo-600 text-white cursor-pointer"
-            >
-              Guardar
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
@@ -1554,168 +1260,68 @@ function PagosTab() {
 }
 
 // Subcomponent: Config Tab
-// Food Categories Data for Pantry Selector
-const FOOD_CATEGORIES = [
-  {
-    id: "hortalizas",
-    name: "Hortalizas & Vegetales",
-    items: [
-      "Lechuga",
-      "Rúcula",
-      "Radicheta",
-      "Tomate",
-      "Puerro",
-      "Cebolla",
-      "Berenjena",
-      "Zapallito",
-      "Morrón",
-      "Brócoli",
-      "Coliflor",
-      "Brotes de soja",
-      "Repollito de bruselas",
-      "Remolacha",
-      "Ajo",
-      "Zanahoria",
-      "Repollo",
-      "Champiñon",
-      "Calabaza",
-      "Zapallo",
-      "Apio",
-    ],
-  },
-  {
-    id: "frutas",
-    name: "Frutas Frescas",
-    items: [
-      "Banana",
-      "Manzana",
-      "Mandarina",
-      "Naranja",
-      "Pera",
-      "Uva",
-      "Frutilla",
-      "Arándano",
-      "Sandía",
-      "Melón",
-      "Durazno",
-      "Ananá",
-    ],
-  },
-  {
-    id: "dulces",
-    name: "Dulces Saludables",
-    items: ["Miel", "Mermelada sin azúcar", "Dátiles"],
-  },
-  {
-    id: "proteina_animal",
-    name: "Proteína Animal",
-    items: ["Cerdo", "Pescado", "Pollo", "Vaca", "Huevo", "Jamón cocido", "Lomito", "Pavita"],
-  },
-  {
-    id: "proteina_vegetal",
-    name: "Proteína Vegetal",
-    items: [
-      "Lenteja",
-      "Garbanzo",
-      "Poroto",
-      "Soja",
-      "Arveja",
-      "Habas",
-      "Soja texturizada",
-      "Tofu",
-      "Tempeh",
-      "Levadura nutricional",
-      "Germen de trigo",
-      "Seitán",
-      "Medallones de legumbres",
-    ],
-  },
-  {
-    id: "grasas_saludables",
-    name: "Grasas Saludables",
-    items: ["Aceite", "Palta", "Aceituna", "Frutos secos", "Semillas", "Pasta de maní"],
-  },
-  {
-    id: "lacteos",
-    name: "Lácteos & Quesos",
-    items: ["Leche parcialmente descremada", "Yogurt parcialmente descremado", "Quesos magros"],
-  },
-  {
-    id: "carbohidratos",
-    name: "Carbohidratos & Granos",
-    items: [
-      "Amaranto",
-      "Arroz",
-      "Avena",
-      "Cebada",
-      "Centeno",
-      "Trigo",
-      "Trigo sarraceno",
-      "Trigo burgol",
-      "Cous cous",
-      "Mijo",
-      "Quinoa",
-      "Polenta",
-      "Almidón de maíz",
-      "Pastas simples",
-      "Pastas rellenas",
-      "Masas de empanadas",
-      "Masas de tartas",
-      "Masas de fajitas",
-      "Pan",
-      "Papa",
-      "Batata",
-      "Choclo",
-    ],
-  },
-  {
-    id: "condimentos",
-    name: "Condimentos & Especias",
-    items: [
-      "Nuez moscada",
-      "Pimentón",
-      "Pimienta blanca / negra",
-      "Perejil",
-      "Orégano",
-      "Ají",
-      "Cúrcuma",
-      "Curry",
-    ],
-  },
-  {
-    id: "otros",
-    name: "Otros Esenciales",
-    items: [
-      "Bebidas vegetales sin azúcar",
-      "Coco rallado",
-      "Esencia de vainilla",
-      "Stevia",
-      "Polvo para hornear",
-    ],
-  },
-];
+export interface AiMemoryItem {
+  id: string;
+  text: string;
+  domain?: "nutricion" | "entrenamiento";
+  category?: "proteina" | "carbo" | "grasa" | "habito" | "intensidad" | "ejercicio" | "cuidado" | "general";
+  createdAt?: string;
+}
 
-// Muscle Anatomy & Groups Data
-const muscleImages = [
-  { id: "pecho", name: "Pecho", img: "/gimnasia.png" },
-  { id: "espalda", name: "Espalda", img: "/atras (4).png" },
-  { id: "espalda-baja", name: "Espalda Baja", img: "/atras (3).png" },
-  { id: "hombros", name: "Hombros", img: "/hombro (2).png" },
-  { id: "biceps", name: "Bíceps", img: "/biceps.png" },
-  { id: "triceps", name: "Tríceps", img: "/musculos (4).png" },
-  { id: "abdominales", name: "Abdominales", img: "/culturismo.png" },
-  { id: "cuadriceps", name: "Cuádriceps", img: "/capacitacion.png" },
-  { id: "isquiotibiales", name: "Isquiotibiales", img: "/atras (1).png" },
-  { id: "gluteos", name: "Glúteos", img: "/atras (5).png" },
-  { id: "gemelos", name: "Gemelos", img: "/atras (6).png" },
+const DEFAULT_AI_MEMORIES: AiMemoryItem[] = [
+  // Nutrición
+  {
+    id: "mem-1",
+    text: "Prioriza pan de masa madre y granos enteros en desayunos",
+    domain: "nutricion",
+    category: "carbo",
+  },
+  {
+    id: "mem-2",
+    text: "Prefiere tofu marinado, pechuga de pollo y huevos como proteínas",
+    domain: "nutricion",
+    category: "proteina",
+  },
+  {
+    id: "mem-3",
+    text: "Grasas favoritas: Palta fresca, semillas de chía y frutos secos",
+    domain: "nutricion",
+    category: "grasa",
+  },
+  {
+    id: "mem-4",
+    text: "Suele optar por infusiones o bebidas vegetales ligeras sin azúcar",
+    domain: "nutricion",
+    category: "habito",
+  },
+  // Entrenamiento
+  {
+    id: "mem-5",
+    text: "Ritmo de Fuerza & Hipertrofia óptimo: Mantener sobrecarga progresiva controlada",
+    domain: "entrenamiento",
+    category: "intensidad",
+  },
+  {
+    id: "mem-6",
+    text: "Prefiere ejercicios con banco ajustable, mancuernas y calentamiento articular guiado",
+    domain: "entrenamiento",
+    category: "ejercicio",
+  },
+  {
+    id: "mem-7",
+    text: "Prioriza descansos de 60-90s en series de alta demanda para cuidar técnica",
+    domain: "entrenamiento",
+    category: "cuidado",
+  },
 ];
 
 // Subcomponent: Config Tab (Perfil & Configuración)
 function ConfigTab() {
   const navigate = useNavigate();
   const [subView, setSubView] = useState<
-    "main" | "edit-profile" | "diet-preferences" | "app-settings"
+    "main" | "settings" | "edit-profile" | "ai-memory" | "app-settings"
   >("main");
+  const [profileTab, setProfileTab] = useState<"progreso" | "recuperacion">("progreso");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -1870,33 +1476,27 @@ function ConfigTab() {
     reader.readAsDataURL(file);
   };
 
-  // Diet Preferences Form States
-  const [dietType, setDietType] = useState<string>("recomendada");
-  const [restrictions, setRestrictions] = useState<string[]>([]);
-  const [meals, setMeals] = useState<string[]>(["desayuno", "almuerzo", "snack_1", "cena"]);
-  const [suggestionStyle, setSuggestionStyle] = useState<"recetas" | "ingredientes">("recetas");
-  const [variety, setVariety] = useState<"mucha" | "moderada" | "poca">("moderada");
-  const [selectedFoods, setSelectedFoods] = useState<string[]>(() => {
-    return FOOD_CATEGORIES.flatMap((c) => c.items);
+  // AI Memory State
+  const [aiMemories, setAiMemories] = useState<AiMemoryItem[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("shakerfy_ai_memory");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch (_) {}
+    }
+    return DEFAULT_AI_MEMORIES;
   });
+  const [newMemoryText, setNewMemoryText] = useState("");
+  const [memoryFilter, setMemoryFilter] = useState<"all" | "nutricion" | "entrenamiento">("all");
 
   // App Settings State
   const [theme, setTheme] = useState<"system" | "light" | "dark">("system");
   const [language, setLanguage] = useState("es");
   const [reminders, setReminders] = useState(true);
   const [motionSensorEnabled, setMotionSensorEnabled] = useState(false);
-
-  // Settings Popup Dialog State
-  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
-
-  // Progress/Profile Screen States (matching reference design)
-  const [timePeriod, setTimePeriod] = useState<"90_days" | "6_months" | "1_year" | "all_time">(
-    "90_days",
-  );
-  const [logWeightModalOpen, setLogWeightModalOpen] = useState(false);
-  const [cheatDaysModalOpen, setCheatDaysModalOpen] = useState(false);
-  const [editGoalModalOpen, setEditGoalModalOpen] = useState(false);
-  const [quickLogModalOpen, setQuickLogModalOpen] = useState(false);
 
   // Shake / Accelerometer Detection for "Shake & Build"
   useEffect(() => {
@@ -1942,13 +1542,10 @@ function ConfigTab() {
       }
     };
   }, []);
-  const [newWeightInput, setNewWeightInput] = useState(weight);
-  const [cheatCount, setCheatCount] = useState(2);
-  const [goalPercent, setGoalPercent] = useState(80);
 
   useEffect(() => {
     const handleOpenSettingsEvent = () => {
-      setSettingsModalOpen(true);
+      setSubView("settings");
     };
     window.addEventListener("shakerfy:open-settings", handleOpenSettingsEvent);
     return () => {
@@ -1966,18 +1563,16 @@ function ConfigTab() {
   // Profile Completion Percentage Calculation (Gamificación sin bloqueo)
   const profileCompletion = useMemo(() => {
     let completedSteps = 0;
-    const totalSteps = 7;
+    const totalSteps = 5;
 
     if (fullName.trim().length > 0) completedSteps++;
     if (birthDate && sex) completedSteps++;
     if (height && weight && Number(height) > 0 && Number(weight) > 0) completedSteps++;
     if (goal) completedSteps++;
-    if (dietType) completedSteps++;
-    if (meals.length > 0) completedSteps++;
-    if (selectedFoods.length > 0) completedSteps++;
+    if (aiMemories.length > 0) completedSteps++;
 
     return Math.round((completedSteps / totalSteps) * 100);
-  }, [fullName, birthDate, sex, height, weight, goal, dietType, meals, selectedFoods]);
+  }, [fullName, birthDate, sex, height, weight, goal, aiMemories]);
 
   const handleToggleMotionSensor = async (enabled: boolean) => {
     setMotionSensorEnabled(enabled);
@@ -2025,17 +1620,68 @@ function ConfigTab() {
       window.dispatchEvent(new CustomEvent("shakerfy:profile-updated", { detail: updatedProfile }));
     }
     toast.success("Perfil guardado correctamente");
-    setSubView("main");
+    setSubView("settings");
   };
 
-  const handleSaveDietPreferences = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (typeof window !== "undefined") {
-      const dietData = { dietType, restrictions, meals, suggestionStyle, variety, selectedFoods };
-      localStorage.setItem("shakerfy_diet_preferences", JSON.stringify(dietData));
+  const handleDeleteMemory = (id: string) => {
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      try {
+        navigator.vibrate(15);
+      } catch (_) {}
     }
-    toast.success("Preferencias alimenticias guardadas");
-    setSubView("main");
+    setAiMemories((prev) => {
+      const updated = prev.filter((m) => m.id !== id);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("shakerfy_ai_memory", JSON.stringify(updated));
+      }
+      return updated;
+    });
+    toast.info("Preferencia eliminada de la memoria");
+  };
+
+  const handleAddMemory = (text: string) => {
+    if (!text.trim()) return;
+    const lower = text.toLowerCase();
+    let domain: AiMemoryItem["domain"] = "nutricion";
+    let cat: AiMemoryItem["category"] = "general";
+
+    if (/entreno|workout|fuerza|mancuerna|ejercicio|serie|repetic|sentadilla|press|hiit|cardio|músculo|rodilla|hombro|lumbar|articular/i.test(lower)) {
+      domain = "entrenamiento";
+      if (/ligero|pesado|extenuante|intensidad|carga|rpe|fallo/i.test(lower)) cat = "intensidad";
+      else if (/rodilla|hombro|espalda|dolor|cuidado|molestia|articular|impacto|silencioso/i.test(lower)) cat = "cuidado";
+      else cat = "ejercicio";
+    } else {
+      domain = "nutricion";
+      if (/pollo|tofu|huevo|atún|salmón|proteína|carne|pavo|pescado/i.test(lower)) cat = "proteina";
+      else if (/pan|avena|quinoa|arroz|papa|batata|carbo|masa madre|centeno/i.test(lower)) cat = "carbo";
+      else if (/palta|aguacate|aceite|nuez|semilla|chía|grasa|maní|almendra/i.test(lower)) cat = "grasa";
+      else if (/café|té|infusión|agua|leche|desayuno|cena|merienda|hábito|snack/i.test(lower)) cat = "habito";
+    }
+
+    const newMem: AiMemoryItem = {
+      id: `mem-${Date.now()}`,
+      text: text.trim(),
+      domain: domain,
+      category: cat,
+      createdAt: new Date().toISOString(),
+    };
+
+    setAiMemories((prev) => {
+      const updated = [newMem, ...prev];
+      if (typeof window !== "undefined") {
+        localStorage.setItem("shakerfy_ai_memory", JSON.stringify(updated));
+      }
+      return updated;
+    });
+    toast.success("Preferencia guardada en la memoria de la IA");
+  };
+
+  const handleClearAllMemories = () => {
+    setAiMemories([]);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("shakerfy_ai_memory", JSON.stringify([]));
+    }
+    toast.info("Memoria de la IA restablecida");
   };
 
   const handleSaveAppSettings = (e: React.FormEvent) => {
@@ -2045,38 +1691,13 @@ function ConfigTab() {
       localStorage.setItem("shakerfy_app_settings", JSON.stringify(appSettingsData));
     }
     toast.success("Configuración de la aplicación guardada");
-    setSubView("main");
+    setSubView("settings");
   };
 
   const handleLogout = () => {
     setLogoutModalOpen(false);
     toast.success("Sesión cerrada correctamente");
     navigate({ to: "/" });
-  };
-
-  const toggleRestriction = (res: string) => {
-    setRestrictions((prev) =>
-      prev.includes(res) ? prev.filter((r) => r !== res) : [...prev, res],
-    );
-  };
-
-  const toggleMeal = (meal: string) => {
-    setMeals((prev) => (prev.includes(meal) ? prev.filter((m) => m !== meal) : [...prev, meal]));
-  };
-
-  const toggleFood = (item: string) => {
-    setSelectedFoods((prev) =>
-      prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item],
-    );
-  };
-
-  const toggleCategoryFoods = (categoryItems: string[]) => {
-    const allSelected = categoryItems.every((i) => selectedFoods.includes(i));
-    if (allSelected) {
-      setSelectedFoods((prev) => prev.filter((i) => !categoryItems.includes(i)));
-    } else {
-      setSelectedFoods((prev) => Array.from(new Set([...prev, ...categoryItems])));
-    }
   };
 
   const getGoalLabel = (g: string) => {
@@ -2092,31 +1713,16 @@ function ConfigTab() {
     }
   };
 
-  const getDietTypeLabel = (d: string) => {
-    switch (d) {
-      case "alta_proteinas":
-        return "Alta en proteínas";
-      case "baja_carbos":
-        return "Baja en carbohidratos";
-      case "keto":
-        return "Keto";
-      case "bajo_grasas":
-        return "Bajo en grasas";
-      default:
-        return "Recomendada";
-    }
-  };
-
   // SUB-SCREEN 1: PERFIL (EDITAR PERFIL)
   if (subView === "edit-profile") {
     return (
       <div className="space-y-6 max-w-2xl mx-auto pb-16 animate-fade-in">
         <button
           type="button"
-          onClick={() => setSubView("main")}
+          onClick={() => setSubView("settings")}
           className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground transition cursor-pointer"
         >
-          <ChevronLeft className="w-4 h-4" /> Volver a Perfil
+          <ChevronLeft className="w-4 h-4" /> Volver a Ajustes
         </button>
 
         <div>
@@ -2359,7 +1965,7 @@ function ConfigTab() {
               type="button"
               variant="outline"
               size="default"
-              onClick={() => setSubView("main")}
+              onClick={() => setSubView("settings")}
               className="rounded-xl font-semibold cursor-pointer"
             >
               Cancelar
@@ -2370,347 +1976,215 @@ function ConfigTab() {
     );
   }
 
-  // SUB-SCREEN 2: PREFERENCIAS ALIMENTICIAS
-  if (subView === "diet-preferences") {
+  // SUB-SCREEN 2: MEMORIA & GUSTOS APRENDIDOS DE LA IA
+  if (subView === "ai-memory") {
+    const nutritionCount = aiMemories.filter((m) => m.domain !== "entrenamiento").length;
+    const trainingCount = aiMemories.filter((m) => m.domain === "entrenamiento").length;
+
+    const filteredMemories = aiMemories.filter((m) => {
+      if (memoryFilter === "nutricion") return m.domain !== "entrenamiento";
+      if (memoryFilter === "entrenamiento") return m.domain === "entrenamiento";
+      return true;
+    });
+
     return (
       <div className="space-y-6 max-w-3xl pb-16 animate-fade-in">
         <button
           type="button"
-          onClick={() => setSubView("main")}
+          onClick={() => setSubView("settings")}
           className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground transition cursor-pointer"
         >
-          <ChevronLeft className="w-4 h-4" /> Volver a Configuración
+          <ChevronLeft className="w-4 h-4" /> Volver a Ajustes
         </button>
 
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Preferencias Alimenticias</h2>
-          <p className="text-sm text-muted-foreground">
-            Personaliza tus metas nutricionales, tipo de sugerencias y disponibilidad de alimentos.
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+              <Brain className="w-6 h-6 text-primary" /> Memoria & Preferencias de la IA
+            </h2>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              La IA aprende de lo que comes, tus rotaciones y tu feedback de entrenamientos. Puedes eliminar cualquier recuerdo para resetearlo.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              Aprendizaje Activo
+            </span>
+          </div>
         </div>
 
-        <form onSubmit={handleSaveDietPreferences} className="space-y-8">
-          {/* 1. TIPO DE DIETA */}
-          <div className="border border-border bg-card shadow-xs rounded-3xl p-6 sm:p-8 space-y-4">
-            <div className="space-y-1">
-              <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                <Utensils className="w-4 h-4 text-emerald-500" /> ¿Qué tipo de dieta prefieres?
-              </h3>
-              <p className="text-xs text-muted-foreground">
-                La IA ajustará la distribución de nutrientes según tu filosofía nutricional.
+        {/* Input para añadir gusto o preferencia manualmente */}
+        <div className="border border-border bg-card shadow-xs rounded-3xl p-5 sm:p-6 space-y-3">
+          <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
+            Añadir preferencia o aprendizaje
+          </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (newMemoryText.trim()) {
+                handleAddMemory(newMemoryText.trim());
+                setNewMemoryText("");
+              }
+            }}
+            className="flex items-center gap-2"
+          >
+            <input
+              type="text"
+              value={newMemoryText}
+              onChange={(e) => setNewMemoryText(e.target.value)}
+              placeholder="Ej: Prefiero leche de coco en batidos, o press inclinado con mancuernas..."
+              className="flex-1 px-4 py-2.5 rounded-2xl border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-hidden focus:ring-1 focus:ring-primary"
+            />
+            <Button
+              type="submit"
+              size="sm"
+              disabled={!newMemoryText.trim()}
+              className="rounded-2xl font-bold gap-1.5 px-4 h-10 cursor-pointer"
+            >
+              <Plus className="w-4 h-4" /> Añadir
+            </Button>
+          </form>
+        </div>
+
+        {/* Lista de recuerdos con Filtros por Dominio */}
+        <div className="border border-border bg-card shadow-xs rounded-3xl p-6 sm:p-8 space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/40 pb-4">
+            {/* Filtros de Categoría */}
+            <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-secondary/60 border border-border/60">
+              <button
+                type="button"
+                onClick={() => setMemoryFilter("all")}
+                className={cn(
+                  "px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer",
+                  memoryFilter === "all"
+                    ? "bg-background text-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                Todos ({aiMemories.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setMemoryFilter("nutricion")}
+                className={cn(
+                  "px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5",
+                  memoryFilter === "nutricion"
+                    ? "bg-background text-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <span>🥗 Nutrición</span>
+                <span className="text-[10px] opacity-70">({nutritionCount})</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setMemoryFilter("entrenamiento")}
+                className={cn(
+                  "px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5",
+                  memoryFilter === "entrenamiento"
+                    ? "bg-background text-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <span>🏋️ Entrenamiento</span>
+                <span className="text-[10px] opacity-70">({trainingCount})</span>
+              </button>
+            </div>
+
+            {aiMemories.length > 0 && (
+              <button
+                type="button"
+                onClick={handleClearAllMemories}
+                className="text-[11px] font-bold text-rose-500 hover:text-rose-600 dark:hover:text-rose-400 transition cursor-pointer self-end sm:self-auto"
+              >
+                Resetear memoria
+              </button>
+            )}
+          </div>
+
+          {filteredMemories.length === 0 ? (
+            <div className="py-12 text-center space-y-2">
+              <Brain className="w-10 h-10 text-muted-foreground/30 mx-auto" />
+              <p className="text-xs font-medium text-muted-foreground">
+                No hay recuerdos registrados en esta categoría.
               </p>
             </div>
+          ) : (
+            <div className="space-y-2.5">
+              {filteredMemories.map((mem) => {
+                const getCategoryBadge = (mem: AiMemoryItem) => {
+                  if (mem.domain === "entrenamiento") {
+                    switch (mem.category) {
+                      case "intensidad":
+                        return { label: "🏋️ Intensidad", color: "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20" };
+                      case "cuidado":
+                        return { label: "🛡️ Cuidado", color: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20" };
+                      case "ejercicio":
+                        return { label: "⚡ Ejercicio", color: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20" };
+                      default:
+                        return { label: "🏋️ Entreno", color: "bg-primary/10 text-primary border-primary/20" };
+                    }
+                  }
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {[
-                {
-                  id: "recomendada",
-                  title: "Recomendada",
-                  desc: "La mejor para ti. Mezcla óptima de proteínas, carbohidratos y grasas.",
-                },
-                {
-                  id: "alta_proteinas",
-                  title: "Alta en proteínas",
-                  desc: "Más proteínas, menos carbohidratos y grasas moderadas.",
-                },
-                {
-                  id: "baja_carbos",
-                  title: "Baja en carbohidratos",
-                  desc: "Menos carbohidratos, más grasas y proteínas moderadas.",
-                },
-                {
-                  id: "keto",
-                  title: "Keto",
-                  desc: "Muy baja en carbohidratos, alta en grasas y proteínas moderadas.",
-                },
-                {
-                  id: "bajo_grasas",
-                  title: "Bajo en grasas",
-                  desc: "Menos grasas, más carbohidratos y proteínas moderadas.",
-                },
-              ].map((dt) => {
-                const isSelected = dietType === dt.id;
-                return (
-                  <button
-                    type="button"
-                    key={dt.id}
-                    onClick={() => setDietType(dt.id)}
-                    className={cn(
-                      "p-4 rounded-2xl border text-left transition cursor-pointer space-y-1",
-                      isSelected
-                        ? "border-foreground bg-accent/80 text-foreground shadow-xs"
-                        : "border-border/60 hover:border-border text-muted-foreground",
-                    )}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-foreground">{dt.title}</span>
-                      {isSelected && <Check className="w-4 h-4 text-emerald-500" />}
-                    </div>
-                    <p className="text-[11px] text-muted-foreground leading-relaxed">{dt.desc}</p>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* 2. RESTRICCIONES & FRECUENCIA DE COMIDAS */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Restricciones */}
-            <div className="border border-border bg-card shadow-xs rounded-3xl p-6 space-y-4">
-              <div className="space-y-1">
-                <h3 className="text-sm font-bold text-foreground">Restricciones Alimentarias</h3>
-                <p className="text-xs text-muted-foreground">
-                  Selecciona si sigues algún régimen estricto.
-                </p>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {[
-                  { id: "vegano", label: "Vegano" },
-                  { id: "vegetariano", label: "Vegetariano" },
-                  { id: "sin_lactosa", label: "Sin Lactosa" },
-                  { id: "sin_gluten", label: "Sin Gluten / Celiaco" },
-                ].map((res) => {
-                  const isChecked = restrictions.includes(res.id);
-                  return (
-                    <button
-                      type="button"
-                      key={res.id}
-                      onClick={() => toggleRestriction(res.id)}
-                      className={cn(
-                        "px-3.5 py-2 rounded-xl border text-xs font-semibold transition cursor-pointer flex items-center gap-1.5",
-                        isChecked
-                          ? "border-foreground bg-foreground text-background"
-                          : "border-border/60 hover:border-border text-muted-foreground",
-                      )}
-                    >
-                      {isChecked && <Check className="w-3.5 h-3.5" />}
-                      <span>{res.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Frecuencia de comidas */}
-            <div className="border border-border bg-card shadow-xs rounded-3xl p-6 space-y-4">
-              <div className="space-y-1">
-                <h3 className="text-sm font-bold text-foreground">Distribución de Comidas</h3>
-                <p className="text-xs text-muted-foreground">
-                  ¿Cuántas comidas al día sueles o deseas hacer?
-                </p>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {[
-                  { id: "desayuno", label: "Desayuno" },
-                  { id: "almuerzo", label: "Almuerzo" },
-                  { id: "snack_1", label: "Snack 1" },
-                  { id: "cena", label: "Cena" },
-                  { id: "snack_2", label: "Snack 2" },
-                ].map((m) => {
-                  const isChecked = meals.includes(m.id);
-                  return (
-                    <button
-                      type="button"
-                      key={m.id}
-                      onClick={() => toggleMeal(m.id)}
-                      className={cn(
-                        "px-3.5 py-2 rounded-xl border text-xs font-semibold transition cursor-pointer flex items-center gap-1.5",
-                        isChecked
-                          ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                          : "border-border/60 hover:border-border text-muted-foreground",
-                      )}
-                    >
-                      {isChecked && <Check className="w-3.5 h-3.5" />}
-                      <span>{m.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          {/* 3. FORMATO & VARIEDAD DE SUGERENCIAS */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Formato de Sugerencias */}
-            <div className="border border-border bg-card shadow-xs rounded-3xl p-6 space-y-4">
-              <div className="space-y-1">
-                <h3 className="text-sm font-bold text-foreground">Formato de Sugerencias</h3>
-                <p className="text-xs text-muted-foreground">
-                  ¿Cómo prefieres que la IA te presente tus comidas?
-                </p>
-              </div>
-
-              <div className="space-y-2.5">
-                {[
-                  {
-                    id: "recetas",
-                    title: "📖 Recetas",
-                    desc: "Instrucciones paso a paso. Ej: Avocado Chicken Sandwich.",
-                  },
-                  {
-                    id: "ingredientes",
-                    title: "🥩 Solo ingredientes",
-                    desc: "Prepáralos como quieras. Ej: 1 filete de pollo, 1 taza de arroz, 1/2 palta.",
-                  },
-                ].map((fmt) => {
-                  const isSelected = suggestionStyle === fmt.id;
-                  return (
-                    <button
-                      type="button"
-                      key={fmt.id}
-                      onClick={() => setSuggestionStyle(fmt.id as any)}
-                      className={cn(
-                        "w-full p-3.5 rounded-2xl border text-left transition cursor-pointer space-y-1",
-                        isSelected
-                          ? "border-foreground bg-accent text-foreground font-bold"
-                          : "border-border/60 hover:border-border text-muted-foreground",
-                      )}
-                    >
-                      <div className="text-xs font-bold text-foreground">{fmt.title}</div>
-                      <p className="text-[11px] text-muted-foreground">{fmt.desc}</p>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Variedad de Comidas */}
-            <div className="border border-border bg-card shadow-xs rounded-3xl p-6 space-y-4">
-              <div className="space-y-1">
-                <h3 className="text-sm font-bold text-foreground">Variedad en tus Comidas</h3>
-                <p className="text-xs text-muted-foreground">
-                  ¿Cuánta diversidad te gustaría en tus menúes cotidianos?
-                </p>
-              </div>
-
-              <div className="space-y-2.5">
-                {[
-                  {
-                    id: "mucha",
-                    title: "Mucha variedad",
-                    desc: "Ideal si te gusta preparar diferentes platos todos los días.",
-                  },
-                  {
-                    id: "moderada",
-                    title: "Variedad moderada",
-                    desc: "Buena si te gusta repetir platos pero quieres algo de variedad.",
-                  },
-                  {
-                    id: "poca",
-                    title: "Poca variedad",
-                    desc: "Perfecta para facilitar la planificación y compra de supermercado.",
-                  },
-                ].map((v) => {
-                  const isSelected = variety === v.id;
-                  return (
-                    <button
-                      type="button"
-                      key={v.id}
-                      onClick={() => setVariety(v.id as any)}
-                      className={cn(
-                        "w-full p-3 rounded-2xl border text-left transition cursor-pointer space-y-0.5",
-                        isSelected
-                          ? "border-foreground bg-accent text-foreground font-bold"
-                          : "border-border/60 hover:border-border text-muted-foreground",
-                      )}
-                    >
-                      <div className="text-xs font-bold text-foreground">{v.title}</div>
-                      <p className="text-[11px] text-muted-foreground">{v.desc}</p>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          {/* 4. ALIMENTOS DISPONIBLES EN ALACENA (POR CATEGORÍAS) */}
-          <div className="border border-border bg-card shadow-xs rounded-3xl p-6 sm:p-8 space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/40 pb-4">
-              <div>
-                <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                  <Wheat className="w-4 h-4 text-amber-500" /> Selecciona tus Alimentos Disponibles
-                </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Tus sugerencias dependerán exclusivamente de las elecciones que marques aquí.
-                </p>
-              </div>
-              <Badge variant="outline" className="text-xs font-bold self-start sm:self-auto">
-                {selectedFoods.length} alimentos activos
-              </Badge>
-            </div>
-
-            <div className="space-y-6">
-              {FOOD_CATEGORIES.map((cat) => {
-                const categorySelectedCount = cat.items.filter((i) =>
-                  selectedFoods.includes(i),
-                ).length;
-                const allSelected = categorySelectedCount === cat.items.length;
+                  switch (mem.category) {
+                    case "proteina":
+                      return { label: "🥗 Proteína", color: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20" };
+                    case "carbo":
+                      return { label: "🌾 Carbohidrato", color: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20" };
+                    case "grasa":
+                      return { label: "🥑 Grasa", color: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" };
+                    case "habito":
+                      return { label: "☕ Hábito", color: "bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20" };
+                    default:
+                      return { label: "🥗 Nutrición", color: "bg-primary/10 text-primary border-primary/20" };
+                  }
+                };
+                const badge = getCategoryBadge(mem);
 
                 return (
                   <div
-                    key={cat.id}
-                    className="space-y-2.5 border-b border-border/30 pb-4 last:border-0 last:pb-0"
+                    key={mem.id}
+                    className="flex items-center justify-between gap-3 p-3.5 rounded-2xl border border-border/60 bg-background/50 hover:bg-background hover:border-border transition group"
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-foreground uppercase tracking-wider text-muted-foreground/90">
-                        {cat.name} ({categorySelectedCount}/{cat.items.length})
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => toggleCategoryFoods(cat.items)}
-                        className="text-[11px] font-semibold text-primary hover:underline cursor-pointer"
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span
+                        className={cn(
+                          "px-2.5 py-0.5 rounded-lg text-[9px] font-bold uppercase tracking-wider border shrink-0",
+                          badge.color,
+                        )}
                       >
-                        {allSelected ? "Desmarcar todos" : "Seleccionar todos"}
-                      </button>
+                        {badge.label}
+                      </span>
+                      <span className="text-xs font-medium text-foreground truncate">
+                        {mem.text}
+                      </span>
                     </div>
-
-                    <div className="flex flex-wrap gap-1.5">
-                      {cat.items.map((item) => {
-                        const isChecked = selectedFoods.includes(item);
-                        return (
-                          <button
-                            type="button"
-                            key={item}
-                            onClick={() => toggleFood(item)}
-                            className={cn(
-                              "px-2.5 py-1.5 rounded-xl border text-[11px] font-medium transition cursor-pointer select-none",
-                              isChecked
-                                ? "border-foreground/80 bg-foreground text-background font-semibold"
-                                : "border-border/60 hover:border-border text-muted-foreground/80 bg-background/50",
-                            )}
-                          >
-                            {isChecked ? `✓ ${item}` : item}
-                          </button>
-                        );
-                      })}
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteMemory(mem.id)}
+                      title="Eliminar este recuerdo de la memoria"
+                      className="w-7 h-7 rounded-xl flex items-center justify-center text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 transition cursor-pointer shrink-0"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 );
               })}
             </div>
-          </div>
+          )}
+        </div>
 
-          <div className="flex items-center gap-3">
-            <Button
-              type="submit"
-              size="default"
-              className="rounded-xl font-bold flex-1 sm:flex-initial"
-            >
-              Guardar Preferencias Alimenticias
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="default"
-              onClick={() => setSubView("main")}
-              className="rounded-xl font-semibold"
-            >
-              Cancelar
-            </Button>
+        {/* Tarjeta explicativa de cómo aprende */}
+        <div className="rounded-3xl border border-border/70 bg-secondary/30 p-5 sm:p-6 space-y-2">
+          <div className="text-xs font-bold text-foreground flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-primary" /> ¿Cómo utiliza la IA esta memoria unificada?
           </div>
-        </form>
+          <p className="text-[11px] text-muted-foreground leading-relaxed">
+            <strong>Nutrición:</strong> En <em>Shake for AI</em> o sugerencias horarias, la IA prioriza tus alimentos favoritos conservando un 25% de variedad biológica.<br />
+            <strong>Entrenamiento:</strong> El generador de rutinas calibra el volumen, las series y los ejercicios según tus calificaciones (<em>Ligera / Perfecta / Extenuante</em>) y reemplazos previos.
+          </p>
+        </div>
       </div>
     );
   }
@@ -2721,10 +2195,10 @@ function ConfigTab() {
       <div className="space-y-6 max-w-2xl pb-12 animate-fade-in">
         <button
           type="button"
-          onClick={() => setSubView("main")}
+          onClick={() => setSubView("settings")}
           className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground transition cursor-pointer"
         >
-          <ChevronLeft className="w-4 h-4" /> Volver a Configuración
+          <ChevronLeft className="w-4 h-4" /> Volver a Ajustes
         </button>
 
         <div>
@@ -2871,8 +2345,8 @@ function ConfigTab() {
               type="button"
               variant="outline"
               size="default"
-              onClick={() => setSubView("main")}
-              className="rounded-xl font-semibold"
+              onClick={() => setSubView("settings")}
+              className="rounded-xl font-semibold cursor-pointer"
             >
               Cancelar
             </Button>
@@ -2882,9 +2356,209 @@ function ConfigTab() {
     );
   }
 
-  // MAIN SCREEN: PERFIL / PROGRESO (EXACT REPLICA DE LA IMAGEN DE REFERENCIA CON SHADCN/UI)
+  // SUB-SCREEN 4: AJUSTES & CONFIGURACIÓN
+  if (subView === "settings") {
+    return (
+      <div className="space-y-5 max-w-lg mx-auto pb-28 pt-2 animate-fade-in relative text-left">
+        {/* Botón Volver al Perfil */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setSubView("main")}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border bg-card hover:bg-secondary text-xs font-semibold text-foreground transition cursor-pointer"
+          >
+            <ChevronLeft className="w-3.5 h-3.5" /> Volver al Perfil
+          </button>
+        </div>
+
+        {/* Encabezado */}
+        <div className="space-y-1">
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
+            <Settings className="w-5 h-5 text-primary" /> Ajustes & Configuración
+          </h1>
+          <p className="text-xs text-muted-foreground">
+            Gestiona tus datos personales, preferencias de IA y opciones de cuenta.
+          </p>
+        </div>
+
+        {/* GRUPO 1: OPCIONES DE CUENTA */}
+        <div className="space-y-2">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 px-1">
+            Opciones de Cuenta
+          </div>
+          <div className="rounded-3xl border border-border bg-card shadow-xs overflow-hidden divide-y divide-border/40">
+            {/* DATOS BIOLÓGICOS */}
+            <button
+              type="button"
+              onClick={() => setSubView("edit-profile")}
+              className="w-full flex items-center justify-between p-4 hover:bg-secondary/40 transition-all cursor-pointer text-left group"
+            >
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center shrink-0">
+                  <User className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
+                    Datos Biológicos & Perfil
+                  </div>
+                  <div className="text-[11px] text-muted-foreground">
+                    Edad, sexo, altura, peso y objetivo.
+                  </div>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground/60 group-hover:text-foreground group-hover:translate-x-0.5 transition shrink-0" />
+            </button>
+
+            {/* MEMORIA DE LA IA */}
+            <button
+              type="button"
+              onClick={() => setSubView("ai-memory")}
+              className="w-full flex items-center justify-between p-4 hover:bg-secondary/40 transition-all cursor-pointer text-left group"
+            >
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                  <Brain className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-foreground group-hover:text-emerald-500 transition-colors">
+                    Memoria de la IA & Gustos Aprendidos
+                  </div>
+                  <div className="text-[11px] text-muted-foreground">
+                    Preferencias y patrones que la IA recuerda sobre ti.
+                  </div>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground/60 group-hover:text-foreground group-hover:translate-x-0.5 transition shrink-0" />
+            </button>
+
+            {/* AJUSTES DE LA APP */}
+            <button
+              type="button"
+              onClick={() => setSubView("app-settings")}
+              className="w-full flex items-center justify-between p-4 hover:bg-secondary/40 transition-all cursor-pointer text-left group"
+            >
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-2xl bg-sky-500/10 text-sky-500 flex items-center justify-center shrink-0">
+                  <Settings className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-foreground group-hover:text-sky-500 transition-colors">
+                    Ajustes de la Aplicación
+                  </div>
+                  <div className="text-[11px] text-muted-foreground">
+                    Tema visual, acelerómetro Shake AI y notificaciones.
+                  </div>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground/60 group-hover:text-foreground group-hover:translate-x-0.5 transition shrink-0" />
+            </button>
+
+            {/* MEMBRESÍA & PAGOS */}
+            <button
+              type="button"
+              onClick={() => navigate({ to: "/app", search: { tab: "pagos" } })}
+              className="w-full flex items-center justify-between p-4 hover:bg-secondary/40 transition-all cursor-pointer text-left group"
+            >
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+                  <CreditCard className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-foreground group-hover:text-amber-500 transition-colors">
+                    Membresía & Pagos
+                  </div>
+                  <div className="text-[11px] text-muted-foreground">
+                    Pase mensual, comprobantes y facturación.
+                  </div>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground/60 group-hover:text-foreground group-hover:translate-x-0.5 transition shrink-0" />
+            </button>
+          </div>
+        </div>
+
+        {/* GRUPO 2: INFORMACIÓN & LEGAL */}
+        <div className="space-y-2">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 px-1">
+            Información & Legal
+          </div>
+          <div className="rounded-3xl border border-border bg-card shadow-xs overflow-hidden divide-y divide-border/40">
+            {/* POLÍTICAS DE PRIVACIDAD */}
+            <button
+              type="button"
+              onClick={() => setPrivacyModalOpen(true)}
+              className="w-full flex items-center justify-between p-4 hover:bg-secondary/40 transition-all cursor-pointer text-left group"
+            >
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-2xl bg-purple-500/10 text-purple-500 flex items-center justify-center shrink-0">
+                  <Shield className="w-4 h-4" />
+                </div>
+                <div className="text-xs font-bold text-foreground group-hover:text-purple-500 transition-colors">
+                  Políticas de Privacidad
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground/60 group-hover:text-foreground group-hover:translate-x-0.5 transition shrink-0" />
+            </button>
+
+            {/* TÉRMINOS Y CONDICIONES */}
+            <button
+              type="button"
+              onClick={() => setTermsModalOpen(true)}
+              className="w-full flex items-center justify-between p-4 hover:bg-secondary/40 transition-all cursor-pointer text-left group"
+            >
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+                  <FileText className="w-4 h-4" />
+                </div>
+                <div className="text-xs font-bold text-foreground group-hover:text-amber-500 transition-colors">
+                  Términos y Condiciones
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground/60 group-hover:text-foreground group-hover:translate-x-0.5 transition shrink-0" />
+            </button>
+
+            {/* CONTACTAR CON SHAKERFY */}
+            <button
+              type="button"
+              onClick={() => setContactModalOpen(true)}
+              className="w-full flex items-center justify-between p-4 hover:bg-secondary/40 transition-all cursor-pointer text-left group"
+            >
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-2xl bg-teal-500/10 text-teal-500 flex items-center justify-center shrink-0">
+                  <MessageSquare className="w-4 h-4" />
+                </div>
+                <div className="text-xs font-bold text-foreground group-hover:text-teal-500 transition-colors">
+                  Contactar con Shakerfy
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground/60 group-hover:text-foreground group-hover:translate-x-0.5 transition shrink-0" />
+            </button>
+
+            {/* CERRAR SESIÓN */}
+            <button
+              type="button"
+              onClick={() => setLogoutModalOpen(true)}
+              className="w-full flex items-center justify-between p-4 hover:bg-rose-500/10 transition-all cursor-pointer text-left group"
+            >
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-2xl bg-rose-500/15 text-rose-500 flex items-center justify-center shrink-0">
+                  <LogOut className="w-4 h-4" />
+                </div>
+                <div className="text-xs font-bold text-rose-600 dark:text-rose-400">
+                  Cerrar sesión
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-rose-400 group-hover:translate-x-0.5 transition shrink-0" />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // MAIN SCREEN: PERFIL CON TAB BAR (ANALÍTICAS / RECUPERACIÓN)
   return (
-    <div className="space-y-4 sm:space-y-5 max-w-md mx-auto pb-28 pt-2 animate-fade-in relative">
+    <div className="space-y-6 max-w-4xl mx-auto px-4 sm:px-6 pb-28 pt-2 animate-fade-in relative text-left">
       <input
         type="file"
         ref={fileInputRef}
@@ -2893,816 +2567,113 @@ function ConfigTab() {
         className="hidden"
       />
 
-      {/* 1. ENCABEZADO: PROGRESS */}
+      {/* 1. ENCABEZADO DE PERFIL + BOTÓN DE AJUSTES ⚙ */}
       <div className="flex items-center justify-between px-1">
-        <h1 className="text-3xl font-black tracking-tight text-foreground">Progress</h1>
+        <div className="flex items-center gap-3.5">
+          <div
+            className="relative group cursor-pointer"
+            onClick={() => fileInputRef.current?.click()}
+            title="Cambiar foto de perfil"
+          >
+            <img
+              src={photo}
+              alt={fullName}
+              className="w-14 h-14 rounded-full object-cover border-2 border-border shadow-md group-hover:opacity-90 transition"
+            />
+            <div className="absolute bottom-0 right-0 p-1 rounded-full bg-foreground text-background shadow-xs">
+              <Camera className="w-2.5 h-2.5" />
+            </div>
+          </div>
+          <div>
+            <h1 className="text-lg sm:text-xl font-black tracking-tight text-foreground truncate max-w-[200px]">
+              {fullName}
+            </h1>
+            <p className="text-xs text-muted-foreground font-medium truncate max-w-[200px]">
+              {email}
+            </p>
+          </div>
+        </div>
+
         <button
           type="button"
-          onClick={() => setSettingsModalOpen(true)}
-          className="w-10 h-10 rounded-full border border-border/80 bg-card hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition shadow-2xs cursor-pointer active:scale-95"
-          title="Ajustes y Configuración"
+          onClick={() => setSubView("settings")}
+          className="w-10 h-10 rounded-2xl border border-border bg-card hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition shadow-2xs cursor-pointer active:scale-95"
+          title="Ajustes & Configuración"
         >
           <Settings className="w-4 h-4" />
         </button>
       </div>
 
-      {/* 2. TOP 2 METRIC CARDS (GRID SIMÉTRICO: LAST WEIGHT & DAYS LOGGED) */}
-      <div className="grid grid-cols-2 gap-3.5 sm:gap-4">
-        {/* TARJETA 1: LAST WEIGHT */}
+      {/* 2. TAB BAR SEGMENTADO: PROGRESO / RECUPERACIÓN */}
+      <div className="p-1 rounded-2xl bg-secondary/50 border border-border/50 grid grid-cols-2 text-center select-none shadow-2xs">
         <button
           type="button"
-          onClick={() => setLogWeightModalOpen(true)}
-          className="rounded-3xl border border-border bg-card p-4 sm:p-5 shadow-xs flex flex-col items-center justify-between text-center min-h-[168px] hover:-translate-y-0.5 hover:shadow-md transition-all cursor-pointer group w-full"
+          onClick={() => setProfileTab("progreso")}
+          className={cn(
+            "py-2.5 text-xs sm:text-sm rounded-xl transition-all cursor-pointer font-bold flex items-center justify-center gap-2",
+            profileTab === "progreso"
+              ? "bg-card text-foreground shadow-xs border border-border/40"
+              : "text-muted-foreground hover:text-foreground font-medium",
+          )}
         >
-          {/* Circular Gauge */}
-          <div className="relative w-20 h-20 flex items-center justify-center">
-            <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 80 80">
-              <circle
-                cx="40"
-                cy="40"
-                r="34"
-                stroke="hsl(var(--secondary))"
-                strokeWidth="6"
-                fill="transparent"
-              />
-              <circle
-                cx="40"
-                cy="40"
-                r="34"
-                stroke="hsl(var(--foreground))"
-                strokeWidth="6"
-                strokeDasharray="213.6"
-                strokeDashoffset="64"
-                strokeLinecap="round"
-                fill="transparent"
-                className="transition-all duration-700"
-              />
-            </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-9 h-9 rounded-full bg-secondary/80 flex items-center justify-center text-foreground group-hover:scale-110 transition-transform">
-                <Scale className="w-4 h-4" />
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-0.5 mt-2">
-            <span className="text-xs font-semibold text-muted-foreground block">Last weight</span>
-            <span className="text-lg sm:text-xl font-black text-foreground tracking-tight block">
-              {units === "imperial" ? `${Math.round(Number(weight) * 2.20462)} lbs` : "245 lbs"}
-            </span>
-          </div>
+          <TrendingUp className="w-4 h-4 text-emerald-500" />
+          <span>Progreso</span>
         </button>
 
-        {/* TARJETA 2: DAYS LOGGED */}
         <button
           type="button"
-          onClick={() => setCheatDaysModalOpen(true)}
-          className="rounded-3xl border border-border bg-card p-4 sm:p-5 shadow-xs flex flex-col items-center justify-between text-center min-h-[168px] hover:-translate-y-0.5 hover:shadow-md transition-all cursor-pointer group w-full"
+          onClick={() => setProfileTab("recuperacion")}
+          className={cn(
+            "py-2.5 text-xs sm:text-sm rounded-xl transition-all cursor-pointer font-bold flex items-center justify-center gap-2",
+            profileTab === "recuperacion"
+              ? "bg-card text-foreground shadow-xs border border-border/40"
+              : "text-muted-foreground hover:text-foreground font-medium",
+          )}
         >
-          {/* Circular Gauge */}
-          <div className="relative w-20 h-20 flex items-center justify-center">
-            <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 80 80">
-              <circle
-                cx="40"
-                cy="40"
-                r="34"
-                stroke="hsl(var(--secondary))"
-                strokeWidth="6"
-                fill="transparent"
-              />
-              <circle
-                cx="40"
-                cy="40"
-                r="34"
-                stroke="hsl(var(--foreground))"
-                strokeWidth="6"
-                strokeDasharray="213.6"
-                strokeDashoffset="60"
-                strokeLinecap="round"
-                fill="transparent"
-                className="transition-all duration-700"
-              />
-              <circle
-                cx="40"
-                cy="40"
-                r="34"
-                stroke="#6366f1"
-                strokeWidth="6"
-                strokeDasharray="213.6"
-                strokeDashoffset="165"
-                strokeLinecap="round"
-                fill="transparent"
-                className="transition-all duration-700"
-              />
-            </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-9 h-9 rounded-full bg-secondary/80 flex items-center justify-center text-foreground group-hover:scale-110 transition-transform">
-                <Apple className="w-4 h-4" />
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-1 mt-2 w-full flex flex-col items-center">
-            <span className="text-xs font-semibold text-muted-foreground block">Days logged</span>
-            <div className="flex items-center justify-center gap-1.5 flex-wrap">
-              <span className="text-sm sm:text-base font-black text-foreground tracking-tight">
-                5 logged
-              </span>
-              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 font-bold text-[10px] border border-indigo-500/20 shadow-2xs">
-                {cheatCount} Cheat <Pencil className="w-2.5 h-2.5 ml-0.5" />
-              </span>
-            </div>
-          </div>
+          <BatteryCharging className="w-4 h-4 text-indigo-500" />
+          <span>Recuperación</span>
         </button>
       </div>
 
-      {/* 3. TIME PERIOD SELECTOR (SEGMENTED BAR: 90 DAYS / 6 MONTHS / 1 YEAR / ALL TIME) */}
-      <div className="p-1 rounded-2xl bg-secondary/50 border border-border/50 grid grid-cols-4 text-center select-none shadow-2xs">
-        {[
-          { id: "90_days", label: "90 Days" },
-          { id: "6_months", label: "6 Months" },
-          { id: "1_year", label: "1 Year" },
-          { id: "all_time", label: "All time" },
-        ].map((period) => {
-          const isActive = timePeriod === period.id;
-          return (
-            <button
-              key={period.id}
-              type="button"
-              onClick={() => setTimePeriod(period.id as any)}
-              className={cn(
-                "py-2 text-xs sm:text-sm rounded-xl transition-all cursor-pointer",
-                isActive
-                  ? "bg-card text-foreground font-bold shadow-xs border border-border/40"
-                  : "text-muted-foreground hover:text-foreground font-medium",
-              )}
-            >
-              {period.label}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* 4. GOAL PROGRESS CARD (MAIN CHART CARD) */}
-      <div className="rounded-3xl border border-border bg-card p-5 sm:p-6 shadow-xs space-y-4 hover:-translate-y-0.5 transition-all">
-        {/* Encabezado: Goal Progress + Badge */}
-        <div className="flex items-center justify-between gap-2">
-          <h2 className="text-base sm:text-lg font-extrabold text-foreground tracking-tight">
-            Goal Progress
-          </h2>
-          <button
-            type="button"
-            onClick={() => setEditGoalModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary/80 hover:bg-secondary border border-border/60 text-xs font-bold text-foreground transition cursor-pointer active:scale-95 shadow-2xs"
-          >
-            <Flag className="w-3 h-3 text-foreground" />
-            <span>{goalPercent}% of goal done</span>
-            <Pencil className="w-3 h-3 text-muted-foreground ml-0.5" />
-          </button>
-        </div>
-
-        {/* Gráfico de Evolución con Curva Suave & Marcadores */}
-        <div className="h-60 sm:h-64 w-full relative pt-2">
-          <ChartContainer
-            config={{
-              weight: { label: "Logged (kg)", color: "#22c55e" },
-              projected: { label: "Projected (kg)", color: "hsl(var(--foreground))" },
-            }}
-            className="h-full w-full"
-          >
-            <AreaChart
-              data={[
-                { day: "Sat", weight: 61.0, projected: null, fullDate: "19 Oct 2024" },
-                { day: "Sun", weight: 64.6, projected: null, fullDate: "20 Oct 2024" },
-                { day: "Mon", weight: 63.1, projected: null, fullDate: "21 Oct 2024" },
-                { day: "Tue", weight: 67.5, projected: null, fullDate: "22 Oct 2024" },
-                {
-                  day: "Wed",
-                  weight: 72.0,
-                  projected: 72.0,
-                  isCurrent: true,
-                  fullDate: "21 Oct 2024",
-                },
-                { day: "Thu", weight: null, projected: 74.2, fullDate: "22 Oct 2024 (Est.)" },
-                { day: "Fri", weight: null, projected: 78.4, fullDate: "23 Oct 2024 (Meta)" },
-              ]}
-              margin={{ top: 38, right: 12, left: -22, bottom: 0 }}
-            >
-              <defs>
-                <linearGradient id="goalProgressGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#22c55e" stopOpacity={0.22} />
-                  <stop offset="95%" stopColor="#22c55e" stopOpacity={0.0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                vertical={false}
-                stroke="hsl(var(--border))"
-                opacity={0.65}
-              />
-              <XAxis
-                dataKey="day"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11, fontWeight: 500 }}
-              />
-              <YAxis
-                domain={[60, 80]}
-                ticks={[60, 65, 70, 75, 80]}
-                axisLine={false}
-                tickLine={false}
-                tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
-              />
-              <Tooltip
-                content={({ active, payload }) => {
-                  if (active && payload && payload.length) {
-                    const item = payload[0].payload;
-                    const val = payload[0].value;
-                    return (
-                      <div className="bg-slate-900 text-white dark:bg-card dark:text-foreground border border-border/80 shadow-2xl rounded-2xl px-3 py-2 text-center -translate-y-2 pointer-events-none z-30">
-                        <span className="text-xs sm:text-sm font-extrabold block leading-tight">
-                          {val} Kg
-                        </span>
-                        <span className="text-[10px] text-slate-400 dark:text-muted-foreground block font-medium mt-0.5">
-                          {item.fullDate}
-                        </span>
-                      </div>
-                    );
+      {/* 3. CONTENIDO: TAB PROGRESO (PROGRESS DASHBOARD) */}
+      {profileTab === "progreso" && (
+        <div className="animate-in fade-in duration-200">
+          <JournalInsightsDashboard
+            weightLogs={(() => {
+              if (typeof window !== "undefined") {
+                try {
+                  const saved = localStorage.getItem("shakerfy_user_timeline_items");
+                  if (saved) {
+                    const items = JSON.parse(saved);
+                    if (Array.isArray(items)) {
+                      return items
+                        .filter(
+                          (it: any) =>
+                            it && it.type === "weight" && typeof it.weight === "number",
+                        )
+                        .map((it: any) => ({
+                          id: it.id,
+                          date: it.date,
+                          time: it.time,
+                          weight: it.weight,
+                          unit: it.unit,
+                          context: it.context,
+                        }));
+                    }
                   }
-                  return null;
-                }}
-              />
-              {/* Curva Histórica de Peso Logeado */}
-              <Area
-                type="monotone"
-                dataKey="weight"
-                stroke="#22c55e"
-                strokeWidth={2.5}
-                fill="url(#goalProgressGrad)"
-                dot={(props: any) => {
-                  if (props.payload.isCurrent) {
-                    return (
-                      <circle
-                        key={props.key}
-                        cx={props.cx}
-                        cy={props.cy}
-                        r={5}
-                        fill="#22c55e"
-                        stroke="#ffffff"
-                        strokeWidth={2.5}
-                        className="shadow-md"
-                      />
-                    );
-                  }
-                  return <React.Fragment key={props.key} />;
-                }}
-              />
-              {/* Proyección a Futuro */}
-              <Area
-                type="monotone"
-                dataKey="projected"
-                stroke="hsl(var(--foreground))"
-                strokeWidth={2}
-                fill="transparent"
-              />
-            </AreaChart>
-          </ChartContainer>
-
-          {/* Tooltip flotante estático sobre el día miércoles como en la imagen */}
-          <div className="absolute top-1 left-[67%] -translate-x-1/2 pointer-events-none">
-            <div className="bg-slate-900 text-white dark:bg-card dark:text-foreground border border-border shadow-xl rounded-2xl px-3 py-1.5 text-center">
-              <span className="text-xs font-black block leading-none">68.2 Kg</span>
-              <span className="text-[10px] text-slate-400 dark:text-muted-foreground font-medium block mt-0.5">
-                21 Oct 2024
-              </span>
-            </div>
-          </div>
+                } catch (e) {}
+              }
+              return [];
+            })()}
+            currentProfileWeight={parseFloat(weight) || 74.6}
+            goalWeight={70.0}
+            units={units}
+          />
         </div>
+      )}
 
-        {/* Mensaje Motivacional en Banner Verde Suave */}
-        <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-center">
-          <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 tracking-tight">
-            Great job! Consistency is key, and you&apos;re mastering it!
-          </p>
-        </div>
-      </div>
-
-      {/* 5. FLOATING ACTION BUTTON (+) */}
-      <button
-        type="button"
-        onClick={() => setQuickLogModalOpen(true)}
-        className="fixed bottom-24 right-6 md:bottom-10 md:right-10 z-40 w-14 h-14 rounded-full bg-slate-900 text-white dark:bg-foreground dark:text-background flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all cursor-pointer"
-        title="Registrar Peso / Cheat / Meta"
-      >
-        <Plus className="w-6 h-6 stroke-[2.5]" />
-      </button>
-
-      {/* MODAL: LOG WEIGHT */}
-      <Dialog open={logWeightModalOpen} onOpenChange={setLogWeightModalOpen}>
-        <DialogContent className="sm:max-w-md rounded-3xl p-6 border border-border bg-card">
-          <DialogHeader className="pb-3 border-b border-border/40">
-            <DialogTitle className="text-base font-bold flex items-center gap-2 text-foreground">
-              <Scale className="w-5 h-5 text-emerald-500" /> Registrar Peso Actual
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
-              Mantén actualizado tu progreso corporal diario.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4 space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-foreground">
-                Peso ({units === "imperial" ? "lbs" : "kg"})
-              </label>
-              <input
-                type="number"
-                step="0.1"
-                value={newWeightInput}
-                onChange={(e) => setNewWeightInput(e.target.value)}
-                placeholder="72.4"
-                className="w-full px-4 py-3 rounded-2xl bg-secondary border border-border font-extrabold text-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-            </div>
-            <div className="flex gap-2">
-              {[68.0, 70.5, 72.4, 75.0].map((quickVal) => (
-                <button
-                  key={quickVal}
-                  type="button"
-                  onClick={() => setNewWeightInput(quickVal.toString())}
-                  className="flex-1 py-1.5 rounded-xl bg-secondary/70 hover:bg-secondary text-xs font-bold text-muted-foreground hover:text-foreground border border-border/40 transition"
-                >
-                  {quickVal} kg
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="pt-3 border-t border-border/40 flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setLogWeightModalOpen(false)}
-              className="rounded-xl font-semibold"
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={() => {
-                setWeight(newWeightInput);
-                setLogWeightModalOpen(false);
-                toast.success(`Peso actualizado a ${newWeightInput} kg`);
-              }}
-              className="rounded-xl font-bold bg-emerald-500 hover:bg-emerald-600 text-white"
-            >
-              Guardar Peso
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* MODAL: CHEAT DAYS */}
-      <Dialog open={cheatDaysModalOpen} onOpenChange={setCheatDaysModalOpen}>
-        <DialogContent className="sm:max-w-md rounded-3xl p-6 border border-border bg-card">
-          <DialogHeader className="pb-3 border-b border-border/40">
-            <DialogTitle className="text-base font-bold flex items-center gap-2 text-foreground">
-              <Apple className="w-5 h-5 text-indigo-500" /> Registro de Días / Comidas Libres
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
-              Registra comidas libres (cheat meals) dentro de tu plan nutricional.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4 space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-2xl bg-secondary/50 border border-border">
-              <div>
-                <span className="text-xs font-bold text-foreground block">
-                  Cheat Meals esta semana
-                </span>
-                <span className="text-[10px] text-muted-foreground">
-                  Permitidos recomendados: 2 por semana
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setCheatCount(Math.max(0, cheatCount - 1))}
-                  className="w-8 h-8 rounded-xl bg-card border border-border flex items-center justify-center text-foreground font-bold hover:bg-secondary transition"
-                >
-                  -
-                </button>
-                <span className="text-base font-black text-foreground w-6 text-center">
-                  {cheatCount}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setCheatCount(cheatCount + 1)}
-                  className="w-8 h-8 rounded-xl bg-card border border-border flex items-center justify-center text-foreground font-bold hover:bg-secondary transition"
-                >
-                  +
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="pt-3 border-t border-border/40 flex justify-end">
-            <Button
-              onClick={() => {
-                setCheatDaysModalOpen(false);
-                toast.success(`Días libres actualizados: ${cheatCount}`);
-              }}
-              className="rounded-xl font-bold"
-            >
-              Listo
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* MODAL: EDIT GOAL */}
-      <Dialog open={editGoalModalOpen} onOpenChange={setEditGoalModalOpen}>
-        <DialogContent className="sm:max-w-md rounded-3xl p-6 border border-border bg-card">
-          <DialogHeader className="pb-3 border-b border-border/40">
-            <DialogTitle className="text-base font-bold flex items-center gap-2 text-foreground">
-              <Flag className="w-5 h-5 text-amber-500" /> Ajustar Meta de Progreso
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
-              Ajusta el porcentaje completado de tu objetivo actual.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4 space-y-4">
-            <div className="space-y-2">
-              <div className="flex justify-between text-xs font-bold text-foreground">
-                <span>Progreso Alcanzado</span>
-                <span className="text-emerald-500 font-extrabold">{goalPercent}%</span>
-              </div>
-              <input
-                type="range"
-                min="10"
-                max="100"
-                value={goalPercent}
-                onChange={(e) => setGoalPercent(parseInt(e.target.value))}
-                className="w-full h-2 bg-secondary rounded-lg cursor-pointer accent-emerald-500"
-              />
-            </div>
-          </div>
-          <div className="pt-3 border-t border-border/40 flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setEditGoalModalOpen(false)}
-              className="rounded-xl font-semibold"
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={() => {
-                setEditGoalModalOpen(false);
-                toast.success(`Meta actualizada al ${goalPercent}%`);
-              }}
-              className="rounded-xl font-bold bg-primary text-primary-foreground"
-            >
-              Guardar
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* MODAL: QUICK ACTION MENU (+) */}
-      <Dialog open={quickLogModalOpen} onOpenChange={setQuickLogModalOpen}>
-        <DialogContent className="sm:max-w-md rounded-3xl p-6 border border-border bg-card">
-          <DialogHeader className="pb-3 border-b border-border/40">
-            <DialogTitle className="text-base font-bold flex items-center gap-2 text-foreground">
-              <Plus className="w-5 h-5 text-foreground" /> Registro Rápido
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
-              Selecciona la acción que deseas registrar hoy.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-3 space-y-2.5">
-            {/* Shake for AI Hero Button */}
-            <button
-              type="button"
-              onClick={() => {
-                setQuickLogModalOpen(false);
-                if (typeof window !== "undefined") {
-                  const url = new URL(window.location.href);
-                  url.searchParams.set("tab", "diario");
-                  window.history.pushState({}, "", url.toString());
-                }
-              }}
-              className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-gradient-to-r from-purple-500/10 via-primary/10 to-purple-500/5 hover:from-purple-500/20 hover:to-primary/20 transition-all border border-primary/30 text-left group cursor-pointer shadow-xs"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
-                  <Sparkles className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-bold text-foreground block">
-                      Shake & Build AI
-                    </span>
-                    <Badge className="bg-primary text-white text-[9px] font-extrabold px-1.5 py-0 h-4">
-                      MOTOR 3 BLOQUES
-                    </Badge>
-                  </div>
-                  <span className="text-[10px] text-muted-foreground">
-                    Sugerencia nutricional contextual o agita tu móvil
-                  </span>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-primary group-hover:translate-x-0.5 transition" />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setQuickLogModalOpen(false);
-                setLogWeightModalOpen(true);
-              }}
-              className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-secondary/50 hover:bg-secondary transition border border-border text-left group cursor-pointer"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
-                  <Scale className="w-5 h-5" />
-                </div>
-                <div>
-                  <span className="text-xs font-bold text-foreground block">Registrar Peso</span>
-                  <span className="text-[10px] text-muted-foreground">
-                    Actualiza tu peso corporal de hoy
-                  </span>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition" />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setQuickLogModalOpen(false);
-                setCheatDaysModalOpen(true);
-              }}
-              className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-secondary/50 hover:bg-secondary transition border border-border text-left group cursor-pointer"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
-                  <Apple className="w-5 h-5" />
-                </div>
-                <div>
-                  <span className="text-xs font-bold text-foreground block">
-                    Anotar Cheat Day / Comida Libre
-                  </span>
-                  <span className="text-[10px] text-muted-foreground">
-                    Registra un día o comida libre
-                  </span>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition" />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setQuickLogModalOpen(false);
-                setEditGoalModalOpen(true);
-              }}
-              className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-secondary/50 hover:bg-secondary transition border border-border text-left group cursor-pointer"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
-                  <Flag className="w-5 h-5" />
-                </div>
-                <div>
-                  <span className="text-xs font-bold text-foreground block">Actualizar Meta</span>
-                  <span className="text-[10px] text-muted-foreground">
-                    Modifica tu objetivo de porcentaje
-                  </span>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition" />
-            </button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* MODAL: SHAKE & BUILD (MOTOR 3 BLOQUES) */}
-
-      {/* ========================================================================= */}
-      {/* POPUP MODAL: AJUSTES & CONFIGURACIÓN (ABIERTO AL PRESIONAR LA TUERCA ⚙) */}
-      {/* ========================================================================= */}
-      <Dialog open={settingsModalOpen} onOpenChange={setSettingsModalOpen}>
-        <DialogContent className="sm:max-w-lg rounded-3xl p-5 sm:p-7 border border-border bg-card max-h-[85vh] overflow-y-auto custom-scrollbar">
-          <DialogHeader className="pb-3 border-b border-border/40">
-            <DialogTitle className="text-base font-bold flex items-center gap-2.5 text-foreground">
-              <Settings className="w-5 h-5 text-primary" /> Ajustes & Configuración
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
-              Gestiona tus datos personales, preferencias de IA y opciones de cuenta.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="py-2 space-y-5">
-            {/* GRUPO 1: OPCIONES DE CUENTA */}
-            <div className="space-y-2">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 px-1">
-                Opciones de Cuenta
-              </div>
-              <div className="rounded-2xl border border-border bg-secondary/30 overflow-hidden divide-y divide-border/40">
-                {/* DATOS BIOLÓGICOS */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSettingsModalOpen(false);
-                    setSubView("edit-profile");
-                  }}
-                  className="w-full flex items-center justify-between p-3 sm:p-3.5 hover:bg-secondary/60 transition cursor-pointer text-left group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center shrink-0">
-                      <User className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
-                        Datos Biológicos & Perfil
-                      </div>
-                      <div className="text-[10px] text-muted-foreground">
-                        Edad, sexo, altura, peso y objetivo.
-                      </div>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground/60 group-hover:text-foreground group-hover:translate-x-0.5 transition shrink-0" />
-                </button>
-
-                {/* PREFERENCIAS ALIMENTICIAS */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSettingsModalOpen(false);
-                    setSubView("diet-preferences");
-                  }}
-                  className="w-full flex items-center justify-between p-3 sm:p-3.5 hover:bg-secondary/60 transition cursor-pointer text-left group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                      <Utensils className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-foreground group-hover:text-emerald-500 transition-colors">
-                        Preferencias Nutricionales & Alacena
-                      </div>
-                      <div className="text-[10px] text-muted-foreground">
-                        Tipo de dieta, comidas al día y alimentos activos.
-                      </div>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground/60 group-hover:text-foreground group-hover:translate-x-0.5 transition shrink-0" />
-                </button>
-
-                {/* AJUSTES DE LA APP */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSettingsModalOpen(false);
-                    setSubView("app-settings");
-                  }}
-                  className="w-full flex items-center justify-between p-3 sm:p-3.5 hover:bg-secondary/60 transition cursor-pointer text-left group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-500 flex items-center justify-center shrink-0">
-                      <Settings className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-foreground group-hover:text-sky-500 transition-colors">
-                        Ajustes de la Aplicación
-                      </div>
-                      <div className="text-[10px] text-muted-foreground">
-                        Tema visual, acelerómetro Shake AI y notificaciones.
-                      </div>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground/60 group-hover:text-foreground group-hover:translate-x-0.5 transition shrink-0" />
-                </button>
-
-                {/* MEMBRESÍA & PAGOS */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSettingsModalOpen(false);
-                    navigate({ to: "/app", search: { tab: "pagos" } });
-                  }}
-                  className="w-full flex items-center justify-between p-3 sm:p-3.5 hover:bg-secondary/60 transition cursor-pointer text-left group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
-                      <CreditCard className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-foreground group-hover:text-amber-500 transition-colors">
-                        Membresía & Pagos
-                      </div>
-                      <div className="text-[10px] text-muted-foreground">
-                        Pase mensual, comprobantes y facturación.
-                      </div>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground/60 group-hover:text-foreground group-hover:translate-x-0.5 transition shrink-0" />
-                </button>
-              </div>
-            </div>
-
-            {/* GRUPO 2: INFORMACIÓN & LEGAL */}
-            <div className="space-y-2">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 px-1">
-                Información & Legal
-              </div>
-              <div className="rounded-2xl border border-border bg-secondary/30 overflow-hidden divide-y divide-border/40">
-                {/* POLÍTICAS DE PRIVACIDAD */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSettingsModalOpen(false);
-                    setPrivacyModalOpen(true);
-                  }}
-                  className="w-full flex items-center justify-between p-3 sm:p-3.5 hover:bg-secondary/60 transition cursor-pointer text-left group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center shrink-0">
-                      <Shield className="w-4 h-4" />
-                    </div>
-                    <div className="text-xs font-bold text-foreground group-hover:text-purple-500 transition-colors">
-                      Políticas de Privacidad
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground/60 group-hover:text-foreground group-hover:translate-x-0.5 transition shrink-0" />
-                </button>
-
-                {/* TÉRMINOS Y CONDICIONES */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSettingsModalOpen(false);
-                    setTermsModalOpen(true);
-                  }}
-                  className="w-full flex items-center justify-between p-3 sm:p-3.5 hover:bg-secondary/60 transition cursor-pointer text-left group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
-                      <FileText className="w-4 h-4" />
-                    </div>
-                    <div className="text-xs font-bold text-foreground group-hover:text-amber-500 transition-colors">
-                      Términos y Condiciones
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground/60 group-hover:text-foreground group-hover:translate-x-0.5 transition shrink-0" />
-                </button>
-
-                {/* CONTACTAR CON SHAKERFY */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSettingsModalOpen(false);
-                    setContactModalOpen(true);
-                  }}
-                  className="w-full flex items-center justify-between p-3 sm:p-3.5 hover:bg-secondary/60 transition cursor-pointer text-left group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-teal-500/10 text-teal-500 flex items-center justify-center shrink-0">
-                      <MessageSquare className="w-4 h-4" />
-                    </div>
-                    <div className="text-xs font-bold text-foreground group-hover:text-teal-500 transition-colors">
-                      Contactar con Shakerfy
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground/60 group-hover:text-foreground group-hover:translate-x-0.5 transition shrink-0" />
-                </button>
-
-                {/* CERRAR SESIÓN */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSettingsModalOpen(false);
-                    setLogoutModalOpen(true);
-                  }}
-                  className="w-full flex items-center justify-between p-3 sm:p-3.5 hover:bg-rose-500/10 transition cursor-pointer text-left group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-rose-500/15 text-rose-500 flex items-center justify-center shrink-0">
-                      <LogOut className="w-4 h-4" />
-                    </div>
-                    <div className="text-xs font-bold text-rose-600 dark:text-rose-400">
-                      Cerrar sesión
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-rose-400 group-hover:translate-x-0.5 transition shrink-0" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="pt-2 border-t border-border/40 flex justify-end">
-            <Button
-              variant="outline"
-              onClick={() => setSettingsModalOpen(false)}
-              className="rounded-xl font-bold text-xs"
-            >
-              Cerrar
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* 4. CONTENIDO: TAB RECUPERACIÓN (10 SLIDERS CON IMÁGENES ANATÓMICAS LOCALES) */}
+      {profileTab === "recuperacion" && <MuscleRecoveryTab />}
 
       {/* MODAL: POLÍTICAS DE PRIVACIDAD */}
       <Dialog open={privacyModalOpen} onOpenChange={setPrivacyModalOpen}>
@@ -4243,7 +3214,15 @@ function CircularProgress({
   );
 }
 
-function TypewriterOnce({ text, speed = 25 }: { text: string; speed?: number }) {
+function TypewriterOnce({
+  text,
+  speed = 20,
+  cursorClassName = "bg-emerald-500",
+}: {
+  text: string;
+  speed?: number;
+  cursorClassName?: string;
+}) {
   const [displayedText, setDisplayedText] = useState("");
 
   useEffect(() => {
@@ -4264,7 +3243,12 @@ function TypewriterOnce({ text, speed = 25 }: { text: string; speed?: number }) 
     <span>
       {displayedText}
       {displayedText.length < text.length && (
-        <span className="inline-block w-1.5 h-3.5 bg-amber-500 ml-1 animate-pulse rounded-xs align-middle" />
+        <span
+          className={cn(
+            "inline-block w-1.5 h-3.5 ml-1 animate-pulse rounded-xs align-middle",
+            cursorClassName,
+          )}
+        />
       )}
     </span>
   );
@@ -4298,12 +3282,25 @@ const INITIAL_ACTIVITY_HISTORY: Record<"week" | "month" | "quarter", ActivityHis
   ],
 };
 
-const activityChartConfig = {
-  puntos: {
-    label: "Puntos MET",
-    color: "#f59e0b",
-  },
-} satisfies ChartConfig;
+function ShakerIcon({ className = "w-4 h-4" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M9 2h6v2H9z" />
+      <path d="M7 4h10v3l-1.5 1H8.5L7 7V4z" />
+      <path d="M7.5 8l1 13a1 1 0 0 0 1 .9h5a1 1 0 0 0 1-.9l1-13" />
+      <line x1="10" y1="12" x2="14" y2="12" />
+      <line x1="10" y1="15" x2="13" y2="15" />
+    </svg>
+  );
+}
 
 // ICN Theme Helper with dynamic biological color accents (Shared with Scan Screen)
 const getIcnTheme = (score: number) => {
@@ -4342,6 +3339,22 @@ const getIcnTheme = (score: number) => {
     gaugeColor: "bg-rose-500",
   };
 };
+
+const POSTPRANDIAL_SYMPTOMS = [
+  { id: "energia", label: "Con energía", icon: Zap },
+  { id: "ligero", label: "Ligero / Óptimo", icon: Sparkles },
+  { id: "somnolencia", label: "Somnolencia", icon: Moon },
+  { id: "pesadez", label: "Pesadez / Hinchazón", icon: Activity },
+  { id: "reflujo", label: "Reflujo / Acidez", icon: Flame },
+];
+
+const EATING_REASONS = [
+  { id: "hambre_real", label: "Hambre real", icon: Zap },
+  { id: "post_entreno", label: "Post-entreno", icon: Dumbbell },
+  { id: "horario", label: "Horario habitual", icon: Clock },
+  { id: "antojo", label: "Antojo / Estrés", icon: HeartPulse },
+  { id: "social", label: "Social / Compartido", icon: Users },
+];
 
 // Subcomponent: AI Coach Diario (Wellfooder Timeline)
 function DiarioTab() {
@@ -4513,36 +3526,6 @@ function DiarioTab() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const [muscleRecovery, setMuscleRecovery] = useState<Record<string, number>>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("shakerfy_muscle_recovery");
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch (e) {}
-      }
-    }
-    return {
-      pecho: 95,
-      espalda: 80,
-      "espalda-baja": 45,
-      hombros: 90,
-      biceps: 85,
-      triceps: 60,
-      abdominales: 100,
-      cuadriceps: 50,
-      isquiotibiales: 75,
-      gluteos: 80,
-      gemelos: 90,
-    };
-  });
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("shakerfy_muscle_recovery", JSON.stringify(muscleRecovery));
-    }
-  }, [muscleRecovery]);
-
   const [editingTimelineItem, setEditingTimelineItem] = useState<any | null>(null);
   const [showBreathingModal, setShowBreathingModal] = useState(false);
   const [expandedCardInsights, setExpandedCardInsights] = useState<Record<string, boolean>>({});
@@ -4581,6 +3564,26 @@ function DiarioTab() {
         tag: "Nivel 2 Armstrong",
         coachFeedback:
           "💧 Consejo Fisiológico: Estado hídrico ideal para el rendimiento físico y deportivo continuo. Mantén sorbos constantes.",
+      },
+      {
+        id: "workout-demo-1",
+        date: "2026-07-15",
+        time: "06:30 PM",
+        title: "Fuerza: Tren Superior",
+        subtitle: "25 min • 12/12 Series • Intensidad Óptima",
+        type: "workout",
+        desc: "3 bloques biomecánicos completados con sobrecarga progresiva.",
+        metPoints: 125,
+        tag: "125 Pts MET",
+        muscleImages: [
+          { id: "pecho", name: "Pecho", image: "/gimnasia.png" },
+          { id: "espalda", name: "Espalda", image: "/atras.png" },
+          { id: "hombros", name: "Hombros", image: "/hombro (2).png" },
+          { id: "biceps", name: "Bíceps", image: "/biceps.png" },
+          { id: "triceps", name: "Tríceps", image: "/musculos (4).png" },
+        ],
+        coachFeedback:
+          "Excelente sesión en zona óptima (25 min, 12 series). Carga calibrada perfectamente para mantener tu progresión constante. Sumaste 125 Puntos MET a tu racha de actividad.",
       },
       {
         id: "activity-demo-1",
@@ -4647,6 +3650,576 @@ function DiarioTab() {
 
   const [isFabOpen, setIsFabOpen] = useState(false);
   const [activeModal, setActiveModal] = useState<string>("none");
+  const [isShaking, setIsShaking] = useState(false);
+  const handleToggleMealConsumed = (itemId: string) => {
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      try {
+        navigator.vibrate(15);
+      } catch (_) {}
+    }
+    setUserTimelineItems((prev) =>
+      prev.map((item) => {
+        if (item.id !== itemId) return item;
+        const nextConsumed = !item.consumed;
+        if (nextConsumed) {
+          toast.success("✓ Comida marcada como consumida");
+        } else {
+          toast.info("Comida desmarcada");
+        }
+        return {
+          ...item,
+          consumed: nextConsumed,
+          consumedAt: nextConsumed ? new Date().toISOString() : undefined,
+        };
+      }),
+    );
+  };
+
+  const defaultIngredientSwaps: Record<string, string[]> = {
+    yogur: ["1 taza de yogur griego natural sin azúcar", "1 taza de yogur de coco o soja", "1 taza de queso batido 0%", "1 taza de kéfir artesanal"],
+    banana: ["1 banana mediana en rodajas", "1 manzana roja en cubos", "1/2 taza de arándanos o fresas", "1 durazno o pera picada"],
+    nueces: ["1 puñado de nueces troceadas", "1 puñado de almendras tostadas", "1 cda de mantequilla de maní", "1 puñado de avellanas o pistachos"],
+    chía: ["1 cda de semillas de chía", "1 cda de semillas de lino", "1 cda de semillas de cáñamo"],
+    miel: ["1 cdita de miel cruda y canela", "1 cdita de sirope de agave", "1 toque de canela pura (sin endulzante)"],
+    avena: ["1 taza de avena integral", "1 taza de quinoa inflada", "1 taza de copos de trigo sarraceno", "1 taza de harina de avena"],
+    leche: ["1 taza de leche de almendras", "1 taza de leche descremada", "1 taza de bebida de avena", "1 taza de agua tibia + yogur"],
+    proteína: ["1 scoop de proteína aislada de vainilla", "3 cdas de yogur griego natural", "2 claras de huevo batidas", "2 cdas de mantequilla de maní"],
+    pan: ["2 rebanadas de pan de masa madre", "2 rebanadas de pan 100% integral", "2 tostadas de centeno", "1 tortilla integral"],
+    huevo: ["2-3 huevos de campo frescos", "1 lata de atún al natural", "120g de tofu revuelto con cúrcuma", "100g de queso cottage"],
+    palta: ["1/2 palta / aguacate maduro", "1 cda de aceite de oliva virgen extra", "2 cdas de hummus tradicional", "1 cda de queso crema descremado"],
+    pollo: ["150g de pechuga de pollo en tiras", "150g de carne magra", "1 lata grande de atún al natural", "150g de tofu marinado"],
+    quinoa: ["1 taza de quinoa cocida", "1 taza de arroz integral o basmati", "1 taza de fideos integrales", "1 taza de cous cous"],
+    brócoli: ["1 taza de brócoli al vapor", "1 taza de calabacín salteado", "1 taza de judías verdes", "1 taza de espárragos"],
+    salmón: ["1 filete de salmón fresco", "1 filete de merluza al horno", "1 pechuga de pollo a la plancha", "1 filete de atún fresco"],
+    batata: ["1 batata mediana asada", "1 papa mediana al horno", "1 taza de puré de calabaza", "1 taza de arroz jazmín"],
+    pavo: ["150g de pechuga de pavo en cubos", "150g de solomillo de cerdo magro", "1 lata de atún al natural", "150g de tofu firme"],
+    calabacín: ["1 calabacín mediano en rodajas", "1 berenjena en dados", "1 pimiento rojo en juliana", "1 taza de judías verdes"],
+    arroz: ["1 taza pequeña de arroz jazmín", "1 taza de fideos de arroz", "1 taza de quinoa cocida", "1 papa hervida pequeña"],
+  };
+
+  const INGREDIENT_MACRO_MAP: Record<string, { cal: number; p: number; c: number; f: number }> = {
+    // Avena & Carbos
+    "1 taza de avena integral": { cal: 150, p: 5, c: 27, f: 3 },
+    "1 taza de quinoa inflada": { cal: 120, p: 4, c: 23, f: 2 },
+    "1 taza de copos de trigo sarraceno": { cal: 140, p: 5, c: 28, f: 1 },
+    "1 taza de harina de avena": { cal: 160, p: 6, c: 28, f: 3 },
+    "2 rebanadas de pan de masa madre": { cal: 160, p: 6, c: 32, f: 1 },
+    "2 rebanadas de pan 100% integral": { cal: 140, p: 6, c: 26, f: 2 },
+    "2 tostadas de centeno": { cal: 130, p: 4, c: 26, f: 1 },
+    "1 tortilla integral": { cal: 130, p: 4, c: 22, f: 3 },
+    "1 taza de quinoa cocida": { cal: 220, p: 8, c: 39, f: 4 },
+    "1 taza de arroz integral o basmati": { cal: 215, p: 5, c: 45, f: 2 },
+    "1 taza de fideos integrales": { cal: 200, p: 7, c: 42, f: 1 },
+    "1 taza de cous cous": { cal: 175, p: 6, c: 36, f: 1 },
+    "1 batata mediana asada": { cal: 115, p: 2, c: 27, f: 0 },
+    "1 papa mediana al horno": { cal: 130, p: 3, c: 30, f: 0 },
+    "1 taza de puré de calabaza": { cal: 50, p: 2, c: 12, f: 0 },
+    "1 taza de arroz jazmín": { cal: 205, p: 4, c: 45, f: 0 },
+    "1 taza pequeña de arroz jazmín": { cal: 160, p: 3, c: 35, f: 0 },
+    "1 taza de fideos de arroz": { cal: 190, p: 3, c: 42, f: 0 },
+    "1 papa hervida pequeña": { cal: 100, p: 2, c: 23, f: 0 },
+
+    // Proteínas
+    "1 scoop de proteína aislada de vainilla": { cal: 120, p: 25, c: 2, f: 1 },
+    "1 scoop de proteína aislada": { cal: 120, p: 25, c: 2, f: 1 },
+    "3 cdas de yogur griego natural": { cal: 60, p: 7, c: 2, f: 2 },
+    "2 claras de huevo batidas": { cal: 35, p: 7, c: 0, f: 0 },
+    "2 cdas de mantequilla de maní": { cal: 190, p: 8, c: 7, f: 16 },
+    "2-3 huevos de campo frescos": { cal: 180, p: 14, c: 1, f: 13 },
+    "1 lata de atún al natural": { cal: 130, p: 28, c: 0, f: 1 },
+    "1 lata grande de atún al natural": { cal: 160, p: 35, c: 0, f: 1 },
+    "120g de tofu revuelto con cúrcuma": { cal: 110, p: 12, c: 3, f: 6 },
+    "100g de queso cottage": { cal: 98, p: 11, c: 3, f: 4 },
+    "150g de pechuga de pollo en tiras": { cal: 195, p: 39, c: 0, f: 4 },
+    "150g de carne magra": { cal: 220, p: 36, c: 0, f: 8 },
+    "150g de tofu marinado": { cal: 140, p: 15, c: 4, f: 7 },
+    "150g de tofu firme": { cal: 130, p: 14, c: 3, f: 7 },
+    "1 filete de salmón fresco": { cal: 250, p: 26, c: 0, f: 16 },
+    "1 filete de merluza al horno": { cal: 120, p: 24, c: 0, f: 2 },
+    "1 pechuga de pollo a la plancha": { cal: 195, p: 39, c: 0, f: 4 },
+    "1 filete de atún fresco": { cal: 180, p: 38, c: 0, f: 2 },
+    "150g de pechuga de pavo en cubos": { cal: 180, p: 36, c: 0, f: 3 },
+    "150g de solomillo de cerdo magro": { cal: 190, p: 34, c: 0, f: 5 },
+    "1 taza de yogur griego natural sin azúcar": { cal: 130, p: 17, c: 6, f: 4 },
+    "1 taza de yogur de coco o soja": { cal: 100, p: 4, c: 10, f: 5 },
+    "1 taza de queso batido 0%": { cal: 90, p: 16, c: 5, f: 0 },
+    "1 taza de kéfir artesanal": { cal: 110, p: 9, c: 9, f: 3 },
+
+    // Grasas & Frutos Secos
+    "1/2 palta / aguacate maduro": { cal: 120, p: 1, c: 6, f: 11 },
+    "1 cda de aceite de oliva virgen extra": { cal: 120, p: 0, c: 0, f: 14 },
+    "2 cdas de hummus tradicional": { cal: 70, p: 2, c: 6, f: 4 },
+    "1 cda de queso crema descremado": { cal: 35, p: 2, c: 2, f: 2 },
+    "1 puñado de nueces troceadas": { cal: 180, p: 4, c: 4, f: 18 },
+    "1 puñado de almendras tostadas": { cal: 160, p: 6, c: 6, f: 14 },
+    "1 puñado de avellanas o pistachos": { cal: 160, p: 5, c: 7, f: 14 },
+    "1 cda de semillas de chía": { cal: 60, p: 2, c: 5, f: 4 },
+    "1 cda de semillas de lino": { cal: 55, p: 2, c: 3, f: 4 },
+    "1 cda de semillas de cáñamo": { cal: 60, p: 3, c: 1, f: 5 },
+
+    // Frutas & Endulzantes & Vegetales
+    "1/2 taza de arándanos o fresas": { cal: 40, p: 1, c: 9, f: 0 },
+    "1 banana mediana en rodajas": { cal: 105, p: 1, c: 27, f: 0 },
+    "1 manzana roja en cubos": { cal: 80, p: 0, c: 21, f: 0 },
+    "1 durazno o pera picada": { cal: 60, p: 1, c: 15, f: 0 },
+    "1 cdita de miel cruda y canela": { cal: 25, p: 0, c: 6, f: 0 },
+    "1 cdita de sirope de agave": { cal: 20, p: 0, c: 5, f: 0 },
+    "1 toque de canela pura (sin endulzante)": { cal: 5, p: 0, c: 1, f: 0 },
+    "1 taza de brócoli al vapor": { cal: 35, p: 3, c: 6, f: 0 },
+    "1 taza de calabacín salteado": { cal: 30, p: 1, c: 4, f: 1 },
+    "1 calabacín mediano en rodajas": { cal: 25, p: 2, c: 4, f: 0 },
+    "1 berenjena en dados": { cal: 25, p: 1, c: 6, f: 0 },
+    "1 pimiento rojo en juliana": { cal: 30, p: 1, c: 7, f: 0 },
+    "1 taza de judías verdes": { cal: 35, p: 2, c: 7, f: 0 },
+    "1 taza de espárragos": { cal: 30, p: 3, c: 5, f: 0 },
+    "1 cuenco de tomates cherry": { cal: 25, p: 1, c: 5, f: 0 },
+    "1 tomate en rodajas": { cal: 22, p: 1, c: 5, f: 0 },
+    "1 taza de espinacas baby": { cal: 15, p: 2, c: 2, f: 0 },
+    "2 cuencos de espinacas salteadas": { cal: 40, p: 4, c: 6, f: 1 },
+    "1 taza de champiñones salteados": { cal: 35, p: 3, c: 4, f: 1 },
+    "1 taza de setas portobello": { cal: 30, p: 3, c: 5, f: 0 },
+  };
+
+  const calculateSuggestionMacros = (ingredients: any[]) => {
+    let totalCal = 0;
+    let totalP = 0;
+    let totalC = 0;
+    let totalF = 0;
+
+    for (const ing of ingredients) {
+      const name = typeof ing === "object" && ing !== null ? ing.name : String(ing);
+      const m = INGREDIENT_MACRO_MAP[name];
+      if (m) {
+        totalCal += m.cal;
+        totalP += m.p;
+        totalC += m.c;
+        totalF += m.f;
+      } else {
+        totalCal += 70;
+        totalP += 4;
+        totalC += 8;
+        totalF += 2;
+      }
+    }
+
+    return {
+      calories: Math.max(50, totalCal),
+      protein: Math.max(2, totalP),
+      carbs: Math.max(2, totalC),
+      fat: Math.max(1, totalF),
+    };
+  };
+
+  const resolveSuggestionIngredients = React.useCallback((item: any) => {
+    if (Array.isArray(item.ingredients) && item.ingredients.length > 0) {
+      return item.ingredients;
+    }
+    const text = `${item.title || ""} ${item.desc || ""} ${item.narrative || ""}`.toLowerCase();
+    const detected: any[] = [];
+
+    const checkMap: Array<{ key: string; defaultName: string; options: string[] }> = [
+      { key: "avena", defaultName: "1 taza de avena integral", options: defaultIngredientSwaps.avena },
+      { key: "proteína", defaultName: "1 scoop de proteína aislada de vainilla", options: defaultIngredientSwaps.proteína },
+      { key: "frutos rojos", defaultName: "1/2 taza de arándanos o fresas", options: defaultIngredientSwaps.banana },
+      { key: "arándanos", defaultName: "1/2 taza de arándanos o fresas", options: defaultIngredientSwaps.banana },
+      { key: "chía", defaultName: "1 cda de semillas de chía", options: defaultIngredientSwaps.chía },
+      { key: "pan", defaultName: "2 rebanadas de pan de masa madre", options: defaultIngredientSwaps.pan },
+      { key: "tostada", defaultName: "2 rebanadas de pan de masa madre", options: defaultIngredientSwaps.pan },
+      { key: "tostón", defaultName: "2 rebanadas de pan de masa madre", options: defaultIngredientSwaps.pan },
+      { key: "huevo", defaultName: "2-3 huevos de campo frescos", options: defaultIngredientSwaps.huevo },
+      { key: "palta", defaultName: "1/2 palta / aguacate maduro", options: defaultIngredientSwaps.palta },
+      { key: "aguacate", defaultName: "1/2 palta / aguacate maduro", options: defaultIngredientSwaps.palta },
+      { key: "tomate", defaultName: "1 cuenco de tomates cherry", options: ["1 cuenco de tomates cherry", "1 tomate en rodajas", "1 taza de espinacas baby"] },
+      { key: "pollo", defaultName: "150g de pechuga de pollo en tiras", options: defaultIngredientSwaps.pollo },
+      { key: "pechuga", defaultName: "150g de pechuga de pollo en tiras", options: defaultIngredientSwaps.pollo },
+      { key: "quinoa", defaultName: "1 taza de quinoa cocida", options: defaultIngredientSwaps.quinoa },
+      { key: "brócoli", defaultName: "1 taza de brócoli al vapor", options: defaultIngredientSwaps.brócoli },
+      { key: "salmón", defaultName: "1 filete de salmón fresco", options: defaultIngredientSwaps.salmón },
+      { key: "batata", defaultName: "1 batata mediana asada", options: defaultIngredientSwaps.batata },
+      { key: "papa", defaultName: "1 batata mediana asada", options: defaultIngredientSwaps.batata },
+      { key: "yogur", defaultName: "1 taza de yogur griego natural sin azúcar", options: defaultIngredientSwaps.yogur },
+      { key: "banana", defaultName: "1 banana mediana en rodajas", options: defaultIngredientSwaps.banana },
+      { key: "nueces", defaultName: "1 puñado de nueces troceadas", options: defaultIngredientSwaps.nueces },
+      { key: "almendras", defaultName: "1 puñado de almendras tostadas", options: defaultIngredientSwaps.nueces },
+      { key: "miel", defaultName: "1 cdita de miel cruda y canela", options: defaultIngredientSwaps.miel },
+      { key: "pavo", defaultName: "150g de pechuga de pavo en cubos", options: defaultIngredientSwaps.pavo },
+      { key: "calabacín", defaultName: "1 calabacín mediano en rodajas", options: defaultIngredientSwaps.calabacín },
+      { key: "arroz", defaultName: "1 taza pequeña de arroz jazmín", options: defaultIngredientSwaps.arroz },
+      { key: "espinaca", defaultName: "2 cuencos de espinacas salteadas", options: ["2 cuencos de espinacas salteadas", "1 taza de brócoli al vapor", "1 taza de judías verdes"] },
+      { key: "champiñ", defaultName: "1 taza de champiñones salteados", options: ["1 taza de champiñones salteados", "1 taza de setas portobello", "1 taza de espárragos"] },
+    ];
+
+    const addedKeys = new Set<string>();
+    for (const entry of checkMap) {
+      if (text.includes(entry.key) && !addedKeys.has(entry.key)) {
+        addedKeys.add(entry.key);
+        detected.push({
+          id: `ing-${detected.length + 1}`,
+          name: entry.defaultName,
+          selectedIndex: 0,
+          options: entry.options,
+        });
+      }
+    }
+
+    if (detected.length === 0) {
+      return [
+        { id: "ing-1", name: "150g de pechuga de pollo en tiras", selectedIndex: 0, options: defaultIngredientSwaps.pollo },
+        { id: "ing-2", name: "1 taza de quinoa cocida", selectedIndex: 0, options: defaultIngredientSwaps.quinoa },
+        { id: "ing-3", name: "1 taza de brócoli al vapor", selectedIndex: 0, options: defaultIngredientSwaps.brócoli },
+        { id: "ing-4", name: "1/2 palta / aguacate maduro", selectedIndex: 0, options: defaultIngredientSwaps.palta },
+      ];
+    }
+    return detected;
+  }, [defaultIngredientSwaps]);
+
+  const simplifyIngredientShortName = (fullName: string): string => {
+    return fullName
+      .replace(/^(\d+(-\d+)?|\d+\/\d+|\d+(\.\d+)?)\s*(taza|tazas|cdita|cditas|cda|cdas|scoop|scoops|puñado|puñados|rebanada|rebanadas|tostada|tostadas|lata|latas|filete|filetes|porción|porciones|cuenco|cuencos|g|gr|ml)\s*(de\s*)?/i, "")
+      .replace(/\s*(en rodajas|en cubos|en tiras|troceadas|tostadas|cocida|al vapor|salteado|salteados|al horno|a la plancha|natural|sin azúcar|fresco|frescos|maduro|artesanal|0%|descremada|tibia|cruda|pura|rústico|caliente|descremado)\b/gi, "")
+      .trim();
+  };
+
+  const generateDynamicSuggestionTitle = (ingredients: any[], currentTitle: string = ""): string => {
+    if (!ingredients || ingredients.length === 0) return currentTitle;
+    const names = ingredients.map((ing) => {
+      const raw = typeof ing === "object" && ing !== null ? ing.name : String(ing);
+      return simplifyIngredientShortName(raw);
+    });
+
+    const lowerCurrent = currentTitle.toLowerCase();
+
+    // 1. Tostón / Tostadas
+    if (lowerCurrent.includes("tost") || lowerCurrent.includes("pan") || names.some(n => /pan|centeno/i.test(n))) {
+      const bread = names.find(n => /pan|tostada|centeno|masa madre|tortilla/i.test(n)) || "Masa Madre";
+      const protein = names.find(n => /huevo|tofu|atún|cottage|pollo/i.test(n)) || "Huevos Revueltos";
+      const accent = names.find(n => /palta|aguacate|tomate|hummus|queso/i.test(n)) || "Palta";
+      return `Tostón de ${bread} con ${protein} & ${accent}`;
+    }
+
+    // 2. Bowl de Yogur / Merienda
+    if (lowerCurrent.includes("yogur") || names.some(n => /yogur|kéfir|queso batido/i.test(n))) {
+      const base = names.find(n => /yogur|kéfir|queso batido/i.test(n)) || "Yogur Griego";
+      const fruit = names.find(n => /banana|manzana|arándano|fresa|fruto|durazno/i.test(n)) || "Fruta Fresca";
+      const nut = names.find(n => /nuez|nueces|almendra|maní|avellana|semilla/i.test(n)) || "Frutos Secos";
+      return `Bowl de ${base} con ${fruit} & ${nut}`;
+    }
+
+    // 3. Bowl de Avena / Desayuno
+    if (lowerCurrent.includes("avena") || names.some(n => /avena|quinoa inflada|sarraceno/i.test(n))) {
+      const carb = names.find(n => /avena|quinoa|sarraceno/i.test(n)) || "Avena Integral";
+      const fruit = names.find(n => /arándano|fresa|fruto|banana|manzana/i.test(n)) || "Frutos Rojos";
+      const protein = names.find(n => /proteína|yogur|clara/i.test(n)) || "Proteína";
+      return `Bowl de ${carb} con ${fruit} & ${protein}`;
+    }
+
+    // 4. Bowl de Quinoa / Almuerzo Bowl
+    if (lowerCurrent.includes("quinoa") || (names.some(n => /quinoa|arroz|fideo/i.test(n)) && names.some(n => /pollo|carne|tofu/i.test(n)))) {
+      const carb = names.find(n => /quinoa|arroz|fideo|cous cous/i.test(n)) || "Quinoa";
+      const protein = names.find(n => /pollo|carne|tofu|atún/i.test(n)) || "Pechuga Grillada";
+      const veggie = names.find(n => /brócoli|calabacín|judía|espárrago|palta/i.test(n)) || "Vegetales";
+      return `Bowl de ${carb} con ${protein} & ${veggie}`;
+    }
+
+    // 5. Salmón / Pescado al Horno con guarnición
+    if (lowerCurrent.includes("salmón") || names.some(n => /salmón|merluza|pescado/i.test(n))) {
+      const protein = names.find(n => /salmón|merluza|pescado|atún/i.test(n)) || "Salmón";
+      const carb = names.find(n => /batata|papa|calabaza|arroz/i.test(n)) || "Puré de Batata";
+      const veggie = names.find(n => /espinaca|brócoli|vegetal/i.test(n)) || "Espinacas";
+      return `${protein} al Horno con ${carb} & ${veggie}`;
+    }
+
+    // 6. Salteado Ligero (Cena)
+    if (lowerCurrent.includes("salteado") || lowerCurrent.includes("pavo") || names.some(n => /pavo|cerdo/i.test(n))) {
+      const protein = names.find(n => /pavo|pollo|tofu|cerdo/i.test(n)) || "Pavo";
+      const veggie = names.find(n => /calabacín|berenjena|pimiento|champiñón/i.test(n)) || "Vegetales Salteados";
+      const carb = names.find(n => /arroz|quinoa|papa/i.test(n)) || "Arroz Jazmín";
+      return `Salteado de ${protein} con ${veggie} & ${carb}`;
+    }
+
+    // Fallback general armónico
+    const p1 = names[0] || "Plato Saludable";
+    const p2 = names[1] ? ` con ${names[1]}` : "";
+    const p3 = names[2] ? ` & ${names[2]}` : "";
+    return `${p1}${p2}${p3}`;
+  };
+
+  const generateDynamicEducationalInsight = (ingredients: any[], contextBadge: string = ""): string => {
+    if (!ingredients || ingredients.length === 0) {
+      return "Fórmula balanceada: Proteína completa + Carbohidratos lentos para soporte muscular y energía estable.";
+    }
+
+    const rawNames = ingredients.map((ing) => {
+      const raw = typeof ing === "object" && ing !== null ? ing.name : String(ing);
+      return simplifyIngredientShortName(raw);
+    });
+
+    const protein = rawNames.find(n => /pollo|pavo|huevo|salmón|merluza|atún|tofu|proteína|yogur|cottage/i.test(n));
+    const carb = rawNames.find(n => /avena|quinoa|pan|centeno|masa madre|arroz|batata|papa|fideo|cous cous|banana|manzana/i.test(n));
+    const lipidOrFiber = rawNames.find(n => /palta|aguacate|oliva|nuez|almendra|chía|lino|brócoli|espinaca|fruto|arándano|tomate|calabacín/i.test(n));
+
+    const isPostWorkout = /post-entreno|recarga/i.test(contextBadge);
+    const isNight = /nocturna|cena/i.test(contextBadge);
+    const isMorning = /desayuno|matutina|energético/i.test(contextBadge);
+
+    if (isPostWorkout) {
+      return `Fórmula Post-Entreno: ${protein ? `${protein} para reparación de fibras musculares` : "Proteína completa"} + ${carb ? `${carb} para reponer glucógeno sin picos glucémicos` : "Carbohidratos complejos"}.`;
+    }
+
+    if (isNight) {
+      return `Fórmula Regenerativa: ${protein ? `${protein} de fácil asimilación` : "Proteína magra"} combinada con ${lipidOrFiber ? `${lipidOrFiber}` : "vegetales ligeros"} para optimizar el descanso sin sobrecarga digestiva.`;
+    }
+
+    if (isMorning) {
+      return `Fórmula Energética: ${carb ? `${carb} para liberación gradual de energía` : "Carbohidratos complejos"} + ${protein ? `${protein}` : "proteína limpia"} para sostener la saciedad y evitar bajones a media mañana.`;
+    }
+
+    return `Fórmula Nutricional: ${protein ? `${protein} (síntesis proteica)` : "Proteína magra"} + ${carb ? `${carb} (energía limpia)` : "Carbos lentos"} + ${lipidOrFiber ? `${lipidOrFiber} (saciedad y micronutrientes)` : "Fibra & Grasas saludables"}.`;
+  };
+
+  const handleSwapIngredient = (itemId: string, ingIndex: number) => {
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      try {
+        navigator.vibrate(15);
+      } catch (_) {}
+    }
+    setUserTimelineItems((prev) =>
+      prev.map((item) => {
+        if (item.id !== itemId) return item;
+        const currentList = resolveSuggestionIngredients(item);
+        const updatedIngredients = currentList.map((ing: any, idx: number) => {
+          if (idx !== ingIndex) return ing;
+          let currentObj = typeof ing === "object" && ing !== null ? { ...ing } : { name: String(ing), selectedIndex: 0 };
+          let options = currentObj.options;
+          if (!options || options.length <= 1) {
+            const lower = currentObj.name.toLowerCase();
+            for (const [key, opts] of Object.entries(defaultIngredientSwaps)) {
+              if (lower.includes(key)) {
+                options = opts;
+                break;
+              }
+            }
+          }
+          if (!options || options.length <= 1) return ing;
+          const nextIndex = ((currentObj.selectedIndex ?? 0) + 1) % options.length;
+          const newName = options[nextIndex];
+          toast.info(`Sustituido: ${newName}`);
+          return {
+            ...currentObj,
+            options,
+            selectedIndex: nextIndex,
+            name: newName,
+          };
+        });
+
+        // Recalcular macros y calorías basados en los nuevos ingredientes
+        const newMacros = calculateSuggestionMacros(updatedIngredients);
+
+        // Generar título dinámico y descripción educativa de aprendizaje
+        const newTitle = generateDynamicSuggestionTitle(updatedIngredients, item.title);
+        const newInsight = generateDynamicEducationalInsight(updatedIngredients, item.contextBadge || item.subtitle || "");
+
+        return {
+          ...item,
+          title: newTitle,
+          desc: newInsight,
+          narrative: newInsight,
+          ingredients: updatedIngredients,
+          calories: newMacros.calories,
+          kcal: newMacros.calories,
+          protein: newMacros.protein,
+          carbs: newMacros.carbs,
+          carbohydrates: newMacros.carbs,
+          fat: newMacros.fat,
+        };
+      }),
+    );
+  };
+
+  const generateContextualAiFoodSuggestion = React.useCallback(() => {
+    const now = new Date();
+    const hour = now.getHours();
+    const minutes = now.getMinutes();
+    const timeStr = now.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+    const dateStr = now.toISOString().split("T")[0];
+
+    // Detect if there was any workout logged today
+    const todayWorkouts = userTimelineItems.filter(
+      (item) => item && (item.date === dateStr || !item.date) && item.type === "workout",
+    );
+    const hasWorkoutToday = todayWorkouts.length > 0;
+
+    let title = "";
+    let desc = "";
+    let contextBadge = "Sugerencia Shakerfy AI";
+    let calories = 420;
+    let protein = 30;
+    let carbs = 45;
+    let fat = 12;
+    let ingredients: any[] = [];
+
+    if ((hour >= 5 && hour < 11) || (hour === 11 && minutes < 30)) {
+      // Desayuno
+      if (hasWorkoutToday) {
+        title = "Bowl de Avena Tibia con Frutos Rojos & Proteína";
+        desc =
+          "Repone glucógeno muscular y estimula la síntesis proteica post-entreno con absorción gradual sin picos de insulina.";
+        contextBadge = "Ventana Post-Entreno";
+        calories = 430;
+        protein = 32;
+        carbs = 54;
+        fat = 9;
+        ingredients = [
+          { id: "ing-1", name: "1 taza de avena integral", selectedIndex: 0, options: defaultIngredientSwaps.avena },
+          { id: "ing-2", name: "1 scoop de proteína aislada de vainilla", selectedIndex: 0, options: defaultIngredientSwaps.proteína },
+          { id: "ing-3", name: "1/2 taza de arándanos o fresas", selectedIndex: 0, options: defaultIngredientSwaps.banana },
+          { id: "ing-4", name: "1 cda de semillas de chía", selectedIndex: 0, options: defaultIngredientSwaps.chía },
+        ];
+      } else {
+        title = "Tostón de Masa Madre con Huevos Revueltos, Palta & Tomates";
+        desc =
+          "Estabiliza la glucosa en sangre matutina y aporta saciedad prolongada y energía limpia para la mañana.";
+        contextBadge = "Desayuno Energético";
+        calories = 460;
+        protein = 24;
+        carbs = 42;
+        fat = 22;
+        ingredients = [
+          { id: "ing-1", name: "2 rebanadas de pan de masa madre", selectedIndex: 0, options: defaultIngredientSwaps.pan },
+          { id: "ing-2", name: "2-3 huevos de campo frescos", selectedIndex: 0, options: defaultIngredientSwaps.huevo },
+          { id: "ing-3", name: "1/2 palta / aguacate maduro", selectedIndex: 0, options: defaultIngredientSwaps.palta },
+        ];
+      }
+    } else if ((hour === 11 && minutes >= 30) || (hour >= 12 && hour < 16)) {
+      // Almuerzo (Pico metabólico solar)
+      if (hasWorkoutToday) {
+        title = "Bowl de Quinoa Real con Pechuga Grillada & Vegetales";
+        desc =
+          "Aporta aminoácidos esenciales y carbohidratos complejos para optimizar la regeneración celular y mitocondrial.";
+        contextBadge = "Pico Metabólico Post-Entreno";
+        calories = 540;
+        protein = 46;
+        carbs = 48;
+        fat = 16;
+        ingredients = [
+          { id: "ing-1", name: "150g de pechuga de pollo en tiras", selectedIndex: 0, options: defaultIngredientSwaps.pollo },
+          { id: "ing-2", name: "1 taza de quinoa cocida", selectedIndex: 0, options: defaultIngredientSwaps.quinoa },
+          { id: "ing-3", name: "1 taza de brócoli al vapor", selectedIndex: 0, options: defaultIngredientSwaps.brócoli },
+          { id: "ing-4", name: "1/2 palta / aguacate maduro", selectedIndex: 0, options: defaultIngredientSwaps.palta },
+        ];
+      } else {
+        title = "Salmón al Horno con Puré de Batata & Espinacas";
+        desc =
+          "Aprovecha el cenit solar metabólico con omega-3 y micronutrientes de fácil asimilación sin generar somnolencia.";
+        contextBadge = "Cenit Solar / Almuerzo";
+        calories = 510;
+        protein = 38;
+        carbs = 36;
+        fat = 21;
+        ingredients = [
+          { id: "ing-1", name: "1 filete de salmón fresco", selectedIndex: 0, options: defaultIngredientSwaps.salmón },
+          { id: "ing-2", name: "1 batata mediana asada", selectedIndex: 0, options: defaultIngredientSwaps.batata },
+          { id: "ing-3", name: "1 taza de brócoli al vapor", selectedIndex: 0, options: defaultIngredientSwaps.brócoli },
+        ];
+      }
+    } else if (hour >= 16 && hour < 20) {
+      // Merienda / Tarde
+      if (hasWorkoutToday) {
+        title = "Bowl de Yogur Griego con Banana, Miel & Nueces";
+        desc =
+          "Recarga rápida de leucina y potasio para calmar el apetito y frenar el catabolismo muscular tras entrenar.";
+        contextBadge = "Recarga Post-Entreno";
+        calories = 360;
+        protein = 24;
+        carbs = 42;
+        fat = 11;
+        ingredients = [
+          { id: "ing-1", name: "1 taza de yogur griego natural sin azúcar", selectedIndex: 0, options: defaultIngredientSwaps.yogur },
+          { id: "ing-2", name: "1 banana mediana en rodajas", selectedIndex: 0, options: defaultIngredientSwaps.banana },
+          { id: "ing-3", name: "1 puñado de nueces troceadas", selectedIndex: 0, options: defaultIngredientSwaps.nueces },
+        ];
+      } else {
+        title = "Fruta de Estación con Mix de Frutos Secos & Té";
+        desc =
+          "Aporte limpio de polifenoles y grasas saludables para sostener la energía y el enfoque mental vespertino sin picos de insulina.";
+        contextBadge = "Corte de Cafeína / Merienda";
+        calories = 260;
+        protein = 8;
+        carbs = 28;
+        fat = 14;
+        ingredients = [
+          { id: "ing-1", name: "1 manzana roja en cubos", selectedIndex: 0, options: defaultIngredientSwaps.banana },
+          { id: "ing-2", name: "1 puñado de almendras tostadas", selectedIndex: 0, options: defaultIngredientSwaps.nueces },
+        ];
+      }
+    } else {
+      // Noche / Cena
+      title = "Salteado Ligero de Pavo con Calabacín, Champiñones & Arroz";
+      desc =
+        "Rico en triptófano y de rápida digestión para optimizar la síntesis proteica nocturna y el descanso profundo.";
+      contextBadge = "Ventana Regenerativa Nocturna";
+      calories = 410;
+      protein = 36;
+      carbs = 38;
+      fat = 10;
+      ingredients = [
+        { id: "ing-1", name: "150g de pechuga de pavo en cubos", selectedIndex: 0, options: defaultIngredientSwaps.pavo },
+        { id: "ing-2", name: "1 calabacín mediano en rodajas", selectedIndex: 0, options: defaultIngredientSwaps.calabacín },
+        { id: "ing-3", name: "1 taza pequeña de arroz jazmín", selectedIndex: 0, options: defaultIngredientSwaps.arroz },
+      ];
+    }
+
+    const initialMacros = calculateSuggestionMacros(ingredients);
+
+    return {
+      id: `ai-suggest-${Date.now()}`,
+      type: "meal",
+      date: dateStr,
+      time: timeStr,
+      title: title,
+      subtitle: `Sugerencia Shakerfy AI • ${contextBadge}`,
+      contextBadge: contextBadge,
+      narrative: desc,
+      desc: desc,
+      calories: initialMacros.calories,
+      kcal: initialMacros.calories,
+      protein: initialMacros.protein,
+      carbs: initialMacros.carbs,
+      carbohydrates: initialMacros.carbs,
+      fat: initialMacros.fat,
+      ingredients: ingredients,
+      isAiSuggestion: true,
+      tag: contextBadge,
+      consumed: false,
+    };
+  }, [userTimelineItems]);
+
+  const triggerShake = React.useCallback(() => {
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      try {
+        navigator.vibrate([35, 50, 35]);
+      } catch (_) {}
+    }
+
+    setIsShaking(true);
+    setTimeout(() => setIsShaking(false), 950);
+
+    const newSuggestion = generateContextualAiFoodSuggestion();
+    setTimeout(() => {
+      setUserTimelineItems((prev) => [newSuggestion, ...prev]);
+      toast.success("✨ ¡Shakerfy AI generó una nueva sugerencia para tu momento!");
+    }, 700);
+  }, [generateContextualAiFoodSuggestion]);
+
+  useEffect(() => {
+    const handleShakeEvent = () => {
+      triggerShake();
+    };
+    window.addEventListener("shakerfy:shake-trigger", handleShakeEvent);
+    return () => {
+      window.removeEventListener("shakerfy:shake-trigger", handleShakeEvent);
+    };
+  }, [triggerShake]);
 
   const timelineItems = React.useMemo(() => {
     // ponytail: Los hitos solares/circadianos sirven exclusivamente de contexto para los prompts y la IA, no se renderizan como cards visuales en la timeline.
@@ -4664,18 +4237,85 @@ function DiarioTab() {
     });
   }, [userTimelineItems]);
 
+  const dailyNutritionStats = React.useMemo(() => {
+    const consumedMeals = userTimelineItems.filter(
+      (item) => item.consumed && (item.type === "meal" || item.isAiSuggestion),
+    );
+    if (consumedMeals.length === 0) {
+      return {
+        totalCalories: 1644,
+        proteinGrams: 131,
+        carbsGrams: 180,
+        fatGrams: 51,
+      };
+    }
+    const cals = consumedMeals.reduce((acc, m) => acc + (m.calories || m.kcal || 0), 0);
+    const protein = consumedMeals.reduce((acc, m) => acc + (m.protein || 0), 0);
+    const carbs = consumedMeals.reduce((acc, m) => acc + (m.carbs || m.carbohydrates || 0), 0);
+    const fat = consumedMeals.reduce((acc, m) => acc + (m.fat || 0), 0);
+
+    return {
+      totalCalories: cals > 0 ? cals : 1644,
+      proteinGrams: protein > 0 ? protein : 131,
+      carbsGrams: carbs > 0 ? carbs : 180,
+      fatGrams: fat > 0 ? fat : 51,
+    };
+  }, [userTimelineItems]);
+
+  const activityStreakStats = React.useMemo(() => {
+    // Promedio ponderado de los últimos 7 días (pesos crecientes por recencia 1..7)
+    const weights = [1, 2, 3, 4, 5, 6, 7];
+    const totalWeight = weights.reduce((a, b) => a + b, 0); // 28
+    const weightedSum = activityData.reduce(
+      (acc, curr, idx) => acc + curr.puntos * (weights[idx] || 1),
+      0,
+    );
+    const weighted7DayAvg = Math.round(weightedSum / totalWeight);
+
+    // Suma 1 día a la racha por cada día consecutivo que supere el promedio ponderado
+    let streak = 0;
+    for (let i = activityData.length - 1; i >= 0; i--) {
+      if (activityData[i].puntos >= weighted7DayAvg) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+
+    const todayPts = activityData[activityData.length - 1]?.puntos || 168;
+
+    return {
+      streakDays: streak > 0 ? streak : 5,
+      weighted7DayAvg,
+      todayPoints: todayPts,
+      todayMinutes: Math.round(todayPts / 3.7) || 45,
+      todayMets: 6.5,
+    };
+  }, [activityData]);
+
   return (
     <div className="w-full max-w-full pb-20 transition-transform duration-300">
       {/* MAIN CENTERED CONTENT CONTAINER FOR AI COACH TIMELINE */}
       <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-2">
         <div className="space-y-6 animate-in fade-in duration-300">
-          {/* Current State Check-in Widget */}
-          <BioStateCard />
+          {/* Current State Check-in Widget (Replicated from Reference Design) */}
+          <div className={cn(isShaking && "animate-shakerfy-shake")}>
+            <BioStateCard
+              totalCalories={dailyNutritionStats.totalCalories}
+              proteinGrams={dailyNutritionStats.proteinGrams}
+              carbsGrams={dailyNutritionStats.carbsGrams}
+              fatGrams={dailyNutritionStats.fatGrams}
+              activityPoints={activityStreakStats.todayPoints}
+              activityMinutes={activityStreakStats.todayMinutes}
+              weeklyAveragePoints={activityStreakStats.weighted7DayAvg}
+              streakDays={activityStreakStats.streakDays}
+            />
+          </div>
 
           {/* Timeline */}
-          <div className="relative pl-6 md:pl-0">
+          <div className="relative">
             {/* Vertical Line */}
-            <div className="absolute left-6 md:left-[50%] top-0 bottom-0 w-[2px] bg-border transform -translate-x-1/2 md:-translate-x-[1px]"></div>
+            <div className="absolute left-3.5 md:left-[50%] top-0 bottom-0 w-[2px] bg-border transform -translate-x-1/2 md:-translate-x-[1px]"></div>
 
             {(() => {
               let lastDate = "";
@@ -4707,8 +4347,8 @@ function DiarioTab() {
                 return (
                   <React.Fragment key={item.id}>
                     {showDateSeparator && (
-                      <div className="relative flex justify-center my-8 pl-6 md:pl-0 w-full select-none">
-                        <div className="absolute top-1/2 left-6 md:left-0 right-0 h-[1px] bg-border/40 -translate-y-1/2"></div>
+                      <div className="relative flex justify-center my-8 w-full select-none">
+                        <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-border/40 -translate-y-1/2"></div>
                         <Badge
                           variant="outline"
                           className="relative z-10 bg-background text-[11px] font-bold px-4 py-1.5 rounded-full flex items-center gap-2 border-border shadow-none"
@@ -4721,7 +4361,7 @@ function DiarioTab() {
 
                     <div className="relative mb-12 md:grid md:grid-cols-2 md:gap-12 items-center group">
                       {/* Timeline Dot */}
-                      <div className="absolute left-0 md:left-1/2 w-4.5 h-4.5 rounded-full border-4 bg-background z-10 transform -translate-x-1/2 border-muted-foreground/30"></div>
+                      <div className="absolute left-3.5 md:left-1/2 w-4 h-4 rounded-full border-4 bg-background z-10 transform -translate-x-1/2 border-muted-foreground/30"></div>
 
                       {/* Time Label for Desktop */}
                       <div
@@ -4734,49 +4374,253 @@ function DiarioTab() {
                       </div>
 
                       {/* Card Container */}
-                      <div className={`pl-6 md:pl-0 ${showOnLeft ? "md:order-1" : "md:order-2"}`}>
+                      <div className={`pl-7 sm:pl-8 md:pl-0 w-full min-w-0 ${showOnLeft ? "md:order-1" : "md:order-2"}`}>
                         <Card
+                          style={
+                            isShaking ? { animationDelay: `${(index % 8) * 45}ms` } : undefined
+                          }
                           className={cn(
                             "rounded-3xl overflow-hidden border border-border bg-card shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg cursor-pointer",
+                            isShaking && "animate-shakerfy-shake",
                             catConfig.bg,
                           )}
                         >
-                          {item.img && (
-                            <div className="relative h-44 w-full overflow-hidden group">
-                              <img
-                                src={item.img}
-                                alt={item.title}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                              />
+                          {item.isAiSuggestion ? (
+                            <div className="flex flex-col p-5 space-y-4 text-left">
+                              {/* 1. Header con Badge Contextual y Action Pill */}
+                              <div className="flex items-center justify-between gap-3 text-left">
+                                <div className="flex items-center gap-2">
+                                  <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+                                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+                                    {item.contextBadge || "Sugerencia Shakerfy AI"} {item.time ? `• ${item.time}` : ""}
+                                  </span>
+                                </div>
 
-                              <div className="absolute top-3 right-3 z-10 flex items-center gap-1 bg-background/80 backdrop-blur-md px-2 py-1 rounded-full border border-border/60 shadow-sm">
-                                <button
+                                <div className="flex items-center gap-1 bg-secondary/80 backdrop-blur-md px-1.5 py-1 rounded-full border border-border/60 shadow-xs shrink-0">
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setEditingTimelineItem(item);
+                                    }}
+                                    className="p-1 text-muted-foreground hover:text-foreground transition cursor-pointer"
+                                    title="Editar registro"
+                                  >
+                                    <Edit className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (
+                                        confirm(
+                                          `¿Deseas eliminar "${item.title}" de tu diario?`,
+                                        )
+                                      ) {
+                                        handleDeleteTimelineItem(item.id);
+                                      }
+                                    }}
+                                    className="p-1 text-muted-foreground hover:text-rose-500 transition cursor-pointer"
+                                    title="Eliminar sugerencia"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+
+                              {/* 2. Título y Por qué fisiológico */}
+                              <div className="space-y-1.5 text-left">
+                                <h3 className="text-base sm:text-lg font-black leading-tight text-foreground">
+                                  {item.title}
+                                </h3>
+                                <p className="text-xs sm:text-[13px] text-muted-foreground leading-relaxed font-normal">
+                                  {(() => {
+                                    const rawDesc = item.desc || item.narrative || "";
+                                    const cleaned = rawDesc
+                                      .replace(/^Para [^:]+:\s*/i, "")
+                                      .replace(/^Para (tu|arrancar|el|sostener|la)[^,]+,\s*(te sugiero\s*)?/i, "")
+                                      .replace(/(En porciones de mano[^.]*\.)/gi, "")
+                                      .trim();
+                                    return cleaned ? cleaned.charAt(0).toUpperCase() + cleaned.slice(1) : rawDesc;
+                                  })()}
+                                </p>
+                              </div>
+
+                              {/* 3. Macronutrientes Estimados (C, P, C, G) */}
+                              <div className="grid grid-cols-4 gap-1.5 sm:gap-2 w-full select-none">
+                                {/* Calorías */}
+                                <div
+                                  title="Calorías"
+                                  className="px-1 py-1.5 sm:py-2 rounded-xl bg-secondary/40 border border-border/60 flex flex-col items-center justify-center text-center shadow-2xs min-w-0"
+                                >
+                                  <span className="text-[7.5px] font-bold uppercase text-muted-foreground/80 leading-none">
+                                    Calorías
+                                  </span>
+                                  <span className="text-xs font-black text-foreground tabular-nums leading-tight mt-0.5">
+                                    {item.calories || 420}
+                                  </span>
+                                </div>
+
+                                {/* Proteínas */}
+                                <div
+                                  title="Proteínas"
+                                  className="px-1 py-1.5 sm:py-2 rounded-xl bg-emerald-500/10 dark:bg-emerald-950/30 border border-emerald-500/20 flex flex-col items-center justify-center text-center shadow-2xs min-w-0"
+                                >
+                                  <span className="text-[7.5px] font-bold uppercase text-emerald-700 dark:text-emerald-400 leading-none">
+                                    Proteínas
+                                  </span>
+                                  <span className="text-xs font-black text-emerald-700 dark:text-emerald-400 tabular-nums leading-tight mt-0.5">
+                                    {item.protein || 32}g
+                                  </span>
+                                </div>
+
+                                {/* Carbos */}
+                                <div
+                                  title="Carbohidratos"
+                                  className="px-1 py-1.5 sm:py-2 rounded-xl bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/20 flex flex-col items-center justify-center text-center shadow-2xs min-w-0"
+                                >
+                                  <span className="text-[7.5px] font-bold uppercase text-amber-700 dark:text-amber-400 leading-none">
+                                    Carbos
+                                  </span>
+                                  <span className="text-xs font-black text-amber-700 dark:text-amber-400 tabular-nums leading-tight mt-0.5">
+                                    {item.carbs || 45}g
+                                  </span>
+                                </div>
+
+                                {/* Grasas */}
+                                <div
+                                  title="Grasas"
+                                  className="px-1 py-1.5 sm:py-2 rounded-xl bg-sky-500/10 dark:bg-sky-950/30 border border-sky-500/20 flex flex-col items-center justify-center text-center shadow-2xs min-w-0"
+                                >
+                                  <span className="text-[7.5px] font-bold uppercase text-sky-700 dark:text-sky-400 leading-none">
+                                    Grasas
+                                  </span>
+                                  <span className="text-xs font-black text-sky-700 dark:text-sky-400 tabular-nums leading-tight mt-0.5">
+                                    {item.fat || 12}g
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* 4. Ingredientes en Checklist de 1 Columna */}
+                              {(() => {
+                                const ingList = resolveSuggestionIngredients(item);
+                                if (!ingList || ingList.length === 0) return null;
+                                return (
+                                  <div className="space-y-2 pt-2 border-t border-border/50 text-left">
+                                    <div className="flex items-center justify-between pb-0.5">
+                                      <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 flex items-center gap-1.5">
+                                        <Utensils className="w-3.5 h-3.5 text-emerald-500" />
+                                        <span>Ingredientes</span>
+                                      </span>
+                                      <span className="text-[10px] text-muted-foreground flex items-center gap-1 font-medium">
+                                        <ArrowRightLeft className="w-3 h-3 text-emerald-500" />
+                                        <span>Toca para alternar</span>
+                                      </span>
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                      {ingList.map((ing: any, idx: number) => {
+                                        const ingName = typeof ing === "object" && ing !== null ? ing.name : String(ing);
+                                        return (
+                                          <button
+                                            key={idx}
+                                            type="button"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleSwapIngredient(item.id, idx);
+                                            }}
+                                            className="group w-full px-3 py-2.5 rounded-2xl bg-secondary/30 hover:bg-secondary/70 border border-border/50 hover:border-emerald-500/40 text-xs font-semibold text-foreground flex items-center justify-between gap-3 transition-all cursor-pointer text-left shadow-2xs hover:-translate-y-0.5"
+                                            title="Toca para alternar este ingrediente por otra opción saludable"
+                                          >
+                                            <div className="flex items-center gap-2.5 min-w-0">
+                                              <div className="w-4 h-4 rounded-md border border-emerald-500/60 bg-emerald-500/15 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0 shadow-2xs">
+                                                <Check className="w-2.5 h-2.5 stroke-[3]" />
+                                              </div>
+                                              <span className="font-medium text-foreground text-xs leading-tight truncate">
+                                                {ingName}
+                                              </span>
+                                            </div>
+                                            <div className="flex items-center gap-1 text-[10px] text-muted-foreground shrink-0 group-hover:text-emerald-500 font-bold bg-background/70 px-2 py-0.5 rounded-lg border border-border/40">
+                                              <ArrowRightLeft className="w-3 h-3" />
+                                              <span className="hidden xs:inline">Alternar</span>
+                                            </div>
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                );
+                              })()}
+
+                              {/* 5. Botón Registrar */}
+                              <div className="pt-2 border-t border-border/50">
+                                <Button
                                   type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    setEditingTimelineItem(item);
+                                    handleToggleMealConsumed(item.id);
                                   }}
-                                  className="p-1 text-muted-foreground hover:text-foreground transition cursor-pointer"
-                                  title="Editar registro"
+                                  className={cn(
+                                    "w-full h-11 rounded-2xl font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs",
+                                    item.consumed
+                                      ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                                      : "bg-foreground text-background hover:opacity-90",
+                                  )}
                                 >
-                                  <Edit className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (confirm(`¿Deseas eliminar "${item.title}" de tu diario?`)) {
-                                      handleDeleteTimelineItem(item.id);
-                                    }
-                                  }}
-                                  className="p-1 text-muted-foreground hover:text-rose-500 transition cursor-pointer"
-                                  title="Eliminar registro"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
+                                  <Check className="w-4 h-4" />
+                                  <span>
+                                    {item.consumed ? "✓ Registrada" : "Registrar"}
+                                  </span>
+                                </Button>
                               </div>
                             </div>
-                          )}
+                          ) : (
+                            <>
+                              {item.img && (
+                                <div className="relative h-44 w-full overflow-hidden group">
+                                  <img
+                                    src={item.img}
+                                    alt={item.title}
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                  />
+
+                                  {item.type === "meal" && (
+                                    <div className="absolute top-3 left-3 z-10">
+                                      <Badge className="backdrop-blur-md border text-[10px] font-black uppercase tracking-wider rounded-full px-3 py-1 shadow-xs flex items-center gap-1.5 transition-all duration-300 bg-background/90 text-foreground border-border/80">
+                                        <Camera className="w-3 h-3 text-emerald-500" />
+                                        <span>Comida Escaneada</span>
+                                      </Badge>
+                                    </div>
+                                  )}
+
+                                  <div className="absolute top-3 right-3 z-10 flex items-center gap-1 bg-background/80 backdrop-blur-md px-1.5 py-1 rounded-full border border-border/60 shadow-xs">
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setEditingTimelineItem(item);
+                                      }}
+                                      className="p-1 text-muted-foreground hover:text-foreground transition cursor-pointer"
+                                      title="Editar registro"
+                                    >
+                                      <Edit className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (confirm(`¿Deseas eliminar "${item.title}" de tu diario?`)) {
+                                          handleDeleteTimelineItem(item.id);
+                                        }
+                                      }}
+                                      className="p-1 text-muted-foreground hover:text-rose-500 transition cursor-pointer"
+                                      title="Eliminar registro"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
 
                           {item.type === "hydration" ? (
                             <div className="p-5 sm:p-6 space-y-3">
@@ -4912,14 +4756,144 @@ function DiarioTab() {
                                 );
                               })()}
                             </div>
+                          ) : item.type === "weight" ? (
+                            <div className="p-5 sm:p-6 space-y-4 text-left">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2.5">
+                                  <div className="w-10 h-10 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-500 shrink-0">
+                                    <Scale className="w-5 h-5" />
+                                  </div>
+                                  <div>
+                                    <h3 className="text-sm sm:text-base font-bold text-foreground">
+                                      {item.title || "Registro de Peso Biométrico"}
+                                    </h3>
+                                    <p className="text-xs text-muted-foreground font-medium">
+                                      {item.subtitle || "Check-in Biométrico • En ayunas"}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-1 bg-secondary/80 backdrop-blur-md px-2.5 py-1 rounded-full border border-border/60 shadow-xs shrink-0">
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setEditingTimelineItem(item);
+                                    }}
+                                    className="p-1 text-muted-foreground hover:text-foreground transition cursor-pointer"
+                                    title="Editar registro"
+                                  >
+                                    <Edit className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (
+                                        confirm(`¿Deseas eliminar "${item.title}" de tu diario?`)
+                                      ) {
+                                        handleDeleteTimelineItem(item.id);
+                                      }
+                                    }}
+                                    className="p-1 text-muted-foreground hover:text-rose-500 transition cursor-pointer"
+                                    title="Eliminar registro"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+
+                              {/* Metric Display */}
+                              <div className="p-4 rounded-2xl bg-secondary/30 border border-border/40 flex items-center justify-between">
+                                <div>
+                                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                                    Peso Registrado
+                                  </span>
+                                  <div className="flex items-baseline gap-1 mt-0.5">
+                                    <span className="text-2xl sm:text-3xl font-black text-foreground tabular-nums">
+                                      {item.weight || item.val || 74.2}
+                                    </span>
+                                    <span className="text-xs font-bold text-muted-foreground">
+                                      {item.unit || "kg"}
+                                    </span>
+                                  </div>
+                                </div>
+                                <Badge
+                                  variant="outline"
+                                  className="bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/20 text-xs font-bold py-1 px-3 rounded-full"
+                                >
+                                  {item.context || "En ayunas"}
+                                </Badge>
+                              </div>
+
+                              {/* Insights collapsible */}
+                              {(() => {
+                                const isExpanded = !!expandedCardInsights[item.id];
+                                return (
+                                  <div className="pt-1 space-y-3">
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        toggleCardInsights(item.id);
+                                      }}
+                                      className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-secondary/30 hover:bg-secondary/60 text-xs font-semibold text-foreground/80 hover:text-foreground transition-all cursor-pointer border border-border/40"
+                                    >
+                                      <span className="flex items-center gap-2">
+                                        <Sparkles className="w-3.5 h-3.5 text-violet-500" />
+                                        <span>{isExpanded ? "Ocultar insights" : "Ver insights"}</span>
+                                      </span>
+                                      {isExpanded ? (
+                                        <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                                      ) : (
+                                        <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                                      )}
+                                    </button>
+
+                                    {isExpanded && (
+                                      <div className="pt-1 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200 border-t border-border/40 text-left">
+                                        <div className="p-3.5 rounded-2xl bg-secondary/20 border border-border/40 text-xs space-y-1.5">
+                                          <div className="flex justify-between items-center">
+                                            <span className="text-muted-foreground">Estatus de Tendencia:</span>
+                                            <span className="font-bold text-emerald-500">Estabilidad Somática</span>
+                                          </div>
+                                          <div className="flex justify-between items-center">
+                                            <span className="text-muted-foreground">Impacto en Media Móvil:</span>
+                                            <span className="font-bold text-foreground">Calculado en Analíticas</span>
+                                          </div>
+                                        </div>
+                                        <div className="p-3 rounded-xl bg-secondary/30 border border-border/40 flex items-start gap-2 text-left">
+                                          <Sparkles className="w-3.5 h-3.5 text-violet-500 shrink-0 mt-0.5" />
+                                          <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+                                            {item.coachFeedback ||
+                                              "Este registro se integra automáticamente en tu media móvil de 7 días para filtrar variaciones transitorias de agua y glucógeno."}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })()}
+                            </div>
                           ) : (
                             <>
                               <CardHeader className="p-5 pb-3">
                                 <div className="flex items-start justify-between gap-4">
                                   <div className="space-y-1.5 flex-1 min-w-0 text-left">
-                                    <CardTitle className="text-base sm:text-lg font-black leading-tight text-foreground">
-                                      {item.title}
-                                    </CardTitle>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <CardTitle className="text-base sm:text-lg font-black leading-tight text-foreground">
+                                        {item.title}
+                                      </CardTitle>
+                                      {item.isAiSuggestion && (
+                                        <Badge
+                                          variant="outline"
+                                          className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 text-[10px] font-black rounded-full px-2 py-0.5 shadow-none flex items-center gap-1 shrink-0"
+                                        >
+                                          <Sparkles className="w-3 h-3 text-amber-500" />
+                                          <span>Sugerencia IA</span>
+                                        </Badge>
+                                      )}
+                                    </div>
                                     {item.type !== "meal" && item.subtitle && (
                                       <CardDescription className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                                         {item.subtitle}
@@ -4933,7 +4907,7 @@ function DiarioTab() {
                                       )}
                                   </div>
                                   {!item.img && (
-                                    <div className="flex items-center gap-1 bg-secondary/80 backdrop-blur-md px-2.5 py-1 rounded-full border border-border/60 shadow-xs shrink-0">
+                                    <div className="flex items-center gap-1 bg-secondary/80 backdrop-blur-md px-1.5 py-1 rounded-full border border-border/60 shadow-xs shrink-0">
                                       <button
                                         type="button"
                                         onClick={(e) => {
@@ -4968,269 +4942,205 @@ function DiarioTab() {
                               </CardHeader>
 
                               {item.type === "meal" ? (
-                                <CardContent className="px-5 pb-5 pt-0 space-y-3.5">
-                                  {/* Proprietary Valor Nutricional Hero Card */}
-                                  {(() => {
-                                    const itemScore =
-                                      item.bioScore || item.healthScore
-                                        ? item.bioScore || item.healthScore * 10
-                                        : 88;
-                                    const icnTheme = getIcnTheme(itemScore);
-                                    const currentGauge =
-                                      item.bioGaugeIndex !== undefined
-                                        ? item.bioGaugeIndex
-                                        : itemScore >= 90
-                                          ? 4
-                                          : itemScore >= 80
-                                            ? 3
-                                            : itemScore >= 65
-                                              ? 2
-                                              : itemScore >= 50
-                                                ? 1
-                                                : 0;
-
-                                    const rawQualityLabel =
-                                      item.bioQualityLabel || "Densidad Nutricional Óptima";
-                                    const qualityLabel = rawQualityLabel
-                                      .replace(/\s*\(Consumo Esporádico\)/gi, "")
-                                      .trim();
-
-                                    const qualitativeHeadline =
-                                      currentGauge >= 4
-                                        ? "Óptimo"
-                                        : currentGauge >= 3
-                                          ? "Alto"
-                                          : currentGauge >= 2
-                                            ? "Equilibrado"
-                                            : currentGauge >= 1
-                                              ? "Moderado"
-                                              : "Básico";
-
-                                    return (
-                                      <div
-                                        className={cn(
-                                          "p-3.5 rounded-2xl bg-secondary/40 border space-y-2 text-left transition-all",
-                                          icnTheme.cardBorder,
-                                        )}
-                                      >
-                                        <div className="flex items-center justify-between gap-2">
-                                          <div className="flex items-center gap-1.5 min-w-0">
-                                            <ShieldCheck
-                                              className={cn(
-                                                "w-3.5 h-3.5 shrink-0",
-                                                icnTheme.iconColor,
-                                              )}
-                                            />
-                                            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground truncate">
-                                              Valor Nutricional
-                                            </span>
-                                          </div>
-                                        </div>
-
-                                        <div className="flex items-baseline justify-between gap-3">
-                                          <span
-                                            className={cn(
-                                              "text-base sm:text-lg font-black tracking-tight uppercase font-mono",
-                                              icnTheme.scoreText,
-                                            )}
-                                          >
-                                            {qualitativeHeadline}
-                                          </span>
-                                          <span className="text-[11px] font-semibold text-muted-foreground text-right truncate">
-                                            {qualityLabel}
-                                          </span>
-                                        </div>
-
-                                        {/* 5-Segment Mini Gauge */}
-                                        <div className="space-y-1 pt-0.5 select-none">
-                                          <div className="flex items-center gap-1">
-                                            {[0, 1, 2, 3, 4].map((segIdx) => {
-                                              const isReached = segIdx <= currentGauge;
-                                              const isCurrent = segIdx === currentGauge;
-                                              return (
-                                                <div
-                                                  key={segIdx}
-                                                  className={cn(
-                                                    "h-1.5 flex-1 rounded-full transition-all duration-300",
-                                                    isCurrent
-                                                      ? cn(
-                                                          icnTheme.gaugeColor,
-                                                          "opacity-100 shadow-xs",
-                                                        )
-                                                      : isReached
-                                                        ? cn(icnTheme.gaugeColor, "opacity-40")
-                                                        : "bg-secondary border border-border/40",
-                                                  )}
-                                                />
-                                              );
-                                            })}
-                                          </div>
-                                          <div className="flex justify-between items-center text-[9px] font-bold text-muted-foreground/60 px-0.5">
-                                            <span>Bajo</span>
-                                            <span>Muy Alto</span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    );
-                                  })()}
-
-                                   {/* 1. Collapsible Trigger: Ver insights / Ocultar insights */}
+                                <CardContent className="px-5 pb-4 pt-0 space-y-3.5">
+                                  {/* 1. Action bar */}
                                   {(() => {
                                     const isExpanded = !!expandedMealInsights[item.id];
                                     return (
-                                      <div className="pt-0.5 space-y-3">
-                                        <button
-                                          type="button"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            toggleMealInsights(item.id);
-                                          }}
-                                          className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-secondary/30 hover:bg-secondary/60 text-xs font-semibold text-foreground/80 hover:text-foreground transition-all cursor-pointer border border-border/40"
-                                        >
-                                          <span className="flex items-center gap-2">
-                                            <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
-                                            <span>
+                                      <div className="space-y-3 pt-0.5">
+                                        <div className="flex items-center justify-start gap-2 w-full">
+                                          <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              toggleMealInsights(item.id);
+                                            }}
+                                            className="rounded-2xl h-8 sm:h-9 px-3 text-xs font-bold border-border/70 bg-secondary/30 hover:bg-secondary/70 text-foreground transition-all cursor-pointer flex items-center gap-1.5"
+                                          >
+                                            <Sparkles className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                                            <span className="truncate">
                                               {isExpanded ? "Ocultar insights" : "Ver insights"}
                                             </span>
-                                          </span>
-                                          {isExpanded ? (
-                                            <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                                          ) : (
-                                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                                          )}
-                                        </button>
+                                            {isExpanded ? (
+                                              <ChevronUp className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                                            ) : (
+                                              <ChevronDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                                            )}
+                                          </Button>
+                                        </div>
 
                                         {/* Collapsible Content */}
                                         {isExpanded && (
-                                          <div className="pt-1 space-y-3.5 animate-in fade-in slide-in-from-top-2 duration-200 border-t border-border/40 text-left">
-                                            {/* A. Vectores Nutricionales */}
-                                            <div className="space-y-1.5 pt-1">
-                                              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-                                                Vectores Nutricionales
-                                              </span>
-                                              <div className="flex flex-wrap gap-1.5">
-                                                {(item.vectorBadges && item.vectorBadges.length > 0
-                                                  ? item.vectorBadges
-                                                  : [
-                                                      { badgeText: "Mínimamente procesado" },
-                                                      { badgeText: "Alto en fibra" },
-                                                      { badgeText: "Proteína magra" },
-                                                      { badgeText: "Sin azúcar añadido" },
-                                                      { badgeText: "Grasas saludables" },
-                                                      { badgeText: "Granos enteros" },
-                                                      { badgeText: "Bajo en sodio" },
-                                                    ]
-                                                ).map((badge: any, idx: number) => (
+                                          <div className="pt-3.5 space-y-3.5 animate-in fade-in slide-in-from-top-2 duration-200 border-t border-border/40 text-left">
+                                            {/* A. Macros y Calorías de la comida analizada */}
+                                            {(() => {
+                                              const mealCalories = Math.round(
+                                                item.calories ??
+                                                  item.kcal ??
+                                                  (item.ingredients && item.ingredients.length > 0
+                                                    ? item.ingredients.reduce(
+                                                        (s: number, i: any) => s + (i.calories || 0),
+                                                        0,
+                                                      )
+                                                    : item.isAiSuggestion
+                                                      ? 420
+                                                      : 0),
+                                              );
+                                              const mealProtein = Math.round(
+                                                item.protein ??
+                                                  (item.ingredients && item.ingredients.length > 0
+                                                    ? item.ingredients.reduce(
+                                                        (s: number, i: any) => s + (i.protein || 0),
+                                                        0,
+                                                      )
+                                                    : item.isAiSuggestion
+                                                      ? 32
+                                                      : 0),
+                                              );
+                                              const mealCarbs = Math.round(
+                                                item.carbs ??
+                                                  item.carbohydrates ??
+                                                  (item.ingredients && item.ingredients.length > 0
+                                                    ? item.ingredients.reduce(
+                                                        (s: number, i: any) => s + (i.carbs || 0),
+                                                        0,
+                                                      )
+                                                    : item.isAiSuggestion
+                                                      ? 45
+                                                      : 0),
+                                              );
+                                              const mealFat = Math.round(
+                                                item.fat ??
+                                                  (item.ingredients && item.ingredients.length > 0
+                                                    ? item.ingredients.reduce(
+                                                        (s: number, i: any) => s + (i.fat || 0),
+                                                        0,
+                                                      )
+                                                    : item.isAiSuggestion
+                                                      ? 12
+                                                      : 0),
+                                              );
+
+                                              return (
+                                                <div className="grid grid-cols-4 gap-1.5 sm:gap-2 w-full select-none">
+                                                  {/* Calorías */}
                                                   <div
-                                                    key={idx}
-                                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-secondary/40 text-foreground border border-border/60 shadow-none select-none cursor-default"
-                                                    title={badge.description || badge.badgeText}
+                                                    title="Calorías"
+                                                    className="px-1 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-secondary/40 border border-border/60 flex flex-col items-center justify-center text-center shadow-2xs min-w-0"
                                                   >
-                                                    <Check className="w-3 h-3 text-foreground shrink-0 stroke-[2.5]" />
-                                                    <span>{badge.badgeText}</span>
+                                                    <span className="text-[7px] sm:text-[7.5px] font-bold uppercase text-muted-foreground/80 leading-none">
+                                                      Calorías
+                                                    </span>
+                                                    <span className="text-[11px] sm:text-xs font-black text-foreground tabular-nums leading-tight mt-0.5">
+                                                      {mealCalories}
+                                                    </span>
                                                   </div>
-                                                ))}
-                                              </div>
-                                            </div>
 
-                                            {/* B. Cromonutrición */}
-                                            {item.phytoColors && item.phytoColors.length > 0 && (
-                                              <div className="space-y-1 select-none">
-                                                <div className="flex items-center justify-between">
-                                                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-                                                    Cromonutrición
-                                                  </span>
-                                                  <span className="text-[10px] font-mono font-bold text-muted-foreground/70">
-                                                    {item.phytoColors.length}/5 fitocolores
-                                                  </span>
-                                                </div>
-                                                <div className="flex flex-wrap gap-1.5">
-                                                  {item.phytoColors.map((c: any, i: number) => (
-                                                    <div
-                                                      key={i}
-                                                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-secondary/40 text-foreground border border-border/60 shadow-none cursor-default select-none transition-transform hover:scale-105"
-                                                      title={
-                                                        c.phytochemical
-                                                          ? `${c.name}: ${c.phytochemical}`
-                                                          : c.name
-                                                      }
-                                                    >
-                                                      <span
-                                                        className={cn(
-                                                          "w-2.5 h-2.5 rounded-full shrink-0 shadow-2xs",
-                                                          c.bgClass,
-                                                        )}
-                                                      />
-                                                      <span>{c.name}</span>
-                                                    </div>
-                                                  ))}
-                                                </div>
-                                              </div>
-                                            )}
+                                                  {/* Proteína */}
+                                                  <div
+                                                    title="Proteínas"
+                                                    className="px-1 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-emerald-500/10 dark:bg-emerald-950/30 border border-emerald-500/20 flex flex-col items-center justify-center text-center shadow-2xs min-w-0"
+                                                  >
+                                                    <span className="text-[7px] sm:text-[7.5px] font-bold uppercase text-emerald-700 dark:text-emerald-400 leading-none">
+                                                      Proteínas
+                                                    </span>
+                                                    <span className="text-[11px] sm:text-xs font-black text-emerald-700 dark:text-emerald-400 tabular-nums leading-tight mt-0.5">
+                                                      {mealProtein}g
+                                                    </span>
+                                                  </div>
 
-                                            {/* C. Motivo de Ingesta */}
-                                            {item.reasons && item.reasons.length > 0 && (
-                                              <div className="space-y-1.5">
-                                                <div className="flex items-center justify-between">
-                                                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-                                                    Motivo de Ingesta
-                                                  </span>
-                                                  {item.reasons.includes("Estrés / Emocional") && (
-                                                    <button
-                                                      type="button"
-                                                      onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setShowBreathingModal(true);
-                                                      }}
-                                                      className="text-[10px] font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1 transition cursor-pointer"
-                                                      title="Realizar una micro-pausa de respiración"
-                                                    >
-                                                      <Wind className="w-3 h-3" />
-                                                      <span>Pausa Vagal</span>
-                                                    </button>
-                                                  )}
-                                                </div>
-                                                <div className="flex flex-wrap gap-1.5">
-                                                  {item.reasons.map(
-                                                    (reason: string, idx: number) => {
-                                                      const isStress =
-                                                        reason === "Estrés / Emocional";
-                                                      return (
-                                                        <Badge
-                                                          key={idx}
-                                                          variant="outline"
-                                                          onClick={
-                                                            isStress
-                                                              ? (e) => {
-                                                                  e.stopPropagation();
-                                                                  setShowBreathingModal(true);
-                                                                }
-                                                              : undefined
-                                                          }
-                                                          className={cn(
-                                                            "rounded-full px-2.5 py-1 text-[11px] font-medium border-border/60 bg-secondary/40 text-foreground shadow-none",
-                                                            isStress &&
-                                                              "hover:bg-secondary cursor-pointer border-border/80",
-                                                          )}
-                                                          title={
-                                                            isStress
-                                                              ? "Toca para abrir la pausa de respiración consciente"
-                                                              : undefined
-                                                          }
-                                                        >
-                                                          {isStress && (
-                                                            <Wind className="w-3 h-3 mr-1 text-muted-foreground" />
-                                                          )}
-                                                          {reason}
-                                                        </Badge>
-                                                      );
-                                                    },
-                                                  )}
-                                                </div>
-                                              </div>
-                                            )}
+                                                  {/* Carbohidratos */}
+                                                  <div
+                                                    title="Carbohidratos"
+                                                    className="px-1 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/20 flex flex-col items-center justify-center text-center shadow-2xs min-w-0"
+                                                  >
+                                                    <span className="text-[7px] sm:text-[7.5px] font-bold uppercase text-amber-700 dark:text-amber-400 leading-none">
+                                                      Carbos
+                                                    </span>
+                                                    <span className="text-[11px] sm:text-xs font-black text-amber-700 dark:text-amber-400 tabular-nums leading-tight mt-0.5">
+                                                      {mealCarbs}g
+                                                    </span>
+                                                  </div>
 
-                                            {/* D. Insight del Coach Biológico */}
+                                                  {/* Grasas */}
+                                                  <div
+                                                    title="Grasas"
+                                                    className="px-1 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-sky-500/10 dark:bg-sky-950/30 border border-sky-500/20 flex flex-col items-center justify-center text-center shadow-2xs min-w-0"
+                                                  >
+                                                    <span className="text-[7px] sm:text-[7.5px] font-bold uppercase text-sky-700 dark:text-sky-400 leading-none">
+                                                      Grasas
+                                                    </span>
+                                                    <span className="text-[11px] sm:text-xs font-black text-sky-700 dark:text-sky-400 tabular-nums leading-tight mt-0.5">
+                                                      {mealFat}g
+                                                    </span>
+                                                  </div>
+                                                </div>
+                                              );
+                                            })()}
+
+                                            {/* B. 7 Vectores Nutricionales */}
+                                            {(() => {
+                                              const defaultVectors = [
+                                                { category: "processing", label: "Procesamiento", value: "Mínimamente procesado", iconType: "check" },
+                                                { category: "fiber", label: "Fibra", value: "Buena fuente", iconType: "check" },
+                                                { category: "protein", label: "Proteína", value: "Proteína magra", iconType: "check" },
+                                                { category: "sugar", label: "Azúcares añadidos", value: "Sin azúcar añadido", iconType: "check" },
+                                                { category: "fat", label: "Grasas", value: "Moderadas", iconType: "minus" },
+                                                { category: "grains", label: "Granos", value: "Granos enteros", iconType: "check" },
+                                                { category: "sodium", label: "Sodio", value: "Bajo en sodio", iconType: "check" },
+                                              ];
+
+                                              if (item.vectorBadges && item.vectorBadges.length > 0) {
+                                                const badgeMap = new Map<string, string>();
+                                                item.vectorBadges.forEach((b: any) => {
+                                                  if (b.category) badgeMap.set(b.category, b.badgeText);
+                                                  else if (b.badgeText) {
+                                                    const textLower = b.badgeText.toLowerCase();
+                                                    if (textLower.includes("procesad")) badgeMap.set("processing", b.badgeText);
+                                                    else if (textLower.includes("fibra")) badgeMap.set("fiber", b.badgeText);
+                                                    else if (textLower.includes("prote")) badgeMap.set("protein", b.badgeText);
+                                                    else if (textLower.includes("azú") || textLower.includes("azuc")) badgeMap.set("sugar", b.badgeText);
+                                                    else if (textLower.includes("grasa") || textLower.includes("lipid")) badgeMap.set("fat", b.badgeText);
+                                                    else if (textLower.includes("grano") || textLower.includes("cereal")) badgeMap.set("grains", b.badgeText);
+                                                    else if (textLower.includes("sodio") || textLower.includes("sal")) badgeMap.set("sodium", b.badgeText);
+                                                  }
+                                                });
+
+                                                defaultVectors.forEach((row) => {
+                                                  const customVal = badgeMap.get(row.category);
+                                                  if (customVal) {
+                                                    row.value = customVal;
+                                                    const valLower = customVal.toLowerCase();
+                                                    if (row.category === "fat" && (valLower.includes("modera") || valLower.includes("elevad"))) {
+                                                      row.iconType = "minus";
+                                                    }
+                                                  }
+                                                });
+                                              }
+
+                                              return (
+                                                <div className="rounded-2xl border border-slate-200/70 dark:border-slate-800/80 bg-[#fbfcfd] dark:bg-slate-900/40 p-3.5 space-y-2.5 shadow-2xs">
+                                                  <div className="divide-y divide-slate-100 dark:divide-slate-800/70">
+                                                    {defaultVectors.map((n) => (
+                                                      <div
+                                                        key={n.category}
+                                                        className="flex items-center justify-between gap-3 py-1.5 text-xs first:pt-0 last:pb-0"
+                                                      >
+                                                        <span className="font-semibold text-slate-800 dark:text-slate-200 shrink-0 text-[11px] sm:text-xs">
+                                                          {n.label}
+                                                        </span>
+                                                        <span className="font-medium text-sky-600 dark:text-sky-400 text-right text-[11px] sm:text-xs leading-tight">
+                                                          {n.value}
+                                                        </span>
+                                                      </div>
+                                                    ))}
+                                                  </div>
+                                                </div>
+                                              );
+                                            })()}
+
+                                            {/* C. Insights con animación de máquina de escribir */}
                                             {(item.coachFeedback ||
                                               item.narrative ||
                                               item.summary ||
@@ -5239,13 +5149,20 @@ function DiarioTab() {
                                                 <Sparkles className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                                                 <div className="space-y-0.5 flex-1 min-w-0">
                                                   <span className="text-[10px] font-bold uppercase tracking-wider text-foreground block">
-                                                    Insight del Coach Biológico
+                                                    Insights
                                                   </span>
                                                   <p className="text-xs text-foreground/90 leading-relaxed font-normal">
-                                                    {item.coachFeedback ||
-                                                      item.narrative ||
-                                                      item.summary ||
-                                                      item.desc}
+                                                    <TypewriterOnce
+                                                      text={
+                                                        item.coachFeedback ||
+                                                        item.narrative ||
+                                                        item.summary ||
+                                                        item.desc ||
+                                                        ""
+                                                      }
+                                                      speed={18}
+                                                      cursorClassName="bg-emerald-500"
+                                                    />
                                                   </p>
                                                 </div>
                                               </div>
@@ -5257,144 +5174,258 @@ function DiarioTab() {
                                   })()}
 
                                   {/* Disclaimer Text: Always Visible */}
-                                  <p className="text-[11px] text-muted-foreground/60 leading-snug pt-1 text-left">
-                                    Visual identification may be inaccurate. Always check important
-                                    details.
+                                  <p className="text-[10px] sm:text-[11px] text-muted-foreground/70 leading-snug pt-1 text-left font-normal">
+                                    La identificación visual por IA puede ser aproximada. Revisa siempre los detalles nutricionales importantes.
                                   </p>
                                 </CardContent>
                               ) : (
                                 <CardContent className="px-5 pb-4 pt-0 space-y-3 text-left">
-                                  {/* Description / Summary / Badges */}
-                                  <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                                    {item.type === "hydration" ? (
-                                      <>
-                                        <Badge
-                                          variant="outline"
-                                          className="rounded-full px-3 py-1 text-[11px] font-medium border-cyan-500/30 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center gap-1.5 shadow-none"
-                                        >
-                                          <Droplet className="w-3.5 h-3.5" />
-                                          <span>
-                                            {item.tag || `Nivel ${item.level || 2} Armstrong`}
-                                          </span>
-                                        </Badge>
-                                        {item.desc && (
-                                          <span className="text-xs text-muted-foreground font-medium">
-                                            {item.desc}
-                                          </span>
-                                        )}
-                                      </>
-                                    ) : (
-                                      item.tag && (
-                                        <Badge
-                                          variant="outline"
-                                          className="rounded-full px-3 py-1 text-[11px] font-medium border-border/60 bg-secondary/25 text-muted-foreground flex items-center gap-1.5 shadow-none"
-                                        >
-                                          <Activity className="w-3.5 h-3.5 text-emerald-500" />
-                                          <span>{item.tag}</span>
-                                        </Badge>
-                                      )
-                                    )}
-                                  </div>
-
-                                  {/* Collapsible Trigger: Ver insights / Ocultar insights */}
                                   {(() => {
-                                    const isExpanded = !!expandedCardInsights[item.id];
+                                    const resolvedMuscles =
+                                      item.muscleImages && item.muscleImages.length > 0
+                                        ? item.muscleImages
+                                        : (item.musclesWorked || item.muscles || []).map(
+                                            (mId: string) => {
+                                              const g = MUSCLE_GROUPS.find(
+                                                (mg) => mg.id === mId,
+                                              );
+                                              return {
+                                                id: mId,
+                                                name: g?.name || mId,
+                                                image: g?.image || "/gimnasia.png",
+                                              };
+                                            },
+                                          );
+
                                     return (
-                                      <div className="pt-1 space-y-3">
-                                        <button
-                                          type="button"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            toggleCardInsights(item.id);
-                                          }}
-                                          className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-secondary/30 hover:bg-secondary/60 text-xs font-semibold text-foreground/80 hover:text-foreground transition-all cursor-pointer border border-border/40"
-                                        >
-                                          <span className="flex items-center gap-2">
-                                            <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
-                                            <span>
-                                              {isExpanded ? "Ocultar insights" : "Ver insights"}
-                                            </span>
-                                          </span>
-                                          {isExpanded ? (
-                                            <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                                          ) : (
-                                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                                          )}
-                                        </button>
-
-                                        {isExpanded && (
-                                          <div className="pt-1 space-y-3.5 animate-in fade-in slide-in-from-top-2 duration-200 border-t border-border/40 text-left">
+                                      <>
+                                        {/* Description / Summary / Badges & Muscle Avatars */}
+                                        <div className="flex flex-wrap items-center justify-between gap-2.5 pt-0.5">
+                                          <div className="flex flex-wrap items-center gap-1.5">
                                             {item.type === "hydration" ? (
-                                              <div className="space-y-1.5 pt-1">
-                                                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-                                                  Osmorregulación & Escala Armstrong
-                                                </span>
-                                                <div className="p-3 rounded-2xl bg-secondary/20 border border-border/40 text-xs space-y-1">
-                                                  <div className="flex justify-between items-center">
-                                                    <span className="text-muted-foreground">
-                                                      Estado colorimétrico:
-                                                    </span>
-                                                    <span className="font-bold text-foreground">
-                                                      Nivel {item.level || 2} de 8
-                                                    </span>
-                                                  </div>
-                                                  <div className="flex justify-between items-center">
-                                                    <span className="text-muted-foreground">
-                                                      Estatus celular:
-                                                    </span>
-                                                    <span className="font-bold text-emerald-500">
-                                                      {(item.level || 2) <= 3
-                                                        ? "Óptimo / Euhidratado"
-                                                        : (item.level || 2) <= 5
-                                                          ? "Ligera deshidratación"
-                                                          : "Atención sugerida"}
-                                                    </span>
-                                                  </div>
-                                                </div>
-                                              </div>
+                                              <>
+                                                <Badge
+                                                  variant="outline"
+                                                  className="rounded-full px-3 py-1 text-[11px] font-medium border-cyan-500/30 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center gap-1.5 shadow-none"
+                                                >
+                                                  <Droplet className="w-3.5 h-3.5" />
+                                                  <span>
+                                                    {item.tag || `Nivel ${item.level || 2} Armstrong`}
+                                                  </span>
+                                                </Badge>
+                                                {item.desc && (
+                                                  <span className="text-xs text-muted-foreground font-medium">
+                                                    {item.desc}
+                                                  </span>
+                                                )}
+                                              </>
+                                            ) : item.type === "workout" ? (
+                                              <>
+                                                <Badge
+                                                  variant="outline"
+                                                  className="rounded-full px-3 py-1 text-[11px] font-extrabold border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center gap-1.5 shadow-none"
+                                                >
+                                                  <Flame className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+                                                  <span>
+                                                    {item.tag || `${item.metPoints || 125} Pts MET`}
+                                                  </span>
+                                                </Badge>
+                                                <Badge
+                                                  variant="outline"
+                                                  className="rounded-full px-2.5 py-1 text-[10px] font-bold border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center gap-1 shadow-none"
+                                                >
+                                                  <Activity className="w-3 h-3 text-emerald-500" />
+                                                  <span>+Racha Activa</span>
+                                                </Badge>
+                                              </>
                                             ) : (
-                                              <div className="space-y-1.5 pt-1">
-                                                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-                                                  Detalle Metabólico
-                                                </span>
-                                                <div className="p-3 rounded-2xl bg-secondary/20 border border-border/40 text-xs space-y-1">
-                                                  <div className="flex justify-between items-center">
-                                                    <span className="text-muted-foreground">
-                                                      Registro de sesión:
-                                                    </span>
-                                                    <span className="font-bold text-foreground">
-                                                      {item.title}
-                                                    </span>
-                                                  </div>
-                                                  <div className="flex justify-between items-center">
-                                                    <span className="text-muted-foreground">
-                                                      Aporte al diario:
-                                                    </span>
-                                                    <span className="font-mono font-bold text-emerald-500">
-                                                      {item.tag || "Puntos MET registrados"}
-                                                    </span>
-                                                  </div>
-                                                </div>
-                                              </div>
-                                            )}
-
-                                            {/* Coach Feedback */}
-                                            {(item.coachFeedback || item.summary || item.desc) && (
-                                              <div className="p-3 rounded-xl bg-secondary/30 border border-border/40 flex items-start gap-2 text-left">
-                                                <Sparkles className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
-                                                <p className="text-xs text-muted-foreground leading-relaxed font-medium">
-                                                  {(item.coachFeedback || item.summary || item.desc)
-                                                    .replace(
-                                                      /^(🌱|🍲|⚡|🛡️|💬|💧)?\s*(Aporte Biológico\s*(&|\+)?\s*Consejo:|Aporte Biológico:|Consejo Fisiológico:)?\s*/i,
-                                                      "",
-                                                    )
-                                                    .trim()}
-                                                </p>
-                                              </div>
+                                              item.tag && (
+                                                <Badge
+                                                  variant="outline"
+                                                  className="rounded-full px-3 py-1 text-[11px] font-medium border-border/60 bg-secondary/25 text-muted-foreground flex items-center gap-1.5 shadow-none"
+                                                >
+                                                  <Activity className="w-3.5 h-3.5 text-emerald-500" />
+                                                  <span>{item.tag}</span>
+                                                </Badge>
+                                              )
                                             )}
                                           </div>
-                                        )}
-                                      </div>
+
+                                          {/* Overlapping muscle group avatars (Stacked like social media reaction bubbles) */}
+                                          {resolvedMuscles && resolvedMuscles.length > 0 && (
+                                            <div
+                                              className="flex items-center -space-x-2.5 overflow-visible py-1 pl-1 shrink-0"
+                                              title={`Grupos trabajados: ${resolvedMuscles.map((m: any) => m.name).join(", ")}`}
+                                            >
+                                              {resolvedMuscles.map((m: any, idx: number) => (
+                                                <div
+                                                  key={m.id || idx}
+                                                  title={m.name}
+                                                  className="relative inline-flex items-center justify-center h-8 w-8 rounded-full ring-2 ring-card bg-secondary/90 p-1 shadow-xs transition-all duration-200 hover:scale-125 hover:z-30 hover:ring-foreground/40 cursor-pointer"
+                                                  style={{ zIndex: 10 - idx }}
+                                                >
+                                                  <img
+                                                    src={m.image}
+                                                    alt={m.name}
+                                                    className="h-full w-full object-contain drop-shadow-2xs"
+                                                  />
+                                                </div>
+                                              ))}
+                                            </div>
+                                          )}
+                                        </div>
+
+                                        {/* Collapsible Trigger: Ver insights / Ocultar insights */}
+                                        {(() => {
+                                          const isExpanded = !!expandedCardInsights[item.id];
+                                          return (
+                                            <div className="pt-1 space-y-3">
+                                              <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  toggleCardInsights(item.id);
+                                                }}
+                                                className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-secondary/30 hover:bg-secondary/60 text-xs font-semibold text-foreground/80 hover:text-foreground transition-all cursor-pointer border border-border/40"
+                                              >
+                                                <span className="flex items-center gap-2">
+                                                  <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
+                                                  <span>
+                                                    {isExpanded ? "Ocultar insights" : "Ver insights"}
+                                                  </span>
+                                                </span>
+                                                {isExpanded ? (
+                                                  <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                                                ) : (
+                                                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                                                )}
+                                              </button>
+
+                                              {isExpanded && (
+                                                <div className="pt-1 space-y-3.5 animate-in fade-in slide-in-from-top-2 duration-200 border-t border-border/40 text-left">
+                                                  {item.type === "hydration" ? (
+                                                    <div className="space-y-1.5 pt-1">
+                                                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+                                                        Osmorregulación & Escala Armstrong
+                                                      </span>
+                                                      <div className="p-3 rounded-2xl bg-secondary/20 border border-border/40 text-xs space-y-1">
+                                                        <div className="flex justify-between items-center">
+                                                          <span className="text-muted-foreground">
+                                                            Estado colorimétrico:
+                                                          </span>
+                                                          <span className="font-bold text-foreground">
+                                                            Nivel {item.level || 2} de 8
+                                                          </span>
+                                                        </div>
+                                                        <div className="flex justify-between items-center">
+                                                          <span className="text-muted-foreground">
+                                                            Estatus celular:
+                                                          </span>
+                                                          <span className="font-bold text-emerald-500">
+                                                            {(item.level || 2) <= 3
+                                                              ? "Óptimo / Euhidratado"
+                                                              : (item.level || 2) <= 5
+                                                                ? "Ligera deshidratación"
+                                                                : "Atención sugerida"}
+                                                          </span>
+                                                        </div>
+                                                      </div>
+                                                    </div>
+                                                  ) : item.type === "workout" ? (
+                                                    <div className="space-y-1.5 pt-1">
+                                                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+                                                        Detalle Metabólico & Racha
+                                                      </span>
+                                                      <div className="p-3.5 rounded-2xl bg-secondary/20 border border-border/40 text-xs space-y-2">
+                                                        <div className="flex justify-between items-center">
+                                                          <span className="text-muted-foreground">
+                                                            Aporte de Actividad:
+                                                          </span>
+                                                          <span className="font-bold font-mono text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                                                            <Flame className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+                                                            +{item.metPoints || 125} Puntos MET
+                                                          </span>
+                                                        </div>
+                                                        <div className="flex justify-between items-center">
+                                                          <span className="text-muted-foreground">
+                                                            Impacto en Racha Diaria:
+                                                          </span>
+                                                          <span className="font-bold text-emerald-500 flex items-center gap-1">
+                                                            <Activity className="w-3 h-3 text-emerald-500" />
+                                                            {Math.round(((item.metPoints || 125) / 150) * 100)}% de la meta base (150 Pts)
+                                                          </span>
+                                                        </div>
+
+                                                        {resolvedMuscles && resolvedMuscles.length > 0 && (
+                                                          <div className="pt-2 border-t border-border/40 space-y-1.5">
+                                                            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+                                                               Grupos musculares estimulados ({resolvedMuscles.length})
+                                                             </span>
+                                                            <div className="flex flex-wrap gap-1.5">
+                                                              {resolvedMuscles.map((m: any, idx: number) => (
+                                                                <div
+                                                                  key={m.id || idx}
+                                                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-card border border-border/70 shadow-2xs"
+                                                                >
+                                                                  <img
+                                                                    src={m.image}
+                                                                    alt={m.name}
+                                                                    className="w-3.5 h-3.5 object-contain"
+                                                                  />
+                                                                  <span>{m.name}</span>
+                                                                </div>
+                                                              ))}
+                                                            </div>
+                                                          </div>
+                                                        )}
+                                                      </div>
+                                                    </div>
+                                                  ) : (
+                                                    <div className="space-y-1.5 pt-1">
+                                                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+                                                        Detalle Metabólico
+                                                      </span>
+                                                      <div className="p-3 rounded-2xl bg-secondary/20 border border-border/40 text-xs space-y-1">
+                                                        <div className="flex justify-between items-center">
+                                                          <span className="text-muted-foreground">
+                                                            Registro de sesión:
+                                                          </span>
+                                                          <span className="font-bold text-foreground">
+                                                            {item.title}
+                                                          </span>
+                                                        </div>
+                                                        <div className="flex justify-between items-center">
+                                                          <span className="text-muted-foreground">
+                                                            Aporte al diario:
+                                                          </span>
+                                                          <span className="font-mono font-bold text-emerald-500">
+                                                            {item.tag || "Puntos MET registrados"}
+                                                          </span>
+                                                        </div>
+                                                      </div>
+                                                    </div>
+                                                  )}
+
+                                                  {/* Coach Feedback */}
+                                                  {(item.coachFeedback || item.summary || item.desc) && (
+                                                    <div className="p-3 rounded-xl bg-secondary/30 border border-border/40 flex items-start gap-2 text-left">
+                                                      <Sparkles className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                                                      <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+                                                        {(item.coachFeedback || item.summary || item.desc)
+                                                          .replace(
+                                                            /^(🌱|🍲|⚡|🛡️|💬|💧)?\s*(Aporte Biológico\s*(&|\+)?\s*Consejo:|Aporte Biológico:|Consejo Fisiológico:)?\s*/i,
+                                                            "",
+                                                          )
+                                                          .trim()}
+                                                      </p>
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              )}
+                                            </div>
+                                          );
+                                        })()}
+                                      </>
                                     );
                                   })()}
                                 </CardContent>
@@ -5405,7 +5436,9 @@ function DiarioTab() {
                               </div>
                             </>
                           )}
-                        </Card>
+                        </>
+                      )}
+                    </Card>
                       </div>
                     </div>
                   </React.Fragment>
@@ -5431,6 +5464,52 @@ function DiarioTab() {
             <button
               onClick={() => {
                 setIsFabOpen(false);
+                if (typeof window !== "undefined") {
+                  const newUrl = new URL(window.location.href);
+                  newUrl.searchParams.set("tab", "entrenamiento");
+                  window.history.pushState({}, "", newUrl.toString());
+                  window.dispatchEvent(new Event("popstate"));
+                }
+              }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-secondary/70 transition-colors text-left group cursor-pointer"
+            >
+              <Dumbbell className="w-4 h-4 text-indigo-500 group-hover:scale-110 transition-transform shrink-0" />
+              <span className="text-xs font-semibold text-foreground flex-1">
+                Generar workout
+              </span>
+            </button>
+
+
+
+            <button
+              onClick={() => {
+                setIsFabOpen(false);
+                triggerShake();
+              }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-secondary/70 transition-colors text-left group cursor-pointer"
+            >
+              <ShakerIcon className="w-4 h-4 text-amber-500 group-hover:scale-110 transition-transform shrink-0" />
+              <span className="text-xs font-semibold text-foreground flex-1">
+                Shake
+              </span>
+            </button>
+
+            <button
+              onClick={() => {
+                setIsFabOpen(false);
+                navigate({ to: "/scan" });
+              }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-secondary/70 transition-colors text-left group cursor-pointer"
+            >
+              <Camera className="w-4 h-4 text-emerald-500 group-hover:scale-110 transition-transform shrink-0" />
+              <span className="text-xs font-semibold text-foreground flex-1">
+                Escanear comida
+              </span>
+            </button>
+
+            <button
+              onClick={() => {
+                setIsFabOpen(false);
                 setActiveModal("registrar-actividad");
               }}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-secondary/70 transition-colors text-left group cursor-pointer"
@@ -5450,20 +5529,20 @@ function DiarioTab() {
             >
               <Droplet className="w-4 h-4 text-cyan-500 group-hover:scale-110 transition-transform shrink-0" />
               <span className="text-xs font-semibold text-foreground flex-1">
-                Registrar Hidratación (Armstrong)
+                Registrar hidratación
               </span>
             </button>
 
             <button
               onClick={() => {
                 setIsFabOpen(false);
-                navigate({ to: "/scan" });
+                setActiveModal("registrar-peso");
               }}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-secondary/70 transition-colors text-left group cursor-pointer"
             >
-              <Camera className="w-4 h-4 text-emerald-500 group-hover:scale-110 transition-transform shrink-0" />
+              <Scale className="w-4 h-4 text-violet-500 group-hover:scale-110 transition-transform shrink-0" />
               <span className="text-xs font-semibold text-foreground flex-1">
-                Analizar Foto de Plato (IA)
+                Registrar peso
               </span>
             </button>
           </div>
@@ -5541,6 +5620,42 @@ function DiarioTab() {
         </Dialog>
       )}
 
+      {/* Check-in QR Scanner Modal */}
+      {activeModal === "check-in" && (
+        <QRScannerModal
+          onClose={() => setActiveModal("none")}
+          onScanSuccess={(data) => {
+            setActiveModal("none");
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+            const dateStr = now.toISOString().split("T")[0];
+
+            // Actualizar fatiga y recuperación muscular fisiológica
+            updateMuscleRecoveryForActivity(
+              data.className || "Check-in en Club",
+              "med",
+              data.durationMinutes || 45,
+            );
+
+            const newCheckinItem = {
+              id: `checkin-${Date.now()}`,
+              type: "workout",
+              time: timeStr,
+              date: dateStr,
+              title: data.className || "Check-in en Club",
+              subtitle: data.club,
+              desc: `Acceso validado en ${data.club} • ${data.durationMinutes || 45} min`,
+              calories: Math.round((data.baseMets || 150) * 2.2),
+              coachFeedback: `✓ Check-in verificado en ${data.club}. ¡Excelente sesión!`,
+              tag: "Check-in Verificado",
+            };
+
+            setUserTimelineItems((prev) => [newCheckinItem, ...prev]);
+            toast.success(`✓ Acceso validado en ${data.club}`);
+          }}
+        />
+      )}
+
       {/* Hydration Armstrong Modal */}
       {activeModal === "hydration-armstrong" && (
         <HydrationArmstrongModal
@@ -5577,6 +5692,9 @@ function DiarioTab() {
             const dayLabels = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
             const todayLabel = dayLabels[new Date().getDay()];
 
+            // Actualizar fatiga y recuperación muscular fisiológica
+            updateMuscleRecoveryForActivity(activityName, intensity, duration);
+
             // 1. Update activityData & activityHistory points
             setActivityData((prev) =>
               prev.map((item) =>
@@ -5609,6 +5727,97 @@ function DiarioTab() {
         />
       )}
 
+      {/* Registrar Peso Modal */}
+      {activeModal === "registrar-peso" && (
+        <WeightLogModal
+          currentWeight={(() => {
+            if (typeof window !== "undefined") {
+              const savedDirect = localStorage.getItem("user_weight");
+              if (savedDirect) return parseFloat(savedDirect);
+              const saved = localStorage.getItem("shakerfy_user_profile_edit");
+              if (saved) {
+                try {
+                  const parsed = JSON.parse(saved);
+                  if (parsed.weight) return parseFloat(parsed.weight);
+                } catch (e) {}
+              }
+            }
+            return 74.2;
+          })()}
+          units={(() => {
+            if (typeof window !== "undefined") {
+              const saved = localStorage.getItem("shakerfy_user_profile_edit");
+              if (saved) {
+                try {
+                  const parsed = JSON.parse(saved);
+                  if (parsed.units) return parsed.units;
+                } catch (e) {}
+              }
+            }
+            return "metrico";
+          })()}
+          onClose={() => setActiveModal("none")}
+          onSave={(weightVal, context) => {
+            if (typeof window !== "undefined") {
+              localStorage.setItem("user_weight", String(weightVal));
+              const saved = localStorage.getItem("shakerfy_user_profile_edit");
+              if (saved) {
+                try {
+                  const parsed = JSON.parse(saved);
+                  parsed.weight = String(weightVal);
+                  localStorage.setItem("shakerfy_user_profile_edit", JSON.stringify(parsed));
+                } catch (e) {}
+              }
+            }
+
+            const userUnits = (() => {
+              if (typeof window !== "undefined") {
+                const saved = localStorage.getItem("shakerfy_user_profile_edit");
+                if (saved) {
+                  try {
+                    const parsed = JSON.parse(saved);
+                    if (parsed.units) return parsed.units;
+                  } catch (e) {}
+                }
+              }
+              return "metrico";
+            })();
+
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+            const dateStr = now.toISOString().split("T")[0];
+
+            const newWeightItem = {
+              id: `weight-${Date.now()}`,
+              type: "weight",
+              time: timeStr,
+              date: dateStr,
+              title: `Registro de Peso (${weightVal} ${userUnits === "metrico" ? "kg" : "lbs"})`,
+              subtitle: `Check-in Biométrico • ${context}`,
+              desc: `Peso: ${weightVal} ${userUnits === "metrico" ? "kg" : "lbs"} (${context})`,
+              weight: weightVal,
+              unit: userUnits === "metrico" ? "kg" : "lbs",
+              context: context,
+              coachFeedback: `⚖️ Tendencia Somática: Registro añadido a tu media móvil semanal para filtrar variaciones transitorias de agua y glucógeno.`,
+              tag: `${weightVal} ${userUnits === "metrico" ? "kg" : "lbs"}`,
+            };
+
+            setUserTimelineItems((prev) => {
+              const updated = [newWeightItem, ...prev];
+              if (typeof window !== "undefined") {
+                localStorage.setItem("shakerfy_user_timeline_items", JSON.stringify(updated));
+              }
+              return updated;
+            });
+
+            if ("vibrate" in navigator) {
+              navigator.vibrate(15);
+            }
+            toast.success(`✓ Peso registrado: ${weightVal} ${userUnits === "metrico" ? "kg" : "lbs"}`);
+          }}
+        />
+      )}
+
       {/* Modal Editar Registro de Timeline */}
       {editingTimelineItem && (
         <EditTimelineItemModal
@@ -5624,7 +5833,189 @@ function DiarioTab() {
   );
 }
 
-// Subcomponent: Edit Timeline Item Modal
+interface MealIngredientItem {
+  id: string;
+  name: string;
+  category: "protein" | "carbs" | "fats" | "veggies" | "fruits" | "dairy";
+  grams: number;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  fiber: number;
+  calPer100g: number;
+  pPer100g: number;
+  cPer100g: number;
+  fPer100g: number;
+  fiberPer100g: number;
+}
+
+const COMMON_FOODS_DATABASE = [
+  {
+    name: "Pancakes Stack",
+    category: "carbs" as const,
+    calPer100g: 297,
+    pPer100g: 5.0,
+    cPer100g: 41.0,
+    fPer100g: 9.5,
+    fiberPer100g: 1.5,
+  },
+  {
+    name: "Fresh Blueberries",
+    category: "fruits" as const,
+    calPer100g: 57,
+    pPer100g: 0.7,
+    cPer100g: 14.5,
+    fPer100g: 0.3,
+    fiberPer100g: 2.4,
+  },
+  {
+    name: "Maple Syrup",
+    category: "carbs" as const,
+    calPer100g: 260,
+    pPer100g: 0.0,
+    cPer100g: 67.0,
+    fPer100g: 0.0,
+    fiberPer100g: 0.0,
+  },
+  {
+    name: "Salmon Fillet",
+    category: "protein" as const,
+    calPer100g: 208,
+    pPer100g: 22.0,
+    cPer100g: 0.0,
+    fPer100g: 13.0,
+    fiberPer100g: 0.0,
+  },
+  {
+    name: "Broccoli Florets",
+    category: "veggies" as const,
+    calPer100g: 35,
+    pPer100g: 2.8,
+    cPer100g: 7.0,
+    fPer100g: 0.4,
+    fiberPer100g: 2.6,
+  },
+  {
+    name: "Seasoning & Olive Oil",
+    category: "fats" as const,
+    calPer100g: 884,
+    pPer100g: 0.0,
+    cPer100g: 0.0,
+    fPer100g: 100.0,
+    fiberPer100g: 0.0,
+  },
+  {
+    name: "Spring Onions",
+    category: "veggies" as const,
+    calPer100g: 32,
+    pPer100g: 1.8,
+    cPer100g: 7.3,
+    fPer100g: 0.2,
+    fiberPer100g: 2.6,
+  },
+  {
+    name: "Grilled Chicken Breast",
+    category: "protein" as const,
+    calPer100g: 150,
+    pPer100g: 31.0,
+    cPer100g: 0.0,
+    fPer100g: 2.5,
+    fiberPer100g: 0.0,
+  },
+  {
+    name: "Sweet Potato",
+    category: "carbs" as const,
+    calPer100g: 104,
+    pPer100g: 1.8,
+    cPer100g: 24.0,
+    fPer100g: 0.2,
+    fiberPer100g: 3.2,
+  },
+  {
+    name: "Fresh Avocado",
+    category: "fats" as const,
+    calPer100g: 160,
+    pPer100g: 2.0,
+    cPer100g: 8.5,
+    fPer100g: 14.7,
+    fiberPer100g: 6.7,
+  },
+  {
+    name: "Cooked White Rice",
+    category: "carbs" as const,
+    calPer100g: 130,
+    pPer100g: 2.7,
+    cPer100g: 28.0,
+    fPer100g: 0.3,
+    fiberPer100g: 1.8,
+  },
+  {
+    name: "Whole Eggs",
+    category: "protein" as const,
+    calPer100g: 143,
+    pPer100g: 12.6,
+    cPer100g: 0.8,
+    fPer100g: 9.6,
+    fiberPer100g: 0.0,
+  },
+  {
+    name: "Rolled Oats",
+    category: "carbs" as const,
+    calPer100g: 375,
+    pPer100g: 13.5,
+    cPer100g: 66.0,
+    fPer100g: 6.8,
+    fiberPer100g: 10.0,
+  },
+  {
+    name: "Greek Yogurt 0%",
+    category: "dairy" as const,
+    calPer100g: 59,
+    pPer100g: 10.0,
+    cPer100g: 3.6,
+    fPer100g: 0.4,
+    fiberPer100g: 0.0,
+  },
+  {
+    name: "Ground Beef 90/10",
+    category: "protein" as const,
+    calPer100g: 176,
+    pPer100g: 20.0,
+    cPer100g: 0.0,
+    fPer100g: 10.0,
+    fiberPer100g: 0.0,
+  },
+  {
+    name: "Spinach",
+    category: "veggies" as const,
+    calPer100g: 23,
+    pPer100g: 2.9,
+    cPer100g: 3.6,
+    fPer100g: 0.4,
+    fiberPer100g: 2.2,
+  },
+  {
+    name: "Banana",
+    category: "fruits" as const,
+    calPer100g: 89,
+    pPer100g: 1.1,
+    cPer100g: 22.8,
+    fPer100g: 0.3,
+    fiberPer100g: 2.6,
+  },
+  {
+    name: "Almonds",
+    category: "fats" as const,
+    calPer100g: 579,
+    pPer100g: 21.0,
+    cPer100g: 21.6,
+    fPer100g: 49.9,
+    fiberPer100g: 12.5,
+  },
+];
+
+// Subcomponent: Edit Timeline Item Modal (Full Meal, Servings & Ingredients Editor)
 function EditTimelineItemModal({
   item,
   onClose,
@@ -5634,83 +6025,581 @@ function EditTimelineItemModal({
   onClose: () => void;
   onSave: (updated: any) => void;
 }) {
+  const isMeal = item.type === "meal";
   const [title, setTitle] = useState(item.title || "");
-  const [subtitle, setSubtitle] = useState(item.subtitle || "");
-  const [kcal, setKcal] = useState(item.kcal || 0);
+  const [time, setTime] = useState(item.time || "");
+  const [servings, setServings] = useState<number>(item.servings || 1);
+  const [coachFeedback, setCoachFeedback] = useState(
+    item.coachFeedback || item.narrative || item.summary || item.desc || "",
+  );
   const [level, setLevel] = useState<number>(item.level || 2);
-  const [coachFeedback, setCoachFeedback] = useState(item.coachFeedback || "");
-  const [reasons, setReasons] = useState<string[]>(item.reasons || ["Hambre física"]);
-  const [symptoms, setSymptoms] = useState<string[]>(
-    Array.isArray(item.symptoms) ? item.symptoms : item.symptom ? [item.symptom] : [],
+
+  // Ingredients State (initialized from item or generated from meal calories/macros)
+  const [ingredients, setIngredients] = useState<MealIngredientItem[]>(() => {
+    if (Array.isArray(item.ingredients) && item.ingredients.length > 0) {
+      return item.ingredients;
+    }
+    const cal = item.calories ?? item.kcal ?? 350;
+    const p = item.protein ?? 25;
+    const c = item.carbs ?? item.carbohydrates ?? 35;
+    const f = item.fat ?? 12;
+    return [
+      {
+        id: `ing-${Date.now()}`,
+        name: item.title || "Porción principal",
+        category: "protein",
+        grams: 150,
+        calories: cal,
+        protein: p,
+        carbs: c,
+        fat: f,
+        fiber: 2,
+        calPer100g: Math.round((cal / 150) * 100),
+        pPer100g: Math.round((p / 150) * 100 * 10) / 10,
+        cPer100g: Math.round((c / 150) * 100 * 10) / 10,
+        fPer100g: Math.round((f / 150) * 100 * 10) / 10,
+        fiberPer100g: 1.5,
+      },
+    ];
+  });
+
+  // AI Prompt Adjustment State
+  const [aiPromptText, setAiPromptText] = useState("");
+  const [isAiThinking, setIsAiThinking] = useState(false);
+
+  // Quick Add Food State
+  const [isAddFoodOpen, setIsAddFoodOpen] = useState(false);
+  const [foodSearchQuery, setFoodSearchQuery] = useState("");
+  const [selectedAddFood, setSelectedAddFood] = useState(COMMON_FOODS_DATABASE[0]);
+  const [addGrams, setAddGrams] = useState(100);
+
+  // Dynamic Base and Total Macros Calculation
+  const baseCalories = useMemo(
+    () => ingredients.reduce((acc, i) => acc + (i.calories || 0), 0),
+    [ingredients],
+  );
+  const baseProtein = useMemo(
+    () => ingredients.reduce((acc, i) => acc + (i.protein || 0), 0),
+    [ingredients],
+  );
+  const baseCarbs = useMemo(
+    () => ingredients.reduce((acc, i) => acc + (i.carbs || 0), 0),
+    [ingredients],
+  );
+  const baseFat = useMemo(
+    () => ingredients.reduce((acc, i) => acc + (i.fat || 0), 0),
+    [ingredients],
+  );
+  const baseFiber = useMemo(
+    () => ingredients.reduce((acc, i) => acc + (i.fiber || 0), 0),
+    [ingredients],
   );
 
-  const reasonsList = [
-    "Hambre física",
-    "Horario habitual",
-    "Social / Compartir",
-    "Antojo / Placer",
-    "Estrés / Emocional",
-    "Prisa / Rutina",
-  ];
+  const totalCalories = Math.round(baseCalories * servings);
+  const totalProtein = Math.round(baseProtein * servings);
+  const totalCarbs = Math.round(baseCarbs * servings);
+  const totalFat = Math.round(baseFat * servings);
+  const totalFiber = Math.round(baseFiber * servings * 10) / 10;
 
-  const symptomsList = [
-    "Con energía",
-    "Ligero / Óptimo",
-    "Somnolencia",
-    "Pesadez / Hinchazón",
-    "Reflujo / Acidez",
-  ];
-
-  const handleToggleReason = (r: string) => {
-    setReasons((prev) => (prev.includes(r) ? prev.filter((x) => x !== r) : [...prev, r]));
+  // Update ingredient grams
+  const handleUpdateGrams = (id: string, delta: number) => {
+    setIngredients((prev) =>
+      prev.map((ing) => {
+        if (ing.id !== id) return ing;
+        const newGrams = Math.max(10, ing.grams + delta);
+        const calPer100 =
+          ing.calPer100g || (ing.grams > 0 ? (ing.calories / ing.grams) * 100 : 150);
+        const pPer100 =
+          ing.pPer100g || (ing.grams > 0 ? (ing.protein / ing.grams) * 100 : 10);
+        const cPer100 =
+          ing.cPer100g || (ing.grams > 0 ? (ing.carbs / ing.grams) * 100 : 15);
+        const fPer100 =
+          ing.fPer100g || (ing.grams > 0 ? (ing.fat / ing.grams) * 100 : 5);
+        const fiberPer100 = ing.fiberPer100g || 1;
+        const factor = newGrams / 100;
+        return {
+          ...ing,
+          grams: newGrams,
+          calories: Math.round(calPer100 * factor),
+          protein: Math.round(pPer100 * factor * 10) / 10,
+          carbs: Math.round(cPer100 * factor * 10) / 10,
+          fat: Math.round(fPer100 * factor * 10) / 10,
+          fiber: Math.round(fiberPer100 * factor * 10) / 10,
+          calPer100g: calPer100,
+          pPer100g: pPer100,
+          cPer100g: cPer100,
+          fPer100g: fPer100,
+          fiberPer100g: fiberPer100,
+        };
+      }),
+    );
   };
 
-  const handleToggleSymptomInModal = (s: string) => {
-    setSymptoms((prev) => (prev.includes(s) ? [] : [s]));
+  // Delete ingredient
+  const handleDeleteIngredient = (id: string) => {
+    setIngredients((prev) => prev.filter((i) => i.id !== id));
   };
+
+  // Add ingredient submit
+  const handleAddIngredientSubmit = () => {
+    const factor = addGrams / 100;
+    const newItem: MealIngredientItem = {
+      id: `food-${Date.now()}`,
+      name: selectedAddFood.name,
+      category: selectedAddFood.category,
+      grams: addGrams,
+      calories: Math.round(selectedAddFood.calPer100g * factor),
+      protein: Math.round(selectedAddFood.pPer100g * factor * 10) / 10,
+      carbs: Math.round(selectedAddFood.cPer100g * factor * 10) / 10,
+      fat: Math.round(selectedAddFood.fPer100g * factor * 10) / 10,
+      fiber: Math.round(selectedAddFood.fiberPer100g * factor * 10) / 10,
+      calPer100g: selectedAddFood.calPer100g,
+      pPer100g: selectedAddFood.pPer100g,
+      cPer100g: selectedAddFood.cPer100g,
+      fPer100g: selectedAddFood.fPer100g,
+      fiberPer100g: selectedAddFood.fiberPer100g,
+    };
+    setIngredients((prev) => [...prev, newItem]);
+    setIsAddFoodOpen(false);
+    toast.success(`+ ${selectedAddFood.name} (${addGrams}g) agregado`);
+  };
+
+  // Natural Language AI Correction
+  const handleApplyAiPrompt = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!aiPromptText.trim()) return;
+
+    setIsAiThinking(true);
+    setTimeout(() => {
+      const lower = aiPromptText.toLowerCase();
+
+      if (
+        lower.includes("sin") ||
+        lower.includes("no syrup") ||
+        lower.includes("sin salsa") ||
+        lower.includes("sin queso")
+      ) {
+        const matchWord = lower
+          .replace("sin", "")
+          .replace("no", "")
+          .trim();
+        setIngredients((prev) =>
+          prev.filter((i) => !matchWord || !i.name.toLowerCase().includes(matchWord)),
+        );
+      } else if (lower.includes("doble") || lower.includes("double")) {
+        setServings((s) => s * 2);
+      } else if (lower.includes("mitad") || lower.includes("half")) {
+        setServings((s) => Math.max(0.5, s / 2));
+      } else if (lower.includes("extra") || lower.includes("mas") || lower.includes("más")) {
+        const matchWord = lower
+          .replace("extra", "")
+          .replace("mas", "")
+          .replace("más", "")
+          .trim();
+        setIngredients((prev) =>
+          prev.map((i) =>
+            matchWord && i.name.toLowerCase().includes(matchWord)
+              ? {
+                  ...i,
+                  grams: i.grams + 40,
+                  calories: Math.round(i.calories * 1.3),
+                  protein: Math.round(i.protein * 1.3 * 10) / 10,
+                }
+              : i,
+          ),
+        );
+      } else {
+        const newItem: MealIngredientItem = {
+          id: `custom-ai-${Date.now()}`,
+          name: aiPromptText.slice(0, 30),
+          category: "carbs",
+          grams: 80,
+          calories: 140,
+          protein: 4.5,
+          carbs: 18.0,
+          fat: 5.5,
+          fiber: 2.0,
+          calPer100g: 175,
+          pPer100g: 5.6,
+          cPer100g: 22.5,
+          fPer100g: 6.8,
+          fiberPer100g: 2.5,
+        };
+        setIngredients((prev) => [...prev, newItem]);
+      }
+
+      setIsAiThinking(false);
+      setAiPromptText("");
+      toast.success("✓ Cal AI ajustó el plato");
+    }, 400);
+  };
+
+  const filteredFoods = COMMON_FOODS_DATABASE.filter((f) =>
+    f.name.toLowerCase().includes(foodSearchQuery.toLowerCase()),
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (item.type === "hydration") {
+    if (isMeal) {
+      onSave({
+        ...item,
+        title: title.trim(),
+        time: time.trim() || item.time,
+        servings,
+        ingredients,
+        calories: totalCalories,
+        kcal: totalCalories,
+        protein: totalProtein,
+        carbs: totalCarbs,
+        carbohydrates: totalCarbs,
+        fat: totalFat,
+        fiber: totalFiber,
+      });
+      toast.success("✓ Comida actualizada correctamente");
+    } else if (item.type === "hydration") {
       const currentLevelObj =
         ARMSTRONG_LEVELS.find((l) => l.level === level) || ARMSTRONG_LEVELS[1];
       onSave({
         ...item,
-        title,
-        subtitle,
+        title: title.trim(),
+        time: time.trim() || item.time,
         level,
         desc: `${currentLevelObj.title} (${currentLevelObj.state})`,
         tag: `Nivel ${level} Armstrong`,
-        coachFeedback: coachFeedback || `💧 Consejo Fisiológico: ${currentLevelObj.advice}`,
+        coachFeedback: coachFeedback.trim() || `💧 Consejo Fisiológico: ${currentLevelObj.advice}`,
       });
+      toast.success("✓ Registro de hidratación actualizado");
     } else {
       onSave({
         ...item,
-        title,
-        subtitle,
-        kcal: Number(kcal),
-        coachFeedback,
-        reasons: item.type === "meal" ? reasons : item.reasons,
-        symptoms: item.type === "meal" ? symptoms : item.symptoms,
-        symptom: item.type === "meal" ? symptoms[0] || undefined : item.symptom,
+        title: title.trim(),
+        time: time.trim() || item.time,
+        coachFeedback: coachFeedback.trim(),
+        desc: coachFeedback.trim() || item.desc,
+        narrative: coachFeedback.trim() || item.narrative,
       });
+      toast.success("✓ Registro actualizado");
     }
   };
 
   return (
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md p-6 bg-card border border-border rounded-3xl max-h-[90vh] overflow-y-auto custom-scrollbar">
-        <DialogHeader className="mb-4">
-          <DialogTitle className="text-lg font-bold text-foreground">
-            Editar Registro del Diario
+      <DialogContent className="max-w-lg p-6 bg-card border border-border rounded-3xl max-h-[90vh] overflow-y-auto custom-scrollbar">
+        <DialogHeader className="mb-3 text-left">
+          <DialogTitle className="text-lg font-bold text-foreground flex items-center gap-2">
+            {isMeal ? (
+              <>
+                <Utensils className="w-4 h-4 text-emerald-500 shrink-0" />
+                <span>Editar Comida Escaneada</span>
+              </>
+            ) : item.type === "hydration" ? (
+              <>
+                <Droplet className="w-4 h-4 text-sky-500 shrink-0" />
+                <span>Editar Registro de Hidratación</span>
+              </>
+            ) : (
+              <span>Editar Registro del Diario</span>
+            )}
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            Modifica la información de tu tarjeta registrada en la línea de tiempo.
+            {isMeal
+              ? "Ajusta porciones, ingredientes y macronutrientes de este registro."
+              : "Modifica la información de tu tarjeta registrada en la línea de tiempo."}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {item.type === "hydration" && (
+
+        <form onSubmit={handleSubmit} className="space-y-4 text-left">
+          {/* Nombre / Título y Hora */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="sm:col-span-2 space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground">
+                {isMeal ? "Nombre del plato / comida" : "Título"}
+              </label>
+              <input
+                type="text"
+                required
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Ej: Pechuga de pollo con arroz y ensalada"
+                className="flex w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-foreground font-semibold"
+              />
+            </div>
             <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground">Hora</label>
+              <input
+                type="text"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                placeholder="Ej: 14:30"
+                className="flex w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-foreground font-semibold"
+              />
+            </div>
+          </div>
+
+          {/* Porciones (si es comida) */}
+          {isMeal && (
+            <div className="flex items-center justify-between p-2.5 rounded-2xl bg-secondary/30 border border-border/50">
+              <div>
+                <span className="text-xs font-bold text-foreground block">Porciones</span>
+                <span className="text-[10px] text-muted-foreground">Ajusta la cantidad consumida</span>
+              </div>
+              <div className="h-[34px] px-2.5 rounded-xl bg-background border border-border flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  onClick={() => setServings((s) => Math.max(0.5, s - 0.5))}
+                  disabled={servings <= 0.5}
+                  className="text-muted-foreground hover:text-foreground disabled:opacity-40 cursor-pointer p-1"
+                  aria-label="Restar porción"
+                >
+                  <Minus className="w-3.5 h-3.5" />
+                </button>
+                <span className="text-xs font-bold font-mono min-w-[50px] text-center">
+                  {servings} {servings === 1 ? "porc." : "porcs."}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setServings((s) => s + 0.5)}
+                  className="text-muted-foreground hover:text-foreground cursor-pointer p-1"
+                  aria-label="Sumar porción"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Si es comida: Resumen de Macros y Calorías Dinámicas */}
+          {isMeal && (
+            <>
+              {/* Macro Cards Resumen */}
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+                  Macronutrientes Totales ({servings} {servings === 1 ? "porción" : "porciones"})
+                </span>
+                <div className="grid grid-cols-4 gap-1.5 sm:gap-2 w-full select-none">
+                  {/* Calorías */}
+                  <div
+                    title="Calorías"
+                    className="px-1 py-1.5 sm:py-2 rounded-xl bg-secondary/40 border border-border/60 flex flex-col items-center justify-center text-center shadow-2xs min-w-0"
+                  >
+                    <span className="text-[7.5px] font-bold uppercase text-muted-foreground/80 leading-none">
+                      Calorías
+                    </span>
+                    <span className="text-xs font-black text-foreground tabular-nums leading-tight mt-0.5">
+                      {totalCalories}
+                    </span>
+                  </div>
+
+                  {/* Proteínas */}
+                  <div
+                    title="Proteínas"
+                    className="px-1 py-1.5 sm:py-2 rounded-xl bg-emerald-500/10 dark:bg-emerald-950/30 border border-emerald-500/20 flex flex-col items-center justify-center text-center shadow-2xs min-w-0"
+                  >
+                    <span className="text-[7.5px] font-bold uppercase text-emerald-700 dark:text-emerald-400 leading-none">
+                      Proteínas
+                    </span>
+                    <span className="text-xs font-black text-emerald-700 dark:text-emerald-400 tabular-nums leading-tight mt-0.5">
+                      {totalProtein}g
+                    </span>
+                  </div>
+
+                  {/* Carbos */}
+                  <div
+                    title="Carbohidratos"
+                    className="px-1 py-1.5 sm:py-2 rounded-xl bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/20 flex flex-col items-center justify-center text-center shadow-2xs min-w-0"
+                  >
+                    <span className="text-[7.5px] font-bold uppercase text-amber-700 dark:text-amber-400 leading-none">
+                      Carbos
+                    </span>
+                    <span className="text-xs font-black text-amber-700 dark:text-amber-400 tabular-nums leading-tight mt-0.5">
+                      {totalCarbs}g
+                    </span>
+                  </div>
+
+                  {/* Grasas */}
+                  <div
+                    title="Grasas"
+                    className="px-1 py-1.5 sm:py-2 rounded-xl bg-sky-500/10 dark:bg-sky-950/30 border border-sky-500/20 flex flex-col items-center justify-center text-center shadow-2xs min-w-0"
+                  >
+                    <span className="text-[7.5px] font-bold uppercase text-sky-700 dark:text-sky-400 leading-none">
+                      Grasas
+                    </span>
+                    <span className="text-xs font-black text-sky-700 dark:text-sky-400 tabular-nums leading-tight mt-0.5">
+                      {totalFat}g
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Ajuste Rápido con IA */}
+              <div className="space-y-1.5 pt-1">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-foreground/80" />
+                  <span>Ajustar con IA:</span>
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={aiPromptText}
+                    onChange={(e) => setAiPromptText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleApplyAiPrompt(e);
+                      }
+                    }}
+                    placeholder="e.g. 'sin salsa', 'extra pollo', 'mitad de arroz'..."
+                    className="flex-1 h-9 px-3 rounded-xl bg-secondary/50 border border-border text-xs focus:outline-none focus:ring-1 focus:ring-ring text-foreground"
+                  />
+                  <Button
+                    type="button"
+                    onClick={handleApplyAiPrompt}
+                    disabled={isAiThinking || !aiPromptText.trim()}
+                    className="h-9 px-3.5 rounded-xl bg-foreground text-background font-bold text-xs hover:opacity-90 cursor-pointer shrink-0"
+                  >
+                    {isAiThinking ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Ajustar"}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Lista de Ingredientes con Stepper de Gramos */}
+              <div className="space-y-2 pt-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                    Ingredientes ({ingredients.length})
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsAddFoodOpen(!isAddFoodOpen)}
+                    className="text-xs font-bold text-sky-600 dark:text-sky-400 hover:bg-sky-500/10 h-7 px-2 cursor-pointer"
+                  >
+                    {isAddFoodOpen ? "Cerrar selector" : "+ Agregar Alimento"}
+                  </Button>
+                </div>
+
+                {/* Sub-panel para Agregar Alimento */}
+                {isAddFoodOpen && (
+                  <div className="p-3 rounded-2xl bg-secondary/60 border border-border/80 space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
+                    <span className="text-xs font-bold text-foreground block">
+                      Selecciona un alimento de la base de datos
+                    </span>
+                    <div className="relative">
+                      <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-3 top-2.5" />
+                      <input
+                        type="text"
+                        value={foodSearchQuery}
+                        onChange={(e) => setFoodSearchQuery(e.target.value)}
+                        placeholder="Buscar alimento (ej: Pollo, Avena, Huevo)..."
+                        className="w-full h-8 pl-8 pr-3 rounded-xl bg-background border border-border text-xs focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 max-h-36 overflow-y-auto custom-scrollbar">
+                      {filteredFoods.slice(0, 8).map((food) => (
+                        <button
+                          key={food.name}
+                          type="button"
+                          onClick={() => setSelectedAddFood(food)}
+                          className={cn(
+                            "p-2 rounded-xl text-left text-xs border transition-all cursor-pointer flex flex-col justify-between",
+                            selectedAddFood.name === food.name
+                              ? "bg-foreground text-background border-foreground font-bold"
+                              : "bg-background/80 hover:bg-background border-border/60 text-foreground",
+                          )}
+                        >
+                          <span className="truncate block font-semibold">{food.name}</span>
+                          <span className="text-[10px] opacity-70">
+                            {food.calPer100g} kcal / 100g
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="flex items-center justify-between gap-3 pt-1 border-t border-border/40">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium text-muted-foreground">Cantidad:</span>
+                        <input
+                          type="number"
+                          min="10"
+                          step="10"
+                          value={addGrams}
+                          onChange={(e) => setAddGrams(Math.max(10, Number(e.target.value) || 10))}
+                          className="w-16 h-8 px-2 rounded-lg bg-background border border-border text-xs font-bold text-center"
+                        />
+                        <span className="text-xs text-muted-foreground font-medium">gramos</span>
+                      </div>
+
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={handleAddIngredientSubmit}
+                        className="h-8 px-3 rounded-xl bg-foreground text-background font-bold text-xs hover:opacity-90 cursor-pointer"
+                      >
+                        + Agregar
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Lista de Items */}
+                <div className="space-y-1.5 max-h-52 overflow-y-auto custom-scrollbar pr-0.5">
+                  {ingredients.map((ing) => (
+                    <div
+                      key={ing.id}
+                      className="p-2.5 rounded-2xl bg-secondary/30 border border-border/50 flex items-center justify-between gap-2 text-left"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <span className="text-xs font-bold text-foreground block truncate">
+                          {ing.name}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">
+                          {Math.round(ing.calories * servings)} kcal • {ing.category}
+                        </span>
+                      </div>
+
+                      {/* Stepper de Gramos */}
+                      <div className="flex items-center gap-1 bg-background px-2 py-1 rounded-xl border border-border shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateGrams(ing.id, -20)}
+                          className="text-muted-foreground hover:text-foreground cursor-pointer p-0.5"
+                          title="Restar 20g"
+                        >
+                          <Minus className="w-3 h-3" />
+                        </button>
+                        <span className="text-xs font-bold w-12 text-center font-mono">
+                          {Math.round(ing.grams * servings)}g
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateGrams(ing.id, 20)}
+                          className="text-muted-foreground hover:text-foreground cursor-pointer p-0.5"
+                          title="Sumar 20g"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </button>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteIngredient(ing.id)}
+                        className="text-muted-foreground hover:text-rose-500 cursor-pointer p-1"
+                        title="Eliminar ingrediente"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Hidratación: Armstrong Scale */}
+          {item.type === "hydration" && (
+            <div className="space-y-1.5 pt-1">
               <label className="text-xs font-semibold text-muted-foreground block mb-1">
                 Nivel Colorimétrico Armstrong
               </label>
@@ -5724,116 +6613,21 @@ function EditTimelineItemModal({
             </div>
           )}
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-muted-foreground">Título</label>
-            <input
-              type="text"
-              required
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="flex w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-foreground font-semibold"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">
-                Categoría / Momento
-              </label>
-              <input
-                type="text"
-                required
-                value={subtitle}
-                onChange={(e) => setSubtitle(e.target.value)}
-                className="flex w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-foreground font-semibold"
+          {/* Nota solo para registros que no sean comida ni hidratación */}
+          {!isMeal && item.type !== "hydration" && (
+            <div className="space-y-1.5 pt-1">
+              <label className="text-xs font-semibold text-muted-foreground">Nota</label>
+              <textarea
+                rows={2}
+                value={coachFeedback}
+                onChange={(e) => setCoachFeedback(e.target.value)}
+                placeholder="Agrega una nota..."
+                className="flex w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-foreground font-medium"
               />
             </div>
-            {item.type !== "hydration" && (
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">
-                  Calorías (kcal)
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={kcal}
-                  onChange={(e) => setKcal(Number(e.target.value))}
-                  className="flex w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-foreground font-semibold"
-                />
-              </div>
-            )}
-          </div>
-
-          {item.type === "meal" && (
-            <>
-              <div className="space-y-2 pt-1 text-left">
-                <label className="text-xs font-semibold text-muted-foreground block">
-                  Motivos por los que comes (Contexto)
-                </label>
-                <div className="flex flex-wrap gap-1.5">
-                  {reasonsList.map((r, idx) => {
-                    const isSelected = reasons.includes(r);
-                    return (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => handleToggleReason(r)}
-                        className={cn(
-                          "rounded-full px-2.5 py-1 text-xs font-semibold border transition-all cursor-pointer",
-                          isSelected
-                            ? "bg-foreground text-background border-foreground font-bold shadow-xs"
-                            : "bg-secondary/70 text-secondary-foreground border-border/50 hover:bg-secondary",
-                        )}
-                      >
-                        {isSelected ? `✓ ${r}` : `+ ${r}`}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="space-y-2 pt-1 text-left">
-                <label className="text-xs font-semibold text-muted-foreground block">
-                  Respuesta Postprandial (¿Cómo te cayó?)
-                </label>
-                <div className="flex flex-wrap gap-1.5">
-                  {symptomsList.map((s, idx) => {
-                    const isSelected = symptoms.includes(s);
-                    return (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => handleToggleSymptomInModal(s)}
-                        className={cn(
-                          "rounded-full px-2.5 py-1 text-xs font-semibold border transition-all cursor-pointer",
-                          isSelected
-                            ? "bg-foreground text-background border-foreground font-bold shadow-xs"
-                            : "bg-secondary/70 text-secondary-foreground border-border/50 hover:bg-secondary",
-                        )}
-                      >
-                        {isSelected ? `✓ ${s}` : `+ ${s}`}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </>
           )}
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-muted-foreground">
-              Nota / AI Feedback
-            </label>
-            <textarea
-              rows={3}
-              value={coachFeedback}
-              onChange={(e) => setCoachFeedback(e.target.value)}
-              placeholder="Agrega una nota o sugerencia nutricional..."
-              className="flex w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-foreground font-medium"
-            />
-          </div>
-
-          <div className="flex gap-2 justify-end pt-2">
+          <div className="flex gap-2 justify-end pt-3 border-t border-border/40">
             <Button
               type="button"
               variant="outline"
@@ -5844,7 +6638,7 @@ function EditTimelineItemModal({
             </Button>
             <Button
               type="submit"
-              className="rounded-xl text-xs font-bold bg-foreground text-background hover:opacity-90"
+              className="rounded-xl text-xs font-bold bg-foreground text-background hover:opacity-90 cursor-pointer"
             >
               Guardar Cambios
             </Button>
@@ -6449,6 +7243,117 @@ function HydrationArmstrongModal({ onClose, onSave }: HydrationArmstrongModalPro
   );
 }
 
+interface WeightLogModalProps {
+  currentWeight: string | number;
+  units: string;
+  onClose: () => void;
+  onSave: (weightVal: number, context: string) => void;
+}
+
+function WeightLogModal({ currentWeight, units, onClose, onSave }: WeightLogModalProps) {
+  const [val, setVal] = useState<string>(String(currentWeight || 74.2));
+  const [context, setContext] = useState<string>("En ayunas");
+
+  const contextOptions = [
+    "En ayunas",
+    "Post-entreno",
+    "Noche",
+    "Habitual",
+  ];
+
+  const handleConfirm = () => {
+    const parsed = parseFloat(val);
+    if (!isNaN(parsed) && parsed > 0) {
+      onSave(parsed, context);
+      onClose();
+    }
+  };
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md rounded-3xl p-6 sm:p-7 border border-border bg-card max-h-[90vh] overflow-y-auto custom-scrollbar text-left">
+        <DialogHeader className="pb-3 border-b border-border/40">
+          <DialogTitle className="text-base font-bold flex items-center gap-2 text-foreground">
+            <Scale className="w-5 h-5 text-violet-500" />
+            <span>Registro de Peso Biométrico</span>
+          </DialogTitle>
+          <DialogDescription className="text-xs text-muted-foreground pt-1">
+            Registra tu peso para actualizar tu tendencia somática y media móvil semanal.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="py-3 space-y-4">
+          {/* Main Weight Input */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-muted-foreground block">
+              Peso ({units === "metrico" ? "kg" : "lbs"})
+            </label>
+            <div className="relative flex items-center">
+              <input
+                type="number"
+                step="0.1"
+                min="20"
+                max="300"
+                value={val}
+                onChange={(e) => setVal(e.target.value)}
+                placeholder="74.2"
+                className="flex h-14 w-full rounded-2xl border border-border bg-secondary/30 px-4 text-2xl font-black tabular-nums text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                autoFocus
+              />
+              <span className="absolute right-4 text-sm font-bold text-muted-foreground">
+                {units === "metrico" ? "kg" : "lbs"}
+              </span>
+            </div>
+          </div>
+
+          {/* Context Options */}
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-muted-foreground block">
+              Momento / Contexto de la medición
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {contextOptions.map((opt) => (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => setContext(opt)}
+                  className={cn(
+                    "px-3 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer text-center",
+                    context === opt
+                      ? "bg-violet-500/15 text-violet-600 dark:text-violet-400 border-violet-500/30 font-bold shadow-xs"
+                      : "bg-secondary/40 text-muted-foreground border-border/60 hover:bg-secondary hover:text-foreground",
+                  )}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Somatic Context Note */}
+          <div className="p-3.5 rounded-2xl border border-violet-500/20 bg-violet-500/5 text-[11px] text-muted-foreground leading-relaxed space-y-1">
+            <p>
+              ⚖️ <strong>Tendencia sin ruido:</strong> Tu registro se integrará en la media móvil de 7 días para filtrar oscilaciones temporales de agua y glucógeno.
+            </p>
+          </div>
+        </div>
+
+        <div className="pt-3 border-t border-border/40 flex items-center justify-end gap-2">
+          <Button variant="outline" onClick={onClose} className="rounded-xl font-semibold">
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleConfirm}
+            className="rounded-xl font-bold bg-violet-600 hover:bg-violet-700 text-white"
+          >
+            Guardar en Diario
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // Subcomponent: Photo Meal Analysis Modal — Complete Cal AI (Scanner & Nutrition Flow)
 interface MealCalloutPin {
   name: string;
@@ -6456,23 +7361,6 @@ interface MealCalloutPin {
   topPct: number; // e.g. 15
   leftPct?: number; // e.g. 20
   rightPct?: number; // e.g. 10
-}
-
-interface MealIngredientItem {
-  id: string;
-  name: string;
-  category: "protein" | "carbs" | "fats" | "veggies" | "fruits" | "dairy";
-  grams: number;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  fiber: number;
-  calPer100g: number;
-  pPer100g: number;
-  cPer100g: number;
-  fPer100g: number;
-  fiberPer100g: number;
 }
 
 interface SampleMealModel {
@@ -6490,144 +7378,6 @@ interface SampleMealModel {
   calloutPins: MealCalloutPin[];
   ingredients: MealIngredientItem[];
 }
-
-const COMMON_FOODS_DATABASE = [
-  {
-    name: "Pancakes Stack",
-    category: "carbs" as const,
-    calPer100g: 297,
-    pPer100g: 5.0,
-    cPer100g: 41.0,
-    fPer100g: 9.5,
-    fiberPer100g: 1.5,
-  },
-  {
-    name: "Fresh Blueberries",
-    category: "fruits" as const,
-    calPer100g: 57,
-    pPer100g: 0.7,
-    cPer100g: 14.5,
-    fPer100g: 0.3,
-    fiberPer100g: 2.4,
-  },
-  {
-    name: "Maple Syrup",
-    category: "carbs" as const,
-    calPer100g: 260,
-    pPer100g: 0.0,
-    cPer100g: 67.0,
-    fPer100g: 0.0,
-    fiberPer100g: 0.0,
-  },
-  {
-    name: "Salmon Fillet",
-    category: "protein" as const,
-    calPer100g: 208,
-    pPer100g: 22.0,
-    cPer100g: 0.0,
-    fPer100g: 13.0,
-    fiberPer100g: 0.0,
-  },
-  {
-    name: "Broccoli Florets",
-    category: "veggies" as const,
-    calPer100g: 35,
-    pPer100g: 2.8,
-    cPer100g: 7.0,
-    fPer100g: 0.4,
-    fiberPer100g: 2.6,
-  },
-  {
-    name: "Seasoning & Olive Oil",
-    category: "fats" as const,
-    calPer100g: 884,
-    pPer100g: 0.0,
-    cPer100g: 0.0,
-    fPer100g: 100.0,
-    fiberPer100g: 0.0,
-  },
-  {
-    name: "Spring Onions",
-    category: "veggies" as const,
-    calPer100g: 32,
-    pPer100g: 1.8,
-    cPer100g: 7.3,
-    fPer100g: 0.2,
-    fiberPer100g: 2.6,
-  },
-  {
-    name: "Grilled Chicken Breast",
-    category: "protein" as const,
-    calPer100g: 150,
-    pPer100g: 31.0,
-    cPer100g: 0.0,
-    fPer100g: 2.5,
-    fiberPer100g: 0.0,
-  },
-  {
-    name: "Sweet Potato",
-    category: "carbs" as const,
-    calPer100g: 104,
-    pPer100g: 1.8,
-    cPer100g: 24.0,
-    fPer100g: 0.2,
-    fiberPer100g: 3.2,
-  },
-  {
-    name: "Fresh Avocado",
-    category: "fats" as const,
-    calPer100g: 160,
-    pPer100g: 2.0,
-    cPer100g: 8.5,
-    fPer100g: 14.7,
-    fiberPer100g: 6.7,
-  },
-  {
-    name: "Cooked White Rice",
-    category: "carbs" as const,
-    calPer100g: 130,
-    pPer100g: 2.7,
-    cPer100g: 28.0,
-    fPer100g: 0.3,
-    fiberPer100g: 1.8,
-  },
-  {
-    name: "Whole Eggs",
-    category: "protein" as const,
-    calPer100g: 143,
-    pPer100g: 12.6,
-    cPer100g: 0.8,
-    fPer100g: 9.6,
-    fiberPer100g: 0.0,
-  },
-  {
-    name: "Rolled Oats",
-    category: "carbs" as const,
-    calPer100g: 375,
-    pPer100g: 13.5,
-    cPer100g: 66.0,
-    fPer100g: 6.8,
-    fiberPer100g: 10.0,
-  },
-  {
-    name: "Banana",
-    category: "fruits" as const,
-    calPer100g: 89,
-    pPer100g: 1.1,
-    cPer100g: 23.0,
-    fPer100g: 0.3,
-    fiberPer100g: 2.6,
-  },
-  {
-    name: "Grated Cheese",
-    category: "dairy" as const,
-    calPer100g: 350,
-    pPer100g: 25.0,
-    cPer100g: 1.3,
-    fPer100g: 28.0,
-    fiberPer100g: 0.0,
-  },
-];
 
 const CAL_AI_SAMPLE_MEALS: SampleMealModel[] = [
   {
