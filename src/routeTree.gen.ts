@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ScanRouteImport } from './routes/scan'
+import { Route as NutritionIntelligenceRouteImport } from './routes/nutrition-intelligence'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
@@ -28,6 +29,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const ScanRoute = ScanRouteImport.update({
   id: '/scan',
   path: '/scan',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NutritionIntelligenceRoute = NutritionIntelligenceRouteImport.update({
+  id: '/nutrition-intelligence',
+  path: '/nutrition-intelligence',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -76,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRoute
   '/auth': typeof AuthRouteWithChildren
   '/dashboard': typeof DashboardRoute
+  '/nutrition-intelligence': typeof NutritionIntelligenceRoute
   '/scan': typeof ScanRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/auth/gym': typeof AuthGymRoute
@@ -88,6 +95,7 @@ export interface FileRoutesByTo {
   '/app': typeof AppRoute
   '/auth': typeof AuthRouteWithChildren
   '/dashboard': typeof DashboardRoute
+  '/nutrition-intelligence': typeof NutritionIntelligenceRoute
   '/scan': typeof ScanRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/auth/gym': typeof AuthGymRoute
@@ -101,6 +109,7 @@ export interface FileRoutesById {
   '/app': typeof AppRoute
   '/auth': typeof AuthRouteWithChildren
   '/dashboard': typeof DashboardRoute
+  '/nutrition-intelligence': typeof NutritionIntelligenceRoute
   '/scan': typeof ScanRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/auth/gym': typeof AuthGymRoute
@@ -115,6 +124,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/dashboard'
+    | '/nutrition-intelligence'
     | '/scan'
     | '/sitemap.xml'
     | '/auth/gym'
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/dashboard'
+    | '/nutrition-intelligence'
     | '/scan'
     | '/sitemap.xml'
     | '/auth/gym'
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/dashboard'
+    | '/nutrition-intelligence'
     | '/scan'
     | '/sitemap.xml'
     | '/auth/gym'
@@ -152,6 +164,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRoute
   AuthRoute: typeof AuthRouteWithChildren
   DashboardRoute: typeof DashboardRoute
+  NutritionIntelligenceRoute: typeof NutritionIntelligenceRoute
   ScanRoute: typeof ScanRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   BlogSlugRoute: typeof BlogSlugRoute
@@ -173,6 +186,13 @@ declare module '@tanstack/react-router' {
       path: '/scan'
       fullPath: '/scan'
       preLoaderRoute: typeof ScanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/nutrition-intelligence': {
+      id: '/nutrition-intelligence'
+      path: '/nutrition-intelligence'
+      fullPath: '/nutrition-intelligence'
+      preLoaderRoute: typeof NutritionIntelligenceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -249,6 +269,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRoute,
   AuthRoute: AuthRouteWithChildren,
   DashboardRoute: DashboardRoute,
+  NutritionIntelligenceRoute: NutritionIntelligenceRoute,
   ScanRoute: ScanRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   BlogSlugRoute: BlogSlugRoute,

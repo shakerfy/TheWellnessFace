@@ -46,7 +46,7 @@ flowchart TD
     A --> D[✏️ Manual]
 
     B -->|Smart Swaps en Cards| M[(🧠 Memoria de la IA)]
-    B -->|Shake for AI + Registro| M
+    B -->|Escaneo de Platos + Registro| M
 
     C -->|Feedback Post-Workout| M
     C -->|Reemplazo de Ejercicios| M
@@ -61,7 +61,7 @@ flowchart TD
 ### 🥗 A. En Nutrición
 1. **Rotación de Ingredientes (*Smart Swaps*):**
    - Cuando el usuario rota repetidamente un ingrediente (ej. *pollo ➔ tofu* o *leche ➔ bebida de almendras*), la IA infiere y consolida la preferencia en la memoria.
-2. **Registro en el Diario (*Shake for AI*):**
+2. **Registro en el Diario (Comidas & Escaneos):**
    - Los platos registrados consolidan los ratios de macronutrientes preferidos en cada momento solar (desayuno, almuerzo, merienda, cena).
 
 ### 🏋️ B. En Entrenamiento

@@ -10,7 +10,7 @@ export interface TimingFit {
 
 function parseTimeToMinutes(timeStr?: string): number {
   if (!timeStr) return 0;
-  const match = timeStr.match(/(d{1,2}):(d{2})s*(AM|PM)?/i);
+  const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
   if (!match) return 0;
   let hours = parseInt(match[1], 10);
   const minutes = parseInt(match[2], 10);

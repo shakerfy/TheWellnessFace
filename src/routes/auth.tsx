@@ -17,7 +17,7 @@ function AuthPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Simular login exitoso de alumno
-    navigate({ to: "/app" });
+    navigate({ to: "/app", search: { tab: "inicio" } });
   };
 
   return (

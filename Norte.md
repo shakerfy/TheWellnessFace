@@ -40,12 +40,10 @@
    * En vistas de datos, usar grillas simétricas de 2 columnas (`grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4`).
 6. **Ecosistema de Acciones Flotantes (FAB):**
    * Un único FAB centralizado en el AI Coach con acciones directas y claras:
-     - `Generar workout` (Dumbbell)
-     - `Check-in` (QrCode)
-     - `Shake` (ShakerIcon)
-     - `Registrar comida` (Camera)
-     - `Registrar actividad` (Activity)
-     - `Registrar hidratación` (Droplet)
+      - `Registrar comida` (Camera)
+      - `Registrar actividad` (Activity)
+      - `Registrar hidratación` (Droplet)
+      - `Escaneo corporal` (Scan)
 
 ---
 
@@ -63,13 +61,10 @@
 
 ## ⚙️ 5. Algoritmos y Reglas de Lógica Central
 
-### A. Algoritmo de Recuperación Muscular (Regla del `< 70%`)
+### Algoritmo de Recuperación Muscular (Regla del `< 70%`)
 * **80% - 100% (Verde / Óptimo):** Grupo muscular prioritario para alta carga, hipertrofia o fuerza máxima.
 * **70% - 79% (Ámbar / Moderado):** Apto para volumen de mantenimiento o trabajo secundario.
-* **< 70% (Naranja-Rojo / En Regeneración):** **Excluido automáticamente de la generación de rutinas de IA** (descanso activo o trabajo de movilidad).
-
-### B. Interacción "Shake for AI"
-* La acción de agitar el dispositivo físico o pulsar la opción *"Shake"* dispara de manera exclusiva recomendaciones nutricionales basadas en la **alacena real del usuario**, la **cronobiología solar** y el **estado somático del momento**.
+* **< 70% (Naranja-Rojo / En Regeneración):** **Excluido automáticamente de la fatiga adicional** (descanso activo o trabajo de movilidad).
 
 ---
 

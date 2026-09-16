@@ -7,7 +7,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import "@fontsource/inter/400.css";
@@ -17,6 +17,8 @@ import "@fontsource/inter/700.css";
 import "@fontsource/inter/800.css";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
+import { useTheme } from "../lib/use-theme";
+import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -126,17 +128,21 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
-import { useTheme } from "../lib/use-theme";
-
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   useTheme(); // Initializes system dark mode and theme persistence
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
       <MobileBottomNav />
+      {mounted && <Toaster position="top-center" richColors closeButton />}
     </QueryClientProvider>
   );
 }

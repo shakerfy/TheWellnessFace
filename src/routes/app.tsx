@@ -3,8 +3,14 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from "react"
 import { toast } from "sonner";
 import { SiteHeader } from "@/components/site-header";
 import { BioStateCard } from "@/components/bio-state-card";
-import { JournalInsightsDashboard } from "@/components/journal-insights";
+import { AdvancedSettingsView } from "@/components/advanced-settings-view";
+import { useNutritionSettings } from "@/lib/nutrition-settings";
+import {
+  JournalInsightsDashboard,
+  addStoredWeightLog,
+} from "@/components/journal-insights";
 import { calculateTimingFit, type TimingFit } from "@/lib/timing-fit";
+import { FoodProfileHero, type FoodQualityLevel } from "@/components/food-profile-hero";
 import { Index } from "./index";
 import { GYMS } from "@/lib/gyms";
 import { cn } from "@/lib/utils";
@@ -94,14 +100,22 @@ import {
   Mail,
   FileText,
   Apple,
+  Sprout,
   Scale,
   Target,
   HeartPulse,
   Timer,
   Users,
-  BatteryCharging,
   ChefHat,
+  ThumbsUp,
+  ThumbsDown,
 } from "lucide-react";
+import {
+  saveDietaryPreferenceToAiMemory,
+  computeNutritionalVectors,
+} from "@/lib/ai-suggestion-generator";
+import { TypewriterText } from "@/components/typewriter-text";
+import { NutritionFactsTable } from "@/components/nutrition-facts-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -134,9 +148,6 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { MindfulBreathingModal } from "@/components/mindful-breathing-modal";
-import { MuscleRecoveryTab } from "@/components/muscle-recovery-tab";
-import { CustomWorkoutTab } from "@/components/custom-workout-tab";
 import { updateMuscleRecoveryForActivity, MUSCLE_GROUPS } from "@/lib/muscle-recovery";
 import {
   Dialog,
@@ -144,6 +155,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -155,15 +167,27 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerFooter,
+} from "@/components/ui/drawer";
+import { VagalBreathingDrawer } from "@/components/vagal-breathing-drawer";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const Route = createFileRoute("/app")({
+  validateSearch: (search: Record<string, unknown>): { tab?: string } => ({
+    tab: typeof search?.tab === "string" ? search.tab : "inicio",
+  }),
   component: StudentDashboard,
 });
 
 const TABS = [
   { id: "inicio", label: "Inicio", icon: User },
   { id: "diario", label: "AI Coach", icon: Sparkles },
-  { id: "entrenamiento", label: "Entrenamiento", icon: Dumbbell },
   { id: "clases", label: "Check-in", icon: QrCode },
   { id: "favoritos", label: "Favoritos", icon: Heart },
   { id: "progreso", label: "Mi Progreso", icon: BarChart3 },
@@ -171,10 +195,117 @@ const TABS = [
   { id: "config", label: "Configuración", icon: Settings },
 ];
 
+// Subcomponent: Armstrong Urine Color Scale (Visual component matching exact reference HTML design)
+const ARMSTRONG_LEVELS = [
+  {
+    level: 1,
+    hex: "#fbfce1",
+    color:
+      "bg-cyan-50 border-cyan-200 text-cyan-900 dark:bg-cyan-950/40 dark:border-cyan-800 dark:text-cyan-200",
+    dot: "bg-cyan-100 border-cyan-300",
+    title: "Nivel 1 — Transparente",
+    usg: "< 1.010 g/cm³",
+    state: "Euhidratación Óptima",
+    advice: "Excelente balance celular. Mantén pequeños sorbos de agua potable a lo largo del día.",
+  },
+  {
+    level: 2,
+    hex: "#f9f9cd",
+    color:
+      "bg-yellow-50 border-yellow-200 text-yellow-900 dark:bg-yellow-950/40 dark:border-yellow-800 dark:text-yellow-200",
+    dot: "bg-yellow-200 border-yellow-300",
+    title: "Nivel 2 — Amarillo Pálido",
+    usg: "1.010 g/cm³",
+    state: "Hidratación Saludable",
+    advice: "Estado hídrico ideal para el rendimiento físico y deportivo continuo.",
+  },
+  {
+    level: 3,
+    hex: "#f6f2a9",
+    color:
+      "bg-amber-50 border-amber-200 text-amber-900 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-200",
+    dot: "bg-amber-300 border-amber-400",
+    title: "Nivel 3 — Amarillo Claro",
+    usg: "1.015 g/cm³",
+    state: "Bien Hidratado",
+    advice: "Buen estado hídrico para afrontar tus entrenamientos.",
+  },
+  {
+    level: 4,
+    hex: "#f2e285",
+    color:
+      "bg-amber-100 border-amber-300 text-amber-950 dark:bg-amber-900/40 dark:border-amber-700 dark:text-amber-200",
+    dot: "bg-amber-400 border-amber-500",
+    title: "Nivel 4 — Amarillo Dorado",
+    usg: "1.020 g/cm³",
+    state: "Deshidratación Leve",
+    advice:
+      "Se sugiere hidratarse con agua fresca para mantener un balance óptimo y evitar fatiga.",
+  },
+  {
+    level: 5,
+    hex: "#eec863",
+    color:
+      "bg-amber-200 border-amber-400 text-amber-950 dark:bg-amber-800/40 dark:border-amber-600 dark:text-amber-100",
+    dot: "bg-amber-500 border-amber-600",
+    title: "Nivel 5 — Miel / Ámbar Claro",
+    usg: "1.025 g/cm³",
+    state: "Deshidratación Moderada",
+    advice:
+      "Considera reponer líquidos con agua y una fuente ligera de electrolitos o sales minerales.",
+  },
+  {
+    level: 6,
+    hex: "#e8a33a",
+    color:
+      "bg-amber-300 border-amber-500 text-amber-950 dark:bg-amber-700/50 dark:border-amber-500 dark:text-amber-100",
+    dot: "bg-amber-700 border-amber-800",
+    title: "Nivel 6 — Ámbar Oscuro",
+    usg: "1.028 g/cm³",
+    state: "Deshidratación Significativa",
+    advice:
+      "Tu cuerpo muestra signos de necesitar hidratación. Es un buen momento para reponer líquidos gradualmente con agua o una bebida isotónica.",
+  },
+  {
+    level: 7,
+    hex: "#d4812f",
+    color:
+      "bg-amber-700/20 border-amber-700 text-amber-900 dark:bg-amber-950/80 dark:border-amber-700 dark:text-amber-200",
+    dot: "bg-amber-800 border-amber-900",
+    title: "Nivel 7 — Té Oscuro",
+    usg: "1.030 g/cm³",
+    state: "Deshidratación Elevada",
+    advice:
+      "Refleja una pérdida hídrica considerable. Conviene resguardarte del calor y priorizar una rehidratación paulatina con sales y líquidos.",
+  },
+  {
+    level: 8,
+    hex: "#a66a2e",
+    color:
+      "bg-stone-800/20 border-stone-800 text-stone-900 dark:bg-stone-900 dark:border-stone-700 dark:text-stone-100",
+    dot: "bg-stone-900 border-stone-950",
+    title: "Nivel 8 — Café / Marrón",
+    usg: "> 1.030 g/cm³",
+    state: "Deshidratación Severa (Alerta)",
+    advice:
+      "Concentración urinaria muy alta. Se recomienda pausar la actividad intensa, hidratarte y, si el tono persiste tras varias horas, consultar a un profesional de la salud.",
+  },
+];
+
 function StudentDashboard() {
-  // ponytail: always start with "inicio" server-side to avoid SSR hydration mismatch;
-  // useEffect below syncs from URL on client mount.
-  const [activeTab, setActiveTab] = useState("inicio");
+  const search = Route.useSearch();
+  // ponytail: start with search.tab if present client-side, fallback to "inicio"
+  const [activeTab, setActiveTab] = useState(() =>
+    typeof window !== "undefined" && search?.tab && TABS.some((t) => t.id === search.tab)
+      ? search.tab
+      : "inicio",
+  );
+
+  useEffect(() => {
+    if (search?.tab && TABS.some((t) => t.id === search.tab)) {
+      setActiveTab(search.tab);
+    }
+  }, [search?.tab]);
 
   useEffect(() => {
     const updateTabFromUrl = () => {
@@ -187,61 +318,15 @@ function StudentDashboard() {
     };
     updateTabFromUrl();
     window.addEventListener("popstate", updateTabFromUrl);
-    const interval = setInterval(updateTabFromUrl, 200);
     return () => {
       window.removeEventListener("popstate", updateTabFromUrl);
-      clearInterval(interval);
     };
   }, []);
+
 
   const [qrOpen, setQrOpen] = useState(false);
   const [scannerModalOpen, setScannerModalOpen] = useState(false);
   const [qrTimer, setQrTimer] = useState(60);
-
-  // Global Shake / Accelerometer Detection
-  useEffect(() => {
-    let lastX: number | null = null;
-    let lastY: number | null = null;
-    let lastZ: number | null = null;
-    let lastTime = 0;
-
-    const handleMotion = (event: DeviceMotionEvent) => {
-      const acc = event.accelerationIncludingGravity;
-      if (!acc || acc.x === null || acc.y === null || acc.z === null) return;
-
-      const curTime = Date.now();
-      if (curTime - lastTime > 150) {
-        const diffTime = curTime - lastTime;
-        lastTime = curTime;
-
-        if (lastX !== null && lastY !== null && lastZ !== null) {
-          const delta = Math.abs(acc.x + acc.y + acc.z - lastX - lastY - lastZ);
-          const speed = (delta / diffTime) * 10000;
-          if (speed > 800) {
-            setActiveTab("diario");
-            if (typeof navigator !== "undefined" && navigator.vibrate) {
-              try {
-                navigator.vibrate(200);
-              } catch (_) {}
-            }
-          }
-        }
-
-        lastX = acc.x;
-        lastY = acc.y;
-        lastZ = acc.z;
-      }
-    };
-
-    if (typeof window !== "undefined") {
-      window.addEventListener("devicemotion", handleMotion, true);
-    }
-    return () => {
-      if (typeof window !== "undefined") {
-        window.removeEventListener("devicemotion", handleMotion, true);
-      }
-    };
-  }, []);
   const navigate = useNavigate();
 
   // MOCK STATE FOR RESERVATIONS & CANCELLATION VALIDATION
@@ -292,7 +377,7 @@ function StudentDashboard() {
 
   return (
     <div
-      className={`min-h-screen ${activeTab === "diario" || activeTab === "entrenamiento" ? "bg-slate-50/70 dark:bg-background" : "bg-background"} text-foreground flex flex-col transition-colors duration-200 w-full`}
+      className={`min-h-screen ${activeTab === "diario" ? "bg-[#f8fafc] dark:bg-background" : "bg-background"} text-foreground flex flex-col transition-colors duration-200 w-full`}
     >
       {/* Site Header with User Dropdown Menu always visible at top */}
       <SiteHeader />
@@ -304,9 +389,6 @@ function StudentDashboard() {
         >
           {activeTab === "inicio" && <InicioTab />}
           {activeTab === "diario" && <DiarioTab />}
-          {activeTab === "entrenamiento" && (
-            <CustomWorkoutTab onBack={() => setActiveTab("diario")} />
-          )}
           {activeTab === "clases" && (
             <ClasesTab
               onOpenQr={() => setQrOpen(true)}
@@ -1182,6 +1264,7 @@ function ProgresoTab() {
 
 // Subcomponent: Pagos Tab
 function PagosTab() {
+  const navigate = useNavigate();
   const invoices = [
     {
       date: "20-Jun-2026",
@@ -1211,6 +1294,35 @@ function PagosTab() {
       <div>
         <h2 className="text-2xl font-bold tracking-tight">Suscripción y Pagos</h2>
         <p className="text-sm text-muted-foreground">Tus recibos e información financiera.</p>
+      </div>
+
+      {/* Banner de Nutrition Intelligence Suite */}
+      <div className="rounded-3xl border border-border bg-card p-6 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:border-foreground/30 hover:shadow-lg transition-all duration-300 text-left">
+        <div className="space-y-1 text-left">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-amber-500" />
+            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              Suite de Inteligencia Nutricional
+            </span>
+            <Badge variant="outline" className="text-[9px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20 py-0 px-1.5 rounded-full">
+              PRO
+            </Badge>
+          </div>
+          <h3 className="text-lg font-bold text-foreground">
+            Nutrition Intelligence Pro
+          </h3>
+          <p className="text-xs text-muted-foreground max-w-md">
+            Desbloquea AI Food Scan, reporte semanal de hábitos y evolución biométrica de peso.
+          </p>
+        </div>
+        <Button
+          type="button"
+          onClick={() => navigate({ to: "/nutrition-intelligence" })}
+          className="rounded-2xl text-xs font-bold px-4 h-10 bg-foreground text-background hover:bg-foreground/90 transition-all cursor-pointer shrink-0 gap-1"
+        >
+          <span>Conocer suite</span>
+          <ChevronRight className="w-4 h-4" />
+        </Button>
       </div>
 
       <div className="rounded-2xl border border-border bg-secondary/50 p-6">
@@ -1319,9 +1431,8 @@ const DEFAULT_AI_MEMORIES: AiMemoryItem[] = [
 function ConfigTab() {
   const navigate = useNavigate();
   const [subView, setSubView] = useState<
-    "main" | "settings" | "edit-profile" | "ai-memory" | "app-settings"
+    "main" | "settings" | "edit-profile" | "ai-memory" | "app-settings" | "advanced-settings"
   >("main");
-  const [profileTab, setProfileTab] = useState<"progreso" | "recuperacion">("progreso");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -1496,52 +1607,6 @@ function ConfigTab() {
   const [theme, setTheme] = useState<"system" | "light" | "dark">("system");
   const [language, setLanguage] = useState("es");
   const [reminders, setReminders] = useState(true);
-  const [motionSensorEnabled, setMotionSensorEnabled] = useState(false);
-
-  // Shake / Accelerometer Detection for "Shake & Build"
-  useEffect(() => {
-    let lastX: number | null = null;
-    let lastY: number | null = null;
-    let lastZ: number | null = null;
-    let lastTime = 0;
-
-    const handleMotion = (event: DeviceMotionEvent) => {
-      const acc = event.accelerationIncludingGravity;
-      if (!acc || acc.x === null || acc.y === null || acc.z === null) return;
-
-      const curTime = Date.now();
-      if (curTime - lastTime > 150) {
-        const diffTime = curTime - lastTime;
-        lastTime = curTime;
-
-        if (lastX !== null && lastY !== null && lastZ !== null) {
-          const delta = Math.abs(acc.x + acc.y + acc.z - lastX - lastY - lastZ);
-          const speed = (delta / diffTime) * 10000;
-          if (speed > 800) {
-            window.dispatchEvent(new CustomEvent("shakerfy:shake-trigger"));
-            if (typeof navigator !== "undefined" && navigator.vibrate) {
-              try {
-                navigator.vibrate(200);
-              } catch (_) {}
-            }
-          }
-        }
-
-        lastX = acc.x;
-        lastY = acc.y;
-        lastZ = acc.z;
-      }
-    };
-
-    if (typeof window !== "undefined") {
-      window.addEventListener("devicemotion", handleMotion, true);
-    }
-    return () => {
-      if (typeof window !== "undefined") {
-        window.removeEventListener("devicemotion", handleMotion, true);
-      }
-    };
-  }, []);
 
   useEffect(() => {
     const handleOpenSettingsEvent = () => {
@@ -1559,6 +1624,7 @@ function ConfigTab() {
   const [contactModalOpen, setContactModalOpen] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const [deleteAccountModalOpen, setDeleteAccountModalOpen] = useState(false);
+  const [showWeightModal, setShowWeightModal] = useState(false);
 
   // Profile Completion Percentage Calculation (Gamificación sin bloqueo)
   const profileCompletion = useMemo(() => {
@@ -1573,32 +1639,6 @@ function ConfigTab() {
 
     return Math.round((completedSteps / totalSteps) * 100);
   }, [fullName, birthDate, sex, height, weight, goal, aiMemories]);
-
-  const handleToggleMotionSensor = async (enabled: boolean) => {
-    setMotionSensorEnabled(enabled);
-    if (enabled) {
-      if (
-        typeof window !== "undefined" &&
-        typeof (DeviceMotionEvent as any)?.requestPermission === "function"
-      ) {
-        try {
-          const permissionState = await (DeviceMotionEvent as any).requestPermission();
-          if (permissionState === "granted") {
-            toast.success("Permiso de sensor de movimiento activado para iPhone");
-          } else {
-            toast.error("Permiso de acelerómetro denegado en iOS");
-            setMotionSensorEnabled(false);
-          }
-        } catch (err) {
-          toast.info("Sensor de movimiento activado para Shake AI");
-        }
-      } else {
-        toast.success("Sensor de movimiento Shake AI activado");
-      }
-    } else {
-      toast.info("Sensor de movimiento desactivado");
-    }
-  };
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1687,7 +1727,7 @@ function ConfigTab() {
   const handleSaveAppSettings = (e: React.FormEvent) => {
     e.preventDefault();
     if (typeof window !== "undefined") {
-      const appSettingsData = { theme, language, reminders, motionSensorEnabled };
+      const appSettingsData = { theme, language, reminders };
       localStorage.setItem("shakerfy_app_settings", JSON.stringify(appSettingsData));
     }
     toast.success("Configuración de la aplicación guardada");
@@ -2181,8 +2221,8 @@ function ConfigTab() {
             <Sparkles className="w-4 h-4 text-primary" /> ¿Cómo utiliza la IA esta memoria unificada?
           </div>
           <p className="text-[11px] text-muted-foreground leading-relaxed">
-            <strong>Nutrición:</strong> En <em>Shake for AI</em> o sugerencias horarias, la IA prioriza tus alimentos favoritos conservando un 25% de variedad biológica.<br />
-            <strong>Entrenamiento:</strong> El generador de rutinas calibra el volumen, las series y los ejercicios según tus calificaciones (<em>Ligera / Perfecta / Extenuante</em>) y reemplazos previos.
+            <strong>Nutrición:</strong> En sugerencias y análisis nutricionales, la IA prioriza tus alimentos favoritos conservando un 25% de variedad biológica.<br />
+            <strong>Entrenamiento & Actividad:</strong> El AI Coach orienta tus recomendaciones de hidratación y recuperación según tus sensaciones físicas y registros de actividad.
           </p>
         </div>
       </div>
@@ -2289,25 +2329,6 @@ function ConfigTab() {
             </div>
           </div>
 
-          {/* Sensor de Movimiento (Shake AI) */}
-          <div className="space-y-2 pt-2 border-t border-border/40">
-            <label className="text-xs font-semibold text-foreground block">
-              Sensor de Movimiento
-            </label>
-            <div className="flex items-center justify-between p-4 rounded-2xl border border-border/60 bg-muted/20">
-              <div className="space-y-0.5 max-w-[78%]">
-                <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                  <Zap className="w-3.5 h-3.5 text-amber-500" /> Shake AI (Gesto de agitar iPhone)
-                </div>
-                <div className="text-[11px] text-muted-foreground leading-relaxed">
-                  Permite agitar tu dispositivo para consultar al AI Coach. Solicita permiso
-                  explícito de acelerómetro en iOS.
-                </div>
-              </div>
-              <Switch checked={motionSensorEnabled} onCheckedChange={handleToggleMotionSensor} />
-            </div>
-          </div>
-
           {/* Zona de Peligro: Eliminar Cuenta */}
           <div className="space-y-2 pt-4 border-t border-rose-500/20">
             <label className="text-[11px] font-bold text-rose-500 block uppercase tracking-wider">
@@ -2354,6 +2375,11 @@ function ConfigTab() {
         </form>
       </div>
     );
+  }
+
+  // SUB-SCREEN: AJUSTES AVANZADOS (Modo Bienestar vs Atleta & Metas Personalizadas)
+  if (subView === "advanced-settings") {
+    return <AdvancedSettingsView onBack={() => setSubView("settings")} />;
   }
 
   // SUB-SCREEN 4: AJUSTES & CONFIGURACIÓN
@@ -2446,7 +2472,29 @@ function ConfigTab() {
                     Ajustes de la Aplicación
                   </div>
                   <div className="text-[11px] text-muted-foreground">
-                    Tema visual, acelerómetro Shake AI y notificaciones.
+                    Tema visual, idioma y notificaciones.
+                  </div>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground/60 group-hover:text-foreground group-hover:translate-x-0.5 transition shrink-0" />
+            </button>
+
+            {/* AJUSTES AVANZADOS */}
+            <button
+              type="button"
+              onClick={() => setSubView("advanced-settings")}
+              className="w-full flex items-center justify-between p-4 hover:bg-secondary/40 transition-all cursor-pointer text-left group"
+            >
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                  <Sliders className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                    Ajustes Avanzados
+                  </div>
+                  <div className="text-[11px] text-muted-foreground">
+                    Modo nutrición (Bienestar vs Atleta) y metas de macros.
                   </div>
                 </div>
               </div>
@@ -2604,76 +2652,46 @@ function ConfigTab() {
         </button>
       </div>
 
-      {/* 2. TAB BAR SEGMENTADO: PROGRESO / RECUPERACIÓN */}
-      <div className="p-1 rounded-2xl bg-secondary/50 border border-border/50 grid grid-cols-2 text-center select-none shadow-2xs">
-        <button
-          type="button"
-          onClick={() => setProfileTab("progreso")}
-          className={cn(
-            "py-2.5 text-xs sm:text-sm rounded-xl transition-all cursor-pointer font-bold flex items-center justify-center gap-2",
-            profileTab === "progreso"
-              ? "bg-card text-foreground shadow-xs border border-border/40"
-              : "text-muted-foreground hover:text-foreground font-medium",
-          )}
-        >
-          <TrendingUp className="w-4 h-4 text-emerald-500" />
-          <span>Progreso</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setProfileTab("recuperacion")}
-          className={cn(
-            "py-2.5 text-xs sm:text-sm rounded-xl transition-all cursor-pointer font-bold flex items-center justify-center gap-2",
-            profileTab === "recuperacion"
-              ? "bg-card text-foreground shadow-xs border border-border/40"
-              : "text-muted-foreground hover:text-foreground font-medium",
-          )}
-        >
-          <BatteryCharging className="w-4 h-4 text-indigo-500" />
-          <span>Recuperación</span>
-        </button>
+      {/* 2. CONTENIDO: PROGRESO SOMÁTICO */}
+      {/* ponytail: progreso somático minimalista y registro directo de peso */}
+      <div className="animate-in fade-in duration-200">
+        <JournalInsightsDashboard
+          currentProfileWeight={parseFloat(weight) || 74.6}
+          units={units}
+          onOpenWeightLogModal={() => setShowWeightModal(true)}
+        />
       </div>
 
-      {/* 3. CONTENIDO: TAB PROGRESO (PROGRESS DASHBOARD) */}
-      {profileTab === "progreso" && (
-        <div className="animate-in fade-in duration-200">
-          <JournalInsightsDashboard
-            weightLogs={(() => {
-              if (typeof window !== "undefined") {
+      {/* Modal para registrar peso desde el perfil */}
+      {showWeightModal && (
+        <WeightLogModal
+          currentWeight={parseFloat(weight) || 74.6}
+          units={units}
+          onClose={() => setShowWeightModal(false)}
+          onSave={(weightVal, context) => {
+            setWeight(String(weightVal));
+            if (typeof window !== "undefined") {
+              localStorage.setItem("user_weight", String(weightVal));
+              const saved = localStorage.getItem("shakerfy_user_profile_edit");
+              if (saved) {
                 try {
-                  const saved = localStorage.getItem("shakerfy_user_timeline_items");
-                  if (saved) {
-                    const items = JSON.parse(saved);
-                    if (Array.isArray(items)) {
-                      return items
-                        .filter(
-                          (it: any) =>
-                            it && it.type === "weight" && typeof it.weight === "number",
-                        )
-                        .map((it: any) => ({
-                          id: it.id,
-                          date: it.date,
-                          time: it.time,
-                          weight: it.weight,
-                          unit: it.unit,
-                          context: it.context,
-                        }));
-                    }
-                  }
+                  const parsed = JSON.parse(saved);
+                  parsed.weight = String(weightVal);
+                  localStorage.setItem("shakerfy_user_profile_edit", JSON.stringify(parsed));
                 } catch (e) {}
               }
-              return [];
-            })()}
-            currentProfileWeight={parseFloat(weight) || 74.6}
-            goalWeight={70.0}
-            units={units}
-          />
-        </div>
-      )}
 
-      {/* 4. CONTENIDO: TAB RECUPERACIÓN (10 SLIDERS CON IMÁGENES ANATÓMICAS LOCALES) */}
-      {profileTab === "recuperacion" && <MuscleRecoveryTab />}
+              // Add directly to dedicated weight history
+              addStoredWeightLog({
+                weight: weightVal,
+                context: context || "En ayunas",
+                unit: units === "metrico" ? "kg" : "lbs",
+              });
+            }
+            toast.success(`✓ Peso registrado: ${weightVal} ${units === "metrico" ? "kg" : "lbs"}`);
+          }}
+        />
+      )}
 
       {/* MODAL: POLÍTICAS DE PRIVACIDAD */}
       <Dialog open={privacyModalOpen} onOpenChange={setPrivacyModalOpen}>
@@ -3214,163 +3232,319 @@ function CircularProgress({
   );
 }
 
-function TypewriterOnce({
-  text,
-  speed = 20,
-  cursorClassName = "bg-emerald-500",
-}: {
-  text: string;
+// Helpers de Calidad Nutricional y Sinergia Somática para el Timeline
+function getMealQualityProfile(mealItem: any): {
+  label: "Óptima" | "Equilibrada" | "Simple";
+  tier: 1 | 2 | 3;
+} {
+  const score = mealItem?.bioScore ?? (mealItem?.healthScore ? mealItem.healthScore * 10 : 70);
+  const text = `${mealItem?.title || ""} ${mealItem?.narrative || mealItem?.desc || ""}`.toLowerCase();
+
+  // 1. Simple: golosinas, dulces, cereales refinados, frituras, ultraprocesados
+  if (
+    score < 55 ||
+    /caramelo|golosina|sour patch|papas fritas|snack|gaseosa|refresco|chucher|donuts|facturas|cheeseburger|dulce/i.test(text)
+  ) {
+    return { label: "Simple", tier: 1 };
+  }
+
+  // 3. Óptima: alimentos densos en micronutrientes, salmón, huevos, quinoa, ensaladas, legumbres
+  if (
+    score >= 75 ||
+    /salmón|salmon|quinoa|pechuga|pollo|ensalada|huevo|avena|tofu|pescado|lenteja|garbanzo|integral|brócoli/i.test(text)
+  ) {
+    return { label: "Óptima", tier: 3 };
+  }
+
+  // 2. Equilibrada: alimentos mixtos y preparaciones intermedias
+  return { label: "Equilibrada", tier: 2 };
+}
+
+function getMealCombinationTip(mealItem: any, tier: 1 | 2 | 3): string {
+  if (mealItem?.coachFeedback && !mealItem.coachFeedback.startsWith("Detectamos una clase")) {
+    return mealItem.coachFeedback;
+  }
+  const text = `${mealItem?.title || ""} ${mealItem?.narrative || mealItem?.desc || ""}`.toLowerCase();
+
+  if (tier === 1) {
+    if (/cereal|galleta|pan blanco|factura|medialuna|dulce|pancake/i.test(text)) {
+      return "Sumar yogur natural, semillas o un huevo aporta proteína y fibra, reduciendo la velocidad de absorción y prolongando la saciedad.";
+    }
+    if (/frita|hamburguesa|burger|pizza/i.test(text)) {
+      return "Acompañar con vegetales o una ensalada verde aporta fibra dietaria y facilita una digestión más liviana.";
+    }
+    return "Sumar una porción de proteína magra o vegetales ayuda a balancear el plato y mantener la saciedad por más tiempo.";
+  }
+
+  if (tier === 2) {
+    if (/pasta|arroz|fideo/i.test(text)) {
+      return "Sumar vegetales o un toque de aceite de oliva virgen extra ayuda a balancear el plato y prolongar la energía.";
+    }
+    if (/queso|sándwich|sandwich/i.test(text)) {
+      return "Acompañar con rodajas de tomate o vegetales frescos añade vitaminas y minerales esenciales.";
+    }
+    return "Una adecuada hidratación después de esta comida favorece una digestión óptima.";
+  }
+
+  return "Comida completa y balanceada. Mantener una hidratación regular complementará adecuadamente tus requerimientos diarios.";
+}
+
+interface MealDynamicCta {
+  id: string;
+  type: "exploration" | "context" | "micro_action";
+  title: string;
+  iconType: "sparkles" | "apple" | "plus" | "droplet" | "wind" | "pause";
+  isOneTap?: boolean;
+}
+
+function getMealDynamicCtas(mealItem: any): MealDynamicCta[] {
+  const text = `${mealItem?.title || ""} ${mealItem?.narrative || mealItem?.desc || ""}`.toLowerCase();
+  const quality = getMealQualityProfile(mealItem);
+  const isPostWorkout =
+    /post|entreno|recuperaci|gym|fuerza|pesas/i.test(text) ||
+    mealItem?.timingFit?.type === "post_workout" ||
+    mealItem?.timingFit?.label?.toLowerCase().includes("post");
+  const isUltraProcessed =
+    quality.tier === 1 ||
+    /caramelo|golosina|snack|gaseosa|refresco|chucher|donuts|facturas|cheeseburger|dulce|papas fritas|pizza/i.test(text);
+
+  // Post-entreno: Recuperación muscular + Pausa
+  if (isPostWorkout) {
+    return [
+      {
+        id: "explore_postworkout_fuel",
+        type: "exploration",
+        title: "Ideas post-entreno",
+        iconType: "sparkles",
+      },
+      {
+        id: "take_a_pause",
+        type: "micro_action",
+        title: "Tomar una pausa",
+        iconType: "wind",
+      },
+    ];
+  }
+
+  // Reglas Oficiales 20 y 21: Ultraprocesados / Rápida asimilación
+  if (isUltraProcessed) {
+    return [
+      {
+        id: "explore-real-food",
+        type: "exploration",
+        title: "Ideas de platos",
+        iconType: "sparkles",
+      },
+      {
+        id: "take_a_pause",
+        type: "micro_action",
+        title: "Tomar una pausa",
+        iconType: "wind",
+      },
+    ];
+  }
+
+  // Comida Real / Proteína / Equilibrada: Ideas de comidas + Tomar una pausa
+  return [
+    {
+      id: "balanced-meal-ideas",
+      type: "exploration",
+      title: "Ideas de comidas",
+      iconType: "sparkles",
+    },
+    {
+      id: "take_a_pause",
+      type: "micro_action",
+      title: "Tomar una pausa",
+      iconType: "wind",
+    },
+  ];
+}
+
+function getMealCoachInsightText(mealItem: any): string {
+  if (mealItem?.coachFeedback && !mealItem.coachFeedback.startsWith("Detectamos una clase")) {
+    return mealItem.coachFeedback;
+  }
+  const title = mealItem?.title || "Comida";
+  const quality = getMealQualityProfile(mealItem);
+
+  if (quality.tier === 1) {
+    return `Este registro de **${title}** aporta energía de rápida absorción. Para lograr un plato más completo, podés sumar fuentes de *proteína magra o fibra* que ayuden a prolongar la saciedad a lo largo del día.`;
+  }
+
+  if (quality.tier === 3 || (mealItem?.protein && mealItem.protein >= 20)) {
+    return `Buen registro de **${title}**, con un adecuado aporte de proteínas y nutrientes clave para *favorecer la recuperación muscular* y sostener un nivel de energía estable.`;
+  }
+
+  return `Este registro de **${title}** aporta un *balance adecuado de macronutrientes* según tus actividades. Mantener variedad en tus fuentes de alimentos ayuda a cumplir tus requerimientos diarios.`;
+}
+
+function getMealCtaMarkdownContent(ctaId: string, mealItem: any): string {
+  const title = mealItem?.title || "Comida";
+
+  if (ctaId === "explore_postworkout_fuel") {
+    return `Opciones de recuperación neuromuscular y reposición glucogénica post-esfuerzo:
+
+- **🍠 Batata asada con pechuga magra:** Proporción ideal de glucógeno y aminoácidos esenciales para la síntesis de nuevas miofibrillas.
+- **🥑 Tostón de masa madre con huevos poché y palta:** Ácidos grasos protectores y proteínas completas de alta digestibilidad.
+- **🥣 Bowl de avena tibia con yogur griego y arándanos:** Rápida recarga glucogénica y polifenoles que amortiguan el estrés oxidativo.`;
+  }
+
+  if (ctaId === "balanced-meal-ideas") {
+    return `Opciones balanceadas con alimentos reales para complementar tus requerimientos diarios:
+
+- **🥑 Poke Bowl Mediterráneo:** Salmón grillado o garbanzos, quinoa tibia, **espinacas baby**, palta y semillas de sésamo. Aporte de proteínas completas y ácidos grasos esenciales.
+- **🍠 Plato de Recuperación Muscular:** Pechuga magra o *tofu a las hierbas* con **batata asada** y brócoli al vapor. Favorece la reposición de glucógeno y la síntesis proteica.
+- **🥗 Ensalada Mediterránea Completa:** Hojas verdes, **huevo de campo**, tomates cherry y *aceite de oliva virgen extra*. Excelente densidad nutricional y grasas monoinsaturadas.`;
+  }
+
+  if (ctaId === "discover-healthy-snacks") {
+    return `Opciones de bajo procesamiento para mantener la saciedad y energía entre comidas:
+
+- **🫐 Yogur natural con frutos rojos:** Fuente de probióticos, **fibra dietaria** y proteínas de absorción gradual.
+- **🥕 Bastones de vegetales con hummus:** Zanahoria y pepino con hummus de garbanzo para un aporte de fibra y saciedad prolongada sin pesadez.
+- **🥜 Frutos secos y semillas:** Porción controlada de almendras y nueces, ricas en **magnesio** y grasas saludables.`;
+  }
+
+  if (ctaId === "explore-real-food") {
+    return `Recomendaciones prácticas para sumar calidad nutricional a tu alimentación:
+
+- **🥚 Incorporar proteína entera:** Huevos, pollo, **tofu** o legumbres para optimizar la masa muscular y prolongar la saciedad.
+- **🥗 Sumar fibra vegetal:** Hojas verdes de estación o semillas que favorecen la salud digestiva y regulan la absorción de nutrientes.
+- **🥑 Grasas saludables:** Palta fresca, frutos secos o *aceite de oliva virgen extra* para mejorar el perfil lipídico y la absorción de vitaminas liposolubles.`;
+  }
+
+  if (ctaId === "add-accompaniment") {
+    return `Registra si acompañaste esta comida con líquidos o alimentos adicionales para un seguimiento preciso:`;
+  }
+
+  return `Recomendaciones nutricionales para **${title}**:`;
+}
+
+// ponytail: Client-side typewriter simulating Gemini streaming API. In production, replace with SSE stream reader.
+function renderInlineMarkdownTokens(text: string): React.ReactNode {
+  if (!text) return text;
+  const tokens = text.split(/(\*\*[^*]+?\*\*|\*[^*]+?\*|`[^`]+?`)/g);
+
+  return tokens.map((token, idx) => {
+    if (token.startsWith("**") && token.endsWith("**") && token.length >= 4) {
+      return (
+        <strong key={idx} className="font-bold text-foreground">
+          {token.slice(2, -2)}
+        </strong>
+      );
+    }
+    if (token.startsWith("*") && token.endsWith("*") && token.length >= 2) {
+      return (
+        <em key={idx} className="italic text-foreground/90 font-medium">
+          {token.slice(1, -1)}
+        </em>
+      );
+    }
+    if (token.startsWith("`") && token.endsWith("`") && token.length >= 2) {
+      return (
+        <code
+          key={idx}
+          className="px-1.5 py-0.5 rounded-md bg-secondary/80 font-mono text-[11px] font-semibold text-emerald-700 dark:text-emerald-300"
+        >
+          {token.slice(1, -1)}
+        </code>
+      );
+    }
+    return token;
+  });
+}
+
+function parseRichMarkdown(text: string): React.ReactNode {
+  if (!text) return null;
+  const lines = text.split("\n");
+
+  return lines.map((line, lIdx) => {
+    const trimmed = line.trim();
+    if (!trimmed) return <span key={lIdx} className="block h-2" />;
+
+    if (trimmed.startsWith("- ") || trimmed.startsWith("* ") || trimmed.startsWith("• ")) {
+      const content = trimmed.slice(2);
+      return (
+        <div key={lIdx} className="flex items-start gap-2 my-1 pl-1 text-left">
+          <span className="text-emerald-600 dark:text-emerald-400 font-bold leading-none mt-1 shrink-0">•</span>
+          <span className="flex-1 leading-relaxed">{renderInlineMarkdownTokens(content)}</span>
+        </div>
+      );
+    }
+
+    return (
+      <span key={lIdx} className="block leading-relaxed">
+        {renderInlineMarkdownTokens(line)}
+      </span>
+    );
+  });
+}
+
+interface TypewriterMarkdownProps {
+  content: string;
   speed?: number;
-  cursorClassName?: string;
-}) {
-  const [displayedText, setDisplayedText] = useState("");
+  chunkSize?: number;
+  className?: string;
+  onComplete?: () => void;
+}
+
+function TypewriterMarkdown({
+  content,
+  speed = 14,
+  chunkSize = 2,
+  className,
+  onComplete,
+}: TypewriterMarkdownProps) {
+  const [displayedLength, setDisplayedLength] = useState(0);
+  const [isSkipped, setIsSkipped] = useState(false);
 
   useEffect(() => {
-    let index = 0;
-    setDisplayedText("");
-    const timer = setInterval(() => {
-      if (index < text.length) {
-        setDisplayedText((prev) => text.slice(0, index + 1));
-        index++;
-      } else {
-        clearInterval(timer);
+    setDisplayedLength(0);
+    setIsSkipped(false);
+    if (!content) return;
+
+    let current = 0;
+    const interval = setInterval(() => {
+      current = Math.min(content.length, current + chunkSize);
+      setDisplayedLength(current);
+
+      if (current >= content.length) {
+        clearInterval(interval);
+        onComplete?.();
       }
     }, speed);
-    return () => clearInterval(timer);
-  }, [text, speed]);
+
+    return () => clearInterval(interval);
+  }, [content, speed, chunkSize, onComplete]);
+
+  const displayedText = isSkipped ? content : content.slice(0, displayedLength);
+  const isTyping = !isSkipped && displayedLength < content.length;
+
+  let safeText = displayedText;
+  const boldCount = (safeText.match(/\*\*/g) || []).length;
+  if (boldCount % 2 !== 0) safeText += "**";
+  const codeCount = (safeText.match(/`/g) || []).length;
+  if (codeCount % 2 !== 0) safeText += "`";
 
   return (
-    <span>
-      {displayedText}
-      {displayedText.length < text.length && (
-        <span
-          className={cn(
-            "inline-block w-1.5 h-3.5 ml-1 animate-pulse rounded-xs align-middle",
-            cursorClassName,
-          )}
-        />
-      )}
-    </span>
-  );
-}
-
-interface ActivityHistoryItem {
-  label: string;
-  puntos: number;
-}
-
-const INITIAL_ACTIVITY_HISTORY: Record<"week" | "month" | "quarter", ActivityHistoryItem[]> = {
-  week: [
-    { label: "Lun", puntos: 180 },
-    { label: "Mar", puntos: 160 },
-    { label: "Mié", puntos: 175 },
-    { label: "Jue", puntos: 140 },
-    { label: "Vie", puntos: 155 },
-    { label: "Sáb", puntos: 190 },
-    { label: "Dom", puntos: 168 },
-  ],
-  month: [
-    { label: "Sem 1", puntos: 165 },
-    { label: "Sem 2", puntos: 158 },
-    { label: "Sem 3", puntos: 178 },
-    { label: "Sem 4", puntos: 170 },
-  ],
-  quarter: [
-    { label: "Mayo", puntos: 162 },
-    { label: "Junio", puntos: 171 },
-    { label: "Julio", puntos: 168 },
-  ],
-};
-
-function ShakerIcon({ className = "w-4 h-4" }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
+    <div
+      onClick={() => setIsSkipped(true)}
+      className={cn("cursor-pointer select-text transition-opacity", className)}
+      title={isTyping ? "Toca para revelar el texto completo" : undefined}
     >
-      <path d="M9 2h6v2H9z" />
-      <path d="M7 4h10v3l-1.5 1H8.5L7 7V4z" />
-      <path d="M7.5 8l1 13a1 1 0 0 0 1 .9h5a1 1 0 0 0 1-.9l1-13" />
-      <line x1="10" y1="12" x2="14" y2="12" />
-      <line x1="10" y1="15" x2="13" y2="15" />
-    </svg>
+      {parseRichMarkdown(safeText)}
+      {isTyping && (
+        <span className="inline-block w-1.5 h-3.5 bg-emerald-500 rounded-xs animate-pulse ml-0.5 align-middle" />
+      )}
+    </div>
   );
 }
-
-// ICN Theme Helper with dynamic biological color accents (Shared with Scan Screen)
-const getIcnTheme = (score: number) => {
-  if (score >= 85) {
-    return {
-      scoreText: "text-emerald-500 dark:text-emerald-400",
-      gradeBadge: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
-      cardBorder: "border-emerald-500/20",
-      iconColor: "text-emerald-500",
-      gaugeColor: "bg-emerald-500",
-    };
-  }
-  if (score >= 70) {
-    return {
-      scoreText: "text-sky-500 dark:text-sky-400",
-      gradeBadge: "bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/30",
-      cardBorder: "border-sky-500/20",
-      iconColor: "text-sky-500",
-      gaugeColor: "bg-sky-500",
-    };
-  }
-  if (score >= 55) {
-    return {
-      scoreText: "text-amber-500 dark:text-amber-400",
-      gradeBadge: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30",
-      cardBorder: "border-amber-500/20",
-      iconColor: "text-amber-500",
-      gaugeColor: "bg-amber-500",
-    };
-  }
-  return {
-    scoreText: "text-rose-500 dark:text-rose-400",
-    gradeBadge: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30",
-    cardBorder: "border-rose-500/20",
-    iconColor: "text-rose-500",
-    gaugeColor: "bg-rose-500",
-  };
-};
-
-const POSTPRANDIAL_SYMPTOMS = [
-  { id: "energia", label: "Con energía", icon: Zap },
-  { id: "ligero", label: "Ligero / Óptimo", icon: Sparkles },
-  { id: "somnolencia", label: "Somnolencia", icon: Moon },
-  { id: "pesadez", label: "Pesadez / Hinchazón", icon: Activity },
-  { id: "reflujo", label: "Reflujo / Acidez", icon: Flame },
-];
-
-const EATING_REASONS = [
-  { id: "hambre_real", label: "Hambre real", icon: Zap },
-  { id: "post_entreno", label: "Post-entreno", icon: Dumbbell },
-  { id: "horario", label: "Horario habitual", icon: Clock },
-  { id: "antojo", label: "Antojo / Estrés", icon: HeartPulse },
-  { id: "social", label: "Social / Compartido", icon: Users },
-];
 
 // Subcomponent: AI Coach Diario (Wellfooder Timeline)
 function DiarioTab() {
   const navigate = useNavigate();
-
-  const [activityFilter, setActivityFilter] = useState<"week" | "month" | "quarter">("week");
-  const [activityHistory, setActivityHistory] = useState(INITIAL_ACTIVITY_HISTORY);
-
-  const currentActivityHistory = activityHistory[activityFilter];
-  const avgActivityPoints = Math.round(
-    currentActivityHistory.reduce(
-      (acc: number, curr: ActivityHistoryItem) => acc + curr.puntos,
-      0,
-    ) / currentActivityHistory.length,
-  );
-  const activityTargetPercent = Math.round((avgActivityPoints / 150) * 100);
+  const { isAthleteMode, isWellnessMode } = useNutritionSettings();
 
   const [activityData, setActivityData] = useState([
     { day: "Lun", puntos: 180 },
@@ -3511,10 +3685,6 @@ function DiarioTab() {
     },
   ];
 
-  const [calcActivityIdx, setCalcActivityIdx] = useState(7); // default to Caminata
-  const [calcIntensity, setCalcIntensity] = useState<"low" | "med" | "high">("med");
-  const [calcDuration, setCalcDuration] = useState(30);
-  const [activeFaq, setActiveFaq] = useState<number | null>(null);
   const [showStreakInfo, setShowStreakInfo] = useState(false);
   const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
 
@@ -3527,7 +3697,6 @@ function DiarioTab() {
   }, []);
 
   const [editingTimelineItem, setEditingTimelineItem] = useState<any | null>(null);
-  const [showBreathingModal, setShowBreathingModal] = useState(false);
   const [expandedCardInsights, setExpandedCardInsights] = useState<Record<string, boolean>>({});
 
   const toggleCardInsights = (id: string) => {
@@ -3536,17 +3705,132 @@ function DiarioTab() {
   const expandedMealInsights = expandedCardInsights;
   const toggleMealInsights = toggleCardInsights;
 
+  const [expandedMealCta, setExpandedMealCta] = useState<Record<string, string | null>>({});
+  const [loggedMicroActions, setLoggedMicroActions] = useState<Record<string, { type: string; itemId: string; level?: number; time: string } | null>>({});
+
+  const toggleMealCta = (mealId: string, ctaId: string) => {
+    setExpandedMealCta((prev) => ({
+      ...prev,
+      [mealId]: prev[mealId] === ctaId ? null : ctaId,
+    }));
+  };
+
+  const [isBreathingDrawerOpen, setIsBreathingDrawerOpen] = useState(false);
+  const [breathingMealContext, setBreathingMealContext] = useState<string | undefined>(undefined);
+  const [breathingOriginMealId, setBreathingOriginMealId] = useState<string | undefined>(undefined);
+
+  const handleOpenBreathingPause = (mealId?: string, mealTitle?: string) => {
+    setBreathingOriginMealId(mealId);
+    setBreathingMealContext(mealTitle);
+    setIsBreathingDrawerOpen(true);
+  };
+
+  const handleBreathingComplete = () => {
+    if (breathingOriginMealId) {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+      setLoggedMicroActions((prev) => ({
+        ...prev,
+        [breathingOriginMealId]: { type: "vagal_pause", itemId: `pause-${Date.now()}`, time: timeStr },
+      }));
+    }
+    toast.success("✓ Pausa completada • Tu cuerpo está en calma");
+  };
+
+  const handleLogArmstrongLevel = (mealId: string, level: number) => {
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      try {
+        navigator.vibrate([25, 40, 25]);
+      } catch (_) {}
+    }
+    const currentObj = ARMSTRONG_LEVELS.find((l) => l.level === level) || ARMSTRONG_LEVELS[1];
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+    const hydrationId = `hydration-${Date.now()}`;
+    const newHydration = {
+      id: hydrationId,
+      date: selectedTimelineDate || todayIso,
+      time: timeStr,
+      title: `Nivel ${level} Armstrong`,
+      subtitle: `${currentObj.title} (${currentObj.state})`,
+      type: "hydration",
+      level,
+      desc: `${currentObj.title} — ${currentObj.state}`,
+      tag: `Nivel ${level} Armstrong`,
+      coachFeedback: `💧 Consejo Fisiológico: ${currentObj.advice}`,
+      createdAt: now.toISOString(),
+    };
+
+    setUserTimelineItems((prev) => [newHydration, ...prev]);
+    setLoggedMicroActions((prev) => ({
+      ...prev,
+      [mealId]: { type: "armstrong", itemId: hydrationId, level, time: timeStr },
+    }));
+    toast.success(`💧 Registrado: Nivel ${level} Armstrong (${currentObj.state})`);
+  };
+
+  const handleUndoMicroAction = (mealId: string) => {
+    const action = loggedMicroActions[mealId];
+    if (action && action.itemId) {
+      setUserTimelineItems((prev) => prev.filter((it) => it.id !== action.itemId));
+      setLoggedMicroActions((prev) => ({ ...prev, [mealId]: null }));
+      toast.info("Registro de hidratación deshecho");
+    }
+  };
+
+  const handleAddAccompanimentToMeal = (mealId: string, accompanimentName: string) => {
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      try {
+        navigator.vibrate(20);
+      } catch (_) {}
+    }
+    setUserTimelineItems((prev) =>
+      prev.map((it) => {
+        if (it.id !== mealId) return it;
+        const currentIngs = Array.isArray(it.ingredients) ? it.ingredients : [];
+        const updatedIngs = [
+          ...currentIngs,
+          { id: `ing-${Date.now()}`, name: accompanimentName, grams: 100, calories: 30, protein: 1, carbs: 4, fat: 1 },
+        ];
+        return {
+          ...it,
+          ingredients: updatedIngs,
+          desc: it.desc ? `${it.desc} • ${accompanimentName}` : accompanimentName,
+          narrative: it.narrative ? `${it.narrative} • ${accompanimentName}` : accompanimentName,
+        };
+      })
+    );
+    toast.success(`✓ "${accompanimentName}" sumado al registro`);
+  };
+
+  const getTodayIso = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const todayIso = useMemo(() => getTodayIso(), []);
+  const [selectedTimelineDate, setSelectedTimelineDate] = useState<string>(() => getTodayIso());
+
   const [userTimelineItems, setUserTimelineItems] = useState<any[]>(() => {
+    const todayStr = getTodayIso();
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("shakerfy_user_timeline_items");
-      if (saved) {
+      if (saved !== null) {
         try {
           const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            const validOnly = parsed
-              .map((item: any) => (item?.type === "activity" ? { ...item, kcal: 0 } : item))
+          if (Array.isArray(parsed)) {
+            return parsed
+              .map((item: any) => {
+                const cleaned = item?.type === "activity" ? { ...item, kcal: 0 } : item;
+                if (cleaned && (cleaned.date === "2026-07-15" || !cleaned.date)) {
+                  return { ...cleaned, date: todayStr };
+                }
+                return cleaned;
+              })
               .filter((item: any) => item && item.id);
-            if (validOnly.length > 0) return validOnly;
           }
         } catch (e) {}
       }
@@ -3554,49 +3838,33 @@ function DiarioTab() {
     return [
       {
         id: "hydration-demo",
-        date: "2026-07-15",
+        date: todayStr,
         time: "08:15 AM",
-        title: "Registro de Hidratación (Armstrong)",
+        title: "Registro de Hidratación",
         subtitle: "Chequeo Matutino / Hidratación",
         type: "hydration",
         level: 2,
-        desc: "Nivel 2 — Amarillo Pálido (Hidratación Saludable)",
-        tag: "Nivel 2 Armstrong",
+        desc: "Nivel 2 — Amarillo Pálido",
+        tag: "Nivel 2",
         coachFeedback:
           "💧 Consejo Fisiológico: Estado hídrico ideal para el rendimiento físico y deportivo continuo. Mantén sorbos constantes.",
       },
       {
-        id: "workout-demo-1",
-        date: "2026-07-15",
-        time: "06:30 PM",
-        title: "Fuerza: Tren Superior",
-        subtitle: "25 min • 12/12 Series • Intensidad Óptima",
-        type: "workout",
-        desc: "3 bloques biomecánicos completados con sobrecarga progresiva.",
-        metPoints: 125,
-        tag: "125 Pts MET",
-        muscleImages: [
-          { id: "pecho", name: "Pecho", image: "/gimnasia.png" },
-          { id: "espalda", name: "Espalda", image: "/atras.png" },
-          { id: "hombros", name: "Hombros", image: "/hombro (2).png" },
-          { id: "biceps", name: "Bíceps", image: "/biceps.png" },
-          { id: "triceps", name: "Tríceps", image: "/musculos (4).png" },
-        ],
-        coachFeedback:
-          "Excelente sesión en zona óptima (25 min, 12 series). Carga calibrada perfectamente para mantener tu progresión constante. Sumaste 125 Puntos MET a tu racha de actividad.",
-      },
-      {
         id: "activity-demo-1",
-        date: "2026-07-15",
+        date: todayStr,
         time: "10:30 AM",
-        title: "Caminata Enérgica (45 min)",
+        title: "Caminata Enérgica",
+        activityName: "Caminata Enérgica",
+        duration: 45,
+        intensity: "med",
+        intensityLabel: "Media",
         subtitle: "Registro de Actividad",
         type: "activity",
         img: null,
         kcal: 0,
-        tag: "135 Pts MET",
+        tag: "45 min • Media",
         coachFeedback:
-          "Registraste 45 min de Caminata (intensidad Media). Sumaste 135 puntos MET a tu curva de actividad diaria.",
+          "Registraste 45 min de Caminata (intensidad Media). ¡Gran trabajo!",
       },
     ];
   });
@@ -3614,15 +3882,13 @@ function DiarioTab() {
       if (typeof window !== "undefined") {
         try {
           const saved = localStorage.getItem("shakerfy_user_timeline_items");
-          if (saved) {
+          if (saved !== null) {
             const parsed = JSON.parse(saved);
-            if (Array.isArray(parsed) && parsed.length > 0) {
+            if (Array.isArray(parsed)) {
               const validOnly = parsed
                 .map((item: any) => (item?.type === "activity" ? { ...item, kcal: 0 } : item))
                 .filter((item: any) => item && item.id);
-              if (validOnly.length > 0) {
-                setUserTimelineItems(validOnly);
-              }
+              setUserTimelineItems(validOnly);
             }
           }
         } catch (e) {}
@@ -3631,16 +3897,196 @@ function DiarioTab() {
 
     window.addEventListener("shakerfy:timeline-update", handleSyncStorage);
     window.addEventListener("storage", handleSyncStorage);
-    window.addEventListener("focus", handleSyncStorage);
     return () => {
       window.removeEventListener("shakerfy:timeline-update", handleSyncStorage);
       window.removeEventListener("storage", handleSyncStorage);
-      window.removeEventListener("focus", handleSyncStorage);
     };
   }, []);
 
   const handleDeleteTimelineItem = (id: string) => {
-    setUserTimelineItems((prev) => prev.filter((item) => item.id !== id));
+    const itemIndex = userTimelineItems.findIndex((item) => String(item.id) === String(id));
+    if (itemIndex === -1) return;
+    const deletedItem = userTimelineItems[itemIndex];
+    const itemTitle = deletedItem.title || deletedItem.activityName || deletedItem.foodName || "Registro";
+
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      try {
+        navigator.vibrate(25);
+      } catch (_) {}
+    }
+
+    // 1. Filtrar lista removiendo el elemento de forma reactiva inmediata
+    const nextItems = userTimelineItems.filter((item) => String(item.id) !== String(id));
+
+    // 2. Persistir inmediatamente en localStorage para blindar contra carreras
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("shakerfy_user_timeline_items", JSON.stringify(nextItems));
+      } catch (_) {}
+    }
+
+    // 3. Mutar el estado en React
+    setUserTimelineItems(nextItems);
+
+    // Toast con opción de Deshacer (estilo Gmail / Telegram / Apple Notes)
+    toast(`"${itemTitle}" eliminado`, {
+      action: {
+        label: "Deshacer",
+        onClick: () => {
+          if (typeof navigator !== "undefined" && navigator.vibrate) {
+            try {
+              navigator.vibrate([15, 30]);
+            } catch (_) {}
+          }
+          setUserTimelineItems((prev) => {
+            const restored = [...prev];
+            if (itemIndex >= 0 && itemIndex <= restored.length) {
+              restored.splice(itemIndex, 0, deletedItem);
+            } else {
+              restored.push(deletedItem);
+            }
+            if (typeof window !== "undefined") {
+              try {
+                localStorage.setItem("shakerfy_user_timeline_items", JSON.stringify(restored));
+              } catch (_) {}
+            }
+            return restored;
+          });
+          toast.success(`✓ "${itemTitle}" restaurado`);
+        },
+      },
+      duration: 5000,
+    });
+  };
+
+
+  const handleConsumeAiSuggestionOption = (
+    itemId: string,
+    optIdx: number,
+    macros: { calories: number; protein: number; carbs: number; fat: number }
+  ) => {
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      try {
+        navigator.vibrate(25);
+      } catch (_) {}
+    }
+    setUserTimelineItems((prev) =>
+      prev.map((item) => {
+        if (item.id !== itemId) return item;
+        return {
+          ...item,
+          consumed: true,
+          consumedAt: new Date().toISOString(),
+          isAiSuggestion: true,
+          chosenOptionIndex: optIdx,
+          calories: macros.calories,
+          kcal: macros.calories,
+          protein: macros.protein,
+          carbs: macros.carbs,
+          carbohydrates: macros.carbs,
+          fat: macros.fat,
+        };
+      })
+    );
+    toast.success(`✓ ~${macros.calories} kcal y ${macros.protein}g proteína sumados a tu meta diaria`);
+  };
+
+  const handleAiSuggestionLike = (itemId: string) => {
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      try {
+        navigator.vibrate(15);
+      } catch (_) {}
+    }
+    const targetItem = userTimelineItems.find((item) => item.id === itemId);
+    const singleOpt = Array.isArray(targetItem?.options) && targetItem.options[0];
+    const optText = typeof singleOpt === "string" ? singleOpt : singleOpt?.text || targetItem?.title || "esta opción";
+
+    setUserTimelineItems((prev) =>
+      prev.map((item) => {
+        if (item.id !== itemId) return item;
+        return { ...item, feedback: "like" };
+      }),
+    );
+    saveDietaryPreferenceToAiMemory(`Le gusta: ${optText}`);
+    toast.success("✓ Guardado en tus gustos y preferencias de IA");
+  };
+
+  const handleAiSuggestionDislike = (itemId: string) => {
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      try {
+        navigator.vibrate(15);
+      } catch (_) {}
+    }
+    const targetItem = userTimelineItems.find((item) => item.id === itemId);
+    const singleOpt = Array.isArray(targetItem?.options) && targetItem.options[0];
+    const optText = typeof singleOpt === "string" ? singleOpt : singleOpt?.text || targetItem?.title || "esta opción";
+
+    setUserTimelineItems((prev) =>
+      prev.map((item) => {
+        if (item.id !== itemId) return item;
+        return { ...item, feedback: "dislike" };
+      }),
+    );
+    saveDietaryPreferenceToAiMemory(`No prefiere: ${optText}`);
+    toast.success("✓ Registrado en tus preferencias de IA");
+  };
+
+  const handleMealFeedback = (mealId: string, feedbackType: "like" | "dislike") => {
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      try {
+        navigator.vibrate(15);
+      } catch (_) {}
+    }
+    const targetItem = userTimelineItems.find((item) => item.id === mealId);
+    const mealName = targetItem?.title || targetItem?.foodName || "esta comida";
+    const nextFeedback = targetItem?.feedback === feedbackType ? null : feedbackType;
+
+    setUserTimelineItems((prev) =>
+      prev.map((item) => {
+        if (item.id !== mealId) return item;
+        return { ...item, feedback: nextFeedback };
+      }),
+    );
+
+    if (nextFeedback === "like") {
+      saveDietaryPreferenceToAiMemory(`Le gusta: ${mealName}`);
+      toast.success("✓ Guardado en tus gustos");
+    } else if (nextFeedback === "dislike") {
+      saveDietaryPreferenceToAiMemory(`No suele preferir: ${mealName}`);
+      toast.info("No usaremos este plato para sugerencias");
+    } else {
+      toast.info("Preferencia desmarcada");
+    }
+  };
+
+  const [doubleTapAnimationId, setDoubleTapAnimationId] = useState<string | null>(null);
+  const lastTapRef = useRef<{ id: string; time: number }>({ id: "", time: 0 });
+  const touchStartPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  const handleDoubleTapLike = (mealId: string) => {
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      try {
+        navigator.vibrate([30, 50]);
+      } catch (_) {}
+    }
+
+    setDoubleTapAnimationId(mealId);
+    setTimeout(() => {
+      setDoubleTapAnimationId((curr) => (curr === mealId ? null : curr));
+    }, 850);
+
+    const targetItem = userTimelineItems.find((item) => item.id === mealId);
+    if (targetItem?.feedback !== "like") {
+      setUserTimelineItems((prev) =>
+        prev.map((item) => {
+          if (item.id !== mealId) return item;
+          return { ...item, feedback: "like" };
+        }),
+      );
+      const mealName = targetItem?.title || targetItem?.foodName || "esta comida";
+      saveDietaryPreferenceToAiMemory(`Le gusta: ${mealName}`);
+      toast.success("✓ Guardado en tus gustos");
+    }
   };
 
   const handleSaveEditedTimelineItem = (updated: any) => {
@@ -3650,7 +4096,9 @@ function DiarioTab() {
 
   const [isFabOpen, setIsFabOpen] = useState(false);
   const [activeModal, setActiveModal] = useState<string>("none");
-  const [isShaking, setIsShaking] = useState(false);
+
+
+  const [expandedSuggestionVectors, setExpandedSuggestionVectors] = useState<Record<string, boolean>>({});
   const handleToggleMealConsumed = (itemId: string) => {
     if (typeof navigator !== "undefined" && navigator.vibrate) {
       try {
@@ -3873,6 +4321,11 @@ function DiarioTab() {
     return detected;
   }, [defaultIngredientSwaps]);
 
+  const capitalizeFirst = (str: string): string => {
+    if (!str) return "";
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  };
+
   const simplifyIngredientShortName = (fullName: string): string => {
     return fullName
       .replace(/^(\d+(-\d+)?|\d+\/\d+|\d+(\.\d+)?)\s*(taza|tazas|cdita|cditas|cda|cdas|scoop|scoops|puñado|puñados|rebanada|rebanadas|tostada|tostadas|lata|latas|filete|filetes|porción|porciones|cuenco|cuencos|g|gr|ml)\s*(de\s*)?/i, "")
@@ -3881,28 +4334,28 @@ function DiarioTab() {
   };
 
   const generateDynamicSuggestionTitle = (ingredients: any[], currentTitle: string = ""): string => {
-    if (!ingredients || ingredients.length === 0) return currentTitle;
+    if (!ingredients || ingredients.length === 0) return capitalizeFirst(currentTitle);
     const names = ingredients.map((ing) => {
       const raw = typeof ing === "object" && ing !== null ? ing.name : String(ing);
-      return simplifyIngredientShortName(raw);
+      return capitalizeFirst(simplifyIngredientShortName(raw));
     });
 
     const lowerCurrent = currentTitle.toLowerCase();
 
     // 1. Tostón / Tostadas
-    if (lowerCurrent.includes("tost") || lowerCurrent.includes("pan") || names.some(n => /pan|centeno/i.test(n))) {
+    if (lowerCurrent.includes("tost") || lowerCurrent.includes("pan") || names.some(n => /pan|centeno|masa madre/i.test(n))) {
       const bread = names.find(n => /pan|tostada|centeno|masa madre|tortilla/i.test(n)) || "Masa Madre";
       const protein = names.find(n => /huevo|tofu|atún|cottage|pollo/i.test(n)) || "Huevos Revueltos";
       const accent = names.find(n => /palta|aguacate|tomate|hummus|queso/i.test(n)) || "Palta";
-      return `Tostón de ${bread} con ${protein} & ${accent}`;
+      return capitalizeFirst(`Tostón de ${bread} con ${protein} & ${accent}`);
     }
 
     // 2. Bowl de Yogur / Merienda
-    if (lowerCurrent.includes("yogur") || names.some(n => /yogur|kéfir|queso batido/i.test(n))) {
-      const base = names.find(n => /yogur|kéfir|queso batido/i.test(n)) || "Yogur Griego";
+    if (lowerCurrent.includes("yogur") || names.some(n => /yogur|kéfir|queso/i.test(n))) {
+      const base = names.find(n => /yogur|kéfir|queso/i.test(n)) || "Yogur Griego";
       const fruit = names.find(n => /banana|manzana|arándano|fresa|fruto|durazno/i.test(n)) || "Fruta Fresca";
       const nut = names.find(n => /nuez|nueces|almendra|maní|avellana|semilla/i.test(n)) || "Frutos Secos";
-      return `Bowl de ${base} con ${fruit} & ${nut}`;
+      return capitalizeFirst(`Bowl de ${base} con ${fruit} & ${nut}`);
     }
 
     // 3. Bowl de Avena / Desayuno
@@ -3910,71 +4363,60 @@ function DiarioTab() {
       const carb = names.find(n => /avena|quinoa|sarraceno/i.test(n)) || "Avena Integral";
       const fruit = names.find(n => /arándano|fresa|fruto|banana|manzana/i.test(n)) || "Frutos Rojos";
       const protein = names.find(n => /proteína|yogur|clara/i.test(n)) || "Proteína";
-      return `Bowl de ${carb} con ${fruit} & ${protein}`;
+      return capitalizeFirst(`Bowl de ${carb} con ${fruit} & ${protein}`);
     }
 
-    // 4. Bowl de Quinoa / Almuerzo Bowl
+    // 4. Bowl de Quinoa / Granos
     if (lowerCurrent.includes("quinoa") || (names.some(n => /quinoa|arroz|fideo/i.test(n)) && names.some(n => /pollo|carne|tofu/i.test(n)))) {
       const carb = names.find(n => /quinoa|arroz|fideo|cous cous/i.test(n)) || "Quinoa";
-      const protein = names.find(n => /pollo|carne|tofu|atún/i.test(n)) || "Pechuga Grillada";
-      const veggie = names.find(n => /brócoli|calabacín|judía|espárrago|palta/i.test(n)) || "Vegetales";
-      return `Bowl de ${carb} con ${protein} & ${veggie}`;
+      const protein = names.find(n => /pollo|carne|tofu|atún|salmón|pavo/i.test(n)) || "Pechuga Grillada";
+      const veggie = names.find(n => /brócoli|calabacín|judía|espárrago|palta|tomate|espinaca/i.test(n)) || "Vegetales";
+      return capitalizeFirst(`Bowl de ${carb} con ${protein} & ${veggie}`);
     }
 
-    // 5. Salmón / Pescado al Horno con guarnición
-    if (lowerCurrent.includes("salmón") || names.some(n => /salmón|merluza|pescado/i.test(n))) {
-      const protein = names.find(n => /salmón|merluza|pescado|atún/i.test(n)) || "Salmón";
-      const carb = names.find(n => /batata|papa|calabaza|arroz/i.test(n)) || "Puré de Batata";
-      const veggie = names.find(n => /espinaca|brócoli|vegetal/i.test(n)) || "Espinacas";
-      return `${protein} al Horno con ${carb} & ${veggie}`;
+    // 5. Proteína Principal con Guarniciones (Salmón, Atún, Pollo, Pavo, etc.)
+    const mainProtein = names.find(n => /salmón|merluza|pescado|atún|pollo|pavo|tofu|huevo|carne/i.test(n));
+    const mainCarb = names.find(n => /batata|papa|calabaza|arroz|quinoa/i.test(n));
+    const mainVeggie = names.find(n => /espinaca|brócoli|vegetal|judía|espárrago|champiñón|ensalada|tomate|calabacín/i.test(n));
+
+    if (mainProtein && (mainCarb || mainVeggie)) {
+      const secondPart = mainCarb && mainVeggie ? ` con ${mainCarb} & ${mainVeggie}` : mainCarb ? ` con ${mainCarb}` : ` con ${mainVeggie}`;
+      return capitalizeFirst(`${mainProtein}${secondPart}`);
     }
 
     // 6. Salteado Ligero (Cena)
-    if (lowerCurrent.includes("salteado") || lowerCurrent.includes("pavo") || names.some(n => /pavo|cerdo/i.test(n))) {
+    if (lowerCurrent.includes("salteado") || lowerCurrent.includes("pavo") || names.some(n => /saltead/i.test(n))) {
       const protein = names.find(n => /pavo|pollo|tofu|cerdo/i.test(n)) || "Pavo";
       const veggie = names.find(n => /calabacín|berenjena|pimiento|champiñón/i.test(n)) || "Vegetales Salteados";
       const carb = names.find(n => /arroz|quinoa|papa/i.test(n)) || "Arroz Jazmín";
-      return `Salteado de ${protein} con ${veggie} & ${carb}`;
+      return capitalizeFirst(`Salteado de ${protein} con ${veggie} & ${carb}`);
     }
 
     // Fallback general armónico
     const p1 = names[0] || "Plato Saludable";
     const p2 = names[1] ? ` con ${names[1]}` : "";
     const p3 = names[2] ? ` & ${names[2]}` : "";
-    return `${p1}${p2}${p3}`;
+    return capitalizeFirst(`${p1}${p2}${p3}`);
   };
 
   const generateDynamicEducationalInsight = (ingredients: any[], contextBadge: string = ""): string => {
-    if (!ingredients || ingredients.length === 0) {
-      return "Fórmula balanceada: Proteína completa + Carbohidratos lentos para soporte muscular y energía estable.";
-    }
-
-    const rawNames = ingredients.map((ing) => {
-      const raw = typeof ing === "object" && ing !== null ? ing.name : String(ing);
-      return simplifyIngredientShortName(raw);
-    });
-
-    const protein = rawNames.find(n => /pollo|pavo|huevo|salmón|merluza|atún|tofu|proteína|yogur|cottage/i.test(n));
-    const carb = rawNames.find(n => /avena|quinoa|pan|centeno|masa madre|arroz|batata|papa|fideo|cous cous|banana|manzana/i.test(n));
-    const lipidOrFiber = rawNames.find(n => /palta|aguacate|oliva|nuez|almendra|chía|lino|brócoli|espinaca|fruto|arándano|tomate|calabacín/i.test(n));
-
     const isPostWorkout = /post-entreno|recarga/i.test(contextBadge);
     const isNight = /nocturna|cena/i.test(contextBadge);
     const isMorning = /desayuno|matutina|energético/i.test(contextBadge);
 
     if (isPostWorkout) {
-      return `Fórmula Post-Entreno: ${protein ? `${protein} para reparación de fibras musculares` : "Proteína completa"} + ${carb ? `${carb} para reponer glucógeno sin picos glucémicos` : "Carbohidratos complejos"}.`;
+      return "Combinación ideal para reponer energía y ayudar a tus músculos a recuperarse después del entrenamiento.";
     }
 
     if (isNight) {
-      return `Fórmula Regenerativa: ${protein ? `${protein} de fácil asimilación` : "Proteína magra"} combinada con ${lipidOrFiber ? `${lipidOrFiber}` : "vegetales ligeros"} para optimizar el descanso sin sobrecarga digestiva.`;
+      return "Plato ligero y de fácil digestión para nutrirte bien y favorecer un descanso profundo.";
     }
 
     if (isMorning) {
-      return `Fórmula Energética: ${carb ? `${carb} para liberación gradual de energía` : "Carbohidratos complejos"} + ${protein ? `${protein}` : "proteína limpia"} para sostener la saciedad y evitar bajones a media mañana.`;
+      return "Energía constante y buena saciedad para empezar la mañana con claridad y vitalidad.";
     }
 
-    return `Fórmula Nutricional: ${protein ? `${protein} (síntesis proteica)` : "Proteína magra"} + ${carb ? `${carb} (energía limpia)` : "Carbos lentos"} + ${lipidOrFiber ? `${lipidOrFiber} (saciedad y micronutrientes)` : "Fibra & Grasas saludables"}.`;
+    return "Combinación equilibrada de proteína y energía limpia para mantenerte activo durante el día sin pesadez.";
   };
 
   const handleSwapIngredient = (itemId: string, ingIndex: number) => {
@@ -4036,231 +4478,104 @@ function DiarioTab() {
     );
   };
 
-  const generateContextualAiFoodSuggestion = React.useCallback(() => {
-    const now = new Date();
-    const hour = now.getHours();
-    const minutes = now.getMinutes();
-    const timeStr = now.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
-    const dateStr = now.toISOString().split("T")[0];
-
-    // Detect if there was any workout logged today
-    const todayWorkouts = userTimelineItems.filter(
-      (item) => item && (item.date === dateStr || !item.date) && item.type === "workout",
-    );
-    const hasWorkoutToday = todayWorkouts.length > 0;
-
-    let title = "";
-    let desc = "";
-    let contextBadge = "Sugerencia Shakerfy AI";
-    let calories = 420;
-    let protein = 30;
-    let carbs = 45;
-    let fat = 12;
-    let ingredients: any[] = [];
-
-    if ((hour >= 5 && hour < 11) || (hour === 11 && minutes < 30)) {
-      // Desayuno
-      if (hasWorkoutToday) {
-        title = "Bowl de Avena Tibia con Frutos Rojos & Proteína";
-        desc =
-          "Repone glucógeno muscular y estimula la síntesis proteica post-entreno con absorción gradual sin picos de insulina.";
-        contextBadge = "Ventana Post-Entreno";
-        calories = 430;
-        protein = 32;
-        carbs = 54;
-        fat = 9;
-        ingredients = [
-          { id: "ing-1", name: "1 taza de avena integral", selectedIndex: 0, options: defaultIngredientSwaps.avena },
-          { id: "ing-2", name: "1 scoop de proteína aislada de vainilla", selectedIndex: 0, options: defaultIngredientSwaps.proteína },
-          { id: "ing-3", name: "1/2 taza de arándanos o fresas", selectedIndex: 0, options: defaultIngredientSwaps.banana },
-          { id: "ing-4", name: "1 cda de semillas de chía", selectedIndex: 0, options: defaultIngredientSwaps.chía },
-        ];
-      } else {
-        title = "Tostón de Masa Madre con Huevos Revueltos, Palta & Tomates";
-        desc =
-          "Estabiliza la glucosa en sangre matutina y aporta saciedad prolongada y energía limpia para la mañana.";
-        contextBadge = "Desayuno Energético";
-        calories = 460;
-        protein = 24;
-        carbs = 42;
-        fat = 22;
-        ingredients = [
-          { id: "ing-1", name: "2 rebanadas de pan de masa madre", selectedIndex: 0, options: defaultIngredientSwaps.pan },
-          { id: "ing-2", name: "2-3 huevos de campo frescos", selectedIndex: 0, options: defaultIngredientSwaps.huevo },
-          { id: "ing-3", name: "1/2 palta / aguacate maduro", selectedIndex: 0, options: defaultIngredientSwaps.palta },
-        ];
-      }
-    } else if ((hour === 11 && minutes >= 30) || (hour >= 12 && hour < 16)) {
-      // Almuerzo (Pico metabólico solar)
-      if (hasWorkoutToday) {
-        title = "Bowl de Quinoa Real con Pechuga Grillada & Vegetales";
-        desc =
-          "Aporta aminoácidos esenciales y carbohidratos complejos para optimizar la regeneración celular y mitocondrial.";
-        contextBadge = "Pico Metabólico Post-Entreno";
-        calories = 540;
-        protein = 46;
-        carbs = 48;
-        fat = 16;
-        ingredients = [
-          { id: "ing-1", name: "150g de pechuga de pollo en tiras", selectedIndex: 0, options: defaultIngredientSwaps.pollo },
-          { id: "ing-2", name: "1 taza de quinoa cocida", selectedIndex: 0, options: defaultIngredientSwaps.quinoa },
-          { id: "ing-3", name: "1 taza de brócoli al vapor", selectedIndex: 0, options: defaultIngredientSwaps.brócoli },
-          { id: "ing-4", name: "1/2 palta / aguacate maduro", selectedIndex: 0, options: defaultIngredientSwaps.palta },
-        ];
-      } else {
-        title = "Salmón al Horno con Puré de Batata & Espinacas";
-        desc =
-          "Aprovecha el cenit solar metabólico con omega-3 y micronutrientes de fácil asimilación sin generar somnolencia.";
-        contextBadge = "Cenit Solar / Almuerzo";
-        calories = 510;
-        protein = 38;
-        carbs = 36;
-        fat = 21;
-        ingredients = [
-          { id: "ing-1", name: "1 filete de salmón fresco", selectedIndex: 0, options: defaultIngredientSwaps.salmón },
-          { id: "ing-2", name: "1 batata mediana asada", selectedIndex: 0, options: defaultIngredientSwaps.batata },
-          { id: "ing-3", name: "1 taza de brócoli al vapor", selectedIndex: 0, options: defaultIngredientSwaps.brócoli },
-        ];
-      }
-    } else if (hour >= 16 && hour < 20) {
-      // Merienda / Tarde
-      if (hasWorkoutToday) {
-        title = "Bowl de Yogur Griego con Banana, Miel & Nueces";
-        desc =
-          "Recarga rápida de leucina y potasio para calmar el apetito y frenar el catabolismo muscular tras entrenar.";
-        contextBadge = "Recarga Post-Entreno";
-        calories = 360;
-        protein = 24;
-        carbs = 42;
-        fat = 11;
-        ingredients = [
-          { id: "ing-1", name: "1 taza de yogur griego natural sin azúcar", selectedIndex: 0, options: defaultIngredientSwaps.yogur },
-          { id: "ing-2", name: "1 banana mediana en rodajas", selectedIndex: 0, options: defaultIngredientSwaps.banana },
-          { id: "ing-3", name: "1 puñado de nueces troceadas", selectedIndex: 0, options: defaultIngredientSwaps.nueces },
-        ];
-      } else {
-        title = "Fruta de Estación con Mix de Frutos Secos & Té";
-        desc =
-          "Aporte limpio de polifenoles y grasas saludables para sostener la energía y el enfoque mental vespertino sin picos de insulina.";
-        contextBadge = "Corte de Cafeína / Merienda";
-        calories = 260;
-        protein = 8;
-        carbs = 28;
-        fat = 14;
-        ingredients = [
-          { id: "ing-1", name: "1 manzana roja en cubos", selectedIndex: 0, options: defaultIngredientSwaps.banana },
-          { id: "ing-2", name: "1 puñado de almendras tostadas", selectedIndex: 0, options: defaultIngredientSwaps.nueces },
-        ];
-      }
-    } else {
-      // Noche / Cena
-      title = "Salteado Ligero de Pavo con Calabacín, Champiñones & Arroz";
-      desc =
-        "Rico en triptófano y de rápida digestión para optimizar la síntesis proteica nocturna y el descanso profundo.";
-      contextBadge = "Ventana Regenerativa Nocturna";
-      calories = 410;
-      protein = 36;
-      carbs = 38;
-      fat = 10;
-      ingredients = [
-        { id: "ing-1", name: "150g de pechuga de pavo en cubos", selectedIndex: 0, options: defaultIngredientSwaps.pavo },
-        { id: "ing-2", name: "1 calabacín mediano en rodajas", selectedIndex: 0, options: defaultIngredientSwaps.calabacín },
-        { id: "ing-3", name: "1 taza pequeña de arroz jazmín", selectedIndex: 0, options: defaultIngredientSwaps.arroz },
-      ];
-    }
-
-    const initialMacros = calculateSuggestionMacros(ingredients);
-
-    return {
-      id: `ai-suggest-${Date.now()}`,
-      type: "meal",
-      date: dateStr,
-      time: timeStr,
-      title: title,
-      subtitle: `Sugerencia Wellness AI • ${contextBadge}`,
-      contextBadge: contextBadge,
-      narrative: desc,
-      desc: desc,
-      calories: initialMacros.calories,
-      kcal: initialMacros.calories,
-      protein: initialMacros.protein,
-      carbs: initialMacros.carbs,
-      carbohydrates: initialMacros.carbs,
-      fat: initialMacros.fat,
-      ingredients: ingredients,
-      isAiSuggestion: true,
-      tag: contextBadge,
-      consumed: false,
-    };
-  }, [userTimelineItems]);
-
-  const triggerShake = React.useCallback(() => {
-    if (typeof navigator !== "undefined" && navigator.vibrate) {
-      try {
-        navigator.vibrate([35, 50, 35]);
-      } catch (_) {}
-    }
-
-    setIsShaking(true);
-    setTimeout(() => setIsShaking(false), 950);
-
-    const newSuggestion = generateContextualAiFoodSuggestion();
-    setTimeout(() => {
-      setUserTimelineItems((prev) => [newSuggestion, ...prev]);
-      toast.success("✨ ¡The Wellness Face generó una sugerencia adaptada para tu momento!");
-    }, 700);
-  }, [generateContextualAiFoodSuggestion]);
-
-  useEffect(() => {
-    const handleShakeEvent = () => {
-      triggerShake();
-    };
-    window.addEventListener("shakerfy:shake-trigger", handleShakeEvent);
-    return () => {
-      window.removeEventListener("shakerfy:shake-trigger", handleShakeEvent);
-    };
-  }, [triggerShake]);
-
   const timelineItems = React.useMemo(() => {
-    // ponytail: Los hitos solares/circadianos sirven exclusivamente de contexto para los prompts y la IA, no se renderizan como cards visuales en la timeline.
-    const processedUserItems = userTimelineItems.filter(
-      (item) => item && item.id && !["sunrise", "sunset", "peak", "circadian"].includes(item.type),
-    );
-
-    return [...processedUserItems].sort((a, b) => {
-      const dateA = a.date || "";
-      const dateB = b.date || "";
-      if (dateA !== dateB) {
-        return dateB.localeCompare(dateA);
+    const processedUserItems = userTimelineItems.filter((item) => {
+      if (!item || !item.id || ["sunrise", "sunset", "peak", "circadian", "weight"].includes(item.type)) {
+        return false;
       }
+      if (item.date === selectedTimelineDate) return true;
+      if (!item.date && selectedTimelineDate === todayIso) return true;
+      if (item.createdAt) {
+        const d = new Date(item.createdAt);
+        const localIso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+        if (localIso === selectedTimelineDate) return true;
+      }
+      return false;
+    });
+
+    // El registro más reciente debe quedar en la parte superior
+    return [...processedUserItems].sort((a, b) => {
+      const getTimestamp = (item: any): number | null => {
+        if (item.createdAt) {
+          const t = new Date(item.createdAt).getTime();
+          if (!isNaN(t)) return t;
+        }
+        if (item.id && typeof item.id === "string") {
+          const match = item.id.match(/\d{10,}/);
+          if (match) {
+            const t = parseInt(match[0], 10);
+            if (!isNaN(t)) return t;
+          }
+        }
+        return null;
+      };
+
+      const tsA = getTimestamp(a);
+      const tsB = getTimestamp(b);
+
+      // Si ambos tienen timestamp de creación real: el más recientemente creado arriba
+      if (tsA !== null && tsB !== null) {
+        return tsB - tsA;
+      }
+
+      // Si uno es un registro real del usuario y el otro es demo: el registro real va arriba
+      if (tsA !== null && tsB === null) return -1;
+      if (tsA === null && tsB !== null) return 1;
+
+      // Si ambos son demo o ninguno tiene timestamp numérico, ordenar por hora del día (más tarde arriba)
       return parseTimeToMinutes(b.time) - parseTimeToMinutes(a.time);
     });
-  }, [userTimelineItems]);
+  }, [userTimelineItems, selectedTimelineDate, todayIso]);
 
   const dailyNutritionStats = React.useMemo(() => {
     const consumedMeals = userTimelineItems.filter(
-      (item) => item.consumed && (item.type === "meal" || item.isAiSuggestion),
+      (item) =>
+        item.consumed &&
+        (item.type === "meal" || item.isAiSuggestion || item.type === "ai_suggestion") &&
+        (item.date === selectedTimelineDate || (!item.date && selectedTimelineDate === todayIso)),
     );
     if (consumedMeals.length === 0) {
       return {
-        totalCalories: 1644,
-        proteinGrams: 131,
-        carbsGrams: 180,
-        fatGrams: 51,
+        totalCalories: 0,
+        proteinGrams: 0,
+        carbsGrams: 0,
+        fatGrams: 0,
       };
     }
     const cals = consumedMeals.reduce((acc, m) => acc + (m.calories || m.kcal || 0), 0);
     const protein = consumedMeals.reduce((acc, m) => acc + (m.protein || 0), 0);
     const carbs = consumedMeals.reduce((acc, m) => acc + (m.carbs || m.carbohydrates || 0), 0);
     const fat = consumedMeals.reduce((acc, m) => acc + (m.fat || 0), 0);
+    const fiber = consumedMeals.reduce((acc, m) => acc + (m.fiber || 0), 0);
 
     return {
-      totalCalories: cals > 0 ? cals : 1644,
-      proteinGrams: protein > 0 ? protein : 131,
-      carbsGrams: carbs > 0 ? carbs : 180,
-      fatGrams: fat > 0 ? fat : 51,
+      totalCalories: Math.round(cals),
+      proteinGrams: Math.round(protein),
+      carbsGrams: Math.round(carbs),
+      fatGrams: Math.round(fat),
+      fiberGrams: Math.round(fiber),
     };
-  }, [userTimelineItems]);
+  }, [userTimelineItems, selectedTimelineDate, todayIso]);
+
+  const dayActivityStats = React.useMemo(() => {
+    const dayActivities = userTimelineItems.filter(
+      (item) =>
+        (item.type === "workout" || item.type === "activity") &&
+        (item.date === selectedTimelineDate || (!item.date && selectedTimelineDate === todayIso)),
+    );
+    const dayMinutes = dayActivities.reduce(
+      (acc, item) => acc + (item.durationMinutes || item.duration || 0),
+      0,
+    );
+    const dayPoints = dayActivities.reduce(
+      (acc, item) => acc + (item.metPoints || Math.round((item.duration || 0) * 3.7) || 0),
+      0,
+    );
+    return {
+      dayMinutes,
+      dayPoints,
+    };
+  }, [userTimelineItems, selectedTimelineDate, todayIso]);
 
   const activityStreakStats = React.useMemo(() => {
     // Promedio ponderado de los últimos 7 días (pesos crecientes por recencia 1..7)
@@ -4293,38 +4608,143 @@ function DiarioTab() {
     };
   }, [activityData]);
 
+  // Días que completaron la condición dual (Promedio 7D >= 150 METs + Nutrición en rango de adherencia)
+  const completedDays = React.useMemo(() => {
+    // 1. Verificar si el promedio ponderado móvil de actividad alcanza el nivel saludable (>= 150 METs)
+    const isActivityMet = activityStreakStats.weighted7DayAvg >= 150;
+    if (!isActivityMet) return [];
+
+    // 2. Extraer todos los días únicos presentes en los registros
+    const uniqueDates = new Set<string>();
+    uniqueDates.add(todayIso);
+    userTimelineItems.forEach((item) => {
+      if (item?.date) uniqueDates.add(item.date);
+    });
+
+    const completed: string[] = [];
+
+    uniqueDates.forEach((dateStr) => {
+      const dayMeals = userTimelineItems.filter(
+        (item) =>
+          item &&
+          item.consumed &&
+          (item.type === "meal" || item.isAiSuggestion || item.type === "ai_suggestion") &&
+          (item.date === dateStr || (!item.date && dateStr === todayIso)),
+      );
+      if (dayMeals.length === 0) return;
+
+      const dayCals = dayMeals.reduce((s, m) => s + (m.calories || m.kcal || 0), 0);
+      const dayProt = dayMeals.reduce((s, m) => s + (m.protein || 0), 0);
+
+      // Criterio de adherencia nutricional:
+      // Haber alcanzado al menos el rango de adherencia (>= 1400 kcal o >= 85g proteína, o al menos 2 comidas consumidas con >= 1000 kcal)
+      const isNutritionMet =
+        dayCals >= 1400 ||
+        dayProt >= 85 ||
+        (dayMeals.length >= 2 && dayCals >= 1000);
+
+      if (isNutritionMet) {
+        completed.push(dateStr);
+      }
+    });
+
+    return completed;
+  }, [userTimelineItems, activityStreakStats.weighted7DayAvg, todayIso]);
+
+  const userProfile = React.useMemo(() => {
+    if (typeof window === "undefined") return { goal: "en_forma" as const, weight: 72 };
+    try {
+      const saved = localStorage.getItem("shakerfy_user_profile_edit");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const goal = parsed.goal || "en_forma";
+        const weight = Number(parsed.weight) || 72;
+        return { goal, weight };
+      }
+    } catch (_) {}
+    return { goal: "en_forma" as const, weight: 72 };
+  }, []);
+
   return (
     <div className="w-full max-w-full pb-20 transition-transform duration-300">
       {/* MAIN CENTERED CONTENT CONTAINER FOR AI COACH TIMELINE */}
       <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-2">
         <div className="space-y-6 animate-in fade-in duration-300">
           {/* Current State Check-in Widget (Replicated from Reference Design) */}
-          <div className={cn(isShaking && "animate-shakerfy-shake")}>
+          <div>
             <BioStateCard
+              selectedDate={selectedTimelineDate}
+              onSelectDate={(dateStr) => setSelectedTimelineDate(dateStr)}
+              completedDays={completedDays}
               totalCalories={dailyNutritionStats.totalCalories}
               proteinGrams={dailyNutritionStats.proteinGrams}
               carbsGrams={dailyNutritionStats.carbsGrams}
               fatGrams={dailyNutritionStats.fatGrams}
-              activityPoints={activityStreakStats.todayPoints}
-              activityMinutes={activityStreakStats.todayMinutes}
+              fiberGrams={dailyNutritionStats.fiberGrams}
+              activityPoints={dayActivityStats.dayPoints > 0 ? dayActivityStats.dayPoints : (selectedTimelineDate === todayIso ? activityStreakStats.todayPoints : 0)}
+              activityMinutes={dayActivityStats.dayMinutes > 0 ? dayActivityStats.dayMinutes : (selectedTimelineDate === todayIso ? activityStreakStats.todayMinutes : 0)}
               weeklyAveragePoints={activityStreakStats.weighted7DayAvg}
               streakDays={activityStreakStats.streakDays}
+              userGoal={userProfile.goal}
+              userWeight={userProfile.weight}
             />
+          </div>
+
+          {/* Banner sutil a Nutrition Intelligence Suite */}
+          <div
+            onClick={() => navigate({ to: "/nutrition-intelligence" })}
+            className="rounded-3xl border border-border/80 bg-card p-4 sm:p-5 shadow-2xs hover:-translate-y-0.5 hover:border-foreground/30 hover:shadow-md transition-all duration-300 cursor-pointer flex items-center justify-between gap-3 text-left group"
+          >
+            <div className="flex items-center gap-3.5 min-w-0">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <div className="min-w-0 space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-foreground">Nutrition Intelligence</span>
+                  <Badge variant="outline" className="text-[9px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20 py-0 px-1.5 rounded-full">
+                    PRO
+                  </Badge>
+                </div>
+                <p className="text-[11px] text-muted-foreground truncate">
+                  AI Food Scan, reporte semanal y progreso somático.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1 text-xs font-bold text-muted-foreground group-hover:text-foreground shrink-0 pr-1">
+              <span className="hidden sm:inline">Conocer</span>
+              <ChevronRight className="w-4 h-4" />
+            </div>
+          </div>
+
+          {/* Header de la Línea de Tiempo */}
+          <div className="flex items-center justify-between pt-1 pb-0.5">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+              Línea de Tiempo
+            </span>
           </div>
 
           {/* Timeline */}
           <div className="relative">
-            {/* Vertical Line */}
-            <div className="absolute left-3.5 md:left-[50%] top-0 bottom-0 w-[2px] bg-border transform -translate-x-1/2 md:-translate-x-[1px]"></div>
+            {timelineItems.length === 0 ? (
+              <div className="text-center py-12 px-6 rounded-3xl border border-dashed border-border/80 bg-card/40 my-4 space-y-3">
+                <div className="w-12 h-12 rounded-full bg-secondary/60 flex items-center justify-center mx-auto text-muted-foreground shadow-2xs">
+                  <Calendar className="w-5 h-5 text-muted-foreground/80" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-sm font-bold text-foreground">Sin registros en este día</h4>
+                  <p className="text-xs text-muted-foreground max-w-sm mx-auto leading-relaxed">
+                    No hay comidas ni actividades registradas para esta fecha. Usa el botón (+) para registrar una nueva actividad.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Vertical Line */}
+                <div className="absolute left-3.5 md:left-[50%] top-0 bottom-0 w-[2px] bg-border transform -translate-x-1/2 md:-translate-x-[1px]"></div>
 
             {(() => {
-              let lastDate = "";
               return timelineItems.map((item, index) => {
-                const showDateSeparator = item.date !== lastDate;
-                if (showDateSeparator) {
-                  lastDate = item.date;
-                }
-
                 const isEven = index % 2 === 0;
                 const showOnLeft = !isEven; // Zig-zag on desktop
 
@@ -4346,19 +4766,6 @@ function DiarioTab() {
 
                 return (
                   <React.Fragment key={item.id}>
-                    {showDateSeparator && (
-                      <div className="relative flex justify-center my-8 w-full select-none">
-                        <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-border/40 -translate-y-1/2"></div>
-                        <Badge
-                          variant="outline"
-                          className="relative z-10 bg-background text-[11px] font-bold px-4 py-1.5 rounded-full flex items-center gap-2 border-border shadow-none"
-                        >
-                          <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
-                          <span>{formatDateLabel(item.date)}</span>
-                        </Badge>
-                      </div>
-                    )}
-
                     <div className="relative mb-12 md:grid md:grid-cols-2 md:gap-12 items-center group">
                       {/* Timeline Dot */}
                       <div className="absolute left-3.5 md:left-1/2 w-4 h-4 rounded-full border-4 bg-background z-10 transform -translate-x-1/2 border-muted-foreground/30"></div>
@@ -4376,49 +4783,418 @@ function DiarioTab() {
                       {/* Card Container */}
                       <div className={`pl-7 sm:pl-8 md:pl-0 w-full min-w-0 ${showOnLeft ? "md:order-1" : "md:order-2"}`}>
                         <Card
-                          style={
-                            isShaking ? { animationDelay: `${(index % 8) * 45}ms` } : undefined
+                          onDoubleClick={
+                            item.type === "meal"
+                              ? (e) => {
+                                  if ((e.target as HTMLElement)?.closest('button, a, input, select, textarea, [role="button"]')) {
+                                    return;
+                                  }
+                                  e.stopPropagation();
+                                  handleDoubleTapLike(item.id);
+                                }
+                              : undefined
+                          }
+                          onTouchStart={
+                            item.type === "meal"
+                              ? (e) => {
+                                  if (e.touches.length === 1) {
+                                    touchStartPosRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                                  }
+                                }
+                              : undefined
+                          }
+                          onTouchEnd={
+                            item.type === "meal"
+                              ? (e) => {
+                                  if ((e.target as HTMLElement)?.closest('button, a, input, select, textarea, [role="button"]')) {
+                                    return;
+                                  }
+                                  if (e.changedTouches.length === 1) {
+                                    const dx = Math.abs(e.changedTouches[0].clientX - touchStartPosRef.current.x);
+                                    const dy = Math.abs(e.changedTouches[0].clientY - touchStartPosRef.current.y);
+                                    if (dx < 15 && dy < 15) {
+                                      const now = Date.now();
+                                      const diff = now - lastTapRef.current.time;
+                                      if (lastTapRef.current.id === item.id && diff < 350 && diff > 40) {
+                                        handleDoubleTapLike(item.id);
+                                        lastTapRef.current = { id: "", time: 0 };
+                                      } else {
+                                        lastTapRef.current = { id: item.id, time: now };
+                                      }
+                                    }
+                                  }
+                                }
+                              : undefined
                           }
                           className={cn(
-                            "rounded-3xl overflow-hidden border border-border bg-card shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg cursor-pointer",
-                            isShaking && "animate-shakerfy-shake",
+                            "relative rounded-3xl border border-border bg-card shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg cursor-pointer select-none",
                             catConfig.bg,
                           )}
                         >
-                          {item.isAiSuggestion ? (
+                          {/* Animación Pop de Doble Toque (Like Burst) */}
+                          {item.type === "meal" && doubleTapAnimationId === item.id && (
+                            <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none rounded-3xl overflow-hidden bg-black/10 backdrop-blur-[1px] animate-in fade-in zoom-in-75 duration-200">
+                              <div className="p-4 rounded-full bg-background/90 dark:bg-background/95 shadow-2xl border border-border/80 flex items-center justify-center animate-in zoom-in-75 duration-200">
+                                <ThumbsUp className="w-10 h-10 sm:w-12 sm:h-12 text-foreground fill-foreground drop-shadow-sm" />
+                              </div>
+                            </div>
+                          )}
+                          {item.type === "ai_suggestion" ? (
+                            <div className="flex flex-col p-5 sm:p-6 space-y-4 text-left">
+                              {/* 1. Header con Badge Contextual y Action Pill */}
+                              <div className="flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-2">
+                                  <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+                                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+                                    Sugerencia del momento
+                                  </span>
+                                </div>
+
+                                <div className="flex items-center gap-1 bg-secondary/80 backdrop-blur-md px-1.5 py-1 rounded-full border border-border/60 shadow-xs shrink-0">
+                                  {/* Botón sutil de consumir / desmarcar al lado de eliminar */}
+                                  {(() => {
+                                    const singleOpt = Array.isArray(item.options) && item.options[0];
+                                    const optCals = typeof singleOpt === "object" ? singleOpt.calories : 380;
+                                    const optProt = typeof singleOpt === "object" ? singleOpt.protein : 28;
+                                    const optCarbs = typeof singleOpt === "object" ? singleOpt.carbs : 40;
+                                    const optFat = typeof singleOpt === "object" ? singleOpt.fat : 12;
+
+                                    return (
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (item.consumed) {
+                                            handleToggleMealConsumed(item.id);
+                                          } else {
+                                            handleConsumeAiSuggestionOption(item.id, 0, {
+                                              calories: optCals,
+                                              protein: optProt,
+                                              carbs: optCarbs,
+                                              fat: optFat,
+                                            });
+                                          }
+                                        }}
+                                        className={cn(
+                                          "flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold transition-all cursor-pointer",
+                                          item.consumed
+                                            ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-bold"
+                                            : "text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-500/10",
+                                        )}
+                                        title={item.consumed ? "Consumida (clic para desmarcar)" : "Marcar como consumida"}
+                                      >
+                                        <Check className={cn("w-3.5 h-3.5", item.consumed ? "stroke-[3]" : "stroke-[2]")} />
+                                        <span>{item.consumed ? "Consumida" : "Consumir"}</span>
+                                      </button>
+                                    );
+                                  })()}
+
+                                  <span className="w-px h-3.5 bg-border/60 mx-0.5" />
+
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteTimelineItem(item.id);
+                                    }}
+                                    className="p-1 text-muted-foreground hover:text-rose-500 transition cursor-pointer"
+                                    title="Descartar sugerencia"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+
+                              {/* 2. Título Contextual */}
+                              <div>
+                                <h3 className="text-base sm:text-lg font-black leading-tight text-foreground">
+                                  {item.title}
+                                </h3>
+                              </div>
+
+                              {/* 3. Opción Única con efecto Typewriter y Desplegable 'Ver más' */}
+                              {Array.isArray(item.options) &&
+                                item.options.slice(0, 1).map((opt: any, optIdx: number) => {
+                                  const optText = typeof opt === "string" ? opt : opt.text;
+                                  const optCals = typeof opt === "object" ? opt.calories : 380;
+                                  const optProt = typeof opt === "object" ? opt.protein : 28;
+                                  const optCarbs = typeof opt === "object" ? opt.carbs : 40;
+                                  const optFat = typeof opt === "object" ? opt.fat : 12;
+
+                                  // Normalización robusta de los 7 vectores según el estándar visual exacto del escaneo de comidas
+                                  const rawVectorsList = Array.isArray(opt.vectors) && opt.vectors.length > 0 
+                                    ? opt.vectors 
+                                    : computeNutritionalVectors(optText, optProt);
+
+                                  const standardCategories = [
+                                    { category: "processing", label: "Procesamiento", fallback: "Mínimamente procesado" },
+                                    { category: "fiber", label: "Fibra", fallback: "Alto en fibra" },
+                                    { category: "protein", label: "Proteína", fallback: "Alto en proteína" },
+                                    { category: "sugar", label: "Azúcares añadidos", fallback: "Sin azúcar añadido" },
+                                    { category: "fat", label: "Grasas", fallback: "Grasas saludables" },
+                                    { category: "grains", label: "Granos", fallback: "Granos enteros" },
+                                    { category: "sodium", label: "Sodio", fallback: "Bajo en sodio" },
+                                  ];
+
+                                  const normalizedVectors = standardCategories.map((spec) => {
+                                    const found = rawVectorsList.find((v: any) => v.category === spec.category);
+                                    const rawVal = found ? found.value : spec.fallback;
+                                    const vLower = (rawVal || "").toLowerCase();
+
+                                    let value = spec.fallback;
+                                    if (spec.category === "processing") {
+                                      value = "Mínimamente procesado";
+                                    } else if (spec.category === "fiber") {
+                                      value = vLower.includes("alto") || vLower.includes("excelente") ? "Alto en fibra" : "Buena fuente";
+                                    } else if (spec.category === "protein") {
+                                      value = vLower.includes("alto") || vLower.includes("alta") || vLower.includes("magra") ? "Alto en proteína" : "Proteína moderada";
+                                    } else if (spec.category === "sugar") {
+                                      value = "Sin azúcar añadido";
+                                    } else if (spec.category === "fat") {
+                                      value = vLower.includes("saludable") || vLower.includes("omega") || vLower.includes("palta") || vLower.includes("oliva") ? "Grasas saludables" : "Moderadas";
+                                    } else if (spec.category === "grains") {
+                                      value = vLower.includes("entero") || vLower.includes("lenta") || vLower.includes("avena") || vLower.includes("quinoa") ? "Granos enteros" : "Sin granos";
+                                    } else if (spec.category === "sodium") {
+                                      value = "Bajo en sodio";
+                                    }
+
+                                    return {
+                                      category: spec.category,
+                                      label: spec.label,
+                                      value,
+                                    };
+                                  });
+
+                                  const isDetailsOpen = !!expandedSuggestionVectors[item.id];
+
+                                  return (
+                                    <div key={item.streamKey || optIdx} className="space-y-3">
+                                      {/* Texto de la sugerencia con la fuente de la descripción de alimento en el escaneo de comidas */}
+                                      <p className="text-xs sm:text-[13px] text-muted-foreground leading-relaxed font-normal pt-0.5">
+                                        <TypewriterText text={optText} speed={16} />
+                                      </p>
+
+                                      {/* Botón 'Ver más' / 'Ver menos' (idéntico al de la card de comida escaneada) */}
+                                      <div className="flex items-center justify-start gap-2 w-full pt-0.5">
+                                        <Button
+                                          type="button"
+                                          variant="outline"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setExpandedSuggestionVectors((prev) => ({
+                                              ...prev,
+                                              [item.id]: !prev[item.id],
+                                            }));
+                                          }}
+                                           className="rounded-2xl h-8 px-3 text-xs font-medium border-border/30 bg-secondary/20 hover:bg-secondary/40 text-foreground transition-all cursor-pointer flex items-center gap-1.5 shadow-none"
+                                        >
+                                          <Sparkles className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                                          <span className="truncate">
+                                            {isDetailsOpen ? "Ver menos" : "Ver más"}
+                                          </span>
+                                          {isDetailsOpen ? (
+                                            <ChevronUp className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                                          ) : (
+                                            <ChevronDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                                          )}
+                                        </Button>
+                                      </div>
+
+                                      {/* Bloque desplegable de Información Nutricional (idéntico al de la card de comida escaneada) */}
+                                      {isDetailsOpen && (
+                                        <div className="pt-3.5 space-y-3.5 animate-in fade-in slide-in-from-top-2 duration-200 border-t border-border/40 text-left">
+                                          {/* A. Macros y Calorías */}
+                                          <div className="grid grid-cols-4 gap-1.5 sm:gap-2 w-full select-none">
+                                            {/* Calorías */}
+                                            <div
+                                              title="Calorías"
+                                              className="px-1 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-secondary/40 border border-border/60 flex flex-col items-center justify-center text-center shadow-2xs min-w-0"
+                                            >
+                                              <span className="text-[7px] sm:text-[7.5px] font-bold uppercase text-muted-foreground/80 leading-none">
+                                                Calorías
+                                              </span>
+                                              <span className="text-[11px] sm:text-xs font-black text-foreground tabular-nums leading-tight mt-0.5">
+                                                {optCals}
+                                              </span>
+                                            </div>
+
+                                            {/* Proteínas */}
+                                            <div
+                                              title="Proteínas"
+                                              className="px-1 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-emerald-500/10 dark:bg-emerald-950/30 border border-emerald-500/20 flex flex-col items-center justify-center text-center shadow-2xs min-w-0"
+                                            >
+                                              <span className="text-[7px] sm:text-[7.5px] font-bold uppercase text-emerald-700 dark:text-emerald-400 leading-none">
+                                                Proteínas
+                                              </span>
+                                              <span className="text-[11px] sm:text-xs font-black text-emerald-700 dark:text-emerald-400 tabular-nums leading-tight mt-0.5">
+                                                {optProt}g
+                                              </span>
+                                            </div>
+
+                                            {/* Carbos */}
+                                            <div
+                                              title="Carbohidratos"
+                                              className="px-1 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/20 flex flex-col items-center justify-center text-center shadow-2xs min-w-0"
+                                            >
+                                              <span className="text-[7px] sm:text-[7.5px] font-bold uppercase text-amber-700 dark:text-amber-400 leading-none">
+                                                Carbos
+                                              </span>
+                                              <span className="text-[11px] sm:text-xs font-black text-amber-700 dark:text-amber-400 tabular-nums leading-tight mt-0.5">
+                                                {optCarbs}g
+                                              </span>
+                                            </div>
+
+                                            {/* Grasas */}
+                                            <div
+                                              title="Grasas"
+                                              className="px-1 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-sky-500/10 dark:bg-sky-950/30 border border-sky-500/20 flex flex-col items-center justify-center text-center shadow-2xs min-w-0"
+                                            >
+                                              <span className="text-[7px] sm:text-[7.5px] font-bold uppercase text-sky-700 dark:text-sky-400 leading-none">
+                                                Grasas
+                                              </span>
+                                              <span className="text-[11px] sm:text-xs font-black text-sky-700 dark:text-sky-400 tabular-nums leading-tight mt-0.5">
+                                                {optFat}g
+                                              </span>
+                                            </div>
+                                          </div>
+
+                                          {/* B. 7 Vectores Nutricionales — Estilo Nutrition Facts */}
+                                          <NutritionFactsTable rows={normalizedVectors} className="mt-2" />
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+
+                              {/* 4. Feedback Interactivo Neutral */}
+                              <div className="pt-2 border-t border-border/40 space-y-3">
+                                {item.feedback === "like" ? (
+                                  <div className="flex items-center justify-between gap-2 p-2.5 rounded-2xl bg-secondary/40 border border-border/60 text-muted-foreground animate-in fade-in duration-200">
+                                    <div className="flex items-center gap-2 text-xs font-medium text-foreground">
+                                      <Check className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                                      <span>Guardado en tus gustos y preferencias</span>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setUserTimelineItems((prev) =>
+                                          prev.map((it) => (it.id === item.id ? { ...it, feedback: null } : it)),
+                                        );
+                                      }}
+                                      className="text-[10px] font-semibold text-muted-foreground hover:text-foreground underline cursor-pointer"
+                                    >
+                                      Cambiar
+                                    </button>
+                                  </div>
+                                ) : item.feedback === "dislike" ? (
+                                  <div className="flex items-center justify-between gap-2 p-2.5 rounded-2xl bg-secondary/40 border border-border/60 text-muted-foreground animate-in fade-in duration-200">
+                                    <div className="flex items-center gap-2 text-xs font-medium text-foreground">
+                                      <Check className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                                      <span>Registrado para futuras sugerencias</span>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setUserTimelineItems((prev) =>
+                                          prev.map((it) => (it.id === item.id ? { ...it, feedback: null } : it)),
+                                        );
+                                      }}
+                                      className="text-[10px] font-semibold text-muted-foreground hover:text-foreground underline cursor-pointer"
+                                    >
+                                      Cambiar
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center gap-2">
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleAiSuggestionLike(item.id);
+                                      }}
+                                      className="h-8 rounded-xl text-xs font-medium gap-1.5 border-border/70 bg-secondary/30 hover:bg-secondary/70 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                                    >
+                                      <ThumbsUp className="w-3.5 h-3.5 text-muted-foreground" />
+                                      <span>Me gusta</span>
+                                    </Button>
+
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleAiSuggestionDislike(item.id);
+                                      }}
+                                      className="h-8 rounded-xl text-xs font-medium gap-1.5 border-border/70 bg-secondary/30 hover:bg-secondary/70 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                                    >
+                                      <ThumbsDown className="w-3.5 h-3.5 text-muted-foreground" />
+                                      <span>No me gusta</span>
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* 5. Disclaimer Text: Always Visible */}
+                              <p className="text-[10px] sm:text-[11px] text-muted-foreground/70 leading-snug pt-1 text-left font-normal">
+                                Las sugerencias nutricionales por IA son orientativas y aproximadas. Revisa siempre los detalles nutricionales e ingredientes importantes.
+                              </p>
+                            </div>
+                          ) : item.isAiSuggestion ? (
                             <div className="flex flex-col p-5 space-y-4 text-left">
                               {/* 1. Header con Badge Contextual y Action Pill */}
                               <div className="flex items-center justify-between gap-3 text-left">
                                 <div className="flex items-center gap-2">
                                   <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
                                   <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
-                                    {item.contextBadge || "Sugerencia Shakerfy AI"} {item.time ? `• ${item.time}` : ""}
+                                    Sugerencia con IA
                                   </span>
                                 </div>
 
-                                <div className="flex items-center gap-1 bg-secondary/80 backdrop-blur-md px-1.5 py-1 rounded-full border border-border/60 shadow-xs shrink-0">
+                                <div className="flex items-center gap-1.5 bg-secondary/80 backdrop-blur-md px-2 py-1 rounded-full border border-border/60 shadow-xs shrink-0">
+                                  {/* Checkbox para marcar como consumida */}
                                   <button
                                     type="button"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      setEditingTimelineItem(item);
+                                      handleToggleMealConsumed(item.id);
                                     }}
-                                    className="p-1 text-muted-foreground hover:text-foreground transition cursor-pointer"
-                                    title="Editar registro"
+                                    className="flex items-center gap-1.5 text-xs font-semibold cursor-pointer group"
+                                    title={item.consumed ? "Comida marcada como consumida (toca para desmarcar)" : "Marcar comida como consumida"}
                                   >
-                                    <Edit className="w-3.5 h-3.5" />
+                                    <div
+                                      className={cn(
+                                        "w-4 h-4 rounded-md border flex items-center justify-center transition-all shadow-2xs",
+                                        item.consumed
+                                          ? "bg-emerald-600 border-emerald-600 text-white"
+                                          : "border-muted-foreground/40 bg-background hover:border-emerald-500",
+                                      )}
+                                    >
+                                      {item.consumed && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                                    </div>
+                                    <span
+                                      className={cn(
+                                        "text-[10px] font-bold uppercase tracking-wider transition-colors",
+                                        item.consumed
+                                          ? "text-emerald-600 dark:text-emerald-400"
+                                          : "text-muted-foreground group-hover:text-foreground",
+                                      )}
+                                    >
+                                      {item.consumed ? "Consumida" : "Consumir"}
+                                    </span>
                                   </button>
+
+                                  <span className="w-px h-3 bg-border/60 mx-0.5" />
+
                                   <button
                                     type="button"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      if (
-                                        confirm(
-                                          `¿Deseas eliminar "${item.title}" de tu diario?`,
-                                        )
-                                      ) {
-                                        handleDeleteTimelineItem(item.id);
-                                      }
+                                      handleDeleteTimelineItem(item.id);
                                     }}
                                     className="p-1 text-muted-foreground hover:text-rose-500 transition cursor-pointer"
                                     title="Eliminar sugerencia"
@@ -4431,11 +5207,24 @@ function DiarioTab() {
                               {/* 2. Título y Por qué fisiológico */}
                               <div className="space-y-1.5 text-left">
                                 <h3 className="text-base sm:text-lg font-black leading-tight text-foreground">
-                                  {item.title}
+                                  {item.title ? item.title.charAt(0).toUpperCase() + item.title.slice(1) : ""}
                                 </h3>
                                 <p className="text-xs sm:text-[13px] text-muted-foreground leading-relaxed font-normal">
                                   {(() => {
                                     const rawDesc = item.desc || item.narrative || "";
+                                    if (/Fórmula (Nutricional|Post-Entreno|Regenerativa|Energética|balanceada):/i.test(rawDesc)) {
+                                      const lower = (item.contextBadge || item.subtitle || rawDesc).toLowerCase();
+                                      if (lower.includes("post-entreno") || lower.includes("recarga")) {
+                                        return "Combinación ideal para reponer energía y ayudar a tus músculos a recuperarse después del entrenamiento.";
+                                      }
+                                      if (lower.includes("nocturna") || lower.includes("cena") || lower.includes("descanso")) {
+                                        return "Plato ligero y de fácil digestión para nutrirte bien y favorecer un descanso profundo.";
+                                      }
+                                      if (lower.includes("desayuno") || lower.includes("mañana") || lower.includes("energético")) {
+                                        return "Energía constante y buena saciedad para empezar la mañana con claridad y vitalidad.";
+                                      }
+                                      return "Combinación equilibrada de proteína y energía limpia para mantenerte activo durante el día sin pesadez.";
+                                    }
                                     const cleaned = rawDesc
                                       .replace(/^Para [^:]+:\s*/i, "")
                                       .replace(/^Para (tu|arrancar|el|sostener|la)[^,]+,\s*(te sugiero\s*)?/i, "")
@@ -4446,62 +5235,7 @@ function DiarioTab() {
                                 </p>
                               </div>
 
-                              {/* 3. Macronutrientes Estimados (C, P, C, G) */}
-                              <div className="grid grid-cols-4 gap-1.5 sm:gap-2 w-full select-none">
-                                {/* Calorías */}
-                                <div
-                                  title="Calorías"
-                                  className="px-1 py-1.5 sm:py-2 rounded-xl bg-secondary/40 border border-border/60 flex flex-col items-center justify-center text-center shadow-2xs min-w-0"
-                                >
-                                  <span className="text-[7.5px] font-bold uppercase text-muted-foreground/80 leading-none">
-                                    Calorías
-                                  </span>
-                                  <span className="text-xs font-black text-foreground tabular-nums leading-tight mt-0.5">
-                                    {item.calories || 420}
-                                  </span>
-                                </div>
-
-                                {/* Proteínas */}
-                                <div
-                                  title="Proteínas"
-                                  className="px-1 py-1.5 sm:py-2 rounded-xl bg-emerald-500/10 dark:bg-emerald-950/30 border border-emerald-500/20 flex flex-col items-center justify-center text-center shadow-2xs min-w-0"
-                                >
-                                  <span className="text-[7.5px] font-bold uppercase text-emerald-700 dark:text-emerald-400 leading-none">
-                                    Proteínas
-                                  </span>
-                                  <span className="text-xs font-black text-emerald-700 dark:text-emerald-400 tabular-nums leading-tight mt-0.5">
-                                    {item.protein || 32}g
-                                  </span>
-                                </div>
-
-                                {/* Carbos */}
-                                <div
-                                  title="Carbohidratos"
-                                  className="px-1 py-1.5 sm:py-2 rounded-xl bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/20 flex flex-col items-center justify-center text-center shadow-2xs min-w-0"
-                                >
-                                  <span className="text-[7.5px] font-bold uppercase text-amber-700 dark:text-amber-400 leading-none">
-                                    Carbos
-                                  </span>
-                                  <span className="text-xs font-black text-amber-700 dark:text-amber-400 tabular-nums leading-tight mt-0.5">
-                                    {item.carbs || 45}g
-                                  </span>
-                                </div>
-
-                                {/* Grasas */}
-                                <div
-                                  title="Grasas"
-                                  className="px-1 py-1.5 sm:py-2 rounded-xl bg-sky-500/10 dark:bg-sky-950/30 border border-sky-500/20 flex flex-col items-center justify-center text-center shadow-2xs min-w-0"
-                                >
-                                  <span className="text-[7.5px] font-bold uppercase text-sky-700 dark:text-sky-400 leading-none">
-                                    Grasas
-                                  </span>
-                                  <span className="text-xs font-black text-sky-700 dark:text-sky-400 tabular-nums leading-tight mt-0.5">
-                                    {item.fat || 12}g
-                                  </span>
-                                </div>
-                              </div>
-
-                              {/* 4. Ingredientes en Checklist de 1 Columna */}
+                              {/* 3. Ingredientes en Checklist de 1 Columna */}
                               {(() => {
                                 const ingList = resolveSuggestionIngredients(item);
                                 if (!ingList || ingList.length === 0) return null;
@@ -4552,46 +5286,146 @@ function DiarioTab() {
                                 );
                               })()}
 
-                              {/* 5. Botón Registrar */}
-                              <div className="pt-2 border-t border-border/50">
-                                <Button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleToggleMealConsumed(item.id);
-                                  }}
-                                  className={cn(
-                                    "w-full h-11 rounded-2xl font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs",
-                                    item.consumed
-                                      ? "bg-emerald-600 text-white hover:bg-emerald-700"
-                                      : "bg-foreground text-background hover:opacity-90",
-                                  )}
-                                >
-                                  <Check className="w-4 h-4" />
-                                  <span>
-                                    {item.consumed ? "✓ Registrada" : "Registrar"}
-                                  </span>
-                                </Button>
-                              </div>
+                              {/* 4. Desplegable de Detalles & Insights (Macros + 7 Vectores Nutricionales) */}
+                              {(() => {
+                                const isExpanded = !!expandedCardInsights[item.id];
+                                const ingText = (resolveSuggestionIngredients(item) || [])
+                                  .map((i: any) => (typeof i === "object" && i !== null ? i.name : String(i)).toLowerCase())
+                                  .join(" ");
+
+                                const vectors = [
+                                  { category: "processing", label: "Procesamiento", value: "Mínimamente procesado" },
+                                  {
+                                    category: "fiber",
+                                    label: "Fibra",
+                                    value: /avena|quinoa|brócoli|judía|espinaca|chía|manzana|arándano/i.test(ingText)
+                                      ? "Excelente fuente natural"
+                                      : "Buena fuente",
+                                  },
+                                  {
+                                    category: "protein",
+                                    label: "Proteína",
+                                    value: (item.protein || 30) >= 30 ? "Proteína magra de alto valor" : "Proteína magra",
+                                  },
+                                  { category: "sugar", label: "Azúcares añadidos", value: "Sin azúcar añadido" },
+                                  {
+                                    category: "fat",
+                                    label: "Grasas",
+                                    value: /palta|salmón|nuez|almendra|chía|oliva/i.test(ingText)
+                                      ? "Grasas saludables (Omega-3)"
+                                      : "Moderadas",
+                                  },
+                                  {
+                                    category: "grains",
+                                    label: "Granos",
+                                    value: /avena|quinoa|masa madre|arroz/i.test(ingText)
+                                      ? "Granos enteros / Lenta absorción"
+                                      : "Sin harinas refinadas",
+                                  },
+                                  { category: "sodium", label: "Sodio", value: "Bajo en sodio" },
+                                ];
+
+                                return (
+                                  <div className="pt-1 space-y-3">
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        toggleCardInsights(item.id);
+                                      }}
+                                      className="w-full flex items-center justify-between px-3.5 py-2 rounded-2xl bg-secondary/20 hover:bg-secondary/40 text-xs font-medium text-foreground/80 hover:text-foreground transition-all cursor-pointer border border-border/30 shadow-none"
+                                    >
+                                      <span className="flex items-center gap-2">
+                                        <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
+                                        <span>{isExpanded ? "Ver menos" : "Ver más"}</span>
+                                      </span>
+                                      {isExpanded ? (
+                                        <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                                      ) : (
+                                        <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                                      )}
+                                    </button>
+
+                                    {isExpanded && (
+                                      <div className="pt-1 space-y-3.5 animate-in fade-in slide-in-from-top-2 duration-200 border-t border-border/40 text-left">
+                                        {/* A. Macronutrientes Estimados */}
+                                        <div className="space-y-1.5">
+                                          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+                                            Macronutrientes Estimados
+                                          </span>
+                                          <div className="grid grid-cols-4 gap-1.5 sm:gap-2 w-full select-none">
+                                            {/* Calorías */}
+                                            <div
+                                              title="Calorías"
+                                              className="px-1 py-1.5 sm:py-2 rounded-xl bg-secondary/40 border border-border/60 flex flex-col items-center justify-center text-center shadow-2xs min-w-0"
+                                            >
+                                              <span className="text-[7.5px] font-bold uppercase text-muted-foreground/80 leading-none">
+                                                Calorías
+                                              </span>
+                                              <span className="text-xs font-black text-foreground tabular-nums leading-tight mt-0.5">
+                                                {item.calories || 420}
+                                              </span>
+                                            </div>
+
+                                            {/* Proteínas */}
+                                            <div
+                                              title="Proteínas"
+                                              className="px-1 py-1.5 sm:py-2 rounded-xl bg-emerald-500/10 dark:bg-emerald-950/30 border border-emerald-500/20 flex flex-col items-center justify-center text-center shadow-2xs min-w-0"
+                                            >
+                                              <span className="text-[7.5px] font-bold uppercase text-emerald-700 dark:text-emerald-400 leading-none">
+                                                Proteínas
+                                              </span>
+                                              <span className="text-xs font-black text-emerald-700 dark:text-emerald-400 tabular-nums leading-tight mt-0.5">
+                                                {item.protein || 32}g
+                                              </span>
+                                            </div>
+
+                                            {/* Carbos */}
+                                            <div
+                                              title="Carbohidratos"
+                                              className="px-1 py-1.5 sm:py-2 rounded-xl bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/20 flex flex-col items-center justify-center text-center shadow-2xs min-w-0"
+                                            >
+                                              <span className="text-[7.5px] font-bold uppercase text-amber-700 dark:text-amber-400 leading-none">
+                                                Carbos
+                                              </span>
+                                              <span className="text-xs font-black text-amber-700 dark:text-amber-400 tabular-nums leading-tight mt-0.5">
+                                                {item.carbs || 45}g
+                                              </span>
+                                            </div>
+
+                                            {/* Grasas */}
+                                            <div
+                                              title="Grasas"
+                                              className="px-1 py-1.5 sm:py-2 rounded-xl bg-sky-500/10 dark:bg-sky-950/30 border border-sky-500/20 flex flex-col items-center justify-center text-center shadow-2xs min-w-0"
+                                            >
+                                              <span className="text-[7.5px] font-bold uppercase text-sky-700 dark:text-sky-400 leading-none">
+                                                Grasas
+                                              </span>
+                                              <span className="text-xs font-black text-sky-700 dark:text-sky-400 tabular-nums leading-tight mt-0.5">
+                                                {item.fat || 12}g
+                                              </span>
+                                            </div>
+                                          </div>
+                                        </div>
+
+                                        {/* B. 7 Vectores Nutricionales — Estilo Nutrition Facts */}
+                                        <NutritionFactsTable rows={vectors} className="mt-2" />
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })()}
                             </div>
                           ) : (
                             <>
                               {item.img && (
-                                <div className="relative h-44 w-full overflow-hidden group">
+                                <div className="relative h-44 w-full rounded-t-3xl overflow-hidden group">
                                   <img
                                     src={item.img}
                                     alt={item.title}
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                    draggable={false}
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none select-none"
                                   />
-
-                                  {item.type === "meal" && (
-                                    <div className="absolute top-3 left-3 z-10">
-                                      <Badge className="backdrop-blur-md border text-[10px] font-black uppercase tracking-wider rounded-full px-3 py-1 shadow-xs flex items-center gap-1.5 transition-all duration-300 bg-background/90 text-foreground border-border/80">
-                                        <Camera className="w-3 h-3 text-emerald-500" />
-                                        <span>Comida Escaneada</span>
-                                      </Badge>
-                                    </div>
-                                  )}
 
                                   <div className="absolute top-3 right-3 z-10 flex items-center gap-1 bg-background/80 backdrop-blur-md px-1.5 py-1 rounded-full border border-border/60 shadow-xs">
                                     <button
@@ -4609,9 +5443,7 @@ function DiarioTab() {
                                       type="button"
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        if (confirm(`¿Deseas eliminar "${item.title}" de tu diario?`)) {
-                                          handleDeleteTimelineItem(item.id);
-                                        }
+                                        handleDeleteTimelineItem(item.id);
                                       }}
                                       className="p-1 text-muted-foreground hover:text-rose-500 transition cursor-pointer"
                                       title="Eliminar registro"
@@ -4631,8 +5463,13 @@ function DiarioTab() {
                                   2
                                 }
                                 readOnly={true}
-                                title={item.title || "Registro de Hidratación (Armstrong)"}
-                                subtitle={item.desc || "Chequeo Matutino / Hidratación"}
+                                title={(item.title || "Registro de Hidratación")
+                                  .replace(/\s*\(Armstrong\)/gi, "")
+                                  .trim()}
+                                subtitle={(item.desc || "Nivel 2 — Amarillo Pálido")
+                                  .replace(/\s*\(Hidratación Saludable\)/gi, "")
+                                  .replace(/\s*\(Armstrong\)/gi, "")
+                                  .trim()}
                                 hideAdvice={true}
                                 actions={
                                   <div className="flex items-center gap-1 bg-secondary/80 backdrop-blur-md px-2.5 py-1 rounded-full border border-border/60 shadow-xs shrink-0">
@@ -4651,11 +5488,7 @@ function DiarioTab() {
                                       type="button"
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        if (
-                                          confirm(`¿Deseas eliminar "${item.title}" de tu diario?`)
-                                        ) {
-                                          handleDeleteTimelineItem(item.id);
-                                        }
+                                        handleDeleteTimelineItem(item.id);
                                       }}
                                       className="p-1 text-muted-foreground hover:text-rose-500 transition cursor-pointer"
                                       title="Eliminar registro"
@@ -4665,215 +5498,6 @@ function DiarioTab() {
                                   </div>
                                 }
                               />
-
-                              {/* Collapsible Trigger: Ver insights / Ocultar insights */}
-                              {(() => {
-                                const isExpanded = !!expandedCardInsights[item.id];
-                                const currentLevel =
-                                  item.level ||
-                                  parseInt(String(item.tag || "").replace(/\D/g, "")) ||
-                                  2;
-                                const currentObj =
-                                  ARMSTRONG_LEVELS.find((l) => l.level === currentLevel) ||
-                                  ARMSTRONG_LEVELS[1];
-
-                                return (
-                                  <div className="pt-1 space-y-3">
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        toggleCardInsights(item.id);
-                                      }}
-                                      className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-secondary/30 hover:bg-secondary/60 text-xs font-semibold text-foreground/80 hover:text-foreground transition-all cursor-pointer border border-border/40"
-                                    >
-                                      <span className="flex items-center gap-2">
-                                        <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
-                                        <span>
-                                          {isExpanded ? "Ocultar insights" : "Ver insights"}
-                                        </span>
-                                      </span>
-                                      {isExpanded ? (
-                                        <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                                      ) : (
-                                        <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                                      )}
-                                    </button>
-
-                                    {isExpanded && (
-                                      <div className="pt-1 space-y-3.5 animate-in fade-in slide-in-from-top-2 duration-200 border-t border-border/40 text-left">
-                                        {/* Osmorregulación & Escala Armstrong */}
-                                        <div className="space-y-1.5 pt-1">
-                                          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-                                            Osmorregulación & Escala Armstrong
-                                          </span>
-                                          <div className="p-3 rounded-2xl bg-secondary/20 border border-border/40 text-xs space-y-1">
-                                            <div className="flex justify-between items-center">
-                                              <span className="text-muted-foreground">
-                                                Diagnóstico colorimétrico:
-                                              </span>
-                                              <span className="font-bold text-foreground">
-                                                Nivel {currentObj.level} — {currentObj.title}
-                                              </span>
-                                            </div>
-                                            <div className="flex justify-between items-center">
-                                              <span className="text-muted-foreground">
-                                                Estatus de hidratación:
-                                              </span>
-                                              <span
-                                                className={cn(
-                                                  "font-bold",
-                                                  currentObj.level <= 3
-                                                    ? "text-emerald-500"
-                                                    : currentObj.level <= 5
-                                                      ? "text-amber-500"
-                                                      : "text-rose-500",
-                                                )}
-                                              >
-                                                {currentObj.state}
-                                              </span>
-                                            </div>
-                                          </div>
-                                        </div>
-
-                                        {/* Coach Feedback / Consejo Fisiológico */}
-                                        {(item.coachFeedback || currentObj.advice) && (
-                                          <div className="p-3 rounded-xl bg-secondary/30 border border-border/40 flex items-start gap-2 text-left">
-                                            <Sparkles className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
-                                            <p className="text-xs text-muted-foreground leading-relaxed font-medium">
-                                              {(item.coachFeedback || currentObj.advice)
-                                                .replace(
-                                                  /^(🌱|🍲|⚡|🛡️|💬|💧)?\s*(Aporte Biológico\s*(&|\+)?\s*Consejo:|Aporte Biológico:|Consejo Fisiológico:)?\s*/i,
-                                                  "",
-                                                )
-                                                .trim()}
-                                            </p>
-                                          </div>
-                                        )}
-                                      </div>
-                                    )}
-                                  </div>
-                                );
-                              })()}
-                            </div>
-                          ) : item.type === "weight" ? (
-                            <div className="p-5 sm:p-6 space-y-4 text-left">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2.5">
-                                  <div className="w-10 h-10 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-500 shrink-0">
-                                    <Scale className="w-5 h-5" />
-                                  </div>
-                                  <div>
-                                    <h3 className="text-sm sm:text-base font-bold text-foreground">
-                                      {item.title || "Registro de Peso Biométrico"}
-                                    </h3>
-                                    <p className="text-xs text-muted-foreground font-medium">
-                                      {item.subtitle || "Check-in Biométrico • En ayunas"}
-                                    </p>
-                                  </div>
-                                </div>
-
-                                <div className="flex items-center gap-1 bg-secondary/80 backdrop-blur-md px-2.5 py-1 rounded-full border border-border/60 shadow-xs shrink-0">
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setEditingTimelineItem(item);
-                                    }}
-                                    className="p-1 text-muted-foreground hover:text-foreground transition cursor-pointer"
-                                    title="Editar registro"
-                                  >
-                                    <Edit className="w-3.5 h-3.5" />
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      if (
-                                        confirm(`¿Deseas eliminar "${item.title}" de tu diario?`)
-                                      ) {
-                                        handleDeleteTimelineItem(item.id);
-                                      }
-                                    }}
-                                    className="p-1 text-muted-foreground hover:text-rose-500 transition cursor-pointer"
-                                    title="Eliminar registro"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </button>
-                                </div>
-                              </div>
-
-                              {/* Metric Display */}
-                              <div className="p-4 rounded-2xl bg-secondary/30 border border-border/40 flex items-center justify-between">
-                                <div>
-                                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
-                                    Peso Registrado
-                                  </span>
-                                  <div className="flex items-baseline gap-1 mt-0.5">
-                                    <span className="text-2xl sm:text-3xl font-black text-foreground tabular-nums">
-                                      {item.weight || item.val || 74.2}
-                                    </span>
-                                    <span className="text-xs font-bold text-muted-foreground">
-                                      {item.unit || "kg"}
-                                    </span>
-                                  </div>
-                                </div>
-                                <Badge
-                                  variant="outline"
-                                  className="bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/20 text-xs font-bold py-1 px-3 rounded-full"
-                                >
-                                  {item.context || "En ayunas"}
-                                </Badge>
-                              </div>
-
-                              {/* Insights collapsible */}
-                              {(() => {
-                                const isExpanded = !!expandedCardInsights[item.id];
-                                return (
-                                  <div className="pt-1 space-y-3">
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        toggleCardInsights(item.id);
-                                      }}
-                                      className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-secondary/30 hover:bg-secondary/60 text-xs font-semibold text-foreground/80 hover:text-foreground transition-all cursor-pointer border border-border/40"
-                                    >
-                                      <span className="flex items-center gap-2">
-                                        <Sparkles className="w-3.5 h-3.5 text-violet-500" />
-                                        <span>{isExpanded ? "Ocultar insights" : "Ver insights"}</span>
-                                      </span>
-                                      {isExpanded ? (
-                                        <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                                      ) : (
-                                        <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                                      )}
-                                    </button>
-
-                                    {isExpanded && (
-                                      <div className="pt-1 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200 border-t border-border/40 text-left">
-                                        <div className="p-3.5 rounded-2xl bg-secondary/20 border border-border/40 text-xs space-y-1.5">
-                                          <div className="flex justify-between items-center">
-                                            <span className="text-muted-foreground">Estatus de Tendencia:</span>
-                                            <span className="font-bold text-emerald-500">Estabilidad Somática</span>
-                                          </div>
-                                          <div className="flex justify-between items-center">
-                                            <span className="text-muted-foreground">Impacto en Media Móvil:</span>
-                                            <span className="font-bold text-foreground">Calculado en Analíticas</span>
-                                          </div>
-                                        </div>
-                                        <div className="p-3 rounded-xl bg-secondary/30 border border-border/40 flex items-start gap-2 text-left">
-                                          <Sparkles className="w-3.5 h-3.5 text-violet-500 shrink-0 mt-0.5" />
-                                          <p className="text-xs text-muted-foreground leading-relaxed font-medium">
-                                            {item.coachFeedback ||
-                                              "Este registro se integra automáticamente en tu media móvil de 7 días para filtrar variaciones transitorias de agua y glucógeno."}
-                                          </p>
-                                        </div>
-                                      </div>
-                                    )}
-                                  </div>
-                                );
-                              })()}
                             </div>
                           ) : (
                             <>
@@ -4882,7 +5506,13 @@ function DiarioTab() {
                                   <div className="space-y-1.5 flex-1 min-w-0 text-left">
                                     <div className="flex items-center gap-2 flex-wrap">
                                       <CardTitle className="text-base sm:text-lg font-black leading-tight text-foreground">
-                                        {item.title}
+                                        {item.type === "activity"
+                                          ? (item.activityName || item.title || "")
+                                              .replace(/\s*\(\d+\s*min\)/gi, "")
+                                              .trim()
+                                          : item.type === "workout"
+                                            ? (item.workoutType || (item.title ? item.title.split(/[:\-–—]/)[0] : "Fuerza")).trim()
+                                            : item.title}
                                       </CardTitle>
                                       {item.isAiSuggestion && (
                                         <Badge
@@ -4894,17 +5524,11 @@ function DiarioTab() {
                                         </Badge>
                                       )}
                                     </div>
-                                    {item.type !== "meal" && item.subtitle && (
+                                    {item.type !== "meal" && item.subtitle ? (
                                       <CardDescription className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                                         {item.subtitle}
                                       </CardDescription>
-                                    )}
-                                    {item.type === "meal" &&
-                                      (item.narrative || item.desc || item.summary) && (
-                                        <p className="text-xs sm:text-[13px] text-muted-foreground leading-relaxed font-normal pt-0.5">
-                                          {item.narrative || item.desc || item.summary}
-                                        </p>
-                                      )}
+                                    ) : null}
                                   </div>
                                   {!item.img && (
                                     <div className="flex items-center gap-1 bg-secondary/80 backdrop-blur-md px-1.5 py-1 rounded-full border border-border/60 shadow-xs shrink-0">
@@ -4923,13 +5547,7 @@ function DiarioTab() {
                                         type="button"
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          if (
-                                            confirm(
-                                              `¿Deseas eliminar "${item.title}" de tu diario?`,
-                                            )
-                                          ) {
-                                            handleDeleteTimelineItem(item.id);
-                                          }
+                                          handleDeleteTimelineItem(item.id);
                                         }}
                                         className="p-1 text-muted-foreground hover:text-rose-500 transition cursor-pointer"
                                         title="Eliminar registro"
@@ -4941,243 +5559,370 @@ function DiarioTab() {
                                 </div>
                               </CardHeader>
 
-                              {item.type === "meal" ? (
-                                <CardContent className="px-5 pb-4 pt-0 space-y-3.5">
-                                  {/* 1. Action bar */}
-                                  {(() => {
-                                    const isExpanded = !!expandedMealInsights[item.id];
-                                    return (
-                                      <div className="space-y-3 pt-0.5">
-                                        <div className="flex items-center justify-start gap-2 w-full">
-                                          <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              toggleMealInsights(item.id);
-                                            }}
-                                            className="rounded-2xl h-8 sm:h-9 px-3 text-xs font-bold border-border/70 bg-secondary/30 hover:bg-secondary/70 text-foreground transition-all cursor-pointer flex items-center gap-1.5"
-                                          >
-                                            <Sparkles className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                                            <span className="truncate">
-                                              {isExpanded ? "Ocultar insights" : "Ver insights"}
-                                            </span>
-                                            {isExpanded ? (
-                                              <ChevronUp className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                                            ) : (
-                                              <ChevronDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                                            )}
-                                          </Button>
-                                        </div>
+                               {item.type === "meal" ? (
+                                 <CardContent className="px-5 pb-4 pt-0 space-y-3.5">
+                                   {(() => {
+                                     const isExpanded = !!expandedMealInsights[item.id];
+                                     const mealCalories = Math.round(
+                                       item.calories ??
+                                         item.kcal ??
+                                         (item.ingredients && item.ingredients.length > 0
+                                           ? item.ingredients.reduce(
+                                               (s: number, i: any) => s + (i.calories || 0),
+                                               0,
+                                             )
+                                           : item.isAiSuggestion
+                                             ? 420
+                                             : 0),
+                                     );
+                                     const mealProtein = Math.round(
+                                       item.protein ??
+                                         (item.ingredients && item.ingredients.length > 0
+                                           ? item.ingredients.reduce(
+                                               (s: number, i: any) => s + (i.protein || 0),
+                                               0,
+                                             )
+                                           : item.isAiSuggestion
+                                             ? 32
+                                             : 0),
+                                     );
+                                     const mealCarbs = Math.round(
+                                       item.carbs ??
+                                         item.carbohydrates ??
+                                         (item.ingredients && item.ingredients.length > 0
+                                           ? item.ingredients.reduce(
+                                               (s: number, i: any) => s + (i.carbs || 0),
+                                               0,
+                                             )
+                                           : item.isAiSuggestion
+                                             ? 45
+                                             : 0),
+                                     );
+                                     const mealFat = Math.round(
+                                       item.fat ??
+                                         (item.ingredients && item.ingredients.length > 0
+                                           ? item.ingredients.reduce(
+                                               (s: number, i: any) => s + (i.fat || 0),
+                                               0,
+                                             )
+                                           : item.isAiSuggestion
+                                             ? 12
+                                             : 0),
+                                     );
+                                     const mealFiber = Math.round(
+                                       item.fiber ??
+                                         (item.ingredients && item.ingredients.length > 0
+                                           ? item.ingredients.reduce(
+                                               (s: number, i: any) => s + (i.fiber || 0),
+                                               0,
+                                             )
+                                           : item.isAiSuggestion
+                                             ? 8
+                                             : 4),
+                                     );
 
-                                        {/* Collapsible Content */}
-                                        {isExpanded && (
-                                          <div className="pt-3.5 space-y-3.5 animate-in fade-in slide-in-from-top-2 duration-200 border-t border-border/40 text-left">
-                                            {/* A. Macros y Calorías de la comida analizada */}
-                                            {(() => {
-                                              const mealCalories = Math.round(
-                                                item.calories ??
-                                                  item.kcal ??
-                                                  (item.ingredients && item.ingredients.length > 0
-                                                    ? item.ingredients.reduce(
-                                                        (s: number, i: any) => s + (i.calories || 0),
-                                                        0,
-                                                      )
-                                                    : item.isAiSuggestion
-                                                      ? 420
-                                                      : 0),
-                                              );
-                                              const mealProtein = Math.round(
-                                                item.protein ??
-                                                  (item.ingredients && item.ingredients.length > 0
-                                                    ? item.ingredients.reduce(
-                                                        (s: number, i: any) => s + (i.protein || 0),
-                                                        0,
-                                                      )
-                                                    : item.isAiSuggestion
-                                                      ? 32
-                                                      : 0),
-                                              );
-                                              const mealCarbs = Math.round(
-                                                item.carbs ??
-                                                  item.carbohydrates ??
-                                                  (item.ingredients && item.ingredients.length > 0
-                                                    ? item.ingredients.reduce(
-                                                        (s: number, i: any) => s + (i.carbs || 0),
-                                                        0,
-                                                      )
-                                                    : item.isAiSuggestion
-                                                      ? 45
-                                                      : 0),
-                                              );
-                                              const mealFat = Math.round(
-                                                item.fat ??
-                                                  (item.ingredients && item.ingredients.length > 0
-                                                    ? item.ingredients.reduce(
-                                                        (s: number, i: any) => s + (i.fat || 0),
-                                                        0,
-                                                      )
-                                                    : item.isAiSuggestion
-                                                      ? 12
-                                                      : 0),
-                                              );
+                                      const dynamicCtas = getMealDynamicCtas(item);
+                                      const coachInsightText = getMealCoachInsightText(item);
 
-                                              return (
-                                                <div className="grid grid-cols-4 gap-1.5 sm:gap-2 w-full select-none">
+                                      const heroBadges =
+                                        item.vectorBadges && item.vectorBadges.length > 0
+                                          ? item.vectorBadges.slice(0, 4).map((vb: any) => ({
+                                              id: vb.id || vb.category,
+                                              category: vb.category,
+                                              label: vb.badgeText || vb.label || vb.text,
+                                            }))
+                                          : [
+                                              { id: "b-1", category: "processing", label: "Mínimamente procesado" },
+                                              {
+                                                id: "b-2",
+                                                category: "protein",
+                                                label: mealProtein >= 25 ? "Alta en proteína" : "Proteína moderada",
+                                              },
+                                              {
+                                                id: "b-3",
+                                                category: "fiber",
+                                                label: mealFiber >= 4 ? "Buena fuente de fibra" : "Aporte de fibra",
+                                              },
+                                              { id: "b-4", category: "sugar", label: "Sin azúcar añadido" },
+                                            ];
+
+                                      const qualityLevel: FoodQualityLevel =
+                                        (item.bioGaugeIndex as FoodQualityLevel) ??
+                                        (item.bioScore
+                                          ? item.bioScore >= 80
+                                            ? 5
+                                            : item.bioScore >= 65
+                                              ? 4
+                                              : item.bioScore >= 50
+                                                ? 3
+                                                : item.bioScore >= 35
+                                                  ? 2
+                                                  : 1
+                                          : item.scoreGrade === "A"
+                                            ? 5
+                                            : item.scoreGrade === "B"
+                                              ? 4
+                                              : item.scoreGrade === "C"
+                                                ? 3
+                                                : 4);
+
+                                      const qualityLabel =
+                                        item.bioQualityLabel ||
+                                        (qualityLevel >= 4
+                                          ? "Alto"
+                                          : qualityLevel === 3
+                                            ? "Medio"
+                                            : "Bajo");
+
+                                      const contextBadge = item.timingFit?.label
+                                        ? { label: item.timingFit.label, type: item.timingFit.type }
+                                        : item.contextBadge
+                                          ? { label: item.contextBadge }
+                                          : undefined;
+
+                                      return (
+                                          <div className="space-y-3 pt-0.5 text-left">
+                                            {/* VALOR NUTRICIONAL: Dial radial con badges cualitativos (Visible en Bienestar y Atleta) */}
+                                            <div className="pb-0.5">
+                                              <FoodProfileHero
+                                                qualityLabel={qualityLabel}
+                                                qualityLevel={qualityLevel}
+                                                badges={heroBadges}
+                                                contextBadge={contextBadge}
+                                                isAthleteMode={isAthleteMode}
+                                              />
+                                            </div>
+
+                                            {/* MODO ATLETA: Barra horizontal compacta de macros de precisión */}
+                                            {isAthleteMode && (
+                                              <div className="pt-2 border-t border-border/40 animate-in fade-in duration-200">
+                                                <div className="flex flex-wrap items-center justify-between gap-y-1.5 gap-x-2 py-0.5 select-none">
                                                   {/* Calorías */}
-                                                  <div
-                                                    title="Calorías"
-                                                    className="px-1 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-secondary/40 border border-border/60 flex flex-col items-center justify-center text-center shadow-2xs min-w-0"
-                                                  >
-                                                    <span className="text-[7px] sm:text-[7.5px] font-bold uppercase text-muted-foreground/80 leading-none">
-                                                      Calorías
-                                                    </span>
-                                                    <span className="text-[11px] sm:text-xs font-black text-foreground tabular-nums leading-tight mt-0.5">
+                                                  <div className="flex items-baseline gap-1">
+                                                    <span className="text-sm sm:text-base font-black text-foreground tabular-nums">
                                                       {mealCalories}
                                                     </span>
-                                                  </div>
-
-                                                  {/* Proteína */}
-                                                  <div
-                                                    title="Proteínas"
-                                                    className="px-1 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-emerald-500/10 dark:bg-emerald-950/30 border border-emerald-500/20 flex flex-col items-center justify-center text-center shadow-2xs min-w-0"
-                                                  >
-                                                    <span className="text-[7px] sm:text-[7.5px] font-bold uppercase text-emerald-700 dark:text-emerald-400 leading-none">
-                                                      Proteínas
-                                                    </span>
-                                                    <span className="text-[11px] sm:text-xs font-black text-emerald-700 dark:text-emerald-400 tabular-nums leading-tight mt-0.5">
-                                                      {mealProtein}g
+                                                    <span className="text-[11px] font-medium text-muted-foreground">
+                                                      kcal
                                                     </span>
                                                   </div>
 
-                                                  {/* Carbohidratos */}
-                                                  <div
-                                                    title="Carbohidratos"
-                                                    className="px-1 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/20 flex flex-col items-center justify-center text-center shadow-2xs min-w-0"
-                                                  >
-                                                    <span className="text-[7px] sm:text-[7.5px] font-bold uppercase text-amber-700 dark:text-amber-400 leading-none">
-                                                      Carbos
-                                                    </span>
-                                                    <span className="text-[11px] sm:text-xs font-black text-amber-700 dark:text-amber-400 tabular-nums leading-tight mt-0.5">
-                                                      {mealCarbs}g
-                                                    </span>
+                                                  {/* Píldoras compactas inline de macros */}
+                                                  <div className="flex items-center gap-1.5 sm:gap-2">
+                                                    {/* Proteína */}
+                                                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400">
+                                                      <span className="text-[10px] font-black uppercase tracking-wider">P</span>
+                                                      <span className="text-xs font-bold tabular-nums text-foreground">{mealProtein}g</span>
+                                                    </div>
+
+                                                    {/* Grasas */}
+                                                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400">
+                                                      <span className="text-[10px] font-black uppercase tracking-wider">G</span>
+                                                      <span className="text-xs font-bold tabular-nums text-foreground">{mealFat}g</span>
+                                                    </div>
+
+                                                    {/* Carbos */}
+                                                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                                                      <span className="text-[10px] font-black uppercase tracking-wider">C</span>
+                                                      <span className="text-xs font-bold tabular-nums text-foreground">{mealCarbs}g</span>
+                                                    </div>
+
+                                                    {/* Fibra */}
+                                                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-400">
+                                                      <span className="text-[10px] font-black uppercase tracking-wider">F</span>
+                                                      <span className="text-xs font-bold tabular-nums text-foreground">{mealFiber}g</span>
+                                                    </div>
                                                   </div>
-
-                                                  {/* Grasas */}
-                                                  <div
-                                                    title="Grasas"
-                                                    className="px-1 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-sky-500/10 dark:bg-sky-950/30 border border-sky-500/20 flex flex-col items-center justify-center text-center shadow-2xs min-w-0"
-                                                  >
-                                                    <span className="text-[7px] sm:text-[7.5px] font-bold uppercase text-sky-700 dark:text-sky-400 leading-none">
-                                                      Grasas
-                                                    </span>
-                                                    <span className="text-[11px] sm:text-xs font-black text-sky-700 dark:text-sky-400 tabular-nums leading-tight mt-0.5">
-                                                      {mealFat}g
-                                                    </span>
-                                                  </div>
-                                                </div>
-                                              );
-                                            })()}
-
-                                            {/* B. 7 Vectores Nutricionales */}
-                                            {(() => {
-                                              const defaultVectors = [
-                                                { category: "processing", label: "Procesamiento", value: "Mínimamente procesado", iconType: "check" },
-                                                { category: "fiber", label: "Fibra", value: "Buena fuente", iconType: "check" },
-                                                { category: "protein", label: "Proteína", value: "Proteína magra", iconType: "check" },
-                                                { category: "sugar", label: "Azúcares añadidos", value: "Sin azúcar añadido", iconType: "check" },
-                                                { category: "fat", label: "Grasas", value: "Moderadas", iconType: "minus" },
-                                                { category: "grains", label: "Granos", value: "Granos enteros", iconType: "check" },
-                                                { category: "sodium", label: "Sodio", value: "Bajo en sodio", iconType: "check" },
-                                              ];
-
-                                              if (item.vectorBadges && item.vectorBadges.length > 0) {
-                                                const badgeMap = new Map<string, string>();
-                                                item.vectorBadges.forEach((b: any) => {
-                                                  if (b.category) badgeMap.set(b.category, b.badgeText);
-                                                  else if (b.badgeText) {
-                                                    const textLower = b.badgeText.toLowerCase();
-                                                    if (textLower.includes("procesad")) badgeMap.set("processing", b.badgeText);
-                                                    else if (textLower.includes("fibra")) badgeMap.set("fiber", b.badgeText);
-                                                    else if (textLower.includes("prote")) badgeMap.set("protein", b.badgeText);
-                                                    else if (textLower.includes("azú") || textLower.includes("azuc")) badgeMap.set("sugar", b.badgeText);
-                                                    else if (textLower.includes("grasa") || textLower.includes("lipid")) badgeMap.set("fat", b.badgeText);
-                                                    else if (textLower.includes("grano") || textLower.includes("cereal")) badgeMap.set("grains", b.badgeText);
-                                                    else if (textLower.includes("sodio") || textLower.includes("sal")) badgeMap.set("sodium", b.badgeText);
-                                                  }
-                                                });
-
-                                                defaultVectors.forEach((row) => {
-                                                  const customVal = badgeMap.get(row.category);
-                                                  if (customVal) {
-                                                    row.value = customVal;
-                                                    const valLower = customVal.toLowerCase();
-                                                    if (row.category === "fat" && (valLower.includes("modera") || valLower.includes("elevad"))) {
-                                                      row.iconType = "minus";
-                                                    }
-                                                  }
-                                                });
-                                              }
-
-                                              return (
-                                                <div className="rounded-2xl border border-slate-200/70 dark:border-slate-800/80 bg-[#fbfcfd] dark:bg-slate-900/40 p-3.5 space-y-2.5 shadow-2xs">
-                                                  <div className="divide-y divide-slate-100 dark:divide-slate-800/70">
-                                                    {defaultVectors.map((n) => (
-                                                      <div
-                                                        key={n.category}
-                                                        className="flex items-center justify-between gap-3 py-1.5 text-xs first:pt-0 last:pb-0"
-                                                      >
-                                                        <span className="font-semibold text-slate-800 dark:text-slate-200 shrink-0 text-[11px] sm:text-xs">
-                                                          {n.label}
-                                                        </span>
-                                                        <span className="font-medium text-sky-600 dark:text-sky-400 text-right text-[11px] sm:text-xs leading-tight">
-                                                          {n.value}
-                                                        </span>
-                                                      </div>
-                                                    ))}
-                                                  </div>
-                                                </div>
-                                              );
-                                            })()}
-
-                                            {/* C. Insights con animación de máquina de escribir */}
-                                            {(item.coachFeedback ||
-                                              item.narrative ||
-                                              item.summary ||
-                                              item.desc) && (
-                                              <div className="p-3.5 rounded-2xl bg-secondary/40 border border-border/60 flex items-start gap-2.5 text-left">
-                                                <Sparkles className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                                                <div className="space-y-0.5 flex-1 min-w-0">
-                                                  <span className="text-[10px] font-bold uppercase tracking-wider text-foreground block">
-                                                    Insights
-                                                  </span>
-                                                  <p className="text-xs text-foreground/90 leading-relaxed font-normal">
-                                                    <TypewriterOnce
-                                                      text={
-                                                        item.coachFeedback ||
-                                                        item.narrative ||
-                                                        item.summary ||
-                                                        item.desc ||
-                                                        ""
-                                                      }
-                                                      speed={18}
-                                                      cursorClassName="bg-emerald-500"
-                                                    />
-                                                  </p>
                                                 </div>
                                               </div>
                                             )}
-                                          </div>
-                                        )}
-                                      </div>
-                                    );
-                                  })()}
 
-                                  {/* Disclaimer Text: Always Visible */}
-                                  <p className="text-[10px] sm:text-[11px] text-muted-foreground/70 leading-snug pt-1 text-left font-normal">
-                                    La identificación visual por IA puede ser aproximada. Revisa siempre los detalles nutricionales importantes.
-                                  </p>
-                                </CardContent>
+                                          {/* 3. Fila con Botón Ver Insight y Reacciones (Mg / No Mg) a la derecha */}
+                                          <div className="flex items-center justify-between gap-2 py-1">
+                                            {/* Botón Ver Insight */}
+                                            <button
+                                              type="button"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                toggleMealInsights(item.id);
+                                              }}
+                                              className="relative z-10 rounded-full px-3.5 py-1.5 text-xs font-semibold flex items-center gap-1.5 bg-secondary/80 hover:bg-secondary text-foreground border border-border/80 hover:border-foreground/30 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all duration-300 cursor-pointer shrink-0"
+                                            >
+                                              <Sparkles className="w-3.5 h-3.5 text-foreground/80 shrink-0" />
+                                              <span>{isExpanded ? "Ocultar insight" : "Ver insight"}</span>
+                                            </button>
+
+                                            {/* Reacciones / Feedback estilo red social (Mg / No Mg) */}
+                                            <div className="flex items-center gap-0.5 shrink-0">
+                                              <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleMealFeedback(item.id, "like");
+                                                }}
+                                                className="p-1.5 flex items-center justify-center transition-transform active:scale-75 cursor-pointer text-muted-foreground/60 hover:text-foreground"
+                                                title="Me gusta"
+                                                aria-label="Me gusta"
+                                              >
+                                                <ThumbsUp
+                                                  className={cn(
+                                                    "w-4 h-4 transition-all duration-200",
+                                                    item.feedback === "like"
+                                                      ? "fill-foreground text-foreground scale-110"
+                                                      : "stroke-[1.75] hover:scale-110",
+                                                  )}
+                                                />
+                                              </button>
+
+                                              <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleMealFeedback(item.id, "dislike");
+                                                }}
+                                                className="p-1.5 flex items-center justify-center transition-transform active:scale-75 cursor-pointer text-muted-foreground/60 hover:text-foreground"
+                                                title="No me gusta"
+                                                aria-label="No me gusta"
+                                              >
+                                                <ThumbsDown
+                                                  className={cn(
+                                                    "w-4 h-4 transition-all duration-200",
+                                                    item.feedback === "dislike"
+                                                      ? "fill-foreground text-foreground scale-110"
+                                                      : "stroke-[1.75] hover:scale-110",
+                                                  )}
+                                                />
+                                              </button>
+                                            </div>
+                                          </div>
+
+                                          {/* 4. Sección de Insight Minimalista y Plano */}
+                                          {isExpanded && (
+                                            <div className="pt-1 pb-1 space-y-3.5 text-left animate-in fade-in slide-in-from-top-2 duration-300">
+                                              {/* Texto de Insight con elevación hover y Typewriter Markdown */}
+                                              <div className="p-3.5 sm:p-4 rounded-2xl border border-border/50 bg-secondary/20 hover:border-foreground/30 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+                                                <TypewriterMarkdown
+                                                  content={coachInsightText}
+                                                  className="text-xs sm:text-[13px] text-muted-foreground leading-relaxed font-normal"
+                                                />
+                                              </div>
+
+                                              {/* CTAs Dinámicos — Cada CTA con su propia línea de puntos y botón secundario refinado */}
+                                              {dynamicCtas.map((cta) => {
+                                                const isCtaExpanded = expandedMealCta[item.id] === cta.id;
+                                                const isArmstrongLogged =
+                                                  loggedMicroActions[item.id]?.type === "armstrong" &&
+                                                  (cta.id === "evaluate-hydration" || cta.id === "check_hydration_armstrong");
+                                                const currentArmstrongLevel =
+                                                  loggedMicroActions[item.id]?.level;
+                                                const isBreathingLogged =
+                                                  loggedMicroActions[item.id]?.type === "vagal_pause" &&
+                                                  cta.id === "take_a_pause";
+
+                                                return (
+                                                  <div key={cta.id} className="space-y-2">
+                                                    {/* Fila con Botón CTA */}
+                                                    <div className="flex items-center gap-2 py-0.5">
+                                                      {/* Botón CTA Píldora Neutro Secundario */}
+                                                      <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          if (cta.id === "take_a_pause") {
+                                                            handleOpenBreathingPause(item.id, item.title);
+                                                            return;
+                                                          }
+                                                          if (cta.id === "evaluate-hydration" || cta.id === "check_hydration_armstrong") {
+                                                            setActiveModal("hydration-armstrong");
+                                                            return;
+                                                          }
+                                                          toggleMealCta(item.id, cta.id);
+                                                        }}
+                                                        className={cn(
+                                                          "relative z-10 rounded-full px-3.5 py-1.5 text-xs font-semibold flex items-center gap-1.5 border shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all duration-300 cursor-pointer shrink-0 max-w-[85%]",
+                                                          isCtaExpanded
+                                                            ? "bg-secondary text-foreground border-foreground/30 shadow-xs"
+                                                            : "bg-secondary/60 hover:bg-secondary text-foreground border-border/80 hover:border-foreground/30",
+                                                        )}
+                                                      >
+                                                        {cta.iconType === "apple" ? (
+                                                          <Apple className="w-3.5 h-3.5 text-foreground/80 shrink-0" />
+                                                        ) : cta.iconType === "droplet" ? (
+                                                          <Droplet className="w-3.5 h-3.5 text-foreground/80 shrink-0" />
+                                                        ) : cta.iconType === "wind" ? (
+                                                          <Wind className="w-3.5 h-3.5 text-foreground/80 shrink-0" />
+                                                        ) : cta.iconType === "plus" ? (
+                                                          <PlusCircle className="w-3.5 h-3.5 text-foreground/80 shrink-0" />
+                                                        ) : (
+                                                          <Sparkles className="w-3.5 h-3.5 text-foreground/80 shrink-0" />
+                                                        )}
+                                                        <span className="truncate">{cta.title}</span>
+                                                        {isArmstrongLogged && (
+                                                          <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0 ml-1">
+                                                            <Check className="w-3 h-3 stroke-[3]" />
+                                                            Nivel {currentArmstrongLevel}
+                                                          </span>
+                                                        )}
+                                                        {isBreathingLogged && (
+                                                          <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0 ml-1">
+                                                            <Check className="w-3 h-3 stroke-[3]" />
+                                                            Realizada
+                                                          </span>
+                                                        )}
+                                                      </button>
+                                                    </div>
+
+                                                      {/* In-Place Expanded Content del CTA en formato Markdown fluido con streaming */}
+                                                      {isCtaExpanded && (
+                                                        <div className="px-1 py-1 text-left space-y-2.5 animate-in fade-in slide-in-from-top-1 duration-200">
+                                                          <div className="p-3.5 sm:p-4 rounded-2xl border border-border/50 bg-secondary/20 hover:border-foreground/30 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+                                                            <TypewriterMarkdown
+                                                              content={getMealCtaMarkdownContent(cta.id, item)}
+                                                              className="text-xs sm:text-[13px] text-muted-foreground leading-relaxed font-normal"
+                                                            />
+                                                          </div>
+
+                                                          {cta.id === "add-accompaniment" && (
+                                                            <div className="pt-1 space-y-1.5">
+                                                              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+                                                                Toca para sumar a este plato (1 toque)
+                                                              </span>
+                                                              <div className="flex flex-wrap gap-1.5">
+                                                                {[
+                                                                  "Agua fresca de apoyo",
+                                                                  "Café o té sin azúcar",
+                                                                  "Ensalada de hojas verdes",
+                                                                  "Fruta fresca",
+                                                                  "Puñado de frutos secos",
+                                                                ].map((acc) => (
+                                                                  <button
+                                                                    key={acc}
+                                                                    type="button"
+                                                                    onClick={(e) => {
+                                                                      e.stopPropagation();
+                                                                      handleAddAccompanimentToMeal(item.id, acc);
+                                                                    }}
+                                                                    className="px-3 py-1.5 rounded-full bg-secondary/60 hover:bg-secondary border border-border/60 hover:border-foreground/30 hover:-translate-y-0.5 hover:shadow-xs text-xs font-medium text-foreground transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs active:scale-95"
+                                                                  >
+                                                                    <Plus className="w-3 h-3 text-foreground/70" />
+                                                                    <span>{acc}</span>
+                                                                  </button>
+                                                                ))}
+                                                              </div>
+                                                            </div>
+                                                          )}
+                                                        </div>
+                                                      )}
+                                                    </div>
+                                                  );
+                                                })}
+                                            </div>
+                                          )}
+
+                                        </div>
+                                      );
+                                   })()}
+                                 </CardContent>
                               ) : (
                                 <CardContent className="px-5 pb-4 pt-0 space-y-3 text-left">
                                   {(() => {
@@ -5202,42 +5947,124 @@ function DiarioTab() {
                                         {/* Description / Summary / Badges & Muscle Avatars */}
                                         <div className="flex flex-wrap items-center justify-between gap-2.5 pt-0.5">
                                           <div className="flex flex-wrap items-center gap-1.5">
-                                            {item.type === "hydration" ? (
-                                              <>
-                                                <Badge
-                                                  variant="outline"
-                                                  className="rounded-full px-3 py-1 text-[11px] font-medium border-cyan-500/30 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center gap-1.5 shadow-none"
-                                                >
-                                                  <Droplet className="w-3.5 h-3.5" />
-                                                  <span>
-                                                    {item.tag || `Nivel ${item.level || 2} Armstrong`}
-                                                  </span>
-                                                </Badge>
-                                                {item.desc && (
-                                                  <span className="text-xs text-muted-foreground font-medium">
-                                                    {item.desc}
-                                                  </span>
-                                                )}
-                                              </>
-                                            ) : item.type === "workout" ? (
-                                              <>
-                                                <Badge
-                                                  variant="outline"
-                                                  className="rounded-full px-3 py-1 text-[11px] font-extrabold border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center gap-1.5 shadow-none"
-                                                >
-                                                  <Flame className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-                                                  <span>
-                                                    {item.tag || `${item.metPoints || 125} Pts MET`}
-                                                  </span>
-                                                </Badge>
-                                                <Badge
-                                                  variant="outline"
-                                                  className="rounded-full px-2.5 py-1 text-[10px] font-bold border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center gap-1 shadow-none"
-                                                >
-                                                  <Activity className="w-3 h-3 text-emerald-500" />
-                                                  <span>+Racha Activa</span>
-                                                </Badge>
-                                              </>
+                                            {item.type === "workout" ? (
+                                              (() => {
+                                                const workoutFocus = (() => {
+                                                  if (item.focus) return item.focus;
+                                                  if (item.targetRegion) return item.targetRegion;
+                                                  if (item.title && item.title.includes(":")) {
+                                                    return item.title.split(":")[1].trim();
+                                                  }
+                                                  const muscles = (item.musclesWorked || item.muscles || []).map((m: any) =>
+                                                    typeof m === "string" ? m.toLowerCase() : (m.id || m.name || "").toLowerCase(),
+                                                  );
+                                                  const upper = ["pecho", "espalda", "hombros", "biceps", "triceps", "pectoral", "dorsal", "trapecio"];
+                                                  const lower = ["cuadriceps", "gluteos", "isquios", "pantorrillas", "femoral", "piernas"];
+                                                  const hasUpper = muscles.some((m: string) => upper.some((u) => m.includes(u)));
+                                                  const hasLower = muscles.some((m: string) => lower.some((l) => m.includes(l)));
+                                                  if (hasUpper && hasLower) return "Cuerpo Completo";
+                                                  if (hasLower) return "Tren Inferior";
+                                                  return "Tren Superior";
+                                                })();
+
+                                                const workoutDuration = (() => {
+                                                  if (item.durationMinutes) return `${item.durationMinutes} min`;
+                                                  if (item.duration) return `${item.duration} min`;
+                                                  const match = (item.subtitle || item.desc || item.coachFeedback || "").match(/(\d+)\s*min/i);
+                                                  return match ? `${match[1]} min` : "25 min";
+                                                })();
+
+                                                const workoutIntensity = (() => {
+                                                  if (item.intensityLabel) return item.intensityLabel;
+                                                  if (item.intensity) {
+                                                    return item.intensity === "high" || item.intensity === "extenuante"
+                                                      ? "Intensidad Alta"
+                                                      : item.intensity === "med" || item.intensity === "optima"
+                                                        ? "Intensidad Óptima"
+                                                        : "Intensidad Moderada";
+                                                  }
+                                                  const sub = (item.subtitle || "").toLowerCase();
+                                                  if (sub.includes("óptima") || sub.includes("optima")) return "Intensidad Óptima";
+                                                  if (sub.includes("alta") || sub.includes("extenuante")) return "Intensidad Alta";
+                                                  if (sub.includes("moderada") || sub.includes("media")) return "Intensidad Media";
+                                                  return "Intensidad Óptima";
+                                                })();
+
+                                                return (
+                                                  <div className="flex flex-wrap items-center gap-1.5">
+                                                    <Badge
+                                                      variant="outline"
+                                                      className="rounded-full px-3 py-1 text-[11px] font-semibold border-border/70 bg-secondary/30 text-foreground flex items-center gap-1.5 shadow-none"
+                                                    >
+                                                      <span>{workoutFocus}</span>
+                                                    </Badge>
+                                                    <Badge
+                                                      variant="outline"
+                                                      className="rounded-full px-3 py-1 text-[11px] font-semibold border-sky-500/30 bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center gap-1.5 shadow-none"
+                                                    >
+                                                      <Clock className="w-3.5 h-3.5 text-sky-500" />
+                                                      <span>{workoutDuration}</span>
+                                                    </Badge>
+                                                    <Badge
+                                                      variant="outline"
+                                                      className="rounded-full px-3 py-1 text-[11px] font-semibold border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center gap-1.5 shadow-none"
+                                                    >
+                                                      <Activity className="w-3.5 h-3.5 text-amber-500" />
+                                                      <span>{workoutIntensity}</span>
+                                                    </Badge>
+                                                  </div>
+                                                );
+                                              })()
+                                            ) : item.type === "activity" ? (
+                                              (() => {
+                                                const actDuration =
+                                                  item.duration
+                                                    ? `${item.duration} min`
+                                                    : item.title?.match(/\((\d+)\s*min\)/i)?.[1]
+                                                      ? `${item.title.match(/\((\d+)\s*min\)/i)?.[1]} min`
+                                                      : item.coachFeedback?.match(/(\d+)\s*min/i)?.[1]
+                                                        ? `${item.coachFeedback.match(/(\d+)\s*min/i)?.[1]} min`
+                                                        : null;
+
+                                                const rawIntensity =
+                                                  item.intensityLabel ||
+                                                  (item.intensity === "low"
+                                                    ? "Baja"
+                                                    : item.intensity === "med"
+                                                      ? "Media"
+                                                      : item.intensity === "high"
+                                                        ? "Alta"
+                                                        : item.intensity) ||
+                                                  item.coachFeedback?.match(/intensidad\s*([a-záéíóú]+)/i)?.[1] ||
+                                                  null;
+
+                                                const actIntensity = rawIntensity
+                                                  ? rawIntensity.charAt(0).toUpperCase() + rawIntensity.slice(1).toLowerCase()
+                                                  : null;
+
+                                                return (
+                                                  <div className="flex flex-wrap items-center gap-2">
+                                                    {actDuration && (
+                                                      <Badge
+                                                        variant="outline"
+                                                        className="rounded-full px-3 py-1 text-[11px] font-bold border-sky-500/30 bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center gap-1.5 shadow-none"
+                                                      >
+                                                        <Clock className="w-3.5 h-3.5 text-sky-500" />
+                                                        <span>{actDuration}</span>
+                                                      </Badge>
+                                                    )}
+                                                    {actIntensity && (
+                                                      <Badge
+                                                        variant="outline"
+                                                        className="rounded-full px-3 py-1 text-[11px] font-bold border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 shadow-none"
+                                                      >
+                                                        <Activity className="w-3.5 h-3.5 text-emerald-500" />
+                                                        <span>Intensidad {actIntensity}</span>
+                                                      </Badge>
+                                                    )}
+                                                  </div>
+                                                );
+                                              })()
                                             ) : (
                                               item.tag && (
                                                 <Badge
@@ -5274,157 +6101,6 @@ function DiarioTab() {
                                             </div>
                                           )}
                                         </div>
-
-                                        {/* Collapsible Trigger: Ver insights / Ocultar insights */}
-                                        {(() => {
-                                          const isExpanded = !!expandedCardInsights[item.id];
-                                          return (
-                                            <div className="pt-1 space-y-3">
-                                              <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  toggleCardInsights(item.id);
-                                                }}
-                                                className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-secondary/30 hover:bg-secondary/60 text-xs font-semibold text-foreground/80 hover:text-foreground transition-all cursor-pointer border border-border/40"
-                                              >
-                                                <span className="flex items-center gap-2">
-                                                  <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
-                                                  <span>
-                                                    {isExpanded ? "Ocultar insights" : "Ver insights"}
-                                                  </span>
-                                                </span>
-                                                {isExpanded ? (
-                                                  <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                                                ) : (
-                                                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                                                )}
-                                              </button>
-
-                                              {isExpanded && (
-                                                <div className="pt-1 space-y-3.5 animate-in fade-in slide-in-from-top-2 duration-200 border-t border-border/40 text-left">
-                                                  {item.type === "hydration" ? (
-                                                    <div className="space-y-1.5 pt-1">
-                                                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-                                                        Osmorregulación & Escala Armstrong
-                                                      </span>
-                                                      <div className="p-3 rounded-2xl bg-secondary/20 border border-border/40 text-xs space-y-1">
-                                                        <div className="flex justify-between items-center">
-                                                          <span className="text-muted-foreground">
-                                                            Estado colorimétrico:
-                                                          </span>
-                                                          <span className="font-bold text-foreground">
-                                                            Nivel {item.level || 2} de 8
-                                                          </span>
-                                                        </div>
-                                                        <div className="flex justify-between items-center">
-                                                          <span className="text-muted-foreground">
-                                                            Estatus celular:
-                                                          </span>
-                                                          <span className="font-bold text-emerald-500">
-                                                            {(item.level || 2) <= 3
-                                                              ? "Óptimo / Euhidratado"
-                                                              : (item.level || 2) <= 5
-                                                                ? "Ligera deshidratación"
-                                                                : "Atención sugerida"}
-                                                          </span>
-                                                        </div>
-                                                      </div>
-                                                    </div>
-                                                  ) : item.type === "workout" ? (
-                                                    <div className="space-y-1.5 pt-1">
-                                                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-                                                        Detalle Metabólico & Racha
-                                                      </span>
-                                                      <div className="p-3.5 rounded-2xl bg-secondary/20 border border-border/40 text-xs space-y-2">
-                                                        <div className="flex justify-between items-center">
-                                                          <span className="text-muted-foreground">
-                                                            Aporte de Actividad:
-                                                          </span>
-                                                          <span className="font-bold font-mono text-amber-600 dark:text-amber-400 flex items-center gap-1">
-                                                            <Flame className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-                                                            +{item.metPoints || 125} Puntos MET
-                                                          </span>
-                                                        </div>
-                                                        <div className="flex justify-between items-center">
-                                                          <span className="text-muted-foreground">
-                                                            Impacto en Racha Diaria:
-                                                          </span>
-                                                          <span className="font-bold text-emerald-500 flex items-center gap-1">
-                                                            <Activity className="w-3 h-3 text-emerald-500" />
-                                                            {Math.round(((item.metPoints || 125) / 150) * 100)}% de la meta base (150 Pts)
-                                                          </span>
-                                                        </div>
-
-                                                        {resolvedMuscles && resolvedMuscles.length > 0 && (
-                                                          <div className="pt-2 border-t border-border/40 space-y-1.5">
-                                                            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-                                                               Grupos musculares estimulados ({resolvedMuscles.length})
-                                                             </span>
-                                                            <div className="flex flex-wrap gap-1.5">
-                                                              {resolvedMuscles.map((m: any, idx: number) => (
-                                                                <div
-                                                                  key={m.id || idx}
-                                                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-card border border-border/70 shadow-2xs"
-                                                                >
-                                                                  <img
-                                                                    src={m.image}
-                                                                    alt={m.name}
-                                                                    className="w-3.5 h-3.5 object-contain"
-                                                                  />
-                                                                  <span>{m.name}</span>
-                                                                </div>
-                                                              ))}
-                                                            </div>
-                                                          </div>
-                                                        )}
-                                                      </div>
-                                                    </div>
-                                                  ) : (
-                                                    <div className="space-y-1.5 pt-1">
-                                                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-                                                        Detalle Metabólico
-                                                      </span>
-                                                      <div className="p-3 rounded-2xl bg-secondary/20 border border-border/40 text-xs space-y-1">
-                                                        <div className="flex justify-between items-center">
-                                                          <span className="text-muted-foreground">
-                                                            Registro de sesión:
-                                                          </span>
-                                                          <span className="font-bold text-foreground">
-                                                            {item.title}
-                                                          </span>
-                                                        </div>
-                                                        <div className="flex justify-between items-center">
-                                                          <span className="text-muted-foreground">
-                                                            Aporte al diario:
-                                                          </span>
-                                                          <span className="font-mono font-bold text-emerald-500">
-                                                            {item.tag || "Puntos MET registrados"}
-                                                          </span>
-                                                        </div>
-                                                      </div>
-                                                    </div>
-                                                  )}
-
-                                                  {/* Coach Feedback */}
-                                                  {(item.coachFeedback || item.summary || item.desc) && (
-                                                    <div className="p-3 rounded-xl bg-secondary/30 border border-border/40 flex items-start gap-2 text-left">
-                                                      <Sparkles className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
-                                                      <p className="text-xs text-muted-foreground leading-relaxed font-medium">
-                                                        {(item.coachFeedback || item.summary || item.desc)
-                                                          .replace(
-                                                            /^(🌱|🍲|⚡|🛡️|💬|💧)?\s*(Aporte Biológico\s*(&|\+)?\s*Consejo:|Aporte Biológico:|Consejo Fisiológico:)?\s*/i,
-                                                            "",
-                                                          )
-                                                          .trim()}
-                                                      </p>
-                                                    </div>
-                                                  )}
-                                                </div>
-                                              )}
-                                            </div>
-                                          );
-                                        })()}
                                       </>
                                     );
                                   })()}
@@ -5445,6 +6121,8 @@ function DiarioTab() {
                 );
               });
             })()}
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -5461,38 +6139,6 @@ function DiarioTab() {
       <div className="fixed bottom-24 right-6 md:bottom-8 md:right-8 z-50 flex flex-col items-end gap-3">
         {isFabOpen && (
           <div className="bg-card/95 border border-border/80 rounded-3xl p-2 sm:p-2.5 shadow-2xl min-w-[260px] sm:min-w-[280px] max-w-[310px] animate-in slide-in-from-bottom-4 fade-in duration-200 space-y-0.5 backdrop-blur-xl">
-            <button
-              onClick={() => {
-                setIsFabOpen(false);
-                if (typeof window !== "undefined") {
-                  const newUrl = new URL(window.location.href);
-                  newUrl.searchParams.set("tab", "entrenamiento");
-                  window.history.pushState({}, "", newUrl.toString());
-                  window.dispatchEvent(new Event("popstate"));
-                }
-              }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-secondary/70 transition-colors text-left group cursor-pointer"
-            >
-              <Dumbbell className="w-4 h-4 text-indigo-500 group-hover:scale-110 transition-transform shrink-0" />
-              <span className="text-xs font-semibold text-foreground flex-1">
-                Generar workout
-              </span>
-            </button>
-
-
-
-            <button
-              onClick={() => {
-                setIsFabOpen(false);
-                triggerShake();
-              }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-secondary/70 transition-colors text-left group cursor-pointer"
-            >
-              <ShakerIcon className="w-4 h-4 text-amber-500 group-hover:scale-110 transition-transform shrink-0" />
-              <span className="text-xs font-semibold text-foreground flex-1">
-                Shake
-              </span>
-            </button>
 
             <button
               onClick={() => {
@@ -5504,6 +6150,19 @@ function DiarioTab() {
               <Camera className="w-4 h-4 text-emerald-500 group-hover:scale-110 transition-transform shrink-0" />
               <span className="text-xs font-semibold text-foreground flex-1">
                 Escanear comida
+              </span>
+            </button>
+
+            <button
+              onClick={() => {
+                setIsFabOpen(false);
+                handleOpenBreathingPause();
+              }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-secondary/70 transition-colors text-left group cursor-pointer"
+            >
+              <Wind className="w-4 h-4 text-teal-500 group-hover:scale-110 transition-transform shrink-0" />
+              <span className="text-xs font-semibold text-foreground flex-1">
+                Tomar una pausa (Respiración)
               </span>
             </button>
 
@@ -5581,7 +6240,7 @@ function DiarioTab() {
                     Promedio 7 Días
                   </span>
                   <span className="text-base font-black text-amber-500">
-                    {avgActivityPoints} Pts MET
+                    {activityStreakStats.weighted7DayAvg} Pts MET
                   </span>
                 </div>
                 <div className="p-3 bg-secondary/50 rounded-2xl border border-border/40">
@@ -5639,6 +6298,7 @@ function DiarioTab() {
 
             const newCheckinItem = {
               id: `checkin-${Date.now()}`,
+              createdAt: now.toISOString(),
               type: "workout",
               time: timeStr,
               date: dateStr,
@@ -5656,33 +6316,44 @@ function DiarioTab() {
         />
       )}
 
-      {/* Hydration Armstrong Modal */}
-      {activeModal === "hydration-armstrong" && (
-        <HydrationArmstrongModal
-          onClose={() => setActiveModal("none")}
-          onSave={(level, label, feedback) => {
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
-            const dateStr = now.toISOString().split("T")[0];
+      {/* Hydration Armstrong Drawer */}
+      <HydrationArmstrongDrawer
+        open={activeModal === "hydration-armstrong"}
+        onClose={() => setActiveModal("none")}
+        onSave={(level, label, feedback) => {
+          const now = new Date();
+          const timeStr = now.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+          const dateStr = selectedTimelineDate || getTodayIso();
 
-            const newHydrationItem = {
-              id: `hydration-${Date.now()}`,
-              type: "hydration",
-              time: timeStr,
-              date: dateStr,
-              title: "Registro de Hidratación (Armstrong)",
-              subtitle: "Chequeo Matutino / Hidratación",
-              desc: label,
-              level: level,
-              coachFeedback: `💧 Consejo Fisiológico: ${feedback}`,
-              tag: `Nivel ${level} Armstrong`,
-            };
+          const newHydrationItem = {
+            id: `hydration-${Date.now()}`,
+            createdAt: now.toISOString(),
+            type: "hydration",
+            time: timeStr,
+            date: dateStr,
+            title: "Registro de Hidratación",
+            subtitle: "Chequeo Matutino / Hidratación",
+            desc: label
+              .replace(/\s*\(Hidratación Saludable\)/gi, "")
+              .replace(/\s*\(Armstrong\)/gi, "")
+              .trim(),
+            level: level,
+            coachFeedback: `💧 Consejo Fisiológico: ${feedback}`,
+            tag: `Nivel ${level}`,
+          };
 
-            setUserTimelineItems((prev) => [newHydrationItem, ...prev]);
-            toast.success(`✓ Hidratación registrada: Nivel ${level} (Armstrong)`);
-          }}
-        />
-      )}
+          setUserTimelineItems((prev) => [newHydrationItem, ...prev]);
+          toast.success(`✓ Hidratación registrada: Nivel ${level}`);
+        }}
+      />
+
+      {/* Vagal Breathing Drawer (Tomar una pausa) */}
+      <VagalBreathingDrawer
+        open={isBreathingDrawerOpen}
+        onOpenChange={setIsBreathingDrawerOpen}
+        contextTitle={breathingMealContext}
+        onComplete={handleBreathingComplete}
+      />
 
       {/* Registrar Actividad Modal */}
       {activeModal === "registrar-actividad" && (
@@ -5695,31 +6366,33 @@ function DiarioTab() {
             // Actualizar fatiga y recuperación muscular fisiológica
             updateMuscleRecoveryForActivity(activityName, intensity, duration);
 
-            // 1. Update activityData & activityHistory points
+            // 1. Update activityData points
             setActivityData((prev) =>
               prev.map((item) =>
                 item.day === todayLabel ? { ...item, puntos: item.puntos + metPoints } : item,
               ),
             );
-            setActivityHistory((prev) => ({
-              ...prev,
-              week: prev.week.map((item) =>
-                item.label === todayLabel ? { ...item, puntos: item.puntos + metPoints } : item,
-              ),
-            }));
+
+            const intensityName =
+              intensity === "low" ? "Baja" : intensity === "med" ? "Media" : "Alta";
 
             // 2. Append timeline log
             const newAct = {
               id: `custom-act-${Date.now()}`,
-              date: new Date().toISOString().split("T")[0],
+              createdAt: new Date().toISOString(),
+              date: selectedTimelineDate || new Date().toISOString().split("T")[0],
               time: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
-              title: `${activityName} (${duration} min)`,
+              title: activityName,
+              activityName: activityName,
+              duration: duration,
+              intensity: intensity,
+              intensityLabel: intensityName,
               subtitle: "Registro de Actividad",
               type: "activity",
               img: null,
               kcal: 0,
-              tag: `${metPoints} Pts MET`,
-              coachFeedback: `Registraste ${duration} min de ${activityName} (intensidad ${intensity === "low" ? "Baja" : intensity === "med" ? "Media" : "Alta"}). Sumaste ${metPoints} puntos MET a tu curva de actividad diaria. ¡Gran trabajo!`,
+              tag: `${duration} min • ${intensityName}`,
+              coachFeedback: `Registraste ${duration} min de ${activityName} (intensidad ${intensityName}). ¡Gran trabajo!`,
             };
             setUserTimelineItems((prev) => [newAct, ...prev]);
           }}
@@ -5758,6 +6431,17 @@ function DiarioTab() {
           })()}
           onClose={() => setActiveModal("none")}
           onSave={(weightVal, context) => {
+            const userUnits = (() => {
+              try {
+                const s = localStorage.getItem("shakerfy_user_profile_edit");
+                if (s) {
+                  const p = JSON.parse(s);
+                  if (p.units) return p.units;
+                }
+              } catch (_) {}
+              return "metrico";
+            })();
+
             if (typeof window !== "undefined") {
               localStorage.setItem("user_weight", String(weightVal));
               const saved = localStorage.getItem("shakerfy_user_profile_edit");
@@ -5768,47 +6452,15 @@ function DiarioTab() {
                   localStorage.setItem("shakerfy_user_profile_edit", JSON.stringify(parsed));
                 } catch (e) {}
               }
+
+              // Add directly to dedicated weight history
+              addStoredWeightLog({
+                weight: weightVal,
+                context: context || "En ayunas",
+                unit: userUnits === "metrico" ? "kg" : "lbs",
+                date: selectedTimelineDate || getTodayIso(),
+              });
             }
-
-            const userUnits = (() => {
-              if (typeof window !== "undefined") {
-                const saved = localStorage.getItem("shakerfy_user_profile_edit");
-                if (saved) {
-                  try {
-                    const parsed = JSON.parse(saved);
-                    if (parsed.units) return parsed.units;
-                  } catch (e) {}
-                }
-              }
-              return "metrico";
-            })();
-
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
-            const dateStr = now.toISOString().split("T")[0];
-
-            const newWeightItem = {
-              id: `weight-${Date.now()}`,
-              type: "weight",
-              time: timeStr,
-              date: dateStr,
-              title: `Registro de Peso (${weightVal} ${userUnits === "metrico" ? "kg" : "lbs"})`,
-              subtitle: `Check-in Biométrico • ${context}`,
-              desc: `Peso: ${weightVal} ${userUnits === "metrico" ? "kg" : "lbs"} (${context})`,
-              weight: weightVal,
-              unit: userUnits === "metrico" ? "kg" : "lbs",
-              context: context,
-              coachFeedback: `⚖️ Tendencia Somática: Registro añadido a tu media móvil semanal para filtrar variaciones transitorias de agua y glucógeno.`,
-              tag: `${weightVal} ${userUnits === "metrico" ? "kg" : "lbs"}`,
-            };
-
-            setUserTimelineItems((prev) => {
-              const updated = [newWeightItem, ...prev];
-              if (typeof window !== "undefined") {
-                localStorage.setItem("shakerfy_user_timeline_items", JSON.stringify(updated));
-              }
-              return updated;
-            });
 
             if ("vibrate" in navigator) {
               navigator.vibrate(15);
@@ -5827,8 +6479,6 @@ function DiarioTab() {
         />
       )}
 
-      {/* Mindful Vagal Breathing Orb Modal */}
-      <MindfulBreathingModal open={showBreathingModal} onOpenChange={setShowBreathingModal} />
     </div>
   );
 }
@@ -6033,6 +6683,9 @@ function EditTimelineItemModal({
     item.coachFeedback || item.narrative || item.summary || item.desc || "",
   );
   const [level, setLevel] = useState<number>(item.level || 2);
+  const isWeight = item.type === "weight";
+  const [weightVal, setWeightVal] = useState<string>(String(item.weight || item.val || 74.2));
+  const [weightContext, setWeightContext] = useState<string>(item.context || "En ayunas");
 
   // Ingredients State (initialized from item or generated from meal calories/macros)
   const [ingredients, setIngredients] = useState<MealIngredientItem[]>(() => {
@@ -6269,6 +6922,20 @@ function EditTimelineItemModal({
         coachFeedback: coachFeedback.trim() || `💧 Consejo Fisiológico: ${currentLevelObj.advice}`,
       });
       toast.success("✓ Registro de hidratación actualizado");
+    } else if (item.type === "weight") {
+      const parsedW = parseFloat(weightVal) || item.weight || 74.2;
+      onSave({
+        ...item,
+        title: title.trim() || `Registro de Peso (${parsedW} ${item.unit || "kg"})`,
+        time: time.trim() || item.time,
+        weight: parsedW,
+        context: weightContext,
+        subtitle: `Check-in Biométrico • ${weightContext}`,
+        desc: `Peso: ${parsedW} ${item.unit || "kg"} (${weightContext})`,
+        tag: `${parsedW} ${item.unit || "kg"}`,
+        coachFeedback: coachFeedback.trim() || item.coachFeedback,
+      });
+      toast.success("✓ Registro de peso actualizado");
     } else {
       onSave({
         ...item,
@@ -6296,6 +6963,11 @@ function EditTimelineItemModal({
               <>
                 <Droplet className="w-4 h-4 text-sky-500 shrink-0" />
                 <span>Editar Registro de Hidratación</span>
+              </>
+            ) : item.type === "weight" ? (
+              <>
+                <Scale className="w-4 h-4 text-violet-500 shrink-0" />
+                <span>Editar Registro de Peso</span>
               </>
             ) : (
               <span>Editar Registro del Diario</span>
@@ -6335,6 +7007,46 @@ function EditTimelineItemModal({
               />
             </div>
           </div>
+
+          {/* Peso y Contexto (si es registro de peso) */}
+          {isWeight && (
+            <div className="space-y-3 p-3.5 rounded-2xl bg-secondary/30 border border-border/50">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Peso ({item.unit || "kg"})
+                </label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={weightVal}
+                  onChange={(e) => setWeightVal(e.target.value)}
+                  className="flex w-full rounded-xl border border-border bg-background px-3 py-2 text-sm font-bold text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Contexto / Momento
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {["En ayunas", "Post-entreno", "Noche", "Habitual"].map((opt) => (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => setWeightContext(opt)}
+                      className={cn(
+                        "px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer text-center",
+                        weightContext === opt
+                          ? "bg-violet-500/15 text-violet-600 dark:text-violet-400 border-violet-500/30 font-bold shadow-2xs"
+                          : "bg-secondary/40 text-muted-foreground border-border/60 hover:bg-secondary hover:text-foreground",
+                      )}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Porciones (si es comida) */}
           {isMeal && (
@@ -6978,103 +7690,6 @@ function ActivityLogModal({ onClose, onSave, activities }: ActivityLogModalProps
   );
 }
 
-// Subcomponent: Armstrong Urine Color Scale (Visual component matching exact reference HTML design)
-const ARMSTRONG_LEVELS = [
-  {
-    level: 1,
-    hex: "#fbfce1",
-    color:
-      "bg-cyan-50 border-cyan-200 text-cyan-900 dark:bg-cyan-950/40 dark:border-cyan-800 dark:text-cyan-200",
-    dot: "bg-cyan-100 border-cyan-300",
-    title: "Nivel 1 — Transparente",
-    usg: "< 1.010 g/cm³",
-    state: "Euhidratación Óptima",
-    advice: "Excelente balance celular. Mantén pequeños sorbos de agua potable a lo largo del día.",
-  },
-  {
-    level: 2,
-    hex: "#f9f9cd",
-    color:
-      "bg-yellow-50 border-yellow-200 text-yellow-900 dark:bg-yellow-950/40 dark:border-yellow-800 dark:text-yellow-200",
-    dot: "bg-yellow-200 border-yellow-300",
-    title: "Nivel 2 — Amarillo Pálido",
-    usg: "1.010 g/cm³",
-    state: "Hidratación Saludable",
-    advice: "Estado hídrico ideal para el rendimiento físico y deportivo continuo.",
-  },
-  {
-    level: 3,
-    hex: "#f6f2a9",
-    color:
-      "bg-amber-50 border-amber-200 text-amber-900 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-200",
-    dot: "bg-amber-300 border-amber-400",
-    title: "Nivel 3 — Amarillo Claro",
-    usg: "1.015 g/cm³",
-    state: "Bien Hidratado",
-    advice: "Buen estado hídrico para afrontar tus entrenamientos.",
-  },
-  {
-    level: 4,
-    hex: "#f2e285",
-    color:
-      "bg-amber-100 border-amber-300 text-amber-950 dark:bg-amber-900/40 dark:border-amber-700 dark:text-amber-200",
-    dot: "bg-amber-400 border-amber-500",
-    title: "Nivel 4 — Amarillo Dorado",
-    usg: "1.020 g/cm³",
-    state: "Deshidratación Leve",
-    advice:
-      "Se sugiere tomar 1 o 2 vasos de agua fresca para mantener un balance óptimo y evitar fatiga.",
-  },
-  {
-    level: 5,
-    hex: "#eec863",
-    color:
-      "bg-amber-200 border-amber-400 text-amber-950 dark:bg-amber-800/40 dark:border-amber-600 dark:text-amber-100",
-    dot: "bg-amber-500 border-amber-600",
-    title: "Nivel 5 — Miel / Ámbar Claro",
-    usg: "1.025 g/cm³",
-    state: "Deshidratación Moderada",
-    advice:
-      "Considera reponer líquidos con agua y una fuente ligera de electrolitos o sales minerales.",
-  },
-  {
-    level: 6,
-    hex: "#e8a33a",
-    color:
-      "bg-amber-300 border-amber-500 text-amber-950 dark:bg-amber-700/50 dark:border-amber-500 dark:text-amber-100",
-    dot: "bg-amber-700 border-amber-800",
-    title: "Nivel 6 — Ámbar Oscuro",
-    usg: "1.028 g/cm³",
-    state: "Deshidratación Significativa",
-    advice:
-      "Tu cuerpo muestra signos de necesitar hidratación. Es un buen momento para reponer líquidos gradualmente con agua o una bebida isotónica.",
-  },
-  {
-    level: 7,
-    hex: "#d4812f",
-    color:
-      "bg-amber-700/20 border-amber-700 text-amber-900 dark:bg-amber-950/80 dark:border-amber-700 dark:text-amber-200",
-    dot: "bg-amber-800 border-amber-900",
-    title: "Nivel 7 — Té Oscuro",
-    usg: "1.030 g/cm³",
-    state: "Deshidratación Elevada",
-    advice:
-      "Refleja una pérdida hídrica considerable. Conviene resguardarte del calor y priorizar una rehidratación paulatina con sales y líquidos.",
-  },
-  {
-    level: 8,
-    hex: "#a66a2e",
-    color:
-      "bg-stone-800/20 border-stone-800 text-stone-900 dark:bg-stone-900 dark:border-stone-700 dark:text-stone-100",
-    dot: "bg-stone-900 border-stone-950",
-    title: "Nivel 8 — Café / Marrón",
-    usg: "> 1.030 g/cm³",
-    state: "Deshidratación Severa (Alerta)",
-    advice:
-      "Concentración urinaria muy alta. Se recomienda pausar la actividad intensa, hidratarte y, si el tono persiste tras varias horas, consultar a un profesional de la salud.",
-  },
-];
-
 interface ArmstrongUrineScaleVisualProps {
   selectedLevel: number;
   onSelectLevel?: (level: number) => void;
@@ -7097,14 +7712,20 @@ function ArmstrongUrineScaleVisual({
   hideAdvice = false,
 }: ArmstrongUrineScaleVisualProps) {
   const currentObj = ARMSTRONG_LEVELS.find((l) => l.level === selectedLevel) || ARMSTRONG_LEVELS[1];
-  const displaySubtitle = subtitle || `${currentObj.title} (${currentObj.state})`;
+  const displayTitle = (title || "Registro de Hidratación")
+    .replace(/\s*\(Armstrong\)/gi, "")
+    .trim();
+  const displaySubtitle = (subtitle || currentObj.title)
+    .replace(/\s*\(Hidratación Saludable\)/gi, "")
+    .replace(/\s*\(Armstrong\)/gi, "")
+    .trim();
 
   return (
     <div className={cn("space-y-5 text-left w-full", className)}>
       {/* Header section with flex alignment */}
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-0.5 text-left">
-          <h3 className="text-lg font-bold text-foreground tracking-tight">{title}</h3>
+          <h3 className="text-lg font-bold text-foreground tracking-tight">{displayTitle}</h3>
           <p className="text-xs text-muted-foreground font-medium">{displaySubtitle}</p>
         </div>
         {actions}
@@ -7161,12 +7782,14 @@ function ArmstrongUrineScaleVisual({
   );
 }
 
-interface HydrationArmstrongModalProps {
+interface HydrationArmstrongDrawerProps {
+  open?: boolean;
   onClose: () => void;
   onSave: (level: number, label: string, feedback: string) => void;
 }
 
-function HydrationArmstrongModal({ onClose, onSave }: HydrationArmstrongModalProps) {
+function HydrationArmstrongDrawer({ open = true, onClose, onSave }: HydrationArmstrongDrawerProps) {
+  const isMobile = useIsMobile();
   const [selectedLevel, setSelectedLevel] = useState<number>(2);
   const currentLevelObj =
     ARMSTRONG_LEVELS.find((l) => l.level === selectedLevel) || ARMSTRONG_LEVELS[1];
@@ -7174,72 +7797,124 @@ function HydrationArmstrongModal({ onClose, onSave }: HydrationArmstrongModalPro
   const handleConfirm = () => {
     onSave(
       currentLevelObj.level,
-      `${currentLevelObj.title} (${currentLevelObj.state})`,
+      currentLevelObj.title,
       currentLevelObj.advice,
     );
     onClose();
   };
 
+  const bodyContent = (
+    <div className="py-2 space-y-4 text-left">
+      <ArmstrongUrineScaleVisual
+        selectedLevel={selectedLevel}
+        onSelectLevel={(lvl) => setSelectedLevel(lvl)}
+        readOnly={false}
+        title="Hydration Check"
+        subtitle="Toca la cápsula de color para seleccionar tu nivel"
+      />
+
+      {/* Riboflavin warning note & Disclaimer */}
+      <div className="p-3.5 rounded-2xl border border-amber-500/20 bg-amber-500/5 text-[11px] text-muted-foreground leading-relaxed space-y-1.5 text-left">
+        <p>
+          💡 <strong>Nota fisiológica:</strong> Suplementos de Vitamina B2 (Riboflavina) o multivitamínicos pueden pigmentar la orina de amarillo intenso sin implicar deshidratación.
+        </p>
+        <p className="text-[10px] text-muted-foreground/70">
+          * Guía orientativa de bienestar basada en Armstrong (ACSM). No constituye prescripción médica ni sustituye la consulta médica.
+        </p>
+      </div>
+    </div>
+  );
+
+  const footerButtons = (
+    <>
+      <Button
+        variant="outline"
+        type="button"
+        onClick={onClose}
+        className="flex-1 sm:flex-none rounded-xl font-semibold cursor-pointer"
+      >
+        Cancelar
+      </Button>
+      <Button
+        type="button"
+        onClick={handleConfirm}
+        className="flex-1 sm:flex-none rounded-xl font-bold bg-cyan-600 hover:bg-cyan-700 text-white cursor-pointer shadow-xs"
+      >
+        Registrar Estado Hídrico
+      </Button>
+    </>
+  );
+
+  // Versión de Escritorio (>= 768px): Modal centrado (Dialog)
+  if (!isMobile) {
+    return (
+      <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+        <DialogContent className="sm:max-w-lg rounded-3xl p-6 sm:p-7 border border-border bg-card shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar text-left">
+          <DialogHeader className="pb-2 text-left">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Droplet className="w-5 h-5 text-cyan-500 shrink-0" />
+                <DialogTitle className="text-lg font-bold text-foreground">
+                  Registro de Hidratación
+                </DialogTitle>
+              </div>
+              <Link
+                to="/blog/$slug"
+                params={{ slug: "escala-de-armstrong-y-fisiologia-de-la-hidratacion" }}
+                className="text-[11px] font-semibold text-emerald-500 hover:underline flex items-center gap-1 shrink-0"
+              >
+                <span>Escala Armstrong</span>
+                <ArrowUpRight className="w-3 h-3" />
+              </Link>
+            </div>
+            <DialogDescription className="text-xs text-muted-foreground pt-1 text-left">
+              Selecciona el nivel colorimétrico de osmolalidad urinaria (Dr. Lawrence Armstrong, ACSM).
+            </DialogDescription>
+          </DialogHeader>
+
+          {bodyContent}
+
+          <DialogFooter className="px-0 pt-2 pb-0 flex flex-row items-center justify-end gap-2.5">
+            {footerButtons}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // Versión Móvil (< 768px): Hoja deslizable (Drawer / Bottom Sheet)
   return (
-    <Dialog open onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg rounded-3xl p-6 sm:p-8 border border-border bg-card max-h-[90vh] overflow-y-auto custom-scrollbar">
-        <DialogHeader className="pb-3 border-b border-border/40">
-          <DialogTitle className="text-base font-bold flex items-center justify-between text-foreground">
+    <Drawer open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <DrawerContent className="px-6 pb-8 pt-2 max-w-lg mx-auto overflow-hidden">
+        <DrawerHeader className="pb-3 text-left">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Droplet className="w-5 h-5 text-cyan-500" />
-              <span>Registro de Hidratación</span>
+              <Droplet className="w-5 h-5 text-cyan-500 shrink-0" />
+              <DrawerTitle className="text-lg font-bold text-foreground">
+                Registro de Hidratación
+              </DrawerTitle>
             </div>
             <Link
               to="/blog/$slug"
               params={{ slug: "escala-de-armstrong-y-fisiologia-de-la-hidratacion" }}
-              className="text-[11px] font-semibold text-emerald-500 hover:underline flex items-center gap-1"
+              className="text-[11px] font-semibold text-emerald-500 hover:underline flex items-center gap-1 shrink-0"
             >
               <span>Escala Armstrong</span>
               <ArrowUpRight className="w-3 h-3" />
             </Link>
-          </DialogTitle>
-          <DialogDescription className="text-xs text-muted-foreground pt-1">
-            Selecciona el nivel colorimétrico de osmolalidad urinaria (Dr. Lawrence Armstrong,
-            ACSM).
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="py-2 space-y-4">
-          <ArmstrongUrineScaleVisual
-            selectedLevel={selectedLevel}
-            onSelectLevel={(lvl) => setSelectedLevel(lvl)}
-            readOnly={false}
-            title="Hydration Check"
-            subtitle="Haz clic en la cápsula de color para seleccionar tu nivel"
-          />
-
-          {/* Riboflavin warning note & Disclaimer */}
-          <div className="p-3.5 rounded-2xl border border-amber-500/20 bg-amber-500/5 text-[11px] text-muted-foreground leading-relaxed space-y-1.5">
-            <p>
-              💡 <strong>Nota fisiológica:</strong> Suplementos de Vitamina B2 (Riboflavina) o
-              multivitamínicos pueden pigmentar la orina de amarillo intenso sin implicar
-              deshidratación.
-            </p>
-            <p className="text-[10px] text-muted-foreground/70">
-              * Guía orientativa de bienestar basada en Armstrong (ACSM). No constituye prescripción
-              médica ni sustituye la consulta con un profesional de la salud.
-            </p>
           </div>
-        </div>
+          <DrawerDescription className="text-xs text-muted-foreground pt-1 text-left">
+            Selecciona el nivel colorimétrico de osmolalidad urinaria (Dr. Lawrence Armstrong, ACSM).
+          </DrawerDescription>
+        </DrawerHeader>
 
-        <div className="pt-3 border-t border-border/40 flex items-center justify-end gap-2">
-          <Button variant="outline" onClick={onClose} className="rounded-xl font-semibold">
-            Cancelar
-          </Button>
-          <Button
-            onClick={handleConfirm}
-            className="rounded-xl font-bold bg-cyan-600 hover:bg-cyan-700 text-white"
-          >
-            Registrar Estado Hídrico
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+        {bodyContent}
+
+        <DrawerFooter className="px-0 pt-3 pb-0 flex flex-row items-center justify-end gap-2.5">
+          {footerButtons}
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 }
 

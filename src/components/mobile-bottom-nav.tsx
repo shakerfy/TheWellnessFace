@@ -45,11 +45,11 @@ export function MobileBottomNav() {
     };
   }, []);
 
-  // Hide mobile bottom nav on gym admin dashboard, standalone full-screen camera scanner flow, and dedicated workout flow
+  // Hide mobile bottom nav on gym admin dashboard, standalone scanner flow, and nutrition intelligence paywall
   if (
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/scan") ||
-    (pathname === "/app" && currentTab === "entrenamiento")
+    pathname.startsWith("/nutrition-intelligence")
   ) {
     return null;
   }

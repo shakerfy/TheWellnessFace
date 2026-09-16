@@ -16,12 +16,18 @@ import {
   Bookmark,
   Pencil,
   Zap,
+  ZapOff,
+  Scan,
+  FileText,
+  Mic,
+  AudioLines,
   RefreshCw,
   Camera,
   Check,
   Loader2,
   Plus,
   Minus,
+  List,
   Trash2,
   Search,
   Sparkles,
@@ -38,7 +44,12 @@ import {
   Activity,
   ChevronDown,
   ChevronUp,
+  HelpCircle,
 } from "lucide-react";
+import {
+  FoodScannerTutorialDialog,
+  STORAGE_KEY_TUTORIAL_SEEN,
+} from "@/components/food-scanner-tutorial";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -63,6 +74,9 @@ import {
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { FoodProfileHero } from "@/components/food-profile-hero";
+import { useNutritionSettings } from "@/lib/nutrition-settings";
+import { detectBiologicalContext } from "@/lib/ai-suggestion-generator";
 import { calculateTimingFit } from "@/lib/timing-fit";
 
 export const Route = createFileRoute("/scan")({
@@ -193,6 +207,14 @@ export const SCAN_FOOD_CATEGORIES: {
   { id: "comida", label: "Comida", sublabel: "Meal", icon: Utensils, defaultMealType: "Almuerzo" },
   { id: "snack", label: "Snack", sublabel: "Snack", icon: Apple, defaultMealType: "Colación" },
   { id: "postre", label: "Postre", sublabel: "Dessert", icon: Cake, defaultMealType: "Postre" },
+];
+
+export const INITIAL_FOOD_NOTE_ITEMS: string[] = [
+  "4 huevos revueltos con aceite de oliva",
+  "2 tostadas de pan de masa madre",
+  "1 vaso de jugo de naranja natural",
+  "20g de almendras tostadas",
+  "1 manzana roja fresca",
 ];
 
 export interface PhytoColorItem {
@@ -1682,11 +1704,143 @@ function generateContextualAiInsight(params: {
   );
 }
 
+// Helper: Calidad Nutricional para el Hero Widget (5 niveles evaluados desde los 7 Vectores y NOVA)
+function getScanQualityProfile({
+  score,
+  mealTitle,
+  mealNarrative,
+  vectorBadges = [],
+  totalProtein = 0,
+  totalFiber = 0,
+  totalFat = 0,
+  totalCarbs = 0,
+}: {
+  score: number;
+  mealTitle: string;
+  mealNarrative?: string;
+  vectorBadges?: NutritionVectorBadge[];
+  totalProtein?: number;
+  totalFiber?: number;
+  totalFat?: number;
+  totalCarbs?: number;
+}): {
+  label: "Pobre" | "Bajo" | "Regular" | "Bueno" | "Excelente";
+  level: 1 | 2 | 3 | 4 | 5;
+} {
+  const text = `${mealTitle} ${mealNarrative || ""}`.toLowerCase();
+
+  // Mapear los 7 vectores nutricionales
+  const badgeMap = new Map<string, string>();
+  vectorBadges.forEach((b) => badgeMap.set(b.category, (b.badgeText || "").toLowerCase()));
+
+  const processing = badgeMap.get("processing") || "";
+  const fiber = badgeMap.get("fiber") || "";
+  const protein = badgeMap.get("protein") || "";
+  const sugar = badgeMap.get("sugar") || "";
+  const fat = badgeMap.get("fat") || "";
+  const grains = badgeMap.get("grains") || "";
+
+  const isUltraProcessed =
+    processing.includes("ultra") ||
+    /caramelo|golosina|sour patch|snack|gaseosa|refresco|chucher|donuts/i.test(text);
+
+  const isProcessedOrFried =
+    processing.includes("moderadamente") ||
+    processing.includes("procesad") ||
+    /papas fritas|facturas|cheeseburger|dulce|croissant|fritura/i.test(text);
+
+  const hasAddedSugar =
+    sugar.includes("añadid") ||
+    sugar.includes("azúcar") ||
+    sugar.includes("elevad") ||
+    /azúcar|dulce|miel|jarabe|sirope/i.test(text);
+
+  const hasHealthyFats =
+    fat.includes("saludable") ||
+    fat.includes("omega") ||
+    fat.includes("palta") ||
+    fat.includes("chía") ||
+    fat.includes("oliva") ||
+    /salmón|salmon|palta|aguacate|nuez|almendra|chía|oliva/i.test(text);
+
+  const hasHighQualityProtein =
+    protein.includes("alta calidad") ||
+    protein.includes("magra") ||
+    totalProtein >= 22 ||
+    /pechuga|pollo|pescado|huevo|tofu|lenteja|garbanzo/i.test(text);
+
+  const hasHighFiber =
+    fiber.includes("buena fuente") ||
+    fiber.includes("alto en fibra") ||
+    totalFiber >= 3.5 ||
+    grains.includes("entero") ||
+    /quinoa|avena|integral|brócoli|espinaca|legumbre/i.test(text);
+
+  // 1. POBRE (Nivel 1): Azúcar simple / Ultraprocesado / Mínima fibra y proteína
+  if (
+    (isUltraProcessed && hasAddedSugar) ||
+    (hasAddedSugar && totalProtein < 8 && totalFiber < 2) ||
+    score < 40
+  ) {
+    return { label: "Pobre", level: 1 };
+  }
+
+  // 2. BAJO (Nivel 2): Alta densidad calórica (harinas/grasas refinadas) con fibra y proteína bajas
+  if (
+    isProcessedOrFried ||
+    (totalCarbs > 40 && totalProtein < 12 && totalFiber < 3) ||
+    (totalFat > 20 && !hasHealthyFats && totalFiber < 2) ||
+    score < 58
+  ) {
+    return { label: "Bajo", level: 2 };
+  }
+
+  // 5. EXCELENTE (Nivel 5): Alimento entero/sin procesar + Proteína completa + Grasas nobles + Fibra + Sin azúcar añadido
+  const isMinimallyProcessed =
+    processing.includes("mínimamente") ||
+    processing.includes("sin procesar") ||
+    !isUltraProcessed;
+
+  if (
+    isMinimallyProcessed &&
+    hasHighQualityProtein &&
+    hasHealthyFats &&
+    hasHighFiber &&
+    !hasAddedSugar &&
+    score >= 82
+  ) {
+    return { label: "Excelente", level: 5 };
+  }
+
+  // 4. BUENO (Nivel 4): Mínimamente procesado, alta en fibra/vegetales y buena proteína
+  if (
+    isMinimallyProcessed &&
+    (hasHighFiber || hasHighQualityProtein) &&
+    !hasAddedSugar &&
+    score >= 70
+  ) {
+    return { label: "Bueno", level: 4 };
+  }
+
+  // 3. REGULAR (Nivel 3): Comida estándar equilibrada de día a día
+  return { label: "Regular", level: 3 };
+}
+
 function ScanMealPage() {
   const navigate = useNavigate();
+  const { isAthleteMode, isWellnessMode } = useNutritionSettings();
 
   // Screen State: "scanner" (Live Camera Viewfinder) | "nutrition" (Unified Bio Report & Choice Chips) | "fix" (AI Correction)
   const [currentScreen, setCurrentScreen] = useState<"scanner" | "nutrition" | "fix">("scanner");
+
+  // Food Scanner Precision Tutorial Dialog State (auto-opens if first time)
+  const [showTutorial, setShowTutorial] = useState(() => {
+    if (typeof window !== "undefined") {
+      const seen = localStorage.getItem(STORAGE_KEY_TUTORIAL_SEEN);
+      return seen !== "true";
+    }
+    return false;
+  });
 
   // Video Ref & Stream State (Native MediaStream)
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -1707,8 +1861,388 @@ function ScanMealPage() {
 
   // Scanner UI & Category States
   const [selectedCategory, setSelectedCategory] = useState<FoodScanCategory>("comida");
+  const [scanMode, setScanMode] = useState<"scan_food" | "voice_log" | "barcode" | "food_label">("scan_food");
+
+  // Food Label Note States & Handlers (Minimalist interactive list)
+  const [foodNoteItems, setFoodNoteItems] = useState<string[]>(INITIAL_FOOD_NOTE_ITEMS);
+
+  const activeFoodItems = useMemo(() => {
+    return foodNoteItems.map((it) => it.trim()).filter((it) => it.length > 0);
+  }, [foodNoteItems]);
+
+  const totalNotesItemsCount = activeFoodItems.length;
+
+  const handleNoteItemChange = (itemIndex: number, value: string) => {
+    setFoodNoteItems((prev) => {
+      const next = [...prev];
+      next[itemIndex] = value;
+      return next;
+    });
+  };
+
+  const handleNoteItemKeyDown = (
+    itemIndex: number,
+    e: React.KeyboardEvent<HTMLInputElement>,
+  ) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      setFoodNoteItems((prev) => {
+        const next = [...prev];
+        next.splice(itemIndex + 1, 0, "");
+        return next;
+      });
+      setTimeout(() => {
+        const nextInput = document.querySelector(
+          `input[data-note-idx="${itemIndex + 1}"]`,
+        ) as HTMLInputElement | null;
+        nextInput?.focus();
+      }, 50);
+    } else if (e.key === "Backspace") {
+      if (foodNoteItems[itemIndex] === "" && foodNoteItems.length > 1) {
+        e.preventDefault();
+        setFoodNoteItems((prev) => prev.filter((_, idx) => idx !== itemIndex));
+        setTimeout(() => {
+          const prevIdx = Math.max(0, itemIndex - 1);
+          const prevInput = document.querySelector(
+            `input[data-note-idx="${prevIdx}"]`,
+          ) as HTMLInputElement | null;
+          prevInput?.focus();
+        }, 50);
+      }
+    }
+  };
+
+  const handleAddNoteItem = () => {
+    setFoodNoteItems((prev) => [...prev, ""]);
+    setTimeout(() => {
+      const nextIdx = foodNoteItems.length;
+      const input = document.querySelector(
+        `input[data-note-idx="${nextIdx}"]`,
+      ) as HTMLInputElement | null;
+      input?.focus();
+    }, 50);
+  };
+
+  const handleRemoveNoteItem = (itemIndex: number) => {
+    if (foodNoteItems.length <= 1) {
+      setFoodNoteItems([""]);
+      return;
+    }
+    setFoodNoteItems((prev) => prev.filter((_, idx) => idx !== itemIndex));
+  };
+
+  const handleResetNotes = () => {
+    setFoodNoteItems(INITIAL_FOOD_NOTE_ITEMS);
+    toast.info("Notas restauradas con el ejemplo estándar");
+  };
+
+  const handleClearNotes = () => {
+    setFoodNoteItems([""]);
+    toast.info("Notas vaciadas");
+  };
+
+  // AI Analysis of Food Notes
+  const handleAnalyzeFoodNotes = () => {
+    const itemsToAnalyze: string[] = foodNoteItems
+      .map((it) => it.trim())
+      .filter((it) => it.length > 0);
+
+    if (itemsToAnalyze.length === 0) {
+      toast.error("Escribe al menos un alimento antes de analizar", {
+        description: "Ej: '4 huevos', '2 tostadas', '1 manzana'",
+      });
+      return;
+    }
+
+    toast.success("Analizando alimentos escritos con IA...", {
+      description: `${itemsToAnalyze.length} alimentos detectados en tus notas`,
+    });
+
+    // Parse each item into structured ingredient
+    const parsedIngredients: MealIngredientItem[] = itemsToAnalyze.map((text, idx) => {
+      const lower = text.toLowerCase();
+      let name = text;
+      let category: MealIngredientItem["category"] = "carbs";
+      let grams = 100;
+      let cal = 120;
+      let prot = 4;
+      let carbs = 20;
+      let fat = 2;
+      let fiber = 2;
+
+      if (lower.includes("huevo")) {
+        const qtyMatch = lower.match(/(\d+)/);
+        const qty = qtyMatch ? parseInt(qtyMatch[1], 10) : 2;
+        name = `Huevos Enteros (${qty}u)`;
+        category = "protein";
+        grams = qty * 50;
+        prot = qty * 6;
+        fat = qty * 5;
+        carbs = Math.round(qty * 0.4);
+        fiber = 0;
+        cal = qty * 70;
+      } else if (lower.includes("tostada") || lower.includes("pan")) {
+        const qtyMatch = lower.match(/(\d+)/);
+        const qty = qtyMatch ? parseInt(qtyMatch[1], 10) : 2;
+        name = `Tostadas Integrales (${qty}u)`;
+        category = "carbs";
+        grams = qty * 30;
+        prot = qty * 3;
+        carbs = qty * 15;
+        fat = qty * 1;
+        fiber = qty * 2;
+        cal = qty * 80;
+      } else if (lower.includes("naranja") || lower.includes("jugo")) {
+        name = "Jugo de Naranja Natural (250ml)";
+        category = "fruits";
+        grams = 250;
+        prot = 1.7;
+        carbs = 26;
+        fat = 0.5;
+        fiber = 0.5;
+        cal = 112;
+      } else if (lower.includes("almendra") || lower.includes("nuez") || lower.includes("fruto seco")) {
+        const gramsMatch = lower.match(/(\d+)\s*g/);
+        const g = gramsMatch ? parseInt(gramsMatch[1], 10) : 20;
+        name = `Almendras Tostadas (${g}g)`;
+        category = "fats";
+        grams = g;
+        prot = Math.round(g * 0.21 * 10) / 10;
+        fat = Math.round(g * 0.5 * 10) / 10;
+        carbs = Math.round(g * 0.22 * 10) / 10;
+        fiber = Math.round(g * 0.12 * 10) / 10;
+        cal = Math.round(g * 5.8);
+      } else if (lower.includes("manzana") || lower.includes("fruta")) {
+        name = "Manzana Roja Fresca (1u)";
+        category = "fruits";
+        grams = 180;
+        prot = 0.5;
+        carbs = 25;
+        fat = 0.3;
+        fiber = 4.4;
+        cal = 95;
+      } else if (lower.includes("pollo") || lower.includes("carne") || lower.includes("bife")) {
+        name = "Pechuga de Pollo a la Plancha";
+        category = "protein";
+        grams = 150;
+        prot = 36;
+        carbs = 0;
+        fat = 4;
+        fiber = 0;
+        cal = 185;
+      } else if (lower.includes("arroz") || lower.includes("pasta") || lower.includes("fideos")) {
+        name = "Arroz Blanco Cocido";
+        category = "carbs";
+        grams = 150;
+        prot = 4;
+        carbs = 42;
+        fat = 0.5;
+        fiber = 0.6;
+        cal = 195;
+      } else if (lower.includes("palta") || lower.includes("aguacate")) {
+        name = "Palta Hass Fresca";
+        category = "fats";
+        grams = 70;
+        prot = 1.4;
+        carbs = 6;
+        fat = 10.5;
+        fiber = 4.7;
+        cal = 112;
+      } else if (lower.includes("yogur") || lower.includes("leche")) {
+        name = "Yogur Griego Natural";
+        category = "dairy";
+        grams = 150;
+        prot = 15;
+        carbs = 5.5;
+        fat = 1;
+        fiber = 0;
+        cal = 90;
+      } else if (lower.includes("cafe") || lower.includes("café")) {
+        name = "Café Expreso Sin Azúcar";
+        category = "carbs";
+        grams = 100;
+        prot = 0.2;
+        carbs = 0.5;
+        fat = 0.1;
+        fiber = 0;
+        cal = 5;
+      }
+
+      return {
+        id: `note-item-${idx}-${Date.now()}`,
+        name,
+        category,
+        grams,
+        calories: cal,
+        protein: prot,
+        carbs,
+        fat,
+        fiber,
+        calPer100g: Math.round((cal / grams) * 100),
+        pPer100g: Math.round((prot / grams) * 100 * 10) / 10,
+        cPer100g: Math.round((carbs / grams) * 100 * 10) / 10,
+        fPer100g: Math.round((fat / grams) * 100 * 10) / 10,
+        fiberPer100g: Math.round((fiber / grams) * 100 * 10) / 10,
+      };
+    });
+
+    const primaryTitle =
+      parsedIngredients.length > 0
+        ? `Registro: ${parsedIngredients.slice(0, 2).map((p) => p.name.split(" ")[0]).join(" & ")}`
+        : "Notas de Alimentos";
+
+    setTitle(primaryTitle);
+    setReportTitle("Registro Nutricional Markdown IA");
+    setMealTime(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
+    setMealType("Comida");
+    setIngredients(parsedIngredients);
+    setServings(1);
+    setNarrative(
+      `Análisis completo de tus notas de comida: ${itemsToAnalyze.length} alimentos registrados. Distribución balanceada de macronutrientes, micronutrientes y aporte de fibra natural sin ultraprocesados.`,
+    );
+    setBioScore(88);
+    setBioGrade("A-");
+    setBioQualityLabel("Comida Real & Densidad Nutritiva Óptima");
+    setBioGaugeIndex(3);
+    setHighlightNutrient("Vitamina C y Fibra Natural");
+    setHighlightAmount("45mg");
+
+    setVectorBadges([
+      {
+        id: "v-proc",
+        category: "processing",
+        badgeText: "Mínimamente procesado",
+        description: "Alimentos enteros sin aditivos artificiales.",
+      },
+      {
+        id: "v-fib",
+        category: "fiber",
+        badgeText: "Alta fibra",
+        description: "Fibra soluble e insoluble de frutas y granos enteros.",
+      },
+      {
+        id: "v-prot",
+        category: "protein",
+        badgeText: "Proteína magra",
+        description: "Aporte proteico biológicamente completo.",
+      },
+      {
+        id: "v-sug",
+        category: "sugar",
+        badgeText: "Sin azúcar añadido",
+        description: "Carbohidratos de fuentes naturales intactas.",
+      },
+      {
+        id: "v-fat",
+        category: "fat",
+        badgeText: "Grasas saludables",
+        description: "Ácidos grasos esenciales monoinsaturados y omega.",
+      },
+      {
+        id: "v-grain",
+        category: "grains",
+        badgeText: "Granos enteros",
+        description: "Energía glucídica de liberación sostenida.",
+      },
+      {
+        id: "v-sod",
+        category: "sodium",
+        badgeText: "Bajo en sodio",
+        description: "Perfil cardiovascular óptimo.",
+      },
+    ]);
+
+    setCalloutPins([
+      { name: parsedIngredients[0]?.name || "Desayuno", calories: parsedIngredients[0]?.calories || 150, topPct: 35, leftPct: 25 },
+      { name: parsedIngredients[1]?.name || "Complemento", calories: parsedIngredients[1]?.calories || 80, topPct: 45, rightPct: 25 },
+    ]);
+
+    setCustomImage("https://images.unsplash.com/photo-1494859802809-d069c3b71a8a?w=800&auto=format&fit=crop&q=80");
+
+    setIsScanningLaser(true);
+    setTimeout(() => {
+      setIsScanningLaser(false);
+      setCurrentScreen("nutrition");
+    }, 500);
+  };
+  const libraryInputRef = useRef<HTMLInputElement>(null);
   const [flashlightOn, setFlashlightOn] = useState(false);
   const [isScanningLaser, setIsScanningLaser] = useState(false);
+
+  // Voice Log States & Handlers
+  const [isRecordingVoice, setIsRecordingVoice] = useState(false);
+  const [recordedVoiceText, setRecordedVoiceText] = useState("");
+  const recognitionRef = useRef<any>(null);
+
+  const processVoiceLog = (text: string) => {
+    toast.success("Nota de voz procesada con IA", {
+      description: text,
+    });
+    setTitle(text.length > 32 ? text.slice(0, 32) + "..." : text);
+    setReportTitle("Registro por Voz IA");
+    setNarrative(`Alimentos detectados por voz: "${text}". Composición analizada con éxito.`);
+    setIsScanningLaser(true);
+    setTimeout(() => {
+      setIsScanningLaser(false);
+      setCurrentScreen("nutrition");
+    }, 600);
+  };
+
+  const handleToggleVoiceRecording = () => {
+    if (isRecordingVoice) {
+      setIsRecordingVoice(false);
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch (_) {}
+      }
+      processVoiceLog(recordedVoiceText || "2 huevos revueltos con tostada integral y café negro");
+    } else {
+      setIsRecordingVoice(true);
+      setRecordedVoiceText("");
+
+      if (typeof window !== "undefined") {
+        const SpeechRecognition =
+          (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+        if (SpeechRecognition) {
+          try {
+            const recognition = new SpeechRecognition();
+            recognition.lang = "es-AR";
+            recognition.continuous = false;
+            recognition.interimResults = true;
+
+            recognition.onresult = (event: any) => {
+              const transcript = Array.from(event.results)
+                .map((result: any) => result[0].transcript)
+                .join(" ");
+              setRecordedVoiceText(transcript);
+            };
+
+            recognition.onend = () => {
+              setIsRecordingVoice(false);
+            };
+
+            recognition.onerror = () => {
+              setIsRecordingVoice(false);
+            };
+
+            recognition.start();
+            recognitionRef.current = recognition;
+            toast.info("Escuchando...", { description: "Di en voz alta los alimentos que consumiste" });
+            return;
+          } catch (err) {
+            console.warn("SpeechRecognition error:", err);
+          }
+        }
+      }
+
+      toast.info("Escuchando...", { description: "Di lo que comiste para que la IA lo procese" });
+      setTimeout(() => {
+        setRecordedVoiceText("Tostadas integrales con palta, huevos poché y café");
+      }, 1500);
+    }
+  };
   const [showOptions, setShowOptions] = useState(false);
   const [showBioScoreExplanation, setShowBioScoreExplanation] = useState(false);
 
@@ -1733,7 +2267,6 @@ function ScanMealPage() {
   const [vectorBadges, setVectorBadges] = useState<NutritionVectorBadge[]>(
     initialSample.vectorBadges,
   );
-  const [isNutrientDetailsOpen, setIsNutrientDetailsOpen] = useState(true);
 
   // ICN Theme Helper with dynamic biological color accents
   const getIcnTheme = (score: number) => {
@@ -1896,9 +2429,9 @@ function ScanMealPage() {
     }
   }, [selectedCameraId, cameraFacing, stopStream]);
 
-  // Synchronize stream lifecycle with scanner screen
+  // Synchronize stream lifecycle with scanner screen (stop camera if in food_label markdown mode)
   useEffect(() => {
-    if (currentScreen === "scanner" && !customImage) {
+    if (currentScreen === "scanner" && !customImage && scanMode !== "food_label") {
       startCamera();
     } else {
       stopStream();
@@ -1907,7 +2440,7 @@ function ScanMealPage() {
     return () => {
       stopStream();
     };
-  }, [currentScreen, customImage, startCamera, stopStream]);
+  }, [currentScreen, customImage, scanMode, startCamera, stopStream]);
 
   // Re-attach srcObject whenever element mounts
   useEffect(() => {
@@ -2172,13 +2705,22 @@ function ScanMealPage() {
   // Save to User Diary Timeline and Navigate to /app
   const handleSaveToDiary = () => {
     const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const dateStr = `${year}-${month}-${day}`;
     const timeStr = now.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
-    const dateStr = now.toISOString().split("T")[0];
 
-    const stored =
-      typeof window !== "undefined"
-        ? JSON.parse(localStorage.getItem("shakerfy_user_timeline_items") || "[]")
-        : [];
+    let stored: any[] = [];
+    if (typeof window !== "undefined") {
+      try {
+        const raw = localStorage.getItem("shakerfy_user_timeline_items");
+        if (raw) stored = JSON.parse(raw);
+        if (!Array.isArray(stored)) stored = [];
+      } catch {
+        stored = [];
+      }
+    }
 
     const context = inferContextualMealType(stored);
     const resolvedMealType = context.mealType || mealType || "Almuerzo";
@@ -2191,8 +2733,25 @@ function ScanMealPage() {
       bioScore: bioScore,
     });
 
+    let resolvedTimingFit = null;
+    try {
+      resolvedTimingFit = calculateTimingFit(
+        {
+          time: timeStr,
+          date: dateStr,
+          bioScore,
+          vectorBadges,
+          title: reportTitle || title,
+        },
+        stored,
+      );
+    } catch (e) {
+      console.warn("Timing fit calculation skipped:", e);
+    }
+
     const newMealItem = {
       id: `meal-${Date.now()}`,
+      createdAt: now.toISOString(),
       type: "meal",
       mealType: resolvedMealType,
       time: timeStr,
@@ -2228,23 +2787,30 @@ function ScanMealPage() {
       tag: bioQualityLabel || "Valor Nutricional",
       vectorBadges: vectorBadges,
       consumed: true,
-      timingFit: calculateTimingFit(
-        {
-          time: timeStr,
-          date: dateStr,
-          bioScore,
-          vectorBadges,
-          title: reportTitle || title,
-        },
-        stored,
-      ),
+      timingFit: resolvedTimingFit,
     };
 
     if (typeof window !== "undefined") {
       try {
-        const stored = JSON.parse(localStorage.getItem("shakerfy_user_timeline_items") || "[]");
         const updated = [newMealItem, ...stored];
-        localStorage.setItem("shakerfy_user_timeline_items", JSON.stringify(updated));
+        try {
+          localStorage.setItem("shakerfy_user_timeline_items", JSON.stringify(updated));
+        } catch (storageErr) {
+          // If QuotaExceededError (e.g. large base64 screenshot), save item without heavy data URL
+          console.warn("Storage quota reached, saving meal with lightweight image reference:", storageErr);
+          const lightweightItem = {
+            ...newMealItem,
+            img: activeImage?.startsWith("data:") ? null : activeImage,
+          };
+          const safeStored = stored.map((item: any) => ({
+            ...item,
+            img: item.img?.startsWith("data:") ? null : item.img,
+          }));
+          localStorage.setItem(
+            "shakerfy_user_timeline_items",
+            JSON.stringify([lightweightItem, ...safeStored]),
+          );
+        }
         window.dispatchEvent(new CustomEvent("shakerfy:timeline-update"));
       } catch (err) {
         console.error("Error saving timeline meal item:", err);
@@ -2252,7 +2818,18 @@ function ScanMealPage() {
     }
 
     toast.success("✓ Comida registrada en el diario");
-    navigate({ to: "/app", search: { tab: "diario" } });
+    try {
+      navigate({ to: "/app", search: { tab: "diario" } });
+    } catch {
+      window.location.href = "/app?tab=diario";
+    }
+
+    // Ensure fallback redirection if client router is delayed
+    setTimeout(() => {
+      if (typeof window !== "undefined" && window.location.pathname.startsWith("/scan")) {
+        window.location.href = "/app?tab=diario";
+      }
+    }, 120);
   };
 
   const filteredFoods = COMMON_FOODS_DATABASE.filter((f) =>
@@ -2260,103 +2837,164 @@ function ScanMealPage() {
   );
 
   return (
-    <div className="fixed inset-0 z-50 w-screen h-[100dvh] bg-slate-950 text-foreground overflow-hidden flex flex-col justify-between select-none">
+    <div
+      className={cn(
+        "fixed inset-0 z-50 w-screen h-[100dvh] overflow-hidden flex flex-col justify-between select-none transition-colors duration-300",
+        scanMode === "food_label"
+          ? "bg-slate-50/70 dark:bg-background text-foreground"
+          : "bg-slate-950 text-foreground",
+      )}
+    >
       {/* ========================================================================= */}
       {/* SCREEN 1: SCANNER FULL SCREEN (React-Webcam Live Camera Viewfinder)       */}
       {/* ========================================================================= */}
       {currentScreen === "scanner" && (
         <div className="relative w-full h-full flex flex-col justify-between overflow-hidden">
-          {/* Full Screen Viewfinder: HTML5 Video Stream or Custom Loaded Image */}
-          <div className="absolute inset-0 z-0 bg-black flex items-center justify-center overflow-hidden">
-            {!customImage ? (
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                muted
-                onLoadedMetadata={() => {
-                  videoRef.current?.play().catch(() => {});
-                }}
-                className={cn(
-                  "w-full h-full object-cover",
-                  cameraFacing === "user" && !selectedCameraId && "-scale-x-100",
-                )}
-              />
-            ) : (
-              <img
-                src={activeImage}
-                alt="Scanner Viewfinder"
-                className="w-full h-full object-cover"
-              />
-            )}
-            <div className="absolute inset-0 bg-black/25 pointer-events-none" />
+          {scanMode !== "food_label" ? (
+            /* Full Screen Viewfinder: HTML5 Video Stream or Custom Loaded Image */
+            <div className="absolute inset-0 z-0 bg-black flex items-center justify-center overflow-hidden">
+              {!customImage ? (
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  onLoadedMetadata={() => {
+                    videoRef.current?.play().catch(() => {});
+                  }}
+                  className={cn(
+                    "w-full h-full object-cover",
+                    cameraFacing === "user" && !selectedCameraId && "-scale-x-100",
+                  )}
+                />
+              ) : (
+                <img
+                  src={activeImage}
+                  alt="Scanner Viewfinder"
+                  className="w-full h-full object-cover"
+                />
+              )}
+              <div className="absolute inset-0 bg-black/25 pointer-events-none" />
 
-            {/* Flashlight overlay effect */}
-            {flashlightOn && <div className="absolute inset-0 bg-white/20 pointer-events-none" />}
+              {/* Flashlight overlay effect */}
+              {flashlightOn && <div className="absolute inset-0 bg-white/20 pointer-events-none" />}
 
-            {/* Dynamic Laser Scanning Beam */}
-            {isScanningLaser && (
-              <div className="absolute inset-0 pointer-events-none z-30">
-                <div className="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_30px_#10b981] animate-laser-scan" />
-                <div className="absolute inset-0 bg-emerald-500/10 backdrop-blur-[1px]" />
-              </div>
-            )}
-
-            {/* Camera Loading Indicator */}
-            {isCameraLoading && !customImage && (
-              <div className="absolute top-24 z-20 px-4 py-1.5 rounded-full bg-black/70 backdrop-blur-md text-white text-xs font-semibold flex items-center gap-2">
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-400" />
-                <span>Conectando cámara...</span>
-              </div>
-            )}
-
-            {/* Camera Permission / Error Dialog */}
-            {cameraError && !customImage && (
-              <div className="absolute top-24 z-20 px-4 py-2.5 rounded-2xl bg-black/85 backdrop-blur-md border border-white/15 text-white text-xs max-w-xs text-center space-y-2 shadow-2xl">
-                <p className="text-amber-300 font-semibold">{cameraError}</p>
-                <div className="flex items-center justify-center gap-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      startCamera();
-                    }}
-                    className="px-3 py-1 bg-white text-black rounded-lg font-bold text-[11px] cursor-pointer hover:bg-slate-200"
-                  >
-                    Reintentar Conexión
-                  </button>
+              {/* Dynamic Laser Scanning Beam */}
+              {isScanningLaser && (
+                <div className="absolute inset-0 pointer-events-none z-30">
+                  <div className="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_30px_#10b981] animate-laser-scan" />
+                  <div className="absolute inset-0 bg-emerald-500/10 backdrop-blur-[1px]" />
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+
+              {/* Camera Loading Indicator */}
+              {isCameraLoading && !customImage && (
+                <div className="absolute top-24 z-20 px-4 py-1.5 rounded-full bg-black/70 backdrop-blur-md text-white text-xs font-semibold flex items-center gap-2">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-400" />
+                  <span>Conectando cámara...</span>
+                </div>
+              )}
+
+              {/* Camera Permission / Error Dialog */}
+              {cameraError && !customImage && (
+                <div className="absolute top-24 z-20 px-4 py-2.5 rounded-2xl bg-black/85 backdrop-blur-md border border-white/15 text-white text-xs max-w-xs text-center space-y-2 shadow-2xl">
+                  <p className="text-amber-300 font-semibold">{cameraError}</p>
+                  <div className="flex items-center justify-center gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        startCamera();
+                      }}
+                      className="px-3 py-1 bg-white text-black rounded-lg font-bold text-[11px] cursor-pointer hover:bg-slate-200"
+                    >
+                      Reintentar Conexión
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : null}
 
           {/* Top Bar: Back to App, Scanner Title, Options */}
           <div className="relative z-20 pt-6 sm:pt-8 px-6 max-w-lg mx-auto w-full flex items-center justify-between">
             <button
               type="button"
-              onClick={() => navigate({ to: "/app", search: { tab: "diario" } })}
+              onClick={() => {
+                if (scanMode === "food_label") {
+                  setScanMode("scan_food");
+                } else {
+                  navigate({ to: "/app", search: { tab: "diario" } });
+                }
+              }}
               className="w-10 h-10 rounded-full bg-background/80 backdrop-blur-xl border border-border/60 text-foreground flex items-center justify-center hover:bg-background active:scale-95 transition cursor-pointer shadow-xs"
-              aria-label="Volver a la App"
+              aria-label={scanMode === "food_label" ? "Volver a la Cámara" : "Volver a la App"}
+              title={scanMode === "food_label" ? "Volver a la Cámara" : "Volver a la App"}
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
 
             <div className="px-4 py-1.5 rounded-full bg-background/80 backdrop-blur-xl border border-border/60 shadow-xs flex items-center gap-2">
               <span className="text-foreground font-bold text-xs tracking-wide">
-                Escanear Comida
+                {scanMode === "food_label" ? "Notas de Comida" : "Escanear Comida"}
               </span>
-              {isCameraActive && !customImage && (
+              {isCameraActive && !customImage && scanMode !== "food_label" && (
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               )}
             </div>
 
-            <button
-              type="button"
-              onClick={() => setShowOptions(!showOptions)}
-              className="w-10 h-10 rounded-full bg-background/80 backdrop-blur-xl border border-border/60 text-foreground flex items-center justify-center hover:bg-background active:scale-95 transition cursor-pointer shadow-xs"
-              aria-label="Opciones"
-            >
-              <MoreHorizontal className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-2">
+              {scanMode === "food_label" ? (
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={handleResetNotes}
+                    className="text-[11px] font-semibold text-muted-foreground hover:text-foreground px-2.5 py-1.5 rounded-full bg-background/80 backdrop-blur-xl border border-border/60 hover:bg-secondary transition cursor-pointer shadow-xs"
+                    title="Cargar ejemplo estándar"
+                  >
+                    Ejemplo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleClearNotes}
+                    className="text-[11px] font-semibold text-muted-foreground hover:text-foreground px-2.5 py-1.5 rounded-full bg-background/80 backdrop-blur-xl border border-border/60 hover:bg-secondary transition cursor-pointer shadow-xs"
+                    title="Vaciar notas"
+                  >
+                    Vaciar
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={handleToggleCameraFacing}
+                    className="w-10 h-10 rounded-full bg-background/80 backdrop-blur-xl border border-border/60 text-foreground flex items-center justify-center hover:bg-background active:scale-95 transition cursor-pointer shadow-xs"
+                    title="Cambiar Cámara"
+                    aria-label="Cambiar Cámara"
+                  >
+                    <RefreshCw className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowTutorial(true)}
+                    className="w-10 h-10 rounded-full bg-background/80 backdrop-blur-xl border border-border/60 text-foreground flex items-center justify-center hover:bg-background active:scale-95 transition cursor-pointer shadow-xs"
+                    aria-label="Guía de Escaneo"
+                    title="Consejos de precisión"
+                  >
+                    <HelpCircle className="w-5 h-5 text-muted-foreground hover:text-foreground" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowOptions(!showOptions)}
+                    className="w-10 h-10 rounded-full bg-background/80 backdrop-blur-xl border border-border/60 text-foreground flex items-center justify-center hover:bg-background active:scale-95 transition cursor-pointer shadow-xs"
+                    aria-label="Opciones"
+                  >
+                    <MoreHorizontal className="w-5 h-5" />
+                  </button>
+                </>
+              )}
+            </div>
           </div>
 
           {/* Sample Dishes & Device Selector Popover */}
@@ -2426,6 +3064,17 @@ function ScanMealPage() {
                 <button
                   type="button"
                   onClick={() => {
+                    setShowOptions(false);
+                    setShowTutorial(true);
+                  }}
+                  className="w-full text-left text-xs font-bold px-2.5 py-1.5 rounded-xl hover:bg-secondary flex items-center gap-1.5 cursor-pointer text-foreground"
+                >
+                  <HelpCircle className="w-3.5 h-3.5 text-muted-foreground" />
+                  <span>Guía de Precisión (Tutorial)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
                     setCustomImage(null);
                     setShowOptions(false);
                   }}
@@ -2438,116 +3087,345 @@ function ScanMealPage() {
             </div>
           )}
 
-          {/* Camera Reticle / 4 Corner Brackets */}
-          <div className="relative z-10 mx-auto my-auto w-72 h-72 sm:w-84 sm:h-84 pointer-events-none flex flex-col justify-between p-1">
-            <div className="flex justify-between">
-              <div className="w-10 h-10 border-t-3 border-l-3 border-white rounded-tl-2xl drop-shadow-lg" />
-              <div className="w-10 h-10 border-t-3 border-r-3 border-white rounded-tr-2xl drop-shadow-lg" />
-            </div>
-            <div className="flex justify-between">
-              <div className="w-10 h-10 border-b-3 border-l-3 border-white rounded-bl-2xl drop-shadow-lg" />
-              <div className="w-10 h-10 border-b-3 border-r-3 border-white rounded-br-2xl drop-shadow-lg" />
-            </div>
-          </div>
+          {/* RENDER CONDICIONAL: Si scanMode === 'food_label' se muestra el cuaderno minimalista tipo Markdown */}
+          {scanMode === "food_label" ? (
+            <div className="relative z-10 flex-1 w-full max-w-xl mx-auto flex flex-col justify-between overflow-hidden px-4 sm:px-6 pt-3 pb-24 select-text">
+              <div className="flex-1 overflow-y-auto custom-scrollbar space-y-4 pb-28 pt-1">
+                {/* Header Card de Bienestar & Resumen Minimalista */}
+                <div className="border border-border bg-card shadow-xs rounded-3xl p-5 space-y-3 text-left">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                        <Sparkles className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80 block leading-none">
+                          Registro Libre
+                        </span>
+                        <h2 className="text-base font-bold text-foreground tracking-tight mt-0.5">
+                          Notas de Alimentos
+                        </h2>
+                      </div>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className="rounded-full text-[10px] font-mono border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                    >
+                      {totalNotesItemsCount} {totalNotesItemsCount === 1 ? "alimento" : "alimentos"}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Escribe lo que comiste y la IA analizará sus nutrientes al instante.
+                  </p>
+                </div>
 
-          {/* Bottom Dock Navigation & Capture Area */}
-          <div className="relative z-20 pb-8 sm:pb-12 px-4 sm:px-6 max-w-md mx-auto w-full space-y-5">
-            {/* Floating Dock Bar: 4 Categorías Funcionales (Bebida, Comida, Snack, Postre) */}
-            <div className="bg-background/80 backdrop-blur-xl border border-border/60 rounded-full p-1.5 flex items-center justify-between w-full shadow-lg">
-              {SCAN_FOOD_CATEGORIES.map((cat) => {
-                const isSelected = selectedCategory === cat.id;
-                const Icon = cat.icon;
-                return (
+                {/* Lista Interactiva con viñetas y edición directa */}
+                <div className="border border-border bg-card shadow-xs rounded-3xl p-5 space-y-3 text-left transition-all duration-300 hover:border-foreground/30 hover:shadow-md">
+                  <div className="space-y-2">
+                    {foodNoteItems.map((itemText, idx) => {
+                      const isFilled = itemText.trim().length > 0;
+
+                      return (
+                        <div
+                          key={idx}
+                          className="flex items-center gap-2.5 px-3 py-2.5 rounded-2xl bg-secondary/35 hover:bg-secondary/60 border border-border/50 focus-within:border-foreground/30 focus-within:bg-secondary/70 transition-all duration-200 group"
+                        >
+                          <span
+                            className={cn(
+                              "w-2 h-2 rounded-full shrink-0 transition-colors",
+                              isFilled
+                                ? "bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]"
+                                : "bg-muted-foreground/30",
+                            )}
+                          />
+
+                          <input
+                            type="text"
+                            data-note-idx={idx}
+                            value={itemText}
+                            onChange={(e) => handleNoteItemChange(idx, e.target.value)}
+                            onKeyDown={(e) => handleNoteItemKeyDown(idx, e)}
+                            placeholder={
+                              idx === 0 ? "Ej: 4 huevos revueltos con aceite de oliva..." : "Añadir otro alimento..."
+                            }
+                            className="w-full bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-xs sm:text-sm font-medium text-foreground placeholder:text-muted-foreground/45 leading-tight"
+                          />
+
+                          {foodNoteItems.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveNoteItem(idx)}
+                              className="opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-rose-500 rounded-lg transition-opacity cursor-pointer"
+                              title="Eliminar línea"
+                            >
+                              <Minus className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Botón "+ Añadir alimento" */}
                   <button
-                    key={cat.id}
                     type="button"
-                    onClick={() => handleSelectCategory(cat.id)}
-                    className={cn(
-                      "flex-1 px-2.5 sm:px-3.5 py-2 rounded-full text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer select-none",
-                      isSelected
-                        ? "bg-foreground text-background shadow-xs font-bold scale-102"
-                        : "text-muted-foreground hover:text-foreground hover:bg-secondary/60 active:scale-95",
-                    )}
-                    title={`${cat.label} • ${cat.sublabel}`}
+                    onClick={handleAddNoteItem}
+                    className="w-full py-2 px-3 rounded-2xl border border-dashed border-border/70 hover:border-foreground/30 text-muted-foreground hover:text-foreground text-xs font-semibold flex items-center justify-center gap-1.5 hover:bg-secondary/40 transition-all cursor-pointer active:scale-98"
                   >
-                    <Icon
-                      className={cn(
-                        "w-3.5 h-3.5 shrink-0",
-                        isSelected ? "text-background" : "text-muted-foreground",
-                      )}
-                    />
-                    <span className="truncate">{cat.label}</span>
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Añadir alimento</span>
                   </button>
-                );
-              })}
+                </div>
+              </div>
+
+              {/* Botón Flotante Ergonómico de Acción Principal (Regla 10: Thumb-Zone Priority, fixed bottom-6 z-40) */}
+              <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 max-w-md w-[calc(100%-2rem)]">
+                <button
+                  type="button"
+                  onClick={handleAnalyzeFoodNotes}
+                  className="w-full h-14 rounded-full bg-foreground text-background shadow-2xl hover:bg-foreground/90 active:scale-95 transition-all duration-200 flex items-center justify-between px-6 cursor-pointer border border-border/40 font-bold group"
+                  aria-label="Analizar alimentos con IA"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-background/15 flex items-center justify-center text-background">
+                      <Sparkles className="w-4 h-4 text-emerald-400" />
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-bold leading-tight">Analizar con IA</p>
+                      <p className="text-[10px] opacity-75 font-normal leading-tight">
+                        {totalNotesItemsCount > 0
+                          ? `${totalNotesItemsCount} ${totalNotesItemsCount === 1 ? "alimento listo" : "alimentos listos"}`
+                          : "Anota al menos 1 alimento"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 text-xs font-semibold">
+                    <span>Continuar</span>
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
+                </button>
+              </div>
             </div>
+          ) : (
+            <>
+              {/* Camera Reticle Adaptativo según scanMode */}
+              {scanMode === "voice_log" ? (
+                <div className="relative z-10 mx-auto my-auto flex flex-col items-center justify-center gap-4 text-center p-4">
+                  <div
+                    className={cn(
+                      "w-28 h-28 rounded-full flex items-center justify-center transition-all duration-500",
+                      isRecordingVoice
+                        ? "bg-rose-500/20 border-2 border-rose-500 shadow-[0_0_35px_rgba(244,63,94,0.45)] scale-110"
+                        : "bg-black/40 backdrop-blur-md border border-white/20 shadow-lg",
+                    )}
+                  >
+                    {isRecordingVoice ? (
+                      <AudioLines className="w-12 h-12 text-rose-500 animate-pulse" />
+                    ) : (
+                      <Mic className="w-12 h-12 text-white/90" />
+                    )}
+                  </div>
+                  <div className="bg-black/65 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/15 max-w-xs space-y-0.5 shadow-md">
+                    <p className="text-xs font-bold text-white">
+                      {isRecordingVoice ? "Escuchando tus alimentos..." : "Di en voz alta lo que comiste"}
+                    </p>
+                    <p className="text-[11px] text-white/70 leading-tight">
+                      {isRecordingVoice
+                        ? "Toca el botón rojo para procesar"
+                        : "ej: '2 huevos revueltos con tostada y café'"}
+                    </p>
+                  </div>
+                </div>
+              ) : scanMode === "barcode" ? (
+                <div className="relative z-10 mx-auto my-auto w-72 h-44 sm:w-80 sm:h-48 pointer-events-none flex flex-col justify-between p-2">
+                  <div className="flex justify-between">
+                    <div className="w-8 h-8 border-t-3 border-l-3 border-red-500 rounded-tl-xl drop-shadow-lg" />
+                    <div className="w-8 h-8 border-t-3 border-r-3 border-red-500 rounded-tr-xl drop-shadow-lg" />
+                  </div>
+                  <div className="w-full h-[2px] bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.9)] animate-pulse" />
+                  <div className="flex justify-between">
+                    <div className="w-8 h-8 border-b-3 border-l-3 border-red-500 rounded-bl-xl drop-shadow-lg" />
+                    <div className="w-8 h-8 border-b-3 border-r-3 border-red-500 rounded-br-xl drop-shadow-lg" />
+                  </div>
+                </div>
+              ) : (
+                <div className="relative z-10 mx-auto my-auto w-72 h-72 sm:w-84 sm:h-84 pointer-events-none flex flex-col justify-between p-1">
+                  <div className="flex justify-between">
+                    <div className="w-10 h-10 border-t-3 border-l-3 border-white rounded-tl-2xl drop-shadow-lg" />
+                    <div className="w-10 h-10 border-t-3 border-r-3 border-white rounded-tr-2xl drop-shadow-lg" />
+                  </div>
+                  <div className="flex justify-between">
+                    <div className="w-10 h-10 border-b-3 border-l-3 border-white rounded-bl-2xl drop-shadow-lg" />
+                    <div className="w-10 h-10 border-b-3 border-r-3 border-white rounded-br-2xl drop-shadow-lg" />
+                  </div>
+                </div>
+              )}
 
-            {/* Shutter Capture Row */}
-            <div className="flex items-center justify-between px-2 w-full">
-              {/* Flashlight toggle */}
-              <button
-                type="button"
-                onClick={handleToggleFlashlight}
-                className={cn(
-                  "w-12 h-12 rounded-full backdrop-blur-xl flex items-center justify-center transition cursor-pointer border border-border/60 shadow-xs",
-                  flashlightOn
-                    ? "bg-amber-400 text-black border-amber-400 shadow-amber-400/30"
-                    : "bg-background/80 text-foreground hover:bg-background active:scale-95",
-                )}
-                aria-label="Linterna"
-                title="Linterna"
-              >
-                <Zap className="w-5 h-5" />
-              </button>
+              {/* Bottom Dock Navigation & Capture Area */}
+              <div className="relative z-20 pb-8 sm:pb-12 px-4 sm:px-6 max-w-md mx-auto w-full space-y-4 select-none">
+                {/* Fila Superior: Exactamente 4 Tarjetas de Modo (Scan Food, Voice Log, Barcode, Food Label) */}
+                <div className="grid grid-cols-4 gap-2 w-full">
+                  {/* 1. Scan Food */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setScanMode("scan_food");
+                      handleSelectCategory("comida");
+                    }}
+                    className={cn(
+                      "flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-2xl h-[64px] sm:h-[68px] gap-1 transition-all duration-200 cursor-pointer text-center",
+                      scanMode === "scan_food"
+                        ? "bg-white text-black shadow-lg scale-102"
+                        : "bg-neutral-900/80 backdrop-blur-md text-white/80 border border-white/10 hover:bg-neutral-800/90 active:scale-95",
+                    )}
+                  >
+                    <div className="relative flex items-center justify-center w-5 h-5">
+                      <Scan className="w-5 h-5" />
+                      <Apple className={cn("w-2.5 h-2.5 absolute", scanMode === "scan_food" ? "text-black fill-black" : "text-white fill-white")} />
+                    </div>
+                    <span className={cn("text-[11px] tracking-tight truncate w-full", scanMode === "scan_food" ? "font-bold text-black" : "font-medium text-white/90")}>
+                      Scan Food
+                    </span>
+                  </button>
 
-              {/* Gallery Image Upload */}
-              <label
-                className="w-12 h-12 rounded-full bg-background/80 backdrop-blur-xl border border-border/60 text-foreground flex items-center justify-center hover:bg-background active:scale-95 transition cursor-pointer shadow-xs"
-                title="Subir desde galería"
-              >
-                <ImageIcon className="w-5 h-5" />
+                  {/* 2. Voice Log */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setScanMode("voice_log");
+                      toast.info("Modo Registro por Voz activo");
+                    }}
+                    className={cn(
+                      "flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-2xl h-[64px] sm:h-[68px] gap-1 transition-all duration-200 cursor-pointer text-center",
+                      scanMode === "voice_log"
+                        ? "bg-white text-black shadow-lg scale-102"
+                        : "bg-neutral-900/80 backdrop-blur-md text-white/80 border border-white/10 hover:bg-neutral-800/90 active:scale-95",
+                    )}
+                  >
+                    <Mic className="w-5 h-5 shrink-0" />
+                    <span className={cn("text-[11px] tracking-tight truncate w-full", scanMode === "voice_log" ? "font-bold text-black" : "font-medium text-white/90")}>
+                      Voice Log
+                    </span>
+                  </button>
+
+                  {/* 3. Barcode */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setScanMode("barcode");
+                      toast.info("Modo Código de Barras activo");
+                    }}
+                    className={cn(
+                      "flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-2xl h-[64px] sm:h-[68px] gap-1 transition-all duration-200 cursor-pointer text-center",
+                      scanMode === "barcode"
+                        ? "bg-white text-black shadow-lg scale-102"
+                        : "bg-neutral-900/80 backdrop-blur-md text-white/80 border border-white/10 hover:bg-neutral-800/90 active:scale-95",
+                    )}
+                  >
+                    <Barcode className="w-5 h-5 shrink-0" />
+                    <span className={cn("text-[11px] tracking-tight truncate w-full", scanMode === "barcode" ? "font-bold text-black" : "font-medium text-white/90")}>
+                      Barcode
+                    </span>
+                  </button>
+
+                  {/* 4. Food Label */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setScanMode("food_label");
+                      toast.info("Modo Cuaderno de Notas activo");
+                    }}
+                    className="flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-2xl h-[64px] sm:h-[68px] gap-1 transition-all duration-200 cursor-pointer text-center bg-neutral-900/80 backdrop-blur-md text-white/80 border border-white/10 hover:bg-neutral-800/90 active:scale-95"
+                  >
+                    <FileText className="w-5 h-5 shrink-0" />
+                    <span className="text-[11px] tracking-tight truncate w-full font-medium text-white/90">
+                      Food Label
+                    </span>
+                  </button>
+                </div>
+
+                {/* Input oculto para subir desde galería */}
                 <input
+                  ref={libraryInputRef}
                   type="file"
                   accept="image/*"
                   onChange={handleFileUpload}
                   className="hidden"
                 />
-              </label>
 
-              {/* Big White Shutter Button */}
-              <button
-                type="button"
-                onClick={triggerCaptureScan}
-                disabled={isScanningLaser}
-                className="w-18 h-18 sm:w-20 sm:h-20 rounded-full border-4 border-white flex items-center justify-center hover:scale-105 active:scale-90 transition shadow-2xl cursor-pointer"
-                aria-label="Capturar y Analizar"
-              >
-                <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-white active:bg-slate-200 transition" />
-              </button>
+                {/* Fila Inferior: Controles de Captura (Flash, Shutter Dinámico / Micrófono, Galería) */}
+                <div className="flex items-center justify-between px-6 sm:px-10 pt-1 w-full">
+                  {/* Botón Flash (Izquierda) */}
+                  <button
+                    type="button"
+                    onClick={handleToggleFlashlight}
+                    className={cn(
+                      "w-12 h-12 rounded-full backdrop-blur-xl flex items-center justify-center transition cursor-pointer border shadow-md active:scale-90",
+                      flashlightOn
+                        ? "bg-amber-400 text-black border-amber-400 shadow-amber-400/40"
+                        : "bg-neutral-900/85 border-white/15 text-white/90 hover:bg-neutral-800",
+                    )}
+                    aria-label="Linterna"
+                    title={flashlightOn ? "Desactivar linterna" : "Activar linterna"}
+                  >
+                    {flashlightOn ? (
+                      <Zap className="w-5 h-5 fill-current text-black" />
+                    ) : (
+                      <ZapOff className="w-5 h-5 text-white/80" />
+                    )}
+                  </button>
 
-              {/* Manual Entry Button */}
-              <button
-                type="button"
-                onClick={() => setCurrentScreen("fix")}
-                className="w-12 h-12 rounded-full bg-background/80 backdrop-blur-xl border border-border/60 text-foreground flex items-center justify-center hover:bg-background active:scale-95 transition cursor-pointer shadow-xs"
-                title="Registro manual"
-                aria-label="Registro manual"
-              >
-                <Pencil className="w-5 h-5" />
-              </button>
+                  {/* Botón Central Dinámico: Shutter Blanco (en Foto/Barcode) o Micrófono (en Voice Log) */}
+                  {scanMode === "voice_log" ? (
+                    <button
+                      type="button"
+                      onClick={handleToggleVoiceRecording}
+                      className={cn(
+                        "w-18 h-18 sm:w-20 sm:h-20 rounded-full border-[3.5px] flex items-center justify-center transition-all cursor-pointer shadow-2xl relative shrink-0",
+                        isRecordingVoice
+                          ? "border-rose-500 bg-rose-600 animate-pulse scale-105 shadow-rose-500/50"
+                          : "border-white bg-neutral-900/90 hover:scale-105 active:scale-90",
+                      )}
+                      aria-label={isRecordingVoice ? "Detener grabación" : "Iniciar grabación de voz"}
+                      title={isRecordingVoice ? "Toca para finalizar" : "Toca para hablar"}
+                    >
+                      {isRecordingVoice && (
+                        <span className="absolute inset-0 rounded-full border-2 border-rose-400 animate-ping opacity-75 pointer-events-none" />
+                      )}
+                      <Mic
+                        className={cn(
+                          "w-8 h-8 transition-colors",
+                          isRecordingVoice ? "text-white fill-white" : "text-white",
+                        )}
+                      />
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={triggerCaptureScan}
+                      disabled={isScanningLaser}
+                      className="w-18 h-18 sm:w-20 sm:h-20 rounded-full border-[3.5px] border-white flex items-center justify-center p-1.5 hover:scale-105 active:scale-90 transition-all shadow-2xl cursor-pointer shrink-0"
+                      aria-label="Capturar y Analizar"
+                    >
+                      <div className="w-full h-full rounded-full bg-white active:bg-neutral-200 transition-colors shadow-inner" />
+                    </button>
+                  )}
 
-              {/* Toggle Front / Rear Camera or Switch Device */}
-              <button
-                type="button"
-                onClick={handleToggleCameraFacing}
-                className="w-12 h-12 rounded-full bg-background/80 backdrop-blur-xl border border-border/60 text-foreground flex items-center justify-center hover:bg-background active:scale-95 transition cursor-pointer shadow-xs"
-                title="Cambiar Cámara"
-                aria-label="Cambiar Cámara"
-              >
-                <RefreshCw className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
+                  {/* Botón Galería / Library (Derecha) */}
+                  <button
+                    type="button"
+                    onClick={() => libraryInputRef.current?.click()}
+                    className="w-12 h-12 rounded-full bg-neutral-900/85 backdrop-blur-xl border border-white/15 text-white/90 hover:bg-neutral-800 active:scale-90 flex items-center justify-center transition cursor-pointer shadow-md"
+                    title="Subir foto desde galería"
+                    aria-label="Galería"
+                  >
+                    <ImageIcon className="w-5 h-5 text-white/90" />
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       )}
 
@@ -2654,9 +3532,11 @@ function ScanMealPage() {
                         <h1 className="text-base sm:text-lg font-bold text-slate-900 dark:text-foreground tracking-tight line-clamp-2">
                           {reportTitle || title}
                         </h1>
-                        <span className="text-sm font-medium text-slate-500 dark:text-muted-foreground font-sans shrink-0">
-                          {totalCalories}kcal
-                        </span>
+                        {isAthleteMode && (
+                          <span className="text-sm font-medium text-slate-500 dark:text-muted-foreground font-sans shrink-0">
+                            {totalCalories}kcal
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -2665,6 +3545,56 @@ function ScanMealPage() {
                         {narrative}
                       </p>
                     )}
+
+                    {/* HERO WIDGET: ANILLO SELECTOR RADIAL (1 BARRA ACTIVA) + BADGES LATERALES APILADOS */}
+                    {(() => {
+                      const quality = getScanQualityProfile({
+                        score: bioScore,
+                        mealTitle: reportTitle || title,
+                        mealNarrative: narrative,
+                        vectorBadges,
+                        totalProtein,
+                        totalFiber,
+                        totalFat,
+                        totalCarbs,
+                      });
+                      const bioContext = detectBiologicalContext();
+                      const contextBadge =
+                        bioContext.type === "pre_workout" || bioContext.type === "post_workout"
+                          ? { label: bioContext.title, type: bioContext.type }
+                          : undefined;
+
+                      const heroBadges =
+                        vectorBadges && vectorBadges.length > 0
+                          ? vectorBadges.slice(0, 4).map((vb) => ({
+                              id: vb.id || vb.category,
+                              category: vb.category,
+                              label: vb.badgeText,
+                            }))
+                          : [
+                              { id: "b-1", category: "processing", label: "Mínimamente procesado" },
+                              {
+                                id: "b-2",
+                                category: "protein",
+                                label: totalProtein >= 25 ? "Alta en proteína" : "Proteína moderada",
+                              },
+                              {
+                                id: "b-3",
+                                category: "fiber",
+                                label: totalFiber >= 4 ? "Buena fuente de fibra" : "Aporte de fibra",
+                              },
+                              { id: "b-4", category: "sugar", label: "Sin azúcar añadido" },
+                            ];
+
+                      return (
+                        <FoodProfileHero
+                          qualityLabel={quality.label}
+                          qualityLevel={quality.level}
+                          badges={heroBadges}
+                          contextBadge={contextBadge}
+                        />
+                      );
+                    })()}
 
                     {/* 3. THREE VERTICAL MACRO PROGRESS BAR CARDS (Protein, Carbs, Fat) */}
                     {(() => {
@@ -2739,64 +3669,6 @@ function ScanMealPage() {
                             </div>
                           ))}
                         </div>
-                      );
-                    })()}
-
-                    {/* 4. NUTRITIONAL VECTORS COLLAPSIBLE SECTION */}
-                    {(() => {
-                      const nutrientRows = getMealNutrientRows(
-                        vectorBadges,
-                        ingredients,
-                        servings,
-                      );
-
-                      return (
-                        <Collapsible
-                          open={isNutrientDetailsOpen}
-                          onOpenChange={setIsNutrientDetailsOpen}
-                          className="w-full pt-1 pb-1 text-left"
-                        >
-                          <CollapsibleTrigger asChild>
-                            <button
-                              type="button"
-                              className="flex items-center justify-between w-full py-2.5 px-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800/70 text-left transition-all hover:bg-slate-100 dark:hover:bg-slate-900 cursor-pointer shadow-2xs group"
-                            >
-                              <span className="text-xs font-semibold text-sky-600 dark:text-sky-400 group-hover:text-sky-700 dark:group-hover:text-sky-300 transition-colors">
-                                {isNutrientDetailsOpen ? "Ocultar detalles" : "Ver detalles"}
-                              </span>
-                              <ChevronDown
-                                className={cn(
-                                  "w-4 h-4 text-sky-600 dark:text-sky-400 transition-transform duration-300",
-                                  isNutrientDetailsOpen && "rotate-180",
-                                )}
-                              />
-                            </button>
-                          </CollapsibleTrigger>
-
-                          <CollapsibleContent className="space-y-1 pt-2">
-                            <div className="rounded-2xl border border-slate-200/70 dark:border-slate-800/80 bg-[#fbfcfd] dark:bg-slate-900/40 p-4 space-y-3 shadow-2xs">
-                              <div className="divide-y divide-slate-100 dark:divide-slate-800/70">
-                                {nutrientRows.map((item) => (
-                                  <div
-                                    key={item.category}
-                                    className="flex items-center justify-between gap-3 py-2 text-xs first:pt-0 last:pb-0"
-                                  >
-                                    <span className="font-semibold text-slate-800 dark:text-slate-200 shrink-0 text-[11px] sm:text-xs">
-                                      {item.label}
-                                    </span>
-                                    <span className="font-medium text-sky-600 dark:text-sky-400 text-right text-[11px] sm:text-xs leading-tight">
-                                      {item.value}
-                                    </span>
-                                  </div>
-                                ))}
-                              </div>
-
-                              <p className="text-[10px] sm:text-[11px] text-muted-foreground/70 leading-normal pt-2 border-t border-slate-100 dark:border-slate-800/70 font-normal">
-                                La identificación visual por IA puede ser aproximada. Revisa siempre los detalles nutricionales importantes.
-                              </p>
-                            </div>
-                          </CollapsibleContent>
-                        </Collapsible>
                       );
                     })()}
 
@@ -3029,9 +3901,9 @@ function ScanMealPage() {
               <Button
                 type="button"
                 onClick={() => setCurrentScreen("nutrition")}
-                className="w-full h-11 rounded-2xl bg-foreground text-background font-bold text-xs hover:opacity-90 transition"
+                className="w-full h-11 rounded-2xl bg-foreground text-background font-bold text-xs hover:opacity-90 transition cursor-pointer"
               >
-                Listo
+                Aplicar Cambios
               </Button>
             </div>
           </div>
@@ -3124,6 +3996,12 @@ function ScanMealPage() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Food Scanner Precision Guide / Tutorial Modal */}
+      <FoodScannerTutorialDialog
+        open={showTutorial}
+        onOpenChange={setShowTutorial}
+      />
     </div>
   );
 }

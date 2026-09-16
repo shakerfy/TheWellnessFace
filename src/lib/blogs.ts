@@ -1468,7 +1468,22 @@ Los resultados fueron categóricos:
 
 ---
 
-### 3. El Estudio JAMA y la Ley Suprema de la Adherencia (*Dansinger et al., 2005*)
+### 3. ¿Y los Micronutrientes? La Matriz Alimentaria vs. La Obsesión por Contar Miligramos
+
+Es crucial hacer una distinción biológica categórica: **los micronutrientes (vitaminas, minerales, fitonutrientes y fibra) son esenciales para la salud celular, la síntesis hormonal y la longevidad.** La regla 80/20 jamás le resta importancia a su papel fisiológico vital.
+
+Sin embargo, la industria de las apps nutricionales tradicionales ha incurrido en un grave error conceptual: hacer creer al usuario que la salud se logra pesando miligramo a miligramo de zinc, magnesio o vitamina C en una pantalla digital. La literatura en biodisponibilidad y sinergia somática (*Jacobs & Tapsell, 2007; Fardet, 2014*) demuestra por qué este enfoque es contraproducente:
+
+1. **La Sinergia de la Matriz Alimentaria:** Los micronutrientes no actúan de manera aislada; requieren la matriz viva de los alimentos reales para ser absorbidos (por ejemplo, las vitaminas liposolubles A, D, E y K necesitan ácidos grasos naturales para su asimilación; el hierro no hemo requiere la presencia de ácidos orgánicos en vegetales frescos).
+2. **Seguimiento Cuantitativo vs. Calidad Cualitativa:**
+   - **Calorías y Proteína:** Requieren calibración numérica diaria porque dictan el balance de energía, la conservación de masa muscular y la tasa metabólica basal.
+   - **Micronutrientes:** Se conquistan mediante la **variedad de colores, alimentos de temporada y comida mínimamente procesada**, no viviendo con la ansiedad de medir microgramos en una aplicación.
+
+En **Shakerfy**, este principio se materializa en nuestro **Framework de los 7 Vectores Nutricionales**: mientras el panel de control te libera de la sobrecarga cognitiva trackeando solo los 2 pilares cuantitativos con fricción cero, la calidad de tus vitaminas y minerales queda biológicamente asegurada mediante la promoción de comida real, diversa y sin ultraprocesados, cuidando tanto tu cuerpo como tu bienestar mental.
+
+---
+
+### 4. El Estudio JAMA y la Ley Suprema de la Adherencia (*Dansinger et al., 2005*)
 
 En uno de los ensayos clínicos más influyentes en medicina nutricional, publicado en el *Journal of the American Medical Association (JAMA)*, se asignaron participantes al azar a cuatro dietas con composiciones de macronutrientes drásticamente opuestas: Atkins (muy baja en carbos), Zone (macros balanceados 40-30-30), Ornish (muy baja en grasas) y Weight Watchers (control calórico por puntos).
 
@@ -1480,7 +1495,7 @@ Aquellos participantes capaces de sostener el plan en el tiempo alcanzaron sus m
 
 ---
 
-### 4. Neurociencia: Teoría de la Carga Cognitiva y el Modelo de Stanford
+### 5. Neurociencia: Teoría de la Carga Cognitiva y el Modelo de Stanford
 
 ¿Por qué las interfaces sobrecargadas sabotean los resultados?
 
@@ -1498,7 +1513,7 @@ Al reducir la interacción diaria a una vista **"Glanceable" de 2 segundos** con
 
 ---
 
-### 5. El Poder del Índice de Saciedad y Termogénesis (*Holt et al., 1995*)
+### 6. El Poder del Índice de Saciedad y Termogénesis (*Holt et al., 1995*)
 
 Centrarse en la proteína como el macro rey no es una decisión estética, sino neurobiológica:
 - **Efecto Térmico de los Alimentos (TEF):** El cuerpo gasta entre el **20% y 30% de la energía de la proteína** solo en digerirla y asimilarla (frente a 5-10% en carbohidratos y 0-3% en grasas).
@@ -1506,35 +1521,57 @@ Centrarse en la proteína como el macro rey no es una decisión estética, sino 
 
 ---
 
-### 6. Divulgación Progresiva: La Filosofía de Shakerfy
+### 7. Divulgación Progresiva: La Filosofía de Shakerfy
 
 La regla 80/20 no significa omitir la información avanzada; significa **ordenarla con inteligencia ergonómica**:
 
 1. **Slide 1 (Esencial - Fricción Cero):** 
-   - Anillo exterior Ámbar (Calorías Consumidas).
-   - Anillo interior Verde Botánico (Proteína Consumida).
+   - Anillo exterior Ámbar Cálido (Calorías Consumidas).
+   - Anillo interior Negro Núcleo (Proteína Consumida).
    - Es el panel que resuelve la consulta diaria en 2 segundos.
 2. **Slide 2 (Desglose Completo - A un toque):**
    - Gráfico de distribución porcentual.
-   - Detalle de Carbohidratos, Grasas y métricas ampliadas para cuando el atleta desea un análisis profundo.
+   - Detalle de Carbohidratos (Naranja), Grasas (Azul Cielo) y métricas ampliadas para cuando el atleta desea un análisis profundo.
+
+---
+
+### 8. La Ciencia de los Rangos Meta (*Target Ranges*) vs. La Ilusión del Número Fijo
+
+Uno de los errores más perjudiciales de la industria del software fitness tradicional es exigir al usuario cumplir un número rígido e inamovible (por ejemplo: exactamente *1,890 kcal* o *120g de proteína*). La investigación en fisiología metabólica y psicología del comportamiento (*Helms et al., 2014; Aragon et al., 2017*) demuestra por qué este enfoque sabotea la constancia:
+
+1. **La Fisiología Humana no es Determinista:** El gasto calórico diario (TDEE) oscila de forma natural entre un 5% y un 10% según la calidad del sueño, la temperatura ambiental, el estrés y el movimiento espontáneo no deportivo (NEAT). Además, los organismos reguladores internacionales permiten legalmente hasta un **±20% de variación** en las tablas nutricionales de alimentos. Pretender una exactitud milimétrica es una ficción estresante.
+2. **La Psicología de la "Zona de Acierto":** Cuando a un atleta se le impone una meta estática de 120g y consume 115g, su cerebro registra un *fracaso falso*. En cambio, los protocolos basados en **Rangos Meta (*Target Ranges*)** aumentan la tasa de adherencia a 12 meses en **más de un 60%**, transformando la alimentación en una experiencia de logro sostenible.
+
+#### Tabla Maestra de Rangos Científicos por Kilogramo (Shakerfy Framework):
+
+| Objetivo Fisiológico | Calorías (Energía Diaria) | Proteína (Masa Magra) | Grasas (Función Hormonal) | Carbohidratos (Combustible) |
+| :--- | :--- | :--- | :--- | :--- |
+| **Perder Peso (Déficit Moderado)** | **TDEE -15% a -25%** *(~23-26 kcal/kg)* | **1.8 a 2.4 g/kg** *(Blindaje muscular en déficit)* | **0.7 a 0.9 g/kg** *(Mínimo de absorción vitamínica)* | **1.5 a 2.5 g/kg** *(Soporte de glucógeno y fibra)* |
+| **Ganar Músculo (Superávit Limpio)** | **TDEE +10% a +15%** *(~31-35 kcal/kg)* | **1.6 a 2.2 g/kg** *(Umbral máximo de hipertrofia Morton)* | **0.8 a 1.2 g/kg** *(Síntesis de testosterona)* | **4.0 a 6.0 g/kg** *(Máxima repleción neuromuscular)* |
+| **Ponerme en Forma (Recomposición)** | **Normocalórica ±5%** *(~26-30 kcal/kg)* | **1.6 a 2.0 g/kg** *(Tono muscular y balance magro)* | **0.8 a 1.0 g/kg** *(Equilibrio metabólico continuo)* | **2.5 a 4.0 g/kg** *(Energía versátil para el día)* |
+| **Ser Saludable (Longevidad OMS)** | **Mantenimiento Biológico** *(~25-29 kcal/kg)* | **1.2 a 1.6 g/kg** *(Prevención de sarcopenia y salud celular)* | **0.8 a 1.1 g/kg** *(Ricas en Omega-3 y monoinsaturadas)* | **3.0 a 4.5 g/kg** *(Granos enteros y fibra prebiótica)* |
+
+En **Shakerfy**, un simple toque sobre tu tarjeta de nutrición te permite alternar instantáneamente entre lo consumido y **cuánto te falta para entrar a tu zona meta**, guiándote con amabilidad biológica en lugar de exigencias punitivas.
 
 ---
 
 ### Conclusión
 
-La búsqueda de la perfección microscópica en nutrición suele ser el mayor obstáculo para el progreso real. Al dominar el 20% fundamental —**tu balance energético y tu requerimiento proteico**— liberas espacio mental, eliminas la culpa dietética y construyes un estilo de vida saludable, sostenible y científicamente blindado para toda la vida.
+La búsqueda de la perfección microscópica en nutrición suele ser el mayor obstáculo para el progreso real. Al dominar el 20% fundamental —**tu balance energético y tu requerimiento proteico dentro de rangos meta flexibles**— mientras cuidas tus micronutrientes mediante comida real y variada, liberas espacio mental, eliminas la culpa dietética y construyes un estilo de vida saludable, sostenible y científicamente blindado para toda la vida.
 
 ---
 
 ### Referencias Científicas
 
 1. **Morton, R. W., Murphy, K. T., McKellar, S. R., et al. (2018).** *"A systematic review, meta-analysis and meta-regression of the effect of protein supplementation on resistance training-induced gains in muscle mass and strength in healthy adults."* *British Journal of Sports Medicine*, 52(6), 376-384. DOI: 10.1136/bjsports-2017-097608.
-2. **Dansinger, M. L., Gleason, J. A., Griffith, J. L., et al. (2005).** *"Comparison of the Atkins, Zone, Ornish, and Weight Watchers diets for weight loss and heart disease risk reduction: A randomized trial."* *JAMA*, 293(1), 43-53. DOI: 10.1001/jama.293.1.43.
-3. **Helms, E. R., Aragon, A. A., & Fitschen, P. J. (2014).** *"Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation."* *Journal of the International Society of Sports Nutrition*, 11(1), 20. DOI: 10.1186/1550-2783-11-20.
-4. **Hall, K. D., Bemis, T., Brychta, R., et al. (2016).** *"Calorie for calorie, dietary fat restriction results in more body fat loss than carbohydrate restriction in people with obesity."* *Cell Metabolism*, 22(3), 427-436. DOI: 10.1016/j.cmet.2015.07.021.
-5. **Sweller, J. (1988).** *"Cognitive load during problem solving: Effects on learning."* *Cognitive Science*, 12(2), 257-285. DOI: 10.1207/s15516709cog1202_4.
-6. **Holt, S. H., Brand-Miller, J. C., Petocz, P., & Farmakalidis, E. (1995).** *"A satiety index of common foods."* *European Journal of Clinical Nutrition*, 49(9), 675-690.
-7. **Fogg, B. J. (2009).** *"A behavior model for persuasive design."* *Proceedings of the 4th International Conference on Persuasive Technology*, Article 40, 1-7. DOI: 10.1145/1541948.1541999.
+2. **Aragon, A. A., Schoenfeld, B. J., Wildman, R., et al. (2017).** *"International society of sports nutrition position stand: diets and body composition."* *Journal of the International Society of Sports Nutrition*, 14(1), 16. DOI: 10.1186/s12970-017-0174-y.
+3. **Jacobs, D. R., & Tapsell, L. C. (2007).** *"Food, not nutrients, is the fundamental unit in nutrition."* *The American Journal of Clinical Nutrition*, 86(4), 875-877. DOI: 10.1093/ajcn/86.4.875.
+4. **Dansinger, M. L., Gleason, J. A., Griffith, J. L., et al. (2005).** *"Comparison of the Atkins, Zone, Ornish, and Weight Watchers diets for weight loss and heart disease risk reduction: A randomized trial."* *JAMA*, 293(1), 43-53. DOI: 10.1001/jama.293.1.43.
+5. **Helms, E. R., Aragon, A. A., & Fitschen, P. J. (2014).** *"Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation."* *Journal of the International Society of Sports Nutrition*, 11(1), 20. DOI: 10.1186/1550-2783-11-20.
+6. **Hall, K. D., Bemis, T., Brychta, R., et al. (2016).** *"Calorie for calorie, dietary fat restriction results in more body fat loss than carbohydrate restriction in people with obesity."* *Cell Metabolism*, 22(3), 427-436. DOI: 10.1016/j.cmet.2015.07.021.
+7. **Sweller, J. (1988).** *"Cognitive load during problem solving: Effects on learning."* *Cognitive Science*, 12(2), 257-285. DOI: 10.1207/s15516709cog1202_4.
+8. **Holt, S. H., Brand-Miller, J. C., Petocz, P., & Farmakalidis, E. (1995).** *"A satiety index of common foods."* *European Journal of Clinical Nutrition*, 49(9), 675-690.
+9. **Fogg, B. J. (2009).** *"A behavior model for persuasive design."* *Proceedings of the 4th International Conference on Persuasive Technology*, Article 40, 1-7. DOI: 10.1145/1541948.1541999.
     `,
   },
 ];
