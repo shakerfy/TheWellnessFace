@@ -21,16 +21,16 @@ import { GYMS } from "@/lib/gyms";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Shakerfy — Encuentra tu gimnasio con IA" },
+      { title: "The wellness face - Tu bienestar, bien elegido." },
       {
         name: "description",
         content:
-          "Buscador con IA de gimnasios, fitness centers y studios. Reserva clases y gestiona tu membresía.",
+          "The wellness face - Tu bienestar, bien elegido. Buscador con IA de gimnasios, fitness centers y studios. Reserva clases y gestiona tu membresía.",
       },
-      { property: "og:title", content: "Shakerfy — Encuentra tu gimnasio con IA" },
+      { property: "og:title", content: "The wellness face - Tu bienestar, bien elegido." },
       {
         property: "og:description",
-        content: "Buscador con IA de gimnasios, fitness centers y studios.",
+        content: "The wellness face - Tu bienestar, bien elegido. Buscador con IA de gimnasios, fitness centers y studios.",
       },
     ],
   }),
@@ -61,7 +61,8 @@ export function Index({ hideHeader = false }: { hideHeader?: boolean } = {}) {
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem("shakerfy_favorites");
+    const saved =
+      localStorage.getItem("wellness_favorites") || localStorage.getItem("shakerfy_favorites");
     if (saved) {
       try {
         setFavorites(JSON.parse(saved));
@@ -76,7 +77,7 @@ export function Index({ hideHeader = false }: { hideHeader?: boolean } = {}) {
       ? favorites.filter((s) => s !== slug)
       : [...favorites, slug];
     setFavorites(next);
-    localStorage.setItem("shakerfy_favorites", JSON.stringify(next));
+    localStorage.setItem("wellness_favorites", JSON.stringify(next));
   };
 
   const handleSearch = (query: string) => {
@@ -265,7 +266,7 @@ export function Index({ hideHeader = false }: { hideHeader?: boolean } = {}) {
             <div className="flex items-center gap-3">
               <span className="h-5 w-5 border-2 border-foreground border-t-transparent rounded-full animate-spin" />
               <p className="text-sm font-semibold text-foreground">
-                La IA de Shakerfy está analizando gimnasios...
+                La IA de The Wellness Face está analizando gimnasios...
               </p>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
@@ -531,7 +532,7 @@ function SmartAssistant({
             <div className="h-6 w-6 rounded-full bg-foreground flex items-center justify-center">
               <Sparkles className="h-3 w-3 text-background fill-background" />
             </div>
-            <span className="text-xs font-semibold text-foreground">Shakerfy IA</span>
+            <span className="text-xs font-semibold text-foreground">The Wellness Face IA</span>
             <span className="text-[10px] text-muted-foreground font-medium">
               — te ayuda a encontrar el gym ideal
             </span>
@@ -648,35 +649,16 @@ function Hero({
     onSearch(q);
   };
 
+  // ponytail: clean flat slate-50 canvas matching AI Coach timeline, zero GPU orb animations
   return (
-    <section className="relative overflow-hidden pb-24 pt-24 md:pb-36 md:pt-32">
-      {/* Animated Pastel Orbs Background (Restricted to Hero) */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-90"
-      >
-        <div
-          className="absolute -right-[50px] -top-[50px] h-[140px] w-[140px] rounded-full bg-[#ff7b7c]/75 blur-[30px] md:-right-[200px] md:-top-[200px] md:h-[400px] md:w-[400px] md:blur-[70px]"
-          style={{ animation: "orb1 25s infinite ease-in-out" }}
-        />
-        <div
-          className="absolute -left-[60px] top-[10%] h-[160px] w-[160px] rounded-full bg-[#aafc75]/75 blur-[30px] md:-left-[250px] md:h-[500px] md:w-[500px] md:blur-[70px]"
-          style={{ animation: "orb2 28s infinite ease-in-out 1s" }}
-        />
-        <div
-          className="absolute -bottom-[50px] -right-[40px] h-[140px] w-[140px] rounded-full bg-[#60f2fc]/75 blur-[30px] md:-bottom-[200px] md:-right-[150px] md:h-[400px] md:w-[400px] md:blur-[80px]"
-          style={{ animation: "orb3 30s infinite ease-in-out 3s" }}
-        />
-        {/* Smooth fade to background color at the bottom edge */}
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-background to-transparent z-10" />
-      </div>
+    <section className="relative pb-20 pt-20 md:pb-28 md:pt-28 bg-[#f8fafc] dark:bg-background border-b border-border/40 transition-colors">
       <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center px-6 text-center">
         <h1 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-[42px] lg:text-[46px]">
           Encuentra donde entrenar como te lo imaginas
         </h1>
         <p className="mt-4 w-full max-w-5xl mx-auto text-center text-[14px] text-muted-foreground/85 dark:text-slate-200 sm:text-[15px] md:text-[16px] lg:whitespace-nowrap">
-          Busca, compara, reserva y gestiona tu entrenamiento en los mejores gimnasios, fitness
-          centers y studios con IA.
+          Busca, reserva y gestiona tu entrenamiento en los mejores gimnasios, studios
+          y fitness centers con IA.
         </p>
 
         <PromptBox onSearch={handleSearch} isSearching={isSearching} />
@@ -830,8 +812,8 @@ function StudentCTASection() {
     <section className="relative overflow-hidden bg-foreground text-background border-t border-border">
       {/* Background radial effects */}
       <div className="pointer-events-none absolute inset-0 opacity-40">
-        <div className="absolute -left-[10%] -top-[20%] h-[350px] w-[350px] rounded-full bg-[#FF3B5C]/35 blur-[80px]" />
-        <div className="absolute -right-[10%] -bottom-[20%] h-[350px] w-[350px] rounded-full bg-[#00D2FF]/35 blur-[80px]" />
+        <div className="absolute -left-[10%] -top-[20%] h-[350px] w-[350px] rounded-full bg-[#C9B89F]/25 blur-[80px]" />
+        <div className="absolute -right-[10%] -bottom-[20%] h-[350px] w-[350px] rounded-full bg-[#C9B89F]/25 blur-[80px]" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-5xl px-6 py-20 text-center sm:py-24">
@@ -839,7 +821,7 @@ function StudentCTASection() {
           Únete hoy gratis
         </Badge>
         <h2 className="text-balance text-3xl font-bold tracking-tight text-background sm:text-4xl md:text-5xl">
-          Tu próximo entrenamiento empieza con Shakerfy
+          Tu próximo entrenamiento empieza con The Wellness Face
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-balance text-sm sm:text-base text-background/80">
           Crea tu cuenta de alumno, explora más de 150 gimnasios calificados y reserva clases o
@@ -1001,7 +983,7 @@ function ValueSection() {
               Para partners
             </Badge>
             <h3 className="mt-3 max-w-xl text-2xl font-semibold tracking-tight md:text-3xl">
-              Llevá tu Centro al próximo nivel con Shakerfy.
+              Llevá tu Centro al próximo nivel con The Wellness Face.
             </h3>
             <p className="mt-2 max-w-xl text-sm text-muted-foreground">
               Aparecé en miles de búsquedas, gestioná membresías y digitalizá tus clases.
@@ -1050,7 +1032,7 @@ function TestimonialsSection() {
       name: "Martín Rodríguez",
       role: "Alumno (Palermo)",
       quote:
-        "Buscaba un box de CrossFit que tuviera clases a las 7 AM cerca de mi oficina. La IA de Shakerfy lo encontró al instante. Reservar es comodísimo.",
+        "Buscaba un box de CrossFit que tuviera clases a las 7 AM cerca de mi oficina. La IA de The Wellness Face lo encontró al instante. Reservar es comodísimo.",
       avatar: "MR",
     },
     {
@@ -1108,8 +1090,8 @@ function TestimonialsSection() {
 function FAQSection() {
   const faqs = [
     {
-      q: "¿Tiene costo adicional reservar a través de Shakerfy?",
-      a: "No, en Shakerfy mostramos los mismos precios directos de los gimnasios. No cobramos comisiones extras ni cargos ocultos a los alumnos.",
+      q: "¿Tiene costo adicional reservar a través de The Wellness Face?",
+      a: "No, en The Wellness Face mostramos los mismos precios directos de los gimnasios. No cobramos comisiones extras ni cargos ocultos a los alumnos.",
     },
     {
       q: "¿Cómo funciona la búsqueda asistida por IA?",

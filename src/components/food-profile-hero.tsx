@@ -68,6 +68,9 @@ export function FoodProfileHero({
   isAthleteMode = false,
   className,
 }: FoodProfileHeroProps) {
+  // En Modo Atleta no se muestra el dial con los badges de valor nutricional
+  if (isAthleteMode) return null;
+
   // Regla 7 de The Wellness Face: escala neutral no moralizante (Alto / Medio / Bajo)
   const rawLabel = qualityLabel || "";
   const resolvedLabel =

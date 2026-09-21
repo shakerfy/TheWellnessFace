@@ -85,23 +85,28 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "The Wellness Face — Tu bienestar consciente con IA" },
+      { title: "The wellness face - Tu bienestar, bien elegido." },
       {
         name: "description",
         content:
-          "The Wellness Face es la plataforma integral de bienestar consciente con IA. Nutrición somática, entrenamientos adaptativos y recuperación.",
+          "The wellness face - Tu bienestar, bien elegido. Plataforma integral de bienestar consciente con IA. Nutrición somática, entrenamientos adaptativos y recuperación.",
       },
       { name: "author", content: "The Wellness Face" },
-      { property: "og:title", content: "The Wellness Face — Tu bienestar consciente con IA" },
+      { property: "og:title", content: "The wellness face - Tu bienestar, bien elegido." },
       {
         property: "og:description",
-        content: "Plataforma integral de bienestar consciente con IA. Nutrición, entrenamiento y recuperación.",
+        content: "The wellness face - Tu bienestar, bien elegido. Nutrición, entrenamiento y recuperación.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: "The Wellness Face" },
+      { name: "twitter:title", content: "The wellness face - Tu bienestar, bien elegido." },
     ],
     links: [
+      {
+        rel: "icon",
+        type: "image/svg+xml",
+        href: "/wellness-face-symbol.svg",
+      },
       {
         rel: "stylesheet",
         href: appCss,

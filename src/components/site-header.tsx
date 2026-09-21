@@ -22,6 +22,7 @@ import {
   LogOut,
   ChevronDown,
 } from "lucide-react";
+import { WellnessSymbol } from "@/components/wellness-symbol";
 
 export function SiteHeader() {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
@@ -105,14 +106,17 @@ export function SiteHeader() {
           </nav>
         </div>
 
-        {/* Center: Logo (Bebas Neue) */}
+        {/* Center: Logo (Brand Guide: Isotipo + The Wellness Face) */}
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
           <Link
             to="/"
             onClick={() => window.scrollTo(0, 0)}
-            className="text-2xl sm:text-3xl font-bebas tracking-wider text-foreground uppercase select-none"
+            className="flex items-center gap-2.5 sm:gap-3 select-none group"
           >
-            The wellness face
+            <WellnessSymbol className="w-7 h-7 sm:w-8 sm:h-8 text-foreground transition-transform duration-300 group-hover:scale-105" />
+            <span className="text-xl sm:text-2xl font-poppins font-semibold tracking-tight text-foreground whitespace-nowrap">
+              The Wellness Face
+            </span>
           </Link>
         </div>
 
@@ -267,14 +271,14 @@ export function SiteFooter() {
     <footer className="border-t border-border/60 bg-background pb-16 md:pb-0">
       <div className="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-6 py-12 md:grid-cols-4">
         <div>
-          <Link to="/" className="flex items-center gap-2">
-            <span className="text-xl sm:text-2xl font-bebas tracking-wider text-foreground uppercase select-none">
+          <Link to="/" className="flex items-center gap-2.5 group select-none">
+            <WellnessSymbol className="w-6 h-6 text-foreground transition-transform duration-300 group-hover:scale-105" />
+            <span className="text-xl font-poppins font-semibold tracking-tight text-foreground">
               The Wellness Face
             </span>
           </Link>
           <p className="mt-4 max-w-xs text-sm text-muted-foreground">
-            Plataforma integral de bienestar consciente con IA. Nutrición somática, entrenamientos
-            adaptativos y recuperación.
+            Tu bienestar, bien elegido.
           </p>
         </div>
         {[

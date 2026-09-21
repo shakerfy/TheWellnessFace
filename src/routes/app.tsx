@@ -110,12 +110,8 @@ import {
   ThumbsUp,
   ThumbsDown,
 } from "lucide-react";
-import {
-  saveDietaryPreferenceToAiMemory,
-  computeNutritionalVectors,
-} from "@/lib/ai-suggestion-generator";
+import { saveDietaryPreferenceToAiMemory } from "@/lib/ai-suggestion-generator";
 import { TypewriterText } from "@/components/typewriter-text";
-import { NutritionFactsTable } from "@/components/nutrition-facts-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -3959,6 +3955,47 @@ function DiarioTab() {
     });
   };
 
+  const handleToggleSaveTimelineItem = (id: string) => {
+    const targetItem = userTimelineItems.find((item) => String(item.id) === String(id));
+    if (!targetItem) return;
+
+    const willBeSaved = !targetItem.isSaved && !targetItem.saved;
+    const itemTitle = targetItem.title || targetItem.foodName || "Escaneo";
+
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      try {
+        navigator.vibrate(25);
+      } catch (_) {}
+    }
+
+    const nextItems = userTimelineItems.map((item) => {
+      if (String(item.id) === String(id)) {
+        return { ...item, isSaved: willBeSaved, saved: willBeSaved };
+      }
+      return item;
+    });
+
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("shakerfy_user_timeline_items", JSON.stringify(nextItems));
+        window.dispatchEvent(new CustomEvent("shakerfy:timeline-update"));
+      } catch (_) {}
+    }
+
+    setUserTimelineItems(nextItems);
+
+    if (willBeSaved) {
+      toast.success(`✓ "${itemTitle}" guardado en Saved Scans`, {
+        description: "Disponible en Food Database > Saved scans",
+        action: {
+          label: "Ver Database",
+          onClick: () => navigate({ to: "/scan" }),
+        },
+      });
+    } else {
+      toast.info(`"${itemTitle}" removido de Saved Scans`);
+    }
+  };
 
   const handleConsumeAiSuggestionOption = (
     itemId: string,
@@ -4090,7 +4127,16 @@ function DiarioTab() {
   };
 
   const handleSaveEditedTimelineItem = (updated: any) => {
-    setUserTimelineItems((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
+    setUserTimelineItems((prev) => {
+      const next = prev.map((item) => (item.id === updated.id ? updated : item));
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("shakerfy_user_timeline_items", JSON.stringify(next));
+          window.dispatchEvent(new CustomEvent("shakerfy:timeline-update"));
+        } catch (_) {}
+      }
+      return next;
+    });
     setEditingTimelineItem(null);
   };
 
@@ -4665,6 +4711,26 @@ function DiarioTab() {
     return { goal: "en_forma" as const, weight: 72 };
   }, []);
 
+  // Mapa de nutrición acumulada por día para el calendario de progreso en Modo Atleta
+  const dayNutritionMap = React.useMemo(() => {
+    const map: Record<string, { calories: number; protein: number }> = {};
+    userTimelineItems.forEach((item) => {
+      if (
+        item &&
+        item.consumed &&
+        (item.type === "meal" || item.isAiSuggestion || item.type === "ai_suggestion")
+      ) {
+        const itemDate = item.date || todayIso;
+        if (!map[itemDate]) {
+          map[itemDate] = { calories: 0, protein: 0 };
+        }
+        map[itemDate].calories += item.calories || item.kcal || 0;
+        map[itemDate].protein += item.protein || 0;
+      }
+    });
+    return map;
+  }, [userTimelineItems, todayIso]);
+
   return (
     <div className="w-full max-w-full pb-20 transition-transform duration-300">
       {/* MAIN CENTERED CONTENT CONTAINER FOR AI COACH TIMELINE */}
@@ -4676,6 +4742,7 @@ function DiarioTab() {
               selectedDate={selectedTimelineDate}
               onSelectDate={(dateStr) => setSelectedTimelineDate(dateStr)}
               completedDays={completedDays}
+              dayNutritionMap={dayNutritionMap}
               totalCalories={dailyNutritionStats.totalCalories}
               proteinGrams={dailyNutritionStats.proteinGrams}
               carbsGrams={dailyNutritionStats.carbsGrams}
@@ -4783,6 +4850,20 @@ function DiarioTab() {
                       {/* Card Container */}
                       <div className={`pl-7 sm:pl-8 md:pl-0 w-full min-w-0 ${showOnLeft ? "md:order-1" : "md:order-2"}`}>
                         <Card
+                          onClick={
+                            item.type === "meal"
+                              ? (e) => {
+                                  if (
+                                    (e.target as HTMLElement)?.closest(
+                                      'button, a, input, select, textarea, [role="button"]',
+                                    )
+                                  ) {
+                                    return;
+                                  }
+                                  setEditingTimelineItem(item);
+                                }
+                              : undefined
+                          }
                           onDoubleClick={
                             item.type === "meal"
                               ? (e) => {
@@ -4895,6 +4976,31 @@ function DiarioTab() {
                                     type="button"
                                     onClick={(e) => {
                                       e.stopPropagation();
+                                      handleToggleSaveTimelineItem(item.id);
+                                    }}
+                                    className={cn(
+                                      "p-1 transition cursor-pointer",
+                                      item.isSaved || item.saved
+                                        ? "text-foreground"
+                                        : "text-muted-foreground hover:text-foreground",
+                                    )}
+                                    title={
+                                      item.isSaved || item.saved
+                                        ? "Guardado en Saved Scans (clic para quitar)"
+                                        : "Guardar en Saved Scans"
+                                    }
+                                  >
+                                    <Bookmark
+                                      className={cn(
+                                        "w-3.5 h-3.5",
+                                        item.isSaved || item.saved ? "fill-foreground text-foreground" : "",
+                                      )}
+                                    />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
                                       handleDeleteTimelineItem(item.id);
                                     }}
                                     className="p-1 text-muted-foreground hover:text-rose-500 transition cursor-pointer"
@@ -4920,50 +5026,6 @@ function DiarioTab() {
                                   const optProt = typeof opt === "object" ? opt.protein : 28;
                                   const optCarbs = typeof opt === "object" ? opt.carbs : 40;
                                   const optFat = typeof opt === "object" ? opt.fat : 12;
-
-                                  // Normalización robusta de los 7 vectores según el estándar visual exacto del escaneo de comidas
-                                  const rawVectorsList = Array.isArray(opt.vectors) && opt.vectors.length > 0 
-                                    ? opt.vectors 
-                                    : computeNutritionalVectors(optText, optProt);
-
-                                  const standardCategories = [
-                                    { category: "processing", label: "Procesamiento", fallback: "Mínimamente procesado" },
-                                    { category: "fiber", label: "Fibra", fallback: "Alto en fibra" },
-                                    { category: "protein", label: "Proteína", fallback: "Alto en proteína" },
-                                    { category: "sugar", label: "Azúcares añadidos", fallback: "Sin azúcar añadido" },
-                                    { category: "fat", label: "Grasas", fallback: "Grasas saludables" },
-                                    { category: "grains", label: "Granos", fallback: "Granos enteros" },
-                                    { category: "sodium", label: "Sodio", fallback: "Bajo en sodio" },
-                                  ];
-
-                                  const normalizedVectors = standardCategories.map((spec) => {
-                                    const found = rawVectorsList.find((v: any) => v.category === spec.category);
-                                    const rawVal = found ? found.value : spec.fallback;
-                                    const vLower = (rawVal || "").toLowerCase();
-
-                                    let value = spec.fallback;
-                                    if (spec.category === "processing") {
-                                      value = "Mínimamente procesado";
-                                    } else if (spec.category === "fiber") {
-                                      value = vLower.includes("alto") || vLower.includes("excelente") ? "Alto en fibra" : "Buena fuente";
-                                    } else if (spec.category === "protein") {
-                                      value = vLower.includes("alto") || vLower.includes("alta") || vLower.includes("magra") ? "Alto en proteína" : "Proteína moderada";
-                                    } else if (spec.category === "sugar") {
-                                      value = "Sin azúcar añadido";
-                                    } else if (spec.category === "fat") {
-                                      value = vLower.includes("saludable") || vLower.includes("omega") || vLower.includes("palta") || vLower.includes("oliva") ? "Grasas saludables" : "Moderadas";
-                                    } else if (spec.category === "grains") {
-                                      value = vLower.includes("entero") || vLower.includes("lenta") || vLower.includes("avena") || vLower.includes("quinoa") ? "Granos enteros" : "Sin granos";
-                                    } else if (spec.category === "sodium") {
-                                      value = "Bajo en sodio";
-                                    }
-
-                                    return {
-                                      category: spec.category,
-                                      label: spec.label,
-                                      value,
-                                    };
-                                  });
 
                                   const isDetailsOpen = !!expandedSuggestionVectors[item.id];
 
@@ -5057,9 +5119,6 @@ function DiarioTab() {
                                               </span>
                                             </div>
                                           </div>
-
-                                          {/* B. 7 Vectores Nutricionales — Estilo Nutrition Facts */}
-                                          <NutritionFactsTable rows={normalizedVectors} className="mt-2" />
                                         </div>
                                       )}
                                     </div>
@@ -5190,6 +5249,31 @@ function DiarioTab() {
 
                                   <span className="w-px h-3 bg-border/60 mx-0.5" />
 
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleToggleSaveTimelineItem(item.id);
+                                    }}
+                                    className={cn(
+                                      "p-1 transition cursor-pointer",
+                                      item.isSaved || item.saved
+                                        ? "text-foreground"
+                                        : "text-muted-foreground hover:text-foreground",
+                                    )}
+                                    title={
+                                      item.isSaved || item.saved
+                                        ? "Guardado en Saved Scans (clic para quitar)"
+                                        : "Guardar en Saved Scans"
+                                    }
+                                  >
+                                    <Bookmark
+                                      className={cn(
+                                        "w-3.5 h-3.5",
+                                        item.isSaved || item.saved ? "fill-foreground text-foreground" : "",
+                                      )}
+                                    />
+                                  </button>
                                   <button
                                     type="button"
                                     onClick={(e) => {
@@ -5407,9 +5491,6 @@ function DiarioTab() {
                                             </div>
                                           </div>
                                         </div>
-
-                                        {/* B. 7 Vectores Nutricionales — Estilo Nutrition Facts */}
-                                        <NutritionFactsTable rows={vectors} className="mt-2" />
                                       </div>
                                     )}
                                   </div>
@@ -5428,6 +5509,31 @@ function DiarioTab() {
                                   />
 
                                   <div className="absolute top-3 right-3 z-10 flex items-center gap-1 bg-background/80 backdrop-blur-md px-1.5 py-1 rounded-full border border-border/60 shadow-xs">
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleToggleSaveTimelineItem(item.id);
+                                      }}
+                                      className={cn(
+                                        "p-1 transition cursor-pointer",
+                                        item.isSaved || item.saved
+                                          ? "text-foreground"
+                                          : "text-muted-foreground hover:text-foreground",
+                                      )}
+                                      title={
+                                        item.isSaved || item.saved
+                                          ? "Guardado en Saved Scans (clic para quitar)"
+                                          : "Guardar en Saved Scans"
+                                      }
+                                    >
+                                      <Bookmark
+                                        className={cn(
+                                          "w-3.5 h-3.5",
+                                          item.isSaved || item.saved ? "fill-foreground text-foreground" : "",
+                                        )}
+                                      />
+                                    </button>
                                     <button
                                       type="button"
                                       onClick={(e) => {
@@ -5532,6 +5638,31 @@ function DiarioTab() {
                                   </div>
                                   {!item.img && (
                                     <div className="flex items-center gap-1 bg-secondary/80 backdrop-blur-md px-1.5 py-1 rounded-full border border-border/60 shadow-xs shrink-0">
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleToggleSaveTimelineItem(item.id);
+                                        }}
+                                        className={cn(
+                                          "p-1 transition cursor-pointer",
+                                          item.isSaved || item.saved
+                                            ? "text-foreground"
+                                            : "text-muted-foreground hover:text-foreground",
+                                        )}
+                                        title={
+                                          item.isSaved || item.saved
+                                            ? "Guardado en Saved Scans (clic para quitar)"
+                                            : "Guardar en Saved Scans"
+                                        }
+                                      >
+                                        <Bookmark
+                                          className={cn(
+                                            "w-3.5 h-3.5",
+                                            item.isSaved || item.saved ? "fill-foreground text-foreground" : "",
+                                          )}
+                                        />
+                                      </button>
                                       <button
                                         type="button"
                                         onClick={(e) => {
@@ -5682,16 +5813,17 @@ function DiarioTab() {
 
                                       return (
                                           <div className="space-y-3 pt-0.5 text-left">
-                                            {/* VALOR NUTRICIONAL: Dial radial con badges cualitativos (Visible en Bienestar y Atleta) */}
-                                            <div className="pb-0.5">
-                                              <FoodProfileHero
-                                                qualityLabel={qualityLabel}
-                                                qualityLevel={qualityLevel}
-                                                badges={heroBadges}
-                                                contextBadge={contextBadge}
-                                                isAthleteMode={isAthleteMode}
-                                              />
-                                            </div>
+                                            {/* VALOR NUTRICIONAL: Dial radial con badges cualitativos (Visible en Modo Wellness, oculto en Modo Atleta) */}
+                                            {!isAthleteMode && (
+                                              <div className="pb-0.5">
+                                                <FoodProfileHero
+                                                  qualityLabel={qualityLabel}
+                                                  qualityLevel={qualityLevel}
+                                                  badges={heroBadges}
+                                                  contextBadge={contextBadge}
+                                                />
+                                              </div>
+                                            )}
 
                                             {/* MODO ATLETA: Barra horizontal compacta de macros de precisión */}
                                             {isAthleteMode && (
@@ -6476,6 +6608,7 @@ function DiarioTab() {
           item={editingTimelineItem}
           onClose={() => setEditingTimelineItem(null)}
           onSave={handleSaveEditedTimelineItem}
+          onToggleSave={handleToggleSaveTimelineItem}
         />
       )}
 
@@ -6670,12 +6803,17 @@ function EditTimelineItemModal({
   item,
   onClose,
   onSave,
+  onToggleSave,
 }: {
   item: any;
   onClose: () => void;
   onSave: (updated: any) => void;
+  onToggleSave?: (id: string) => void;
 }) {
   const isMeal = item.type === "meal";
+  const { isAthleteMode, isWellnessMode } = useNutritionSettings();
+  const [currentMealScreen, setCurrentMealScreen] = useState<"detail" | "fix">("detail");
+  const [isSavedInModal, setIsSavedInModal] = useState<boolean>(Boolean(item.isSaved || item.saved));
   const [title, setTitle] = useState(item.title || "");
   const [time, setTime] = useState(item.time || "");
   const [servings, setServings] = useState<number>(item.servings || 1);
@@ -6686,6 +6824,23 @@ function EditTimelineItemModal({
   const isWeight = item.type === "weight";
   const [weightVal, setWeightVal] = useState<string>(String(item.weight || item.val || 74.2));
   const [weightContext, setWeightContext] = useState<string>(item.context || "En ayunas");
+
+  // Bloqueo de scroll y listener de tecla Escape para experiencia de pantalla completa
+  useEffect(() => {
+    if (!isMeal) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isMeal, onClose]);
 
   // Ingredients State (initialized from item or generated from meal calories/macros)
   const [ingredients, setIngredients] = useState<MealIngredientItem[]>(() => {
@@ -6891,25 +7046,583 @@ function EditTimelineItemModal({
     f.name.toLowerCase().includes(foodSearchQuery.toLowerCase()),
   );
 
+  const handleSaveMeal = () => {
+    onSave({
+      ...item,
+      title: title.trim() || item.title,
+      time: time.trim() || item.time,
+      servings,
+      ingredients,
+      calories: totalCalories,
+      kcal: totalCalories,
+      protein: totalProtein,
+      carbs: totalCarbs,
+      carbohydrates: totalCarbs,
+      fat: totalFat,
+      fiber: totalFiber,
+      coachFeedback: coachFeedback.trim() || item.coachFeedback,
+      narrative: coachFeedback.trim() || item.narrative,
+    });
+    toast.success("✓ Comida actualizada correctamente");
+    onClose();
+  };
+
+  if (isMeal) {
+    const activeImage =
+      item.img ||
+      "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=900&auto=format&fit=crop&q=80";
+
+    const qualityLevel: FoodQualityLevel =
+      (item.bioGaugeIndex as FoodQualityLevel) ??
+      (item.bioScore
+        ? item.bioScore >= 80
+          ? 5
+          : item.bioScore >= 65
+            ? 4
+            : item.bioScore >= 50
+              ? 3
+              : 2
+        : item.scoreGrade === "A"
+          ? 5
+          : item.scoreGrade === "B"
+            ? 4
+            : 4);
+
+    const qualityLabel =
+      item.bioQualityLabel ||
+      (qualityLevel >= 4 ? "Alto" : qualityLevel === 3 ? "Medio" : "Bajo");
+
+    const heroBadges =
+      item.vectorBadges && item.vectorBadges.length > 0
+        ? item.vectorBadges.slice(0, 4).map((vb: any) => ({
+            id: vb.id || vb.category,
+            category: vb.category,
+            label: vb.badgeText || vb.label || vb.text,
+          }))
+        : [
+            { id: "b-1", category: "processing", label: "Mínimamente procesado" },
+            {
+              id: "b-2",
+              category: "protein",
+              label: totalProtein >= 25 ? "Alta en proteína" : "Proteína moderada",
+            },
+            {
+              id: "b-3",
+              category: "fiber",
+              label: totalFiber >= 4 ? "Buena fuente de fibra" : "Aporte de fibra",
+            },
+            { id: "b-4", category: "sugar", label: "Sin azúcar añadido" },
+          ];
+
+    const maxMacroGrams = Math.max(totalProtein, totalCarbs, totalFat, 10);
+    const proteinFillHeight = Math.min(
+      Math.max((totalProtein / maxMacroGrams) * 70 + 16, 18),
+      86,
+    );
+    const carbsFillHeight = Math.min(
+      Math.max((totalCarbs / maxMacroGrams) * 70 + 16, 18),
+      86,
+    );
+    const fatFillHeight = Math.min(
+      Math.max((totalFat / maxMacroGrams) * 70 + 16, 18),
+      86,
+    );
+
+    const macros = [
+      {
+        label: "Proteína",
+        grams: totalProtein,
+        fillHeight: proteinFillHeight,
+        fillBg: "bg-emerald-500/15 dark:bg-emerald-950/40",
+        textAccent: "text-emerald-700 dark:text-emerald-400",
+      },
+      {
+        label: "Carbohidratos",
+        grams: totalCarbs,
+        fillHeight: carbsFillHeight,
+        fillBg: "bg-amber-500/15 dark:bg-amber-950/40",
+        textAccent: "text-amber-600 dark:text-amber-400",
+      },
+      {
+        label: "Grasas",
+        grams: totalFat,
+        fillHeight: fatFillHeight,
+        fillBg: "bg-sky-500/15 dark:bg-sky-950/40",
+        textAccent: "text-sky-600 dark:text-sky-400",
+      },
+    ];
+
+    return (
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={currentMealScreen === "detail" ? "Detalle de Comida" : "Ajustar Resultados"}
+        className="fixed inset-0 z-50 w-screen h-[100dvh] bg-background flex flex-col overflow-hidden select-none animate-in fade-in duration-200"
+      >
+        <div className="w-full h-full max-w-2xl mx-auto flex flex-col bg-background relative sm:border-x sm:border-border/40 sm:shadow-2xl overflow-hidden">
+          {currentMealScreen === "detail" ? (
+            <div className="flex flex-col h-full w-full overflow-hidden text-left text-foreground">
+              {/* 1. TOP HERO IMAGE SECTION */}
+              <div className="relative h-64 sm:h-72 w-full overflow-hidden bg-muted shrink-0">
+                <img
+                  src={activeImage}
+                  alt={title}
+                  className="w-full h-full object-cover"
+                />
+
+                {/* Top Navigation Row */}
+                <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-4 pt-4 w-full">
+                  {/* Frosted Back Button */}
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="w-9 h-9 rounded-full bg-background/80 backdrop-blur-xl border border-border/60 text-foreground flex items-center justify-center hover:bg-background active:scale-95 transition cursor-pointer shadow-xs"
+                    aria-label="Cerrar"
+                  >
+                    <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
+                  </button>
+
+                  {/* Title in center */}
+                  <span className="text-xs font-bold text-foreground px-3.5 py-1.5 rounded-full bg-background/80 backdrop-blur-xl border border-border/60 shadow-xs tracking-wide">
+                    Reporte de Nutrición
+                  </span>
+
+                  <div className="flex items-center gap-1.5">
+                    {onToggleSave && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsSavedInModal((prev) => !prev);
+                          onToggleSave(item.id);
+                        }}
+                        className="w-9 h-9 rounded-full bg-background/80 backdrop-blur-xl border border-border/60 flex items-center justify-center hover:bg-background active:scale-95 transition cursor-pointer shadow-xs text-foreground"
+                        aria-label="Guardar en Saved Scans"
+                        title={isSavedInModal ? "Quitar de Saved Scans" : "Guardar en Saved Scans"}
+                      >
+                        <Bookmark
+                          className={cn("w-4 h-4", isSavedInModal && "fill-foreground text-foreground")}
+                        />
+                      </button>
+                    )}
+
+                    {/* Frosted Close X Button */}
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      className="w-9 h-9 rounded-full bg-background/80 backdrop-blur-xl border border-border/60 text-foreground flex items-center justify-center hover:bg-background active:scale-95 transition cursor-pointer shadow-xs"
+                      aria-label="Cerrar"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. BOTTOM WHITE SHEET CARD */}
+              <div className="-mt-6 relative z-30 rounded-t-[32px] sm:rounded-t-[36px] bg-white dark:bg-[#12151b] shadow-2xl flex-1 w-full px-5 pt-5 pb-4 flex flex-col justify-between text-left overflow-y-auto custom-scrollbar">
+                <div className="space-y-4">
+                  {/* Title & Calories Row */}
+                  <div className="pt-0.5 space-y-1">
+                    <div className="flex items-center gap-1.5">
+                      <Bookmark className="w-3.5 h-3.5 text-muted-foreground/80" />
+                      <span className="text-[11px] font-mono text-muted-foreground font-medium">
+                        {time || item.time || "12:46 PM"}
+                      </span>
+                    </div>
+                    <div className="flex items-baseline justify-between gap-3">
+                      <h1 className="text-base sm:text-lg font-bold text-slate-900 dark:text-foreground tracking-tight line-clamp-2">
+                        {title}
+                      </h1>
+                      <span className="text-sm font-medium text-slate-500 dark:text-muted-foreground font-sans shrink-0">
+                        {totalCalories}kcal
+                      </span>
+                    </div>
+                  </div>
+
+                  {coachFeedback && (
+                    <p className="text-xs text-slate-500/90 dark:text-muted-foreground leading-relaxed font-normal">
+                      {coachFeedback}
+                    </p>
+                  )}
+
+                  {/* HERO WIDGET: ANILLO SELECTOR RADIAL + BADGES (Visible en Modo Wellness, oculto en Modo Atleta) */}
+                  {!isAthleteMode && (
+                    <FoodProfileHero
+                      qualityLabel={qualityLabel}
+                      qualityLevel={qualityLevel}
+                      badges={heroBadges}
+                      contextBadge={
+                        item.timingFit?.label
+                          ? { label: item.timingFit.label, type: item.timingFit.type }
+                          : undefined
+                      }
+                      isAthleteMode={false}
+                    />
+                  )}
+
+                  {/* 3 VERTICAL MACRO PROGRESS BAR CARDS (Protein, Carbs, Fat) */}
+                  <div className="grid grid-cols-3 gap-2.5 sm:gap-3 w-full select-none pt-0.5 pb-1">
+                    {macros.map((macro) => (
+                      <div
+                        key={macro.label}
+                        className="h-36 sm:h-40 rounded-2xl bg-[#f0f4f9] dark:bg-slate-900/60 border border-slate-200/50 dark:border-slate-800/60 p-3 flex flex-col justify-between relative overflow-hidden text-center shadow-2xs"
+                      >
+                        {/* Top Macro Label */}
+                        <span className="text-xs font-normal text-slate-400 dark:text-slate-500 z-10 pt-0.5">
+                          {macro.label}
+                        </span>
+
+                        {/* Vertical Rising Fill Bar */}
+                        <div
+                          style={{ height: `${macro.fillHeight}%` }}
+                          className={cn(
+                            "absolute bottom-0 left-0 right-0 rounded-b-2xl rounded-t-xl transition-all duration-700 ease-out pointer-events-none",
+                            macro.fillBg,
+                          )}
+                        />
+
+                        {/* Bottom Grams Text */}
+                        <span
+                          className={cn(
+                            "text-sm font-bold z-10 pb-0.5 font-sans tracking-tight",
+                            macro.textAccent,
+                          )}
+                        >
+                          {macro.grams} g
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* INGREDIENTS PREVIEW CAROUSEL */}
+                  {ingredients && ingredients.length > 0 && (
+                    <div className="space-y-2 pt-1 pb-1 text-left">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
+                          Ingredientes ({ingredients.length})
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setCurrentMealScreen("fix")}
+                          className="text-xs font-semibold text-sky-600 dark:text-sky-400 hover:underline cursor-pointer"
+                        >
+                          Ajustar
+                        </button>
+                      </div>
+
+                      <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-1.5 -mx-1 px-1">
+                        {ingredients.map((ing) => (
+                          <div
+                            key={ing.id}
+                            className="min-w-[125px] sm:min-w-[135px] p-3 rounded-2xl bg-slate-50/80 dark:bg-slate-900/50 border border-slate-200/60 dark:border-slate-800/70 flex flex-col justify-between shrink-0 shadow-2xs text-left"
+                          >
+                            <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
+                              {ing.name}
+                            </span>
+                            <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-2 font-mono">
+                              <span>{Math.round(ing.grams * servings)}g</span>
+                              <span className="font-semibold text-slate-700 dark:text-slate-300">
+                                {Math.round(ing.calories * servings)} cal
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* PINNED FIXED BOTTOM ACTION BUTTONS */}
+                <div className="sticky bottom-0 z-40 bg-white/95 dark:bg-[#12151b]/95 backdrop-blur-md -mx-5 px-5 pt-3 pb-1 border-t border-slate-100 dark:border-slate-800/80 flex items-center gap-2.5 mt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setCurrentMealScreen("fix")}
+                    className="flex-1 rounded-full py-4 h-12 font-bold text-xs border border-slate-200 dark:border-slate-800 text-foreground hover:bg-secondary cursor-pointer shadow-xs"
+                  >
+                    <Sparkles className="w-4 h-4 mr-1.5 text-foreground" />
+                    <span>Ajustar Resultados</span>
+                  </Button>
+
+                  <Button
+                    type="button"
+                    onClick={handleSaveMeal}
+                    className="flex-1 rounded-full py-4 h-12 font-bold text-xs bg-foreground text-background hover:opacity-90 shadow-md transition cursor-pointer"
+                  >
+                    <span>Listo</span>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* SCREEN FIX / AJUSTAR RESULTADOS */
+            <div className="p-5 flex flex-col justify-between h-full overflow-y-auto custom-scrollbar text-left text-foreground">
+              <div className="space-y-4">
+                {/* Header */}
+                <div className="flex items-center justify-between pb-3 border-b border-border/50">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentMealScreen("detail")}
+                    className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    <span>Volver al Reporte</span>
+                  </button>
+
+                  <span className="text-xs font-black uppercase text-foreground">
+                    Ajustar Resultados
+                  </span>
+                </div>
+
+                {/* Title & Servings Edit Row */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="sm:col-span-2 space-y-1">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                      Nombre del Plato
+                    </label>
+                    <input
+                      type="text"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      className="w-full h-10 px-3 rounded-xl bg-secondary/50 border border-border text-sm font-bold text-foreground focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                      Porciones
+                    </label>
+                    <div className="h-10 px-3 rounded-xl bg-secondary/50 border border-border flex items-center justify-between">
+                      <button
+                        type="button"
+                        onClick={() => setServings((s) => Math.max(0.5, s - 0.5))}
+                        disabled={servings <= 0.5}
+                        className="text-muted-foreground hover:text-foreground disabled:opacity-40 cursor-pointer p-1"
+                        aria-label="Restar porción"
+                      >
+                        <Minus className="w-3.5 h-3.5" />
+                      </button>
+                      <span className="text-xs font-bold font-mono">
+                        {servings} {servings === 1 ? "porc." : "porcs."}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setServings((s) => s + 0.5)}
+                        className="text-muted-foreground hover:text-foreground cursor-pointer p-1"
+                        aria-label="Sumar porción"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dynamic Macros Pill Preview */}
+                <div className="grid grid-cols-4 gap-1.5 p-2 rounded-2xl bg-secondary/30 border border-border/50 text-center">
+                  <div className="p-1">
+                    <span className="text-[9px] uppercase font-bold text-muted-foreground block">Calorías</span>
+                    <span className="text-xs font-black text-foreground">{totalCalories}</span>
+                  </div>
+                  <div className="p-1">
+                    <span className="text-[9px] uppercase font-bold text-emerald-600 dark:text-emerald-400 block">Proteína</span>
+                    <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">{totalProtein}g</span>
+                  </div>
+                  <div className="p-1">
+                    <span className="text-[9px] uppercase font-bold text-amber-600 dark:text-amber-400 block">Carbos</span>
+                    <span className="text-xs font-black text-amber-600 dark:text-amber-400">{totalCarbs}g</span>
+                  </div>
+                  <div className="p-1">
+                    <span className="text-[9px] uppercase font-bold text-sky-600 dark:text-sky-400 block">Grasas</span>
+                    <span className="text-xs font-black text-sky-600 dark:text-sky-400">{totalFat}g</span>
+                  </div>
+                </div>
+
+                {/* Describe with AI Prompt */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-foreground/80" />
+                    <span>Describir correcciones con IA:</span>
+                  </label>
+                  <form onSubmit={handleApplyAiPrompt} className="flex gap-2">
+                    <input
+                      type="text"
+                      value={aiPromptText}
+                      onChange={(e) => setAiPromptText(e.target.value)}
+                      placeholder="e.g. 'extra pollo', 'sin salsa', 'mitad de arroz'..."
+                      className="flex-1 h-10 px-3 rounded-xl bg-secondary/50 border border-border text-xs focus:outline-none focus:ring-1 focus:ring-ring text-foreground"
+                    />
+                    <Button
+                      type="submit"
+                      disabled={isAiThinking || !aiPromptText.trim()}
+                      className="h-10 px-4 rounded-xl bg-foreground text-background font-bold text-xs hover:opacity-90 shrink-0 cursor-pointer"
+                    >
+                      {isAiThinking ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Ajustar"}
+                    </Button>
+                  </form>
+                </div>
+
+                {/* Ingredients List with Grams Stepper */}
+                <div className="space-y-2 pt-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                      Ingredientes ({ingredients.length})
+                    </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsAddFoodOpen(!isAddFoodOpen)}
+                      className="text-xs font-bold text-sky-600 dark:text-sky-400 hover:bg-sky-500/10 h-7 px-2 cursor-pointer"
+                    >
+                      {isAddFoodOpen ? "Cerrar selector" : "+ Agregar Alimento"}
+                    </Button>
+                  </div>
+
+                  {/* Sub-panel para Agregar Alimento */}
+                  {isAddFoodOpen && (
+                    <div className="p-3 rounded-2xl bg-secondary/60 border border-border/80 space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
+                      <span className="text-xs font-bold text-foreground block">
+                        Selecciona un alimento de la base de datos
+                      </span>
+                      <div className="relative">
+                        <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-3 top-2.5" />
+                        <input
+                          type="text"
+                          value={foodSearchQuery}
+                          onChange={(e) => setFoodSearchQuery(e.target.value)}
+                          placeholder="Buscar alimento (ej: Pollo, Avena, Huevo)..."
+                          className="w-full h-8 pl-8 pr-3 rounded-xl bg-background border border-border text-xs focus:outline-none text-foreground"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 max-h-36 overflow-y-auto custom-scrollbar">
+                        {filteredFoods.slice(0, 8).map((food) => (
+                          <button
+                            key={food.name}
+                            type="button"
+                            onClick={() => setSelectedAddFood(food)}
+                            className={cn(
+                              "p-2 rounded-xl text-left text-xs border transition-all cursor-pointer flex flex-col justify-between",
+                              selectedAddFood.name === food.name
+                                ? "bg-foreground text-background border-foreground font-bold"
+                                : "bg-background/80 hover:bg-background border-border/60 text-foreground",
+                            )}
+                          >
+                            <span className="truncate block font-semibold">{food.name}</span>
+                            <span className="text-[10px] opacity-70">
+                              {food.calPer100g} kcal / 100g
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+
+                      <div className="flex items-center justify-between gap-3 pt-1 border-t border-border/40">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium text-muted-foreground">Cantidad:</span>
+                          <input
+                            type="number"
+                            min="10"
+                            step="10"
+                            value={addGrams}
+                            onChange={(e) => setAddGrams(Math.max(10, Number(e.target.value) || 10))}
+                            className="w-16 h-8 px-2 rounded-lg bg-background border border-border text-xs font-bold text-center text-foreground"
+                          />
+                          <span className="text-xs text-muted-foreground font-medium">gramos</span>
+                        </div>
+
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={handleAddIngredientSubmit}
+                          className="h-8 px-3 rounded-xl bg-foreground text-background font-bold text-xs hover:opacity-90 cursor-pointer"
+                        >
+                          + Agregar
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Lista de Items */}
+                  <div className="space-y-1.5 max-h-56 overflow-y-auto custom-scrollbar pr-0.5">
+                    {ingredients.map((ing) => (
+                      <div
+                        key={ing.id}
+                        className="p-2.5 rounded-2xl bg-secondary/30 border border-border/50 flex items-center justify-between gap-2 text-left"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <span className="text-xs font-bold text-foreground block truncate">
+                            {ing.name}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground">
+                            {Math.round(ing.calories * servings)} kcal • {ing.category}
+                          </span>
+                        </div>
+
+                        {/* Stepper de Gramos */}
+                        <div className="flex items-center gap-1 bg-background px-2 py-1 rounded-xl border border-border shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateGrams(ing.id, -20)}
+                            className="text-muted-foreground hover:text-foreground cursor-pointer p-0.5"
+                            title="Restar 20g"
+                          >
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <span className="text-xs font-bold w-12 text-center font-mono">
+                            {Math.round(ing.grams * servings)}g
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateGrams(ing.id, 20)}
+                            className="text-muted-foreground hover:text-foreground cursor-pointer p-0.5"
+                            title="Sumar 20g"
+                          >
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteIngredient(ing.id)}
+                          className="text-muted-foreground hover:text-rose-500 cursor-pointer p-1"
+                          title="Eliminar ingrediente"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Sticky Bottom Action Buttons in Fix Screen */}
+              <div className="sticky bottom-0 z-40 bg-white/95 dark:bg-[#12151b]/95 backdrop-blur-md -mx-5 px-5 pt-3 pb-1 border-t border-slate-100 dark:border-slate-800/80 flex items-center gap-2.5 mt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setCurrentMealScreen("detail")}
+                  className="flex-1 rounded-full py-4 h-12 font-bold text-xs border border-border text-foreground hover:bg-secondary cursor-pointer"
+                >
+                  Volver al Reporte
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleSaveMeal}
+                  className="flex-1 rounded-full py-4 h-12 font-bold text-xs bg-foreground text-background hover:opacity-90 shadow-md cursor-pointer"
+                >
+                  Guardar Cambios
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (isMeal) {
-      onSave({
-        ...item,
-        title: title.trim(),
-        time: time.trim() || item.time,
-        servings,
-        ingredients,
-        calories: totalCalories,
-        kcal: totalCalories,
-        protein: totalProtein,
-        carbs: totalCarbs,
-        carbohydrates: totalCarbs,
-        fat: totalFat,
-        fiber: totalFiber,
-      });
-      toast.success("✓ Comida actualizada correctamente");
-    } else if (item.type === "hydration") {
+    if (item.type === "hydration") {
       const currentLevelObj =
         ARMSTRONG_LEVELS.find((l) => l.level === level) || ARMSTRONG_LEVELS[1];
       onSave({
@@ -6954,12 +7667,7 @@ function EditTimelineItemModal({
       <DialogContent className="max-w-lg p-6 bg-card border border-border rounded-3xl max-h-[90vh] overflow-y-auto custom-scrollbar">
         <DialogHeader className="mb-3 text-left">
           <DialogTitle className="text-lg font-bold text-foreground flex items-center gap-2">
-            {isMeal ? (
-              <>
-                <Utensils className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>Editar Comida Escaneada</span>
-              </>
-            ) : item.type === "hydration" ? (
+            {item.type === "hydration" ? (
               <>
                 <Droplet className="w-4 h-4 text-sky-500 shrink-0" />
                 <span>Editar Registro de Hidratación</span>
@@ -6974,9 +7682,7 @@ function EditTimelineItemModal({
             )}
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            {isMeal
-              ? "Ajusta porciones, ingredientes y macronutrientes de este registro."
-              : "Modifica la información de tu tarjeta registrada en la línea de tiempo."}
+            Modifica la información de tu tarjeta registrada en la línea de tiempo.
           </DialogDescription>
         </DialogHeader>
 
@@ -6984,15 +7690,13 @@ function EditTimelineItemModal({
           {/* Nombre / Título y Hora */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="sm:col-span-2 space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">
-                {isMeal ? "Nombre del plato / comida" : "Título"}
-              </label>
+              <label className="text-xs font-semibold text-muted-foreground">Título</label>
               <input
                 type="text"
                 required
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Ej: Pechuga de pollo con arroz y ensalada"
+                placeholder="Título del registro"
                 className="flex w-full rounded-xl border border-border bg-background px-3 py-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-foreground font-semibold"
               />
             </div>
@@ -7046,267 +7750,6 @@ function EditTimelineItemModal({
                 </div>
               </div>
             </div>
-          )}
-
-          {/* Porciones (si es comida) */}
-          {isMeal && (
-            <div className="flex items-center justify-between p-2.5 rounded-2xl bg-secondary/30 border border-border/50">
-              <div>
-                <span className="text-xs font-bold text-foreground block">Porciones</span>
-                <span className="text-[10px] text-muted-foreground">Ajusta la cantidad consumida</span>
-              </div>
-              <div className="h-[34px] px-2.5 rounded-xl bg-background border border-border flex items-center justify-between gap-2">
-                <button
-                  type="button"
-                  onClick={() => setServings((s) => Math.max(0.5, s - 0.5))}
-                  disabled={servings <= 0.5}
-                  className="text-muted-foreground hover:text-foreground disabled:opacity-40 cursor-pointer p-1"
-                  aria-label="Restar porción"
-                >
-                  <Minus className="w-3.5 h-3.5" />
-                </button>
-                <span className="text-xs font-bold font-mono min-w-[50px] text-center">
-                  {servings} {servings === 1 ? "porc." : "porcs."}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setServings((s) => s + 0.5)}
-                  className="text-muted-foreground hover:text-foreground cursor-pointer p-1"
-                  aria-label="Sumar porción"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Si es comida: Resumen de Macros y Calorías Dinámicas */}
-          {isMeal && (
-            <>
-              {/* Macro Cards Resumen */}
-              <div className="space-y-1.5">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-                  Macronutrientes Totales ({servings} {servings === 1 ? "porción" : "porciones"})
-                </span>
-                <div className="grid grid-cols-4 gap-1.5 sm:gap-2 w-full select-none">
-                  {/* Calorías */}
-                  <div
-                    title="Calorías"
-                    className="px-1 py-1.5 sm:py-2 rounded-xl bg-secondary/40 border border-border/60 flex flex-col items-center justify-center text-center shadow-2xs min-w-0"
-                  >
-                    <span className="text-[7.5px] font-bold uppercase text-muted-foreground/80 leading-none">
-                      Calorías
-                    </span>
-                    <span className="text-xs font-black text-foreground tabular-nums leading-tight mt-0.5">
-                      {totalCalories}
-                    </span>
-                  </div>
-
-                  {/* Proteínas */}
-                  <div
-                    title="Proteínas"
-                    className="px-1 py-1.5 sm:py-2 rounded-xl bg-emerald-500/10 dark:bg-emerald-950/30 border border-emerald-500/20 flex flex-col items-center justify-center text-center shadow-2xs min-w-0"
-                  >
-                    <span className="text-[7.5px] font-bold uppercase text-emerald-700 dark:text-emerald-400 leading-none">
-                      Proteínas
-                    </span>
-                    <span className="text-xs font-black text-emerald-700 dark:text-emerald-400 tabular-nums leading-tight mt-0.5">
-                      {totalProtein}g
-                    </span>
-                  </div>
-
-                  {/* Carbos */}
-                  <div
-                    title="Carbohidratos"
-                    className="px-1 py-1.5 sm:py-2 rounded-xl bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/20 flex flex-col items-center justify-center text-center shadow-2xs min-w-0"
-                  >
-                    <span className="text-[7.5px] font-bold uppercase text-amber-700 dark:text-amber-400 leading-none">
-                      Carbos
-                    </span>
-                    <span className="text-xs font-black text-amber-700 dark:text-amber-400 tabular-nums leading-tight mt-0.5">
-                      {totalCarbs}g
-                    </span>
-                  </div>
-
-                  {/* Grasas */}
-                  <div
-                    title="Grasas"
-                    className="px-1 py-1.5 sm:py-2 rounded-xl bg-sky-500/10 dark:bg-sky-950/30 border border-sky-500/20 flex flex-col items-center justify-center text-center shadow-2xs min-w-0"
-                  >
-                    <span className="text-[7.5px] font-bold uppercase text-sky-700 dark:text-sky-400 leading-none">
-                      Grasas
-                    </span>
-                    <span className="text-xs font-black text-sky-700 dark:text-sky-400 tabular-nums leading-tight mt-0.5">
-                      {totalFat}g
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Ajuste Rápido con IA */}
-              <div className="space-y-1.5 pt-1">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-foreground/80" />
-                  <span>Ajustar con IA:</span>
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={aiPromptText}
-                    onChange={(e) => setAiPromptText(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleApplyAiPrompt(e);
-                      }
-                    }}
-                    placeholder="e.g. 'sin salsa', 'extra pollo', 'mitad de arroz'..."
-                    className="flex-1 h-9 px-3 rounded-xl bg-secondary/50 border border-border text-xs focus:outline-none focus:ring-1 focus:ring-ring text-foreground"
-                  />
-                  <Button
-                    type="button"
-                    onClick={handleApplyAiPrompt}
-                    disabled={isAiThinking || !aiPromptText.trim()}
-                    className="h-9 px-3.5 rounded-xl bg-foreground text-background font-bold text-xs hover:opacity-90 cursor-pointer shrink-0"
-                  >
-                    {isAiThinking ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Ajustar"}
-                  </Button>
-                </div>
-              </div>
-
-              {/* Lista de Ingredientes con Stepper de Gramos */}
-              <div className="space-y-2 pt-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                    Ingredientes ({ingredients.length})
-                  </span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsAddFoodOpen(!isAddFoodOpen)}
-                    className="text-xs font-bold text-sky-600 dark:text-sky-400 hover:bg-sky-500/10 h-7 px-2 cursor-pointer"
-                  >
-                    {isAddFoodOpen ? "Cerrar selector" : "+ Agregar Alimento"}
-                  </Button>
-                </div>
-
-                {/* Sub-panel para Agregar Alimento */}
-                {isAddFoodOpen && (
-                  <div className="p-3 rounded-2xl bg-secondary/60 border border-border/80 space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
-                    <span className="text-xs font-bold text-foreground block">
-                      Selecciona un alimento de la base de datos
-                    </span>
-                    <div className="relative">
-                      <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-3 top-2.5" />
-                      <input
-                        type="text"
-                        value={foodSearchQuery}
-                        onChange={(e) => setFoodSearchQuery(e.target.value)}
-                        placeholder="Buscar alimento (ej: Pollo, Avena, Huevo)..."
-                        className="w-full h-8 pl-8 pr-3 rounded-xl bg-background border border-border text-xs focus:outline-none"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 max-h-36 overflow-y-auto custom-scrollbar">
-                      {filteredFoods.slice(0, 8).map((food) => (
-                        <button
-                          key={food.name}
-                          type="button"
-                          onClick={() => setSelectedAddFood(food)}
-                          className={cn(
-                            "p-2 rounded-xl text-left text-xs border transition-all cursor-pointer flex flex-col justify-between",
-                            selectedAddFood.name === food.name
-                              ? "bg-foreground text-background border-foreground font-bold"
-                              : "bg-background/80 hover:bg-background border-border/60 text-foreground",
-                          )}
-                        >
-                          <span className="truncate block font-semibold">{food.name}</span>
-                          <span className="text-[10px] opacity-70">
-                            {food.calPer100g} kcal / 100g
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-
-                    <div className="flex items-center justify-between gap-3 pt-1 border-t border-border/40">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium text-muted-foreground">Cantidad:</span>
-                        <input
-                          type="number"
-                          min="10"
-                          step="10"
-                          value={addGrams}
-                          onChange={(e) => setAddGrams(Math.max(10, Number(e.target.value) || 10))}
-                          className="w-16 h-8 px-2 rounded-lg bg-background border border-border text-xs font-bold text-center"
-                        />
-                        <span className="text-xs text-muted-foreground font-medium">gramos</span>
-                      </div>
-
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={handleAddIngredientSubmit}
-                        className="h-8 px-3 rounded-xl bg-foreground text-background font-bold text-xs hover:opacity-90 cursor-pointer"
-                      >
-                        + Agregar
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Lista de Items */}
-                <div className="space-y-1.5 max-h-52 overflow-y-auto custom-scrollbar pr-0.5">
-                  {ingredients.map((ing) => (
-                    <div
-                      key={ing.id}
-                      className="p-2.5 rounded-2xl bg-secondary/30 border border-border/50 flex items-center justify-between gap-2 text-left"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <span className="text-xs font-bold text-foreground block truncate">
-                          {ing.name}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground">
-                          {Math.round(ing.calories * servings)} kcal • {ing.category}
-                        </span>
-                      </div>
-
-                      {/* Stepper de Gramos */}
-                      <div className="flex items-center gap-1 bg-background px-2 py-1 rounded-xl border border-border shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => handleUpdateGrams(ing.id, -20)}
-                          className="text-muted-foreground hover:text-foreground cursor-pointer p-0.5"
-                          title="Restar 20g"
-                        >
-                          <Minus className="w-3 h-3" />
-                        </button>
-                        <span className="text-xs font-bold w-12 text-center font-mono">
-                          {Math.round(ing.grams * servings)}g
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => handleUpdateGrams(ing.id, 20)}
-                          className="text-muted-foreground hover:text-foreground cursor-pointer p-0.5"
-                          title="Sumar 20g"
-                        >
-                          <Plus className="w-3 h-3" />
-                        </button>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteIngredient(ing.id)}
-                        className="text-muted-foreground hover:text-rose-500 cursor-pointer p-1"
-                        title="Eliminar ingrediente"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </>
           )}
 
           {/* Hidratación: Armstrong Scale */}

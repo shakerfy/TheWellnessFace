@@ -28,6 +28,7 @@ export interface DailyNutritionHeroCardProps {
   streakDays?: number;
   selectedDate?: string;
   completedDays?: string[];
+  dayNutritionMap?: Record<string, { calories: number; protein: number }>;
   userGoal?: "musculo" | "en_forma" | "perder_peso" | "saludable";
   userWeight?: number;
   onSelectDate?: (dateStr: string) => void;
@@ -53,6 +54,7 @@ export function DailyNutritionHeroCard({
   streakDays = 5,
   selectedDate,
   completedDays = [],
+  dayNutritionMap,
   userGoal = "en_forma",
   userWeight = 72,
   onSelectDate,
@@ -413,6 +415,18 @@ export function DailyNutritionHeroCard({
 
         {/* Week Switcher Navigation */}
         <div className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+          {isAthleteMode && (
+            <div className="hidden sm:flex items-center gap-2.5 mr-2 text-[10px] text-muted-foreground/80 font-semibold select-none">
+              <span className="inline-flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />
+                Calorías
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
+                Proteína
+              </span>
+            </div>
+          )}
           <button
             type="button"
             onClick={handlePrevWeek}
@@ -442,7 +456,7 @@ export function DailyNutritionHeroCard({
         </div>
       </div>
 
-      {/* 2. TOP CALENDAR: BOTANICAL FOREST CONCENTRIC CHECKMARKS & DATE ROW */}
+      {/* 2. TOP CALENDAR: DUAL PROGRESS RINGS (ATHLETE MODE) / CHECKMARKS (WELLNESS MODE) */}
       <div className="w-full mb-6 overflow-hidden">
         <div
           key={weekOffset}
@@ -454,11 +468,44 @@ export function DailyNutritionHeroCard({
         >
           {currentWeekDays.map((day) => {
             const isSelected = selectedIsoDate === day.isoDate;
+
+            // Day nutrition stats (Calories & Protein)
+            const dayStats = dayNutritionMap?.[day.isoDate];
+            let dayCals = dayStats?.calories ?? 0;
+            let dayProt = dayStats?.protein ?? 0;
+
+            if (isSelected && totalCalories !== undefined) {
+              dayCals = totalCalories;
+              dayProt = proteinGrams;
+            } else if (dayCals === 0 && dayProt === 0 && day.isCompleted) {
+              dayCals = effectiveTargets.calories;
+              dayProt = effectiveTargets.protein;
+            }
+
+            const calTarget = effectiveTargets.calories || 2000;
+            const protTarget = effectiveTargets.protein || 140;
+
+            const calPct = Math.min(100, Math.round((dayCals / calTarget) * 100));
+            const protPct = Math.min(100, Math.round((dayProt / protTarget) * 100));
+
+            // Circumference of rings:
+            // Outer (Calories): r = 15.2, C = 2 * PI * 15.2 ≈ 95.5
+            // Inner (Protein):  r = 12.0, C = 2 * PI * 12.0 ≈ 75.4
+            const cCalCirc = 95.5;
+            const cProtCirc = 75.4;
+            const calOffset = cCalCirc * (1 - calPct / 100);
+            const protOffset = cProtCirc * (1 - protPct / 100);
+
             return (
               <button
                 key={day.isoDate}
                 type="button"
                 onClick={() => handleDayClick(day)}
+                title={
+                  isAthleteMode
+                    ? `${day.dayName} ${day.dateNum}: ${dayCals} kcal (${calPct}%) • ${dayProt}g proteína (${protPct}%)`
+                    : `${day.dayName} ${day.dateNum}${day.isCompleted ? " — Hábitos completados" : ""}`
+                }
                 className="flex flex-col items-center gap-2 cursor-pointer group select-none transition-transform active:scale-95"
               >
                 {/* Day name (Lun, Mar, Mié...) */}
@@ -473,34 +520,112 @@ export function DailyNutritionHeroCard({
                   {day.dayName}
                 </span>
 
-                {/* Ladder Circle: Completed Concentric Deep Forest Ring vs Date Number */}
-                {day.isCompleted ? (
+                {/* Athlete Mode: Circular Concentric Progress Rings (Outer=Calories, Inner=Protein) */}
+                {isAthleteMode ? (
                   <div
                     className={cn(
-                      "relative w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all",
-                      isSelected && "ring-2 ring-emerald-700/60 dark:ring-emerald-400 ring-offset-2 ring-offset-background",
+                      "relative w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center transition-all",
+                      isSelected && "scale-105",
                     )}
                   >
-                    {/* Concentric Forest Green Outer Track */}
-                    <div className="absolute inset-0 rounded-full border-2 border-emerald-600/25 dark:border-emerald-400/30" />
-                    {/* Deep Forest Inner Disc with Check */}
-                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-emerald-600 dark:bg-emerald-500 text-white flex items-center justify-center shadow-xs">
-                      <Check className="w-3 h-3 stroke-[3.5]" />
+                    {/* SVG Dual Progress Rings */}
+                    <svg
+                      className="absolute inset-0 w-full h-full -rotate-90 transform pointer-events-none"
+                      viewBox="0 0 36 36"
+                    >
+                      {/* Outer Track: Calories */}
+                      <circle
+                        cx="18"
+                        cy="18"
+                        r="15.2"
+                        fill="none"
+                        stroke="currentColor"
+                        className="text-secondary dark:text-zinc-800"
+                        strokeWidth="2"
+                      />
+                      {calPct > 0 && (
+                        <circle
+                          cx="18"
+                          cy="18"
+                          r="15.2"
+                          fill="none"
+                          stroke="currentColor"
+                          className="text-amber-500 dark:text-amber-400 transition-all duration-500 ease-out"
+                          strokeWidth="2"
+                          strokeDasharray={cCalCirc}
+                          strokeDashoffset={calOffset}
+                          strokeLinecap="round"
+                        />
+                      )}
+
+                      {/* Inner Track: Protein */}
+                      <circle
+                        cx="18"
+                        cy="18"
+                        r="12"
+                        fill="none"
+                        stroke="currentColor"
+                        className="text-secondary dark:text-zinc-800"
+                        strokeWidth="2"
+                      />
+                      {protPct > 0 && (
+                        <circle
+                          cx="18"
+                          cy="18"
+                          r="12"
+                          fill="none"
+                          stroke="currentColor"
+                          className="text-emerald-500 dark:text-emerald-400 transition-all duration-500 ease-out"
+                          strokeWidth="2"
+                          strokeDasharray={cProtCirc}
+                          strokeDashoffset={protOffset}
+                          strokeLinecap="round"
+                        />
+                      )}
+                    </svg>
+
+                    {/* Center Date Number */}
+                    <div
+                      className={cn(
+                        "relative z-10 w-5 h-5 rounded-full flex items-center justify-center text-[10.5px] sm:text-[11px] font-bold transition-all",
+                        isSelected
+                          ? "bg-foreground text-background font-black shadow-xs"
+                          : day.isToday
+                            ? "text-foreground font-black ring-1.5 ring-foreground/60"
+                            : "text-muted-foreground group-hover:text-foreground",
+                      )}
+                    >
+                      {day.dateNum}
                     </div>
                   </div>
                 ) : (
-                  <div
-                    className={cn(
-                      "w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all",
-                      isSelected
-                        ? "bg-foreground text-background font-black shadow-xs scale-105"
-                        : day.isToday
-                          ? "border-2 border-foreground/70 text-foreground font-black"
-                          : "text-muted-foreground group-hover:text-foreground",
-                    )}
-                  >
-                    {day.dateNum}
-                  </div>
+                  /* Wellness Mode: Original Concentric Checkmarks vs Date Number */
+                  day.isCompleted ? (
+                    <div
+                      className={cn(
+                        "relative w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all",
+                        isSelected && "ring-2 ring-emerald-700/60 dark:ring-emerald-400 ring-offset-2 ring-offset-background",
+                      )}
+                    >
+                      <div className="absolute inset-0 rounded-full border-2 border-emerald-600/25 dark:border-emerald-400/30" />
+                      <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-emerald-600 dark:bg-emerald-500 text-white flex items-center justify-center shadow-xs">
+                        <Check className="w-3 h-3 stroke-[3.5]" />
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      className={cn(
+                        "w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all",
+                        isSelected
+                          ? "bg-foreground text-background font-black shadow-xs scale-105"
+                          : day.isToday
+                            ? "border-2 border-foreground/70 text-foreground font-black"
+                            : "text-muted-foreground group-hover:text-foreground",
+                      )}
+                    >
+                      {day.dateNum}
+                    </div>
+                  )
                 )}
               </button>
             );
@@ -700,8 +825,8 @@ export function DailyNutritionHeroCard({
                   className="flex items-start gap-3 text-left w-full group/metric cursor-pointer select-none rounded-xl p-1 -ml-1 transition-all duration-200 hover:bg-secondary/40 active:scale-[0.98]"
                   title="Toca para alternar entre consumo y faltantes para el objetivo"
                 >
-                  {/* Vertical Accent Bar (Black / Foreground) */}
-                  <div className="w-1 h-10 bg-foreground rounded-full shrink-0 shadow-2xs mt-0.5 group-hover/metric:scale-105 transition-transform" />
+                  {/* Vertical Accent Bar (Botanical Emerald #10b981) */}
+                  <div className="w-1 h-10 bg-emerald-500 rounded-full shrink-0 shadow-2xs mt-0.5 group-hover/metric:scale-105 transition-transform" />
 
                   <div className="w-full">
                     {metricMode === "consumed" ? (
@@ -712,7 +837,7 @@ export function DailyNutritionHeroCard({
                             {proteinGrams}g
                           </div>
 
-                          <div className="inline-flex items-center gap-1 text-[11px] font-extrabold text-foreground">
+                          <div className="inline-flex items-center gap-1 text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400">
                             <RotateCw className="w-2.5 h-2.5 stroke-[3] transition-transform duration-300" />
                             <span>{protPct >= 100 ? `✓ ${protPct}%` : `${protPct}%`}</span>
                           </div>
@@ -739,10 +864,10 @@ export function DailyNutritionHeroCard({
                             className={cn(
                               "inline-flex items-center text-[10px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded",
                               isProtInTarget
-                                ? "bg-foreground/10 text-foreground"
+                                ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
                                 : isProtOverTarget
                                   ? "bg-secondary text-muted-foreground"
-                                  : "bg-foreground/10 text-foreground"
+                                  : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
                             )}
                           >
                             <RotateCw className="w-2.5 h-2.5 stroke-[3] mr-1 rotate-180 transition-transform duration-300" />
@@ -762,7 +887,7 @@ export function DailyNutritionHeroCard({
                 </button>
               </div>
 
-              {/* RIGHT COLUMN: GIANT LADDER CONCENTRIC RINGS (OUTER AMBER CALORIES + INNER BLACK PROTEIN) */}
+              {/* RIGHT COLUMN: GIANT LADDER CONCENTRIC RINGS (OUTER AMBER CALORIES + INNER EMERALD PROTEIN) */}
               <div className="col-span-5 sm:col-span-5 flex items-center justify-end relative">
                 <button
                   type="button"
@@ -847,21 +972,21 @@ export function DailyNutritionHeroCard({
                       strokeWidth="13"
                     />
 
-                    {/* Inner Ring Target Range Highlight Zone (Shaded Charcoal/Graphite Landing Strip) */}
+                    {/* Inner Ring Target Range Highlight Zone (Shaded Emerald Landing Strip) */}
                     <circle
                       cx="80"
                       cy="80"
                       r={innerR}
                       fill="none"
                       stroke="currentColor"
-                      className="text-foreground/20 dark:text-foreground/25"
+                      className="text-emerald-500/25 dark:text-emerald-400/20"
                       strokeWidth="13"
                       strokeDasharray={`${protZoneLength} ${innerCircumference}`}
                       strokeDashoffset={protZoneOffset}
                       strokeLinecap="butt"
                     />
 
-                    {/* Inner Ring Active Progress (Black Monochrome #18181b / Foreground) */}
+                    {/* Inner Ring Active Progress (Botanical Emerald #10b981 / emerald-500) */}
                     <circle
                       cx="80"
                       cy="80"
@@ -872,7 +997,7 @@ export function DailyNutritionHeroCard({
                       strokeDasharray={innerCircumference}
                       strokeDashoffset={innerOffset}
                       strokeLinecap="butt"
-                      className="text-zinc-900 dark:text-zinc-100 transition-all duration-700 ease-out"
+                      className="text-emerald-500 dark:text-emerald-400 transition-all duration-700 ease-out"
                     />
 
                     {/* Inner Ring (Protein) 100% Target Threshold Marker Line (Single clean divider marking target range entry) */}
@@ -941,7 +1066,7 @@ export function DailyNutritionHeroCard({
                     <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                       PROTEÍNA
                     </span>
-                    <span className="text-xs font-black text-foreground">
+                    <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">
                       {metricMode === "consumed"
                         ? (protPct >= 100 ? `✓ ${protPct}%` : `${protPct}%`)
                         : (isProtInTarget ? "EN RANGO" : isProtOverTarget ? "CUBIERTO" : "FALTAN")}
@@ -957,7 +1082,7 @@ export function DailyNutritionHeroCard({
                         {isProtOverTarget ? (
                           <>+{proteinGrams - ranges.protein[1]}g <span className="text-xs font-normal text-muted-foreground">extra</span></>
                         ) : isProtInTarget ? (
-                          <span className="text-base text-foreground">Zona Óptima</span>
+                          <span className="text-base text-emerald-600 dark:text-emerald-400">Zona Óptima</span>
                         ) : (
                           <>{protRemainingMin}–{protRemainingMax}g <span className="text-xs font-normal text-muted-foreground">faltan</span></>
                         )}
@@ -967,18 +1092,18 @@ export function DailyNutritionHeroCard({
                   <div className="relative w-full h-1.5 bg-secondary dark:bg-zinc-800 rounded-full overflow-hidden">
                     {/* Shaded Target Range Landing Strip */}
                     <div
-                      className="absolute top-0 bottom-0 bg-foreground/20 dark:bg-foreground/25"
+                      className="absolute top-0 bottom-0 bg-emerald-500/25 dark:bg-emerald-400/20"
                       style={{
                         left: `${Math.round(protTargetRatio * 100)}%`,
                         right: 0,
                       }}
                     />
                     <div
-                      className="h-full bg-foreground rounded-full transition-all duration-500 relative z-[2]"
+                      className="h-full bg-emerald-500 dark:bg-emerald-400 rounded-full transition-all duration-500 relative z-[2]"
                       style={{ width: `${Math.min(100, Math.round((proteinGrams / (ranges.protein[1] || 140)) * 100))}%` }}
                     />
                     <div
-                      className="absolute top-0 bottom-0 w-0.5 bg-foreground/80 z-10 -translate-x-1/2"
+                      className="absolute top-0 bottom-0 w-0.5 bg-emerald-700/80 dark:bg-emerald-300/80 z-10 -translate-x-1/2"
                       style={{ left: `${Math.round(protTargetRatio * 100)}%` }}
                     />
                   </div>
@@ -994,7 +1119,7 @@ export function DailyNutritionHeroCard({
                     <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                       FIBRA
                     </span>
-                    <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">
+                    <span className="text-xs font-black text-indigo-600 dark:text-indigo-400">
                       {metricMode === "consumed"
                         ? (fiberPct >= 100 ? `✓ ${fiberPct}%` : `${fiberPct}%`)
                         : (isFiberInTarget ? "EN RANGO" : isFiberOverTarget ? "CUBIERTO" : "FALTAN")}
@@ -1010,7 +1135,7 @@ export function DailyNutritionHeroCard({
                         {isFiberOverTarget ? (
                           <>+{fiberGrams - ranges.fiber[1]}g <span className="text-xs font-normal text-muted-foreground">extra</span></>
                         ) : isFiberInTarget ? (
-                          <span className="text-base text-emerald-600 dark:text-emerald-400">Zona Óptima</span>
+                          <span className="text-base text-indigo-600 dark:text-indigo-400">Zona Óptima</span>
                         ) : (
                           <>{fiberRemainingMin}–{fiberRemainingMax}g <span className="text-xs font-normal text-muted-foreground">faltan</span></>
                         )}
@@ -1020,18 +1145,18 @@ export function DailyNutritionHeroCard({
                   <div className="relative w-full h-1.5 bg-secondary dark:bg-zinc-800 rounded-full overflow-hidden">
                     {/* Shaded Target Range Landing Strip */}
                     <div
-                      className="absolute top-0 bottom-0 bg-emerald-500/25 dark:bg-emerald-400/20"
+                      className="absolute top-0 bottom-0 bg-indigo-500/25 dark:bg-indigo-400/20"
                       style={{
                         left: `${Math.round((ranges.fiber[0] / (ranges.fiber[1] || 38)) * 100)}%`,
                         right: 0,
                       }}
                     />
                     <div
-                      className="h-full bg-emerald-500 dark:bg-emerald-400 rounded-full transition-all duration-500 relative z-[2]"
+                      className="h-full bg-indigo-500 dark:bg-indigo-400 rounded-full transition-all duration-500 relative z-[2]"
                       style={{ width: `${Math.min(100, Math.round((fiberGrams / (ranges.fiber[1] || 38)) * 100))}%` }}
                     />
                     <div
-                      className="absolute top-0 bottom-0 w-0.5 bg-foreground/80 z-10 -translate-x-1/2"
+                      className="absolute top-0 bottom-0 w-0.5 bg-indigo-700/80 dark:bg-indigo-300/80 z-10 -translate-x-1/2"
                       style={{ left: `${Math.round((ranges.fiber[0] / (ranges.fiber[1] || 38)) * 100)}%` }}
                     />
                   </div>

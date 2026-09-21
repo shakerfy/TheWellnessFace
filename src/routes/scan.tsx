@@ -45,6 +45,7 @@ import {
   ChevronDown,
   ChevronUp,
   HelpCircle,
+  X,
 } from "lucide-react";
 import {
   FoodScannerTutorialDialog,
@@ -215,6 +216,34 @@ export const INITIAL_FOOD_NOTE_ITEMS: string[] = [
   "1 vaso de jugo de naranja natural",
   "20g de almendras tostadas",
   "1 manzana roja fresca",
+];
+
+export interface FoodDatabaseItem {
+  id: string;
+  name: string;
+  brand?: string;
+  calories: number;
+  servingLabel: string;
+  protein: number;
+  carbs: number;
+  fat: number;
+  fiber?: number;
+  category: "protein" | "carbs" | "fats" | "fruit" | "veggie" | "dairy";
+}
+
+export const INITIAL_FOOD_DATABASE_ITEMS: FoodDatabaseItem[] = [
+  { id: "fd-1", name: "Peanut Butter", calories: 94, servingLabel: "tbsp", protein: 4, carbs: 3, fat: 8, fiber: 1, category: "fats" },
+  { id: "fd-2", name: "Avocado", brand: "Calavo", calories: 130, servingLabel: "serving", protein: 2, carbs: 6, fat: 12, fiber: 5, category: "fats" },
+  { id: "fd-3", name: "Egg", calories: 74, servingLabel: "large", protein: 6, carbs: 0.4, fat: 5, fiber: 0, category: "protein" },
+  { id: "fd-4", name: "Apples", calories: 72, servingLabel: "medium", protein: 0.3, carbs: 19, fat: 0.2, fiber: 3, category: "fruit" },
+  { id: "fd-5", name: "Spinach", calories: 7, servingLabel: "cup", protein: 0.9, carbs: 1.1, fat: 0.1, fiber: 0.7, category: "veggie" },
+  { id: "fd-6", name: "Oats / Avena", calories: 150, servingLabel: "1/2 cup (40g)", protein: 5, carbs: 27, fat: 3, fiber: 4, category: "carbs" },
+  { id: "fd-7", name: "Chicken Breast", calories: 165, servingLabel: "100g", protein: 31, carbs: 0, fat: 3.6, fiber: 0, category: "protein" },
+  { id: "fd-8", name: "Greek Yogurt", calories: 100, servingLabel: "150g", protein: 15, carbs: 6, fat: 0.5, fiber: 0, category: "dairy" },
+  { id: "fd-9", name: "Brown Rice", calories: 112, servingLabel: "100g", protein: 2.6, carbs: 24, fat: 0.9, fiber: 1.8, category: "carbs" },
+  { id: "fd-10", name: "Salmon", calories: 208, servingLabel: "100g", protein: 20, carbs: 0, fat: 13, fiber: 0, category: "protein" },
+  { id: "fd-11", name: "Banana", calories: 105, servingLabel: "1 medium", protein: 1.3, carbs: 27, fat: 0.3, fiber: 3.1, category: "fruit" },
+  { id: "fd-12", name: "Olive Oil", calories: 119, servingLabel: "1 tbsp", protein: 0, carbs: 0, fat: 14, fiber: 0, category: "fats" },
 ];
 
 export interface PhytoColorItem {
@@ -1853,6 +1882,14 @@ function ScanMealPage() {
   const [availableCameras, setAvailableCameras] = useState<MediaDeviceInfo[]>([]);
   const [activeCameraLabel, setActiveCameraLabel] = useState<string>("");
 
+  const saveToDiaryRef = useRef<(overrides?: {
+    customImg?: string;
+    customTitle?: string;
+    customReportTitle?: string;
+    customIngredients?: MealIngredientItem[];
+    customNarrative?: string;
+  }) => void>(() => {});
+
   // Selected sample & custom capture
   const [selectedSampleIndex, setSelectedSampleIndex] = useState(0);
   const initialSample = CAL_AI_SAMPLE_MEALS[selectedSampleIndex];
@@ -1861,7 +1898,217 @@ function ScanMealPage() {
 
   // Scanner UI & Category States
   const [selectedCategory, setSelectedCategory] = useState<FoodScanCategory>("comida");
-  const [scanMode, setScanMode] = useState<"scan_food" | "voice_log" | "barcode" | "food_label">("scan_food");
+  const [scanMode, setScanMode] = useState<"scan_food" | "voice_log" | "database" | "barcode" | "food_label">("scan_food");
+
+  // Food Database States & Handlers (Matching Cal AI Food Database)
+  const [databaseSearchQuery, setDatabaseSearchQuery] = useState("");
+  const [activeDbTab, setActiveDbTab] = useState<"All" | "My meals" | "My foods" | "Saved scans">("All");
+  const [customDbFoods, setCustomDbFoods] = useState<FoodDatabaseItem[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const raw = localStorage.getItem("shakerfy_user_custom_foods");
+        if (raw) return JSON.parse(raw);
+      } catch {}
+    }
+    return [];
+  });
+  const [showLogEmptyFoodModal, setShowLogEmptyFoodModal] = useState(false);
+  const [emptyFoodName, setEmptyFoodName] = useState("");
+  const [emptyFoodCalories, setEmptyFoodCalories] = useState("120");
+  const [emptyFoodProtein, setEmptyFoodProtein] = useState("10");
+  const [emptyFoodCarbs, setEmptyFoodCarbs] = useState("12");
+  const [emptyFoodFat, setEmptyFoodFat] = useState("3");
+  const [emptyFoodServing, setEmptyFoodServing] = useState("1 porción");
+
+  // Reactive listener to update saved scans in real time when bookmarked in timeline
+  const [timelineVersion, setTimelineVersion] = useState(0);
+  useEffect(() => {
+    const handler = () => setTimelineVersion((v) => v + 1);
+    if (typeof window !== "undefined") {
+      window.addEventListener("shakerfy:timeline-update", handler);
+      window.addEventListener("storage", handler);
+      return () => {
+        window.removeEventListener("shakerfy:timeline-update", handler);
+        window.removeEventListener("storage", handler);
+      };
+    }
+  }, []);
+
+  const filteredDbFoods = useMemo(() => {
+    let baseList: FoodDatabaseItem[] = [];
+    if (activeDbTab === "My foods") {
+      baseList = customDbFoods;
+    } else if (activeDbTab === "Saved scans") {
+      if (typeof window !== "undefined") {
+        try {
+          const raw = localStorage.getItem("shakerfy_user_timeline_items");
+          if (raw) {
+            const items = JSON.parse(raw);
+            const savedItems = items.filter(
+              (it: any) => it.type === "meal" && (it.isSaved === true || it.saved === true),
+            );
+            baseList = savedItems.map((it: any) => ({
+              id: it.id,
+              name: it.title,
+              calories: it.calories || it.kcal || 350,
+              servingLabel: "Escaneo guardado ★",
+              protein: it.protein || 20,
+              carbs: it.carbs || 30,
+              fat: it.fat || 10,
+              fiber: it.fiber || 2,
+              category: "protein" as const,
+            }));
+          }
+        } catch {}
+      }
+    } else if (activeDbTab === "My meals") {
+      baseList = customDbFoods.length > 0 ? customDbFoods : INITIAL_FOOD_DATABASE_ITEMS.slice(0, 4);
+    } else {
+      // "All"
+      baseList = [...customDbFoods, ...INITIAL_FOOD_DATABASE_ITEMS];
+    }
+
+    if (!databaseSearchQuery.trim()) return baseList;
+    const q = databaseSearchQuery.toLowerCase().trim();
+    return baseList.filter(
+      (f) =>
+        f.name.toLowerCase().includes(q) ||
+        (f.brand && f.brand.toLowerCase().includes(q)) ||
+        f.category.toLowerCase().includes(q),
+    );
+  }, [activeDbTab, customDbFoods, databaseSearchQuery, timelineVersion]);
+
+  const handleQuickAddFoodToDiary = (food: {
+    name: string;
+    calories: number;
+    protein?: number;
+    carbs?: number;
+    fat?: number;
+    fiber?: number;
+    servingLabel?: string;
+  }) => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const dateStr = `${year}-${month}-${day}`;
+    const timeStr = now.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+
+    let stored: any[] = [];
+    if (typeof window !== "undefined") {
+      try {
+        const raw = localStorage.getItem("shakerfy_user_timeline_items");
+        if (raw) stored = JSON.parse(raw);
+        if (!Array.isArray(stored)) stored = [];
+      } catch {
+        stored = [];
+      }
+    }
+
+    const context = inferContextualMealType(stored);
+    const resolvedMealType = context.mealType || "Colación";
+
+    const newMealItem = {
+      id: `meal-${Date.now()}`,
+      createdAt: now.toISOString(),
+      type: "meal",
+      mealType: resolvedMealType,
+      time: timeStr,
+      date: dateStr,
+      title: food.name,
+      subtitle: `${resolvedMealType} • Food Database`,
+      img: null,
+      calories: food.calories,
+      kcal: food.calories,
+      protein: food.protein || 0,
+      carbs: food.carbs || 0,
+      fat: food.fat || 0,
+      fiber: food.fiber || 0,
+      sugar: 0,
+      sodium: 120,
+      healthScore: 8,
+      bioScore: 80,
+      bioGrade: "A",
+      scoreGrade: "A",
+      bioQualityLabel: "Alimento Base",
+      bioGaugeIndex: 3,
+      ingredients: [
+        {
+          id: `ing-${Date.now()}`,
+          name: food.name,
+          category: (food.protein && food.protein > 12 ? "protein" : "carbs") as any,
+          grams: 100,
+          calories: food.calories,
+          protein: food.protein || 0,
+          carbs: food.carbs || 0,
+          fat: food.fat || 0,
+          fiber: food.fiber || 0,
+          calPer100g: food.calories,
+          pPer100g: food.protein || 0,
+          cPer100g: food.carbs || 0,
+          fPer100g: food.fat || 0,
+          fiberPer100g: food.fiber || 0,
+        },
+      ],
+      desc: `${food.name} • ${food.calories} kcal (${food.servingLabel || "1 porción"})`,
+      summary: `${food.name} registrado desde Food Database.`,
+      coachFeedback: `✓ Alimento registrado con éxito: ${food.name} (${food.calories} kcal).`,
+      tag: "Food Database",
+      consumed: true,
+    };
+
+    if (typeof window !== "undefined") {
+      const updated = [newMealItem, ...stored];
+      localStorage.setItem("shakerfy_user_timeline_items", JSON.stringify(updated));
+      window.dispatchEvent(new CustomEvent("shakerfy:timeline-update"));
+    }
+
+    if ("vibrate" in navigator) {
+      navigator.vibrate(15);
+    }
+
+    toast.success(`✓ ${food.name} agregado al diario`, {
+      description: `${food.calories} kcal • ${food.servingLabel || "1 porción"}`,
+      action: {
+        label: "Ver Diario",
+        onClick: () => navigate({ to: "/app", search: { tab: "diario" } }),
+      },
+    });
+  };
+
+  const handleSaveEmptyFood = () => {
+    const name = emptyFoodName.trim() || "Alimento Personalizado";
+    const cal = Math.max(0, parseInt(emptyFoodCalories, 10) || 100);
+    const p = Math.max(0, parseFloat(emptyFoodProtein) || 0);
+    const c = Math.max(0, parseFloat(emptyFoodCarbs) || 0);
+    const f = Math.max(0, parseFloat(emptyFoodFat) || 0);
+    const serving = emptyFoodServing.trim() || "1 porción";
+
+    const newFood: FoodDatabaseItem = {
+      id: `custom-${Date.now()}`,
+      name,
+      calories: cal,
+      protein: p,
+      carbs: c,
+      fat: f,
+      servingLabel: serving,
+      category: p > 15 ? "protein" : c > 15 ? "carbs" : "fats",
+    };
+
+    setCustomDbFoods((prev) => {
+      const next = [newFood, ...prev];
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("shakerfy_user_custom_foods", JSON.stringify(next));
+        } catch {}
+      }
+      return next;
+    });
+
+    handleQuickAddFoodToDiary(newFood);
+    setShowLogEmptyFoodModal(false);
+    setEmptyFoodName("");
+  };
 
   // Food Label Note States & Handlers (Minimalist interactive list)
   const [foodNoteItems, setFoodNoteItems] = useState<string[]>(INITIAL_FOOD_NOTE_ITEMS);
@@ -2162,8 +2409,13 @@ function ScanMealPage() {
     setIsScanningLaser(true);
     setTimeout(() => {
       setIsScanningLaser(false);
-      setCurrentScreen("nutrition");
-    }, 500);
+      saveToDiaryRef.current({
+        customIngredients: parsedIngredients,
+        customImg: "https://images.unsplash.com/photo-1494859802809-d069c3b71a8a?w=800&auto=format&fit=crop&q=80",
+        customTitle: "Plato Casero Registrado",
+        customReportTitle: "Registro por Notas",
+      });
+    }, 450);
   };
   const libraryInputRef = useRef<HTMLInputElement>(null);
   const [flashlightOn, setFlashlightOn] = useState(false);
@@ -2178,14 +2430,19 @@ function ScanMealPage() {
     toast.success("Nota de voz procesada con IA", {
       description: text,
     });
-    setTitle(text.length > 32 ? text.slice(0, 32) + "..." : text);
+    const cleanTitle = text.length > 32 ? text.slice(0, 32) + "..." : text;
+    setTitle(cleanTitle);
     setReportTitle("Registro por Voz IA");
     setNarrative(`Alimentos detectados por voz: "${text}". Composición analizada con éxito.`);
     setIsScanningLaser(true);
     setTimeout(() => {
       setIsScanningLaser(false);
-      setCurrentScreen("nutrition");
-    }, 600);
+      saveToDiaryRef.current({
+        customTitle: cleanTitle,
+        customReportTitle: "Registro por Voz IA",
+        customNarrative: `Alimentos detectados por voz: "${text}". Composición analizada con éxito.`,
+      });
+    }, 450);
   };
 
   const handleToggleVoiceRecording = () => {
@@ -2429,9 +2686,9 @@ function ScanMealPage() {
     }
   }, [selectedCameraId, cameraFacing, stopStream]);
 
-  // Synchronize stream lifecycle with scanner screen (stop camera if in food_label markdown mode)
+  // Synchronize stream lifecycle with scanner screen (stop camera if in food_label markdown mode or database)
   useEffect(() => {
-    if (currentScreen === "scanner" && !customImage && scanMode !== "food_label") {
+    if (currentScreen === "scanner" && !customImage && scanMode !== "food_label" && scanMode !== "database") {
       startCamera();
     } else {
       stopStream();
@@ -2548,9 +2805,14 @@ function ScanMealPage() {
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {
-        setCustomImage(reader.result as string);
+        const uploadedImg = reader.result as string;
+        setCustomImage(uploadedImg);
         toast.success("Foto cargada con éxito");
-        triggerCaptureScan();
+        setIsScanningLaser(true);
+        setTimeout(() => {
+          setIsScanningLaser(false);
+          saveToDiaryRef.current({ customImg: uploadedImg });
+        }, 450);
       };
       reader.readAsDataURL(file);
     }
@@ -2560,6 +2822,7 @@ function ScanMealPage() {
   const triggerCaptureScan = () => {
     setIsScanningLaser(true);
 
+    let screenshot: string | null = null;
     if (videoRef.current && isCameraActive && !customImage) {
       const video = videoRef.current;
       if (video.videoWidth > 0 && video.videoHeight > 0) {
@@ -2573,7 +2836,7 @@ function ScanMealPage() {
             ctx.scale(-1, 1);
           }
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          const screenshot = canvas.toDataURL("image/jpeg", 0.92);
+          screenshot = canvas.toDataURL("image/jpeg", 0.92);
           setCustomImage(screenshot);
         }
       }
@@ -2581,8 +2844,8 @@ function ScanMealPage() {
 
     setTimeout(() => {
       setIsScanningLaser(false);
-      setCurrentScreen("nutrition");
-    }, 600);
+      saveToDiaryRef.current({ customImg: screenshot || undefined });
+    }, 450);
   };
 
   // Base Nutrient Calculations
@@ -2703,134 +2966,202 @@ function ScanMealPage() {
   };
 
   // Save to User Diary Timeline and Navigate to /app
-  const handleSaveToDiary = () => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const day = String(now.getDate()).padStart(2, "0");
-    const dateStr = `${year}-${month}-${day}`;
-    const timeStr = now.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+  const handleSaveToDiary = useCallback(
+    (overrides?: {
+      customImg?: string;
+      customTitle?: string;
+      customReportTitle?: string;
+      customIngredients?: MealIngredientItem[];
+      customNarrative?: string;
+    }) => {
+      stopStream();
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      const dateStr = `${year}-${month}-${day}`;
+      const timeStr = now.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
 
-    let stored: any[] = [];
-    if (typeof window !== "undefined") {
-      try {
-        const raw = localStorage.getItem("shakerfy_user_timeline_items");
-        if (raw) stored = JSON.parse(raw);
-        if (!Array.isArray(stored)) stored = [];
-      } catch {
-        stored = [];
-      }
-    }
-
-    const context = inferContextualMealType(stored);
-    const resolvedMealType = context.mealType || mealType || "Almuerzo";
-
-    const dynamicInsight = generateContextualAiInsight({
-      baseNarrative: narrative,
-      isPreWorkout: context.isPreWorkout,
-      isPostWorkout: context.isPostWorkout,
-      isNightWindow: context.isNightWindow,
-      bioScore: bioScore,
-    });
-
-    let resolvedTimingFit = null;
-    try {
-      resolvedTimingFit = calculateTimingFit(
-        {
-          time: timeStr,
-          date: dateStr,
-          bioScore,
-          vectorBadges,
-          title: reportTitle || title,
-        },
-        stored,
-      );
-    } catch (e) {
-      console.warn("Timing fit calculation skipped:", e);
-    }
-
-    const newMealItem = {
-      id: `meal-${Date.now()}`,
-      createdAt: now.toISOString(),
-      type: "meal",
-      mealType: resolvedMealType,
-      time: timeStr,
-      date: dateStr,
-      title: reportTitle || title,
-      subtitle: `${resolvedMealType} • Reporte Nutricional`,
-      img: activeImage,
-      calories: totalCalories,
-      kcal: totalCalories,
-      protein: totalProtein,
-      carbs: totalCarbs,
-      fat: totalFat,
-      fiber: totalFiber,
-      sugar: 12.0,
-      sodium: 420,
-      healthScore: healthScore,
-      bioScore: bioScore,
-      bioGrade: bioGrade || "A",
-      scoreGrade: bioGrade || "A",
-      bioQualityLabel: bioQualityLabel,
-      bioGaugeIndex: bioGaugeIndex,
-      ingredients: ingredients,
-      narrative:
-        narrative ||
-        ingredients.map((i) => `${i.name} (${Math.round(i.grams * servings)}g)`).join(", "),
-      desc:
-        narrative ||
-        ingredients.map((i) => `${i.name} (${Math.round(i.grams * servings)}g)`).join(", "),
-      summary:
-        narrative ||
-        `${title} with ${totalCalories} kcal, ${totalProtein}g protein, ${totalCarbs}g carbs and ${totalFat}g fats.`,
-      coachFeedback: dynamicInsight,
-      tag: bioQualityLabel || "Valor Nutricional",
-      vectorBadges: vectorBadges,
-      consumed: true,
-      timingFit: resolvedTimingFit,
-    };
-
-    if (typeof window !== "undefined") {
-      try {
-        const updated = [newMealItem, ...stored];
+      let stored: any[] = [];
+      if (typeof window !== "undefined") {
         try {
-          localStorage.setItem("shakerfy_user_timeline_items", JSON.stringify(updated));
-        } catch (storageErr) {
-          // If QuotaExceededError (e.g. large base64 screenshot), save item without heavy data URL
-          console.warn("Storage quota reached, saving meal with lightweight image reference:", storageErr);
-          const lightweightItem = {
-            ...newMealItem,
-            img: activeImage?.startsWith("data:") ? null : activeImage,
-          };
-          const safeStored = stored.map((item: any) => ({
-            ...item,
-            img: item.img?.startsWith("data:") ? null : item.img,
-          }));
-          localStorage.setItem(
-            "shakerfy_user_timeline_items",
-            JSON.stringify([lightweightItem, ...safeStored]),
-          );
+          const raw = localStorage.getItem("shakerfy_user_timeline_items");
+          if (raw) stored = JSON.parse(raw);
+          if (!Array.isArray(stored)) stored = [];
+        } catch {
+          stored = [];
         }
-        window.dispatchEvent(new CustomEvent("shakerfy:timeline-update"));
-      } catch (err) {
-        console.error("Error saving timeline meal item:", err);
       }
-    }
 
-    toast.success("✓ Comida registrada en el diario");
-    try {
-      navigate({ to: "/app", search: { tab: "diario" } });
-    } catch {
-      window.location.href = "/app?tab=diario";
-    }
+      const context = inferContextualMealType(stored);
+      const resolvedMealType = context.mealType || mealType || "Almuerzo";
 
-    // Ensure fallback redirection if client router is delayed
-    setTimeout(() => {
-      if (typeof window !== "undefined" && window.location.pathname.startsWith("/scan")) {
+      const effectiveIngredients = overrides?.customIngredients || ingredients;
+      const effectiveCalories =
+        effectiveIngredients.reduce((acc, i) => acc + (i.calories || 0), 0) || totalCalories;
+      const effectiveProtein =
+        effectiveIngredients.reduce((acc, i) => acc + (i.protein || 0), 0) || totalProtein;
+      const effectiveCarbs =
+        effectiveIngredients.reduce((acc, i) => acc + (i.carbs || 0), 0) || totalCarbs;
+      const effectiveFat =
+        effectiveIngredients.reduce((acc, i) => acc + (i.fat || 0), 0) || totalFat;
+      const effectiveFiber =
+        Math.round(
+          (effectiveIngredients.reduce((acc, i) => acc + (i.fiber || 0), 0) || totalFiber) * 10,
+        ) / 10;
+      const effectiveTitle =
+        overrides?.customReportTitle || overrides?.customTitle || reportTitle || title;
+      const effectiveImg = overrides?.customImg || activeImage;
+      const effectiveNarrative = overrides?.customNarrative || narrative;
+
+      const dynamicInsight = generateContextualAiInsight({
+        baseNarrative: effectiveNarrative,
+        isPreWorkout: context.isPreWorkout,
+        isPostWorkout: context.isPostWorkout,
+        isNightWindow: context.isNightWindow,
+        bioScore: bioScore,
+      });
+
+      let resolvedTimingFit = null;
+      try {
+        resolvedTimingFit = calculateTimingFit(
+          {
+            time: timeStr,
+            date: dateStr,
+            bioScore,
+            vectorBadges,
+            title: effectiveTitle,
+          },
+          stored,
+        );
+      } catch (e) {
+        console.warn("Timing fit calculation skipped:", e);
+      }
+
+      const newMealItem = {
+        id: `meal-${Date.now()}`,
+        createdAt: now.toISOString(),
+        type: "meal",
+        mealType: resolvedMealType,
+        time: timeStr,
+        date: dateStr,
+        title: effectiveTitle,
+        subtitle: `${resolvedMealType} • Reporte Nutricional`,
+        img: effectiveImg,
+        calories: effectiveCalories,
+        kcal: effectiveCalories,
+        protein: effectiveProtein,
+        carbs: effectiveCarbs,
+        fat: effectiveFat,
+        fiber: effectiveFiber,
+        sugar: 12.0,
+        sodium: 420,
+        healthScore: healthScore,
+        bioScore: bioScore,
+        bioGrade: bioGrade || "A",
+        scoreGrade: bioGrade || "A",
+        bioQualityLabel: bioQualityLabel,
+        bioGaugeIndex: bioGaugeIndex,
+        ingredients: effectiveIngredients,
+        narrative:
+          effectiveNarrative ||
+          effectiveIngredients
+            .map((i) => `${i.name} (${Math.round(i.grams * servings)}g)`)
+            .join(", "),
+        desc:
+          effectiveNarrative ||
+          effectiveIngredients
+            .map((i) => `${i.name} (${Math.round(i.grams * servings)}g)`)
+            .join(", "),
+        summary:
+          effectiveNarrative ||
+          `${effectiveTitle} con ${effectiveCalories} kcal, ${effectiveProtein}g de proteína.`,
+        coachFeedback: dynamicInsight,
+        tag: bioQualityLabel || "Valor Nutricional",
+        vectorBadges: vectorBadges,
+        consumed: true,
+        timingFit: resolvedTimingFit,
+      };
+
+      if (typeof window !== "undefined") {
+        try {
+          const updated = [newMealItem, ...stored];
+          try {
+            localStorage.setItem("shakerfy_user_timeline_items", JSON.stringify(updated));
+          } catch (storageErr) {
+            console.warn(
+              "Storage quota reached, saving meal with lightweight image reference:",
+              storageErr,
+            );
+            const lightweightItem = {
+              ...newMealItem,
+              img: effectiveImg?.startsWith("data:") ? null : effectiveImg,
+            };
+            const safeStored = stored.map((item: any) => ({
+              ...item,
+              img: item.img?.startsWith("data:") ? null : item.img,
+            }));
+            localStorage.setItem(
+              "shakerfy_user_timeline_items",
+              JSON.stringify([lightweightItem, ...safeStored]),
+            );
+          }
+          window.dispatchEvent(new CustomEvent("shakerfy:timeline-update"));
+        } catch (err) {
+          console.error("Error saving timeline meal item:", err);
+        }
+      }
+
+      if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+        try {
+          navigator.vibrate([25, 40, 25]);
+        } catch (_) {}
+      }
+
+      toast.success("✓ Comida registrada en el diario", {
+        description: `${effectiveTitle} se añadió a tu timeline`,
+      });
+
+      try {
+        navigate({ to: "/app", search: { tab: "diario" } });
+      } catch {
         window.location.href = "/app?tab=diario";
       }
-    }, 120);
-  };
+
+      // Ensure fallback redirection if client router is delayed
+      setTimeout(() => {
+        if (typeof window !== "undefined" && window.location.pathname.startsWith("/scan")) {
+          window.location.href = "/app?tab=diario";
+        }
+      }, 120);
+    },
+    [
+      stopStream,
+      mealType,
+      ingredients,
+      totalCalories,
+      totalProtein,
+      totalCarbs,
+      totalFat,
+      totalFiber,
+      reportTitle,
+      title,
+      activeImage,
+      narrative,
+      bioScore,
+      vectorBadges,
+      healthScore,
+      bioGrade,
+      bioQualityLabel,
+      bioGaugeIndex,
+      servings,
+      navigate,
+    ],
+  );
+
+  useEffect(() => {
+    saveToDiaryRef.current = handleSaveToDiary;
+  }, [handleSaveToDiary]);
 
   const filteredFoods = COMMON_FOODS_DATABASE.filter((f) =>
     f.name.toLowerCase().includes(foodSearchQuery.toLowerCase()),
@@ -2840,7 +3171,7 @@ function ScanMealPage() {
     <div
       className={cn(
         "fixed inset-0 z-50 w-screen h-[100dvh] overflow-hidden flex flex-col justify-between select-none transition-colors duration-300",
-        scanMode === "food_label"
+        scanMode === "food_label" || scanMode === "database"
           ? "bg-slate-50/70 dark:bg-background text-foreground"
           : "bg-slate-950 text-foreground",
       )}
@@ -2850,7 +3181,7 @@ function ScanMealPage() {
       {/* ========================================================================= */}
       {currentScreen === "scanner" && (
         <div className="relative w-full h-full flex flex-col justify-between overflow-hidden">
-          {scanMode !== "food_label" ? (
+          {scanMode !== "food_label" && scanMode !== "database" ? (
             /* Full Screen Viewfinder: HTML5 Video Stream or Custom Loaded Image */
             <div className="absolute inset-0 z-0 bg-black flex items-center justify-center overflow-hidden">
               {!customImage ? (
@@ -2920,24 +3251,32 @@ function ScanMealPage() {
             <button
               type="button"
               onClick={() => {
-                if (scanMode === "food_label") {
+                if (scanMode === "food_label" || scanMode === "database") {
                   setScanMode("scan_food");
+                } else if (scanMode === "barcode") {
+                  setScanMode("database");
                 } else {
                   navigate({ to: "/app", search: { tab: "diario" } });
                 }
               }}
               className="w-10 h-10 rounded-full bg-background/80 backdrop-blur-xl border border-border/60 text-foreground flex items-center justify-center hover:bg-background active:scale-95 transition cursor-pointer shadow-xs"
-              aria-label={scanMode === "food_label" ? "Volver a la Cámara" : "Volver a la App"}
-              title={scanMode === "food_label" ? "Volver a la Cámara" : "Volver a la App"}
+              aria-label={scanMode === "food_label" || scanMode === "database" ? "Volver a la Cámara" : scanMode === "barcode" ? "Volver a Database" : "Volver a la App"}
+              title={scanMode === "food_label" || scanMode === "database" ? "Volver a la Cámara" : scanMode === "barcode" ? "Volver a Database" : "Volver a la App"}
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
 
             <div className="px-4 py-1.5 rounded-full bg-background/80 backdrop-blur-xl border border-border/60 shadow-xs flex items-center gap-2">
               <span className="text-foreground font-bold text-xs tracking-wide">
-                {scanMode === "food_label" ? "Notas de Comida" : "Escanear Comida"}
+                {scanMode === "database"
+                  ? "Food Database"
+                  : scanMode === "barcode"
+                    ? "Barcode Scanner"
+                    : scanMode === "food_label"
+                      ? "Notas de Comida"
+                      : "Escanear Comida"}
               </span>
-              {isCameraActive && !customImage && scanMode !== "food_label" && (
+              {isCameraActive && !customImage && scanMode !== "food_label" && scanMode !== "database" && (
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               )}
             </div>
@@ -3087,8 +3426,185 @@ function ScanMealPage() {
             </div>
           )}
 
-          {/* RENDER CONDICIONAL: Si scanMode === 'food_label' se muestra el cuaderno minimalista tipo Markdown */}
-          {scanMode === "food_label" ? (
+          {/* RENDER CONDICIONAL: Si scanMode === 'database' se muestra la vista Food Database (Imagen 2) */}
+          {scanMode === "database" ? (
+            /* ========================================================================= */
+            /* FOOD DATABASE SCREEN (Image 2: Manual Search + Barcode Button)            */
+            /* ========================================================================= */
+            <div className="relative z-10 flex-1 w-full max-w-xl mx-auto flex flex-col justify-between overflow-hidden px-4 sm:px-6 pt-3 pb-6 select-text">
+              <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3.5 pb-6 pt-1">
+                {/* 1. SEARCH BAR WITH INTEGRATED BARCODE ICON */}
+                <div className="relative flex items-center w-full">
+                  <div className="flex-1 flex items-center gap-2.5 px-4 h-12 rounded-2xl bg-secondary/50 border border-border/60 focus-within:border-foreground/40 focus-within:bg-secondary/80 transition-all shadow-xs">
+                    <Search className="w-4 h-4 text-muted-foreground shrink-0" />
+                    <input
+                      type="text"
+                      value={databaseSearchQuery}
+                      onChange={(e) => setDatabaseSearchQuery(e.target.value)}
+                      placeholder="Describe what you ate"
+                      className="bg-transparent border-0 outline-none text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/70 w-full font-medium"
+                    />
+                    {databaseSearchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => setDatabaseSearchQuery("")}
+                        className="p-1 text-muted-foreground hover:text-foreground cursor-pointer"
+                        aria-label="Borrar búsqueda"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                    {/* Botón Barcode integrado a la derecha del input */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setScanMode("barcode");
+                        toast.info("Escáner de código de barras activo", {
+                          description: "Apunta al código de barras del producto",
+                        });
+                      }}
+                      className="p-1.5 rounded-xl bg-background hover:bg-secondary text-foreground border border-border/60 hover:scale-105 active:scale-95 transition cursor-pointer shrink-0 shadow-2xs"
+                      title="Escanear Código de Barras"
+                      aria-label="Escanear Código de Barras"
+                    >
+                      <Barcode className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* 2. FILTER CHIPS (All, My meals, My foods, Saved scans) */}
+                <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar py-1 text-xs">
+                  {(["All", "My meals", "My foods", "Saved scans"] as const).map((tab) => (
+                    <button
+                      key={tab}
+                      type="button"
+                      onClick={() => setActiveDbTab(tab)}
+                      className={cn(
+                        "px-3.5 py-1.5 rounded-full transition-all cursor-pointer whitespace-nowrap",
+                        activeDbTab === tab
+                          ? "bg-foreground text-background font-bold shadow-2xs"
+                          : "bg-secondary/40 text-muted-foreground hover:text-foreground border border-border/40 font-medium",
+                      )}
+                    >
+                      {tab}
+                    </button>
+                  ))}
+                </div>
+
+                {/* 3. LOG EMPTY FOOD ACTION BUTTON */}
+                <button
+                  type="button"
+                  onClick={() => setShowLogEmptyFoodModal(true)}
+                  className="w-full py-2.5 px-4 rounded-full border border-border/80 bg-card hover:bg-secondary/50 text-foreground text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition cursor-pointer active:scale-98 shadow-2xs"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                  <span>Log empty food</span>
+                </button>
+
+                {/* 4. SUGGESTIONS LIST (Image 2) */}
+                <div className="space-y-2.5 pt-1 text-left">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      {databaseSearchQuery
+                        ? "Resultados de Búsqueda"
+                        : activeDbTab === "Saved scans"
+                          ? "Escaneos Guardados"
+                          : activeDbTab === "My foods"
+                            ? "Mis Alimentos"
+                            : "Suggestions"}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground font-mono">
+                      {filteredDbFoods.length} {filteredDbFoods.length === 1 ? "alimento" : "alimentos"}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 pb-6">
+                    {filteredDbFoods.length === 0 ? (
+                      <div className="p-8 text-center rounded-3xl border border-dashed border-border/60 bg-secondary/15 space-y-2.5">
+                        {activeDbTab === "Saved scans" ? (
+                          <Bookmark className="w-6 h-6 text-foreground/80 fill-foreground/20 mx-auto" />
+                        ) : (
+                          <Utensils className="w-6 h-6 text-muted-foreground/60 mx-auto" />
+                        )}
+                        <p className="text-xs font-semibold text-foreground">
+                          {activeDbTab === "Saved scans"
+                            ? "No tienes escaneos guardados aún"
+                            : `No se encontraron alimentos en "${activeDbTab}".`}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground max-w-xs mx-auto leading-relaxed">
+                          {activeDbTab === "Saved scans"
+                            ? "Toca el ícono de marcador en cualquier tarjeta de comida de tu diario para guardarla aquí."
+                            : "Puedes dar de alta este alimento rápidamente."}
+                        </p>
+                        {activeDbTab === "Saved scans" ? (
+                          <button
+                            type="button"
+                            onClick={() => navigate({ to: "/app", search: { tab: "diario" } })}
+                            className="text-xs font-bold text-emerald-600 dark:text-emerald-400 underline underline-offset-4 cursor-pointer pt-1"
+                          >
+                            Ir a Mi Diario
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setShowLogEmptyFoodModal(true)}
+                            className="text-xs font-bold text-foreground underline underline-offset-4 cursor-pointer pt-1"
+                          >
+                            Crear este alimento manualmente
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      filteredDbFoods.map((food) => (
+                        <div
+                          key={food.id}
+                          className="p-3 sm:p-3.5 rounded-2xl bg-card border border-border/60 flex items-center justify-between gap-3 hover:border-foreground/30 hover:shadow-xs transition group text-left"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-8 h-8 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0">
+                              <Flame className="w-4 h-4 text-orange-500 fill-orange-500/20" />
+                            </div>
+                            <div className="min-w-0 text-left">
+                              <span className="text-xs sm:text-sm font-bold text-foreground block truncate">
+                                {food.name}
+                                {food.brand && (
+                                  <span className="text-muted-foreground font-normal ml-1">
+                                    • {food.brand}
+                                  </span>
+                                )}
+                              </span>
+                              <div className="text-[11px] text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                                <span className="font-bold text-foreground">{food.calories} cal</span>
+                                <span>•</span>
+                                <span>{food.servingLabel}</span>
+                                {food.protein ? (
+                                  <>
+                                    <span>•</span>
+                                    <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{food.protein}g P</span>
+                                  </>
+                                ) : null}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Quick Add + Button */}
+                          <button
+                            type="button"
+                            onClick={() => handleQuickAddFoodToDiary(food)}
+                            className="w-8 h-8 rounded-full bg-secondary/80 hover:bg-foreground hover:text-background border border-border/80 text-foreground flex items-center justify-center active:scale-90 transition cursor-pointer shrink-0 shadow-2xs"
+                            title={`Agregar ${food.name} al diario`}
+                            aria-label={`Agregar ${food.name} al diario`}
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : scanMode === "food_label" ? (
             <div className="relative z-10 flex-1 w-full max-w-xl mx-auto flex flex-col justify-between overflow-hidden px-4 sm:px-6 pt-3 pb-24 select-text">
               <div className="flex-1 overflow-y-auto custom-scrollbar space-y-4 pb-28 pt-1">
                 {/* Header Card de Bienestar & Resumen Minimalista */}
@@ -3238,15 +3754,47 @@ function ScanMealPage() {
                   </div>
                 </div>
               ) : scanMode === "barcode" ? (
-                <div className="relative z-10 mx-auto my-auto w-72 h-44 sm:w-80 sm:h-48 pointer-events-none flex flex-col justify-between p-2">
-                  <div className="flex justify-between">
-                    <div className="w-8 h-8 border-t-3 border-l-3 border-red-500 rounded-tl-xl drop-shadow-lg" />
-                    <div className="w-8 h-8 border-t-3 border-r-3 border-red-500 rounded-tr-xl drop-shadow-lg" />
+                <div className="relative z-10 mx-auto my-auto flex flex-col items-center gap-3">
+                  <div className="px-3.5 py-1.5 rounded-full bg-black/70 backdrop-blur-md border border-white/20 text-white text-xs font-medium">
+                    Apunta la cámara al código de barras del producto
                   </div>
-                  <div className="w-full h-[2px] bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.9)] animate-pulse" />
-                  <div className="flex justify-between">
-                    <div className="w-8 h-8 border-b-3 border-l-3 border-red-500 rounded-bl-xl drop-shadow-lg" />
-                    <div className="w-8 h-8 border-b-3 border-r-3 border-red-500 rounded-br-xl drop-shadow-lg" />
+                  <div className="relative w-72 h-44 sm:w-80 sm:h-48 pointer-events-none flex flex-col justify-between p-2">
+                    <div className="flex justify-between">
+                      <div className="w-8 h-8 border-t-3 border-l-3 border-red-500 rounded-tl-xl drop-shadow-lg" />
+                      <div className="w-8 h-8 border-t-3 border-r-3 border-red-500 rounded-tr-xl drop-shadow-lg" />
+                    </div>
+                    <div className="w-full h-[2px] bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.9)] animate-pulse" />
+                    <div className="flex justify-between">
+                      <div className="w-8 h-8 border-b-3 border-l-3 border-red-500 rounded-bl-xl drop-shadow-lg" />
+                      <div className="w-8 h-8 border-b-3 border-r-3 border-red-500 rounded-br-xl drop-shadow-lg" />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleQuickAddFoodToDiary({
+                          name: "Yogur Griego con Arándanos",
+                          calories: 120,
+                          protein: 12,
+                          carbs: 14,
+                          fat: 2,
+                          fiber: 1,
+                          servingLabel: "1 pote (EAN-13 779123456789)",
+                        });
+                      }}
+                      className="px-3.5 py-1.5 rounded-full bg-white text-black text-xs font-bold hover:bg-white/90 active:scale-95 transition cursor-pointer shadow-lg flex items-center gap-1.5"
+                    >
+                      <Barcode className="w-3.5 h-3.5" />
+                      <span>Simular Escaneo</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setScanMode("database")}
+                      className="px-3 py-1.5 rounded-full bg-black/70 hover:bg-black/90 text-white/90 text-xs font-semibold border border-white/20 active:scale-95 transition cursor-pointer"
+                    >
+                      Volver a Database
+                    </button>
                   </div>
                 </div>
               ) : (
@@ -3264,7 +3812,7 @@ function ScanMealPage() {
 
               {/* Bottom Dock Navigation & Capture Area */}
               <div className="relative z-20 pb-8 sm:pb-12 px-4 sm:px-6 max-w-md mx-auto w-full space-y-4 select-none">
-                {/* Fila Superior: Exactamente 4 Tarjetas de Modo (Scan Food, Voice Log, Barcode, Food Label) */}
+                {/* Fila Superior: Exactamente 4 Tarjetas de Modo (Scan Food, Voice Log, Database, Food Label) */}
                 <div className="grid grid-cols-4 gap-2 w-full">
                   {/* 1. Scan Food */}
                   <button
@@ -3309,23 +3857,18 @@ function ScanMealPage() {
                     </span>
                   </button>
 
-                  {/* 3. Barcode */}
+                  {/* 3. Database (Manual Search & Food DB) */}
                   <button
                     type="button"
                     onClick={() => {
-                      setScanMode("barcode");
-                      toast.info("Modo Código de Barras activo");
+                      setScanMode("database");
+                      toast.info("Base de Datos de Alimentos activa");
                     }}
-                    className={cn(
-                      "flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-2xl h-[64px] sm:h-[68px] gap-1 transition-all duration-200 cursor-pointer text-center",
-                      scanMode === "barcode"
-                        ? "bg-white text-black shadow-lg scale-102"
-                        : "bg-neutral-900/80 backdrop-blur-md text-white/80 border border-white/10 hover:bg-neutral-800/90 active:scale-95",
-                    )}
+                    className="flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-2xl h-[64px] sm:h-[68px] gap-1 transition-all duration-200 cursor-pointer text-center bg-neutral-900/80 backdrop-blur-md text-white/80 border border-white/10 hover:bg-neutral-800/90 active:scale-95"
                   >
-                    <Barcode className="w-5 h-5 shrink-0" />
-                    <span className={cn("text-[11px] tracking-tight truncate w-full", scanMode === "barcode" ? "font-bold text-black" : "font-medium text-white/90")}>
-                      Barcode
+                    <Search className="w-5 h-5 shrink-0" />
+                    <span className="text-[11px] tracking-tight truncate w-full font-medium text-white/90">
+                      Database
                     </span>
                   </button>
 
@@ -3546,55 +4089,56 @@ function ScanMealPage() {
                       </p>
                     )}
 
-                    {/* HERO WIDGET: ANILLO SELECTOR RADIAL (1 BARRA ACTIVA) + BADGES LATERALES APILADOS */}
-                    {(() => {
-                      const quality = getScanQualityProfile({
-                        score: bioScore,
-                        mealTitle: reportTitle || title,
-                        mealNarrative: narrative,
-                        vectorBadges,
-                        totalProtein,
-                        totalFiber,
-                        totalFat,
-                        totalCarbs,
-                      });
-                      const bioContext = detectBiologicalContext();
-                      const contextBadge =
-                        bioContext.type === "pre_workout" || bioContext.type === "post_workout"
-                          ? { label: bioContext.title, type: bioContext.type }
-                          : undefined;
+                    {/* HERO WIDGET: ANILLO SELECTOR RADIAL + BADGES (Visible en Modo Wellness, oculto en Modo Atleta) */}
+                    {!isAthleteMode &&
+                      (() => {
+                        const quality = getScanQualityProfile({
+                          score: bioScore,
+                          mealTitle: reportTitle || title,
+                          mealNarrative: narrative,
+                          vectorBadges,
+                          totalProtein,
+                          totalFiber,
+                          totalFat,
+                          totalCarbs,
+                        });
+                        const bioContext = detectBiologicalContext();
+                        const contextBadge =
+                          bioContext.type === "pre_workout" || bioContext.type === "post_workout"
+                            ? { label: bioContext.title, type: bioContext.type }
+                            : undefined;
 
-                      const heroBadges =
-                        vectorBadges && vectorBadges.length > 0
-                          ? vectorBadges.slice(0, 4).map((vb) => ({
-                              id: vb.id || vb.category,
-                              category: vb.category,
-                              label: vb.badgeText,
-                            }))
-                          : [
-                              { id: "b-1", category: "processing", label: "Mínimamente procesado" },
-                              {
-                                id: "b-2",
-                                category: "protein",
-                                label: totalProtein >= 25 ? "Alta en proteína" : "Proteína moderada",
-                              },
-                              {
-                                id: "b-3",
-                                category: "fiber",
-                                label: totalFiber >= 4 ? "Buena fuente de fibra" : "Aporte de fibra",
-                              },
-                              { id: "b-4", category: "sugar", label: "Sin azúcar añadido" },
-                            ];
+                        const heroBadges =
+                          vectorBadges && vectorBadges.length > 0
+                            ? vectorBadges.slice(0, 4).map((vb) => ({
+                                id: vb.id || vb.category,
+                                category: vb.category,
+                                label: vb.badgeText,
+                              }))
+                            : [
+                                { id: "b-1", category: "processing", label: "Mínimamente procesado" },
+                                {
+                                  id: "b-2",
+                                  category: "protein",
+                                  label: totalProtein >= 25 ? "Alta en proteína" : "Proteína moderada",
+                                },
+                                {
+                                  id: "b-3",
+                                  category: "fiber",
+                                  label: totalFiber >= 4 ? "Buena fuente de fibra" : "Aporte de fibra",
+                                },
+                                { id: "b-4", category: "sugar", label: "Sin azúcar añadido" },
+                              ];
 
-                      return (
-                        <FoodProfileHero
-                          qualityLabel={quality.label}
-                          qualityLevel={quality.level}
-                          badges={heroBadges}
-                          contextBadge={contextBadge}
-                        />
-                      );
-                    })()}
+                        return (
+                          <FoodProfileHero
+                            qualityLabel={quality.label}
+                            qualityLevel={quality.level}
+                            badges={heroBadges}
+                            contextBadge={contextBadge}
+                          />
+                        );
+                      })()}
 
                     {/* 3. THREE VERTICAL MACRO PROGRESS BAR CARDS (Protein, Carbs, Fat) */}
                     {(() => {
@@ -3724,7 +4268,7 @@ function ScanMealPage() {
 
                     <Button
                       type="button"
-                      onClick={handleSaveToDiary}
+                      onClick={() => handleSaveToDiary()}
                       className="flex-1 rounded-full py-4 h-12 font-bold text-xs bg-foreground text-background hover:opacity-90 shadow-md transition cursor-pointer"
                     >
                       <span>Listo</span>
@@ -3991,6 +4535,119 @@ function ScanMealPage() {
                 className="rounded-xl font-bold text-xs bg-foreground text-background"
               >
                 Agregar al Plato
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Log Empty Food Dialog Modal */}
+      {showLogEmptyFoodModal && (
+        <Dialog open={showLogEmptyFoodModal} onOpenChange={setShowLogEmptyFoodModal}>
+          <DialogContent className="sm:max-w-md rounded-3xl p-6 border border-border bg-card">
+            <DialogHeader className="pb-2 border-b border-border/40">
+              <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+                <Pencil className="w-4 h-4 text-emerald-500" />
+                Registrar alimento vacío
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="py-3 space-y-3">
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                  Nombre del alimento
+                </label>
+                <input
+                  type="text"
+                  value={emptyFoodName}
+                  onChange={(e) => setEmptyFoodName(e.target.value)}
+                  placeholder="ej. Tarta de zapallitos casera"
+                  className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-xl text-xs text-foreground placeholder:text-muted-foreground focus:outline-none"
+                  autoFocus
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                    Calorías (kcal)
+                  </label>
+                  <input
+                    type="number"
+                    value={emptyFoodCalories}
+                    onChange={(e) => setEmptyFoodCalories(e.target.value)}
+                    placeholder="250"
+                    className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-xl text-xs text-foreground placeholder:text-muted-foreground focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                    Porción / Medida
+                  </label>
+                  <input
+                    type="text"
+                    value={emptyFoodServing}
+                    onChange={(e) => setEmptyFoodServing(e.target.value)}
+                    placeholder="1 porción (150g)"
+                    className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-xl text-xs text-foreground placeholder:text-muted-foreground focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 pt-1">
+                <div>
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                    Proteínas (g)
+                  </label>
+                  <input
+                    type="number"
+                    value={emptyFoodProtein}
+                    onChange={(e) => setEmptyFoodProtein(e.target.value)}
+                    placeholder="15"
+                    className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-xl text-xs text-foreground placeholder:text-muted-foreground focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                    Carbohidratos (g)
+                  </label>
+                  <input
+                    type="number"
+                    value={emptyFoodCarbs}
+                    onChange={(e) => setEmptyFoodCarbs(e.target.value)}
+                    placeholder="20"
+                    className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-xl text-xs text-foreground placeholder:text-muted-foreground focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                    Grasas (g)
+                  </label>
+                  <input
+                    type="number"
+                    value={emptyFoodFat}
+                    onChange={(e) => setEmptyFoodFat(e.target.value)}
+                    placeholder="8"
+                    className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-xl text-xs text-foreground placeholder:text-muted-foreground focus:outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-2 border-t border-border/40 flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowLogEmptyFoodModal(false)}
+                className="rounded-xl font-semibold text-xs"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleSaveEmptyFood}
+                disabled={!emptyFoodName.trim()}
+                className="rounded-xl font-bold text-xs bg-foreground text-background"
+              >
+                Guardar y Registrar
               </Button>
             </div>
           </DialogContent>
