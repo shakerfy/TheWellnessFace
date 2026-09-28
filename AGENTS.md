@@ -80,11 +80,10 @@
 - **Feedback Multisensorial Obligatorio:** Integrar micro-vibraciones hápticas (`navigator.vibrate`) en swaps, eliminaciones y confirmaciones, y síntesis sonora con Web Audio API al completar temporizadores o descansos (sin dependencias de archivos `.mp3` pesados).
 - **Auto-Guardado Silencioso:** Los cambios en campos de texto, selectores y switches se persisten automáticamente al cambiar de valor; el usuario nunca debe buscar un botón de "Guardar cambios".
 
-## 11. 🧭 Reglas Definitivas del Motor de Análisis Nutricional y CTAs (39 Reglas)
+## 11. 🧭 Reglas Definitivas del Motor de Análisis Nutricional y CTAs (26 Reglas Unificadas)
 
 - **Referencia Mandatoria:** Consultar y cumplir estrictamente el archivo [`REGLAS_ANALISIS_NUTRICIONAL_Y_CTAS.md`](file:///c:/Users/shake/.gemini/antigravity/scratch/studio-pulse-smart/REGLAS_ANALISIS_NUTRICIONAL_Y_CTAS.md).
-- **Wellness Mode:** Nutrition awareness ("What is this food like?"). Sin conteo calórico restrictivo, sin metas cuantitativas impuestas, sin ansiedad de control. Valor nutricional (Alto/Medio/Bajo) sustentado en 3–4 indicadores observables.
-- **Athlete Mode:** Tracking layer voluntaria ("How does this food fit my goal?"). Misma capa cualitativa + calorías y macros de planificación (sin notas morales ni juicios de valor).
+- **Modelo Único (Nutrition Awareness):** La plataforma opera bajo un único modo de conciencia nutricional (*"¿Qué características tiene esta comida?"*). Sin modo Athlete, sin conteo calórico o de macros acumulado/restante, sin metas cuantitativas impuestas y sin ansiedad de control. Muestra `Valor Nutricional (Alto / Medio / Bajo)` sustentado en 3–4 indicadores observables.
 - **Cero Moralización & Anti-Compensación:** Prohibido calificar comidas como buenas o malas y prohibido vincular ejercicio o castigo para compensar ingestas.
 - **Hidratación Fisiológica (Escala Armstrong):** Prohibido usar CTAs de conteo de vasos ("Registrar 1 vaso", "+250 ml"). Todo seguimiento hídrico utiliza la Escala Colorimétrica de Orina de Armstrong (1 a 8) (Ucol) validada clínicamente.
 
@@ -124,3 +123,28 @@
    - *Cuándo aplicar:* Ordenamiento de ejercicios en una rutina, reorganización de comidas del día o priorización de tareas.
 
 
+
+## 14. 🏛️ Regla Anti-Monolitos & Modularización Preventiva (Clean Architecture Ceilings)
+
+*«Un archivo de miles de líneas no es código rápido; es deuda técnica y lentitud asegurada. Ningún archivo debe crecer indefinidamente sin modularizarse.»*
+
+1. **Límite Estricto de Rutas (`src/routes/*` ≤ 500 líneas):**
+   - Los archivos de ruta en `src/routes/` solo deben encargarse de: registrar la ruta de TanStack, validar parámetros/search params, gestionar el estado macro de la página y orquestar el layout general.
+   - **Prohibido:** Declarar subcomponentes, modales internos, tablas gigantescas o datasets de prueba de más de 50 líneas dentro del archivo de la ruta.
+   - Todo subcomponente, pestaña o vista secundaria debe residir en `src/components/{seccion}/` (ej. `src/components/dashboard/`, `src/components/app/`).
+
+2. **Límite de Componentes y Vistas (`src/components/*` ≤ 600–800 líneas):**
+   - Cuando un componente o pestaña supere las 600 líneas, es **obligatorio** subdividirlo en piezas de responsabilidad única:
+     - Modales en archivos dedicados (`{nombre}-modal.tsx` o `timeline-modals.tsx`).
+     - Helpers puros, funciones de formateo y parsers en `{feature}-helpers.tsx` o en `src/lib/`.
+     - Subtarjetas y filas en widgets independientes bajo `src/components/widgets/`.
+
+3. **Aislamiento de Datos y Mocks (`src/lib/*`):**
+   - Prohibido incrustar listas de cientos de líneas de objetos mock, presets de alimentos, ejercicios o catálogos hardcodeados en medio de archivos de interfaz.
+   - Todo dataset, catálogo o cálculo matemático puro debe residir en `src/lib/` (ej. `scan-data.ts`, `gyms.ts`, `food-database.ts`).
+
+4. **Principio "Props-Driven" para Widgets Reutilizables:**
+   - Todo componente visual que pueda ser embebido, renderizado en conectores IA (ChatGPT / Claude) o compartido entre vistas debe ser 100% "Props-Driven" (cero dependencias de hooks de navegación como `useNavigate()` o `<Link>`). Las acciones externas deben comunicarse exclusivamente por callbacks (`onBook`, `onCancel`, `onToggle`).
+
+5. **Barriles de Exportación Centralizados (`index.ts`):**
+   - Cada carpeta modular en `src/components/{modulo}/` debe contar con su archivo `index.ts` para que las rutas importen directamente desde `@/components/{modulo}` de forma limpia, desacoplada y predecible.

@@ -1,1034 +1,230 @@
 # THE WELLNESS FACE
 
-# Reglas definitivas del motor de análisis nutricional y CTAs
+# Guía Oficial: Reglas Definitivas de Análisis Nutricional, Diseño de Insights para IA (Gemini) y CTAs Dinámicos
 
-## 1. Principio central
-
-The Wellness Face no debe evaluar:
-
-> “¿Esta comida fue buena o mala?”
-
-Debe determinar:
-
-> **“¿Qué características tiene esta comida y qué información puede ser útil para el usuario?”**
-
-En Wellness Mode:
-
-> **Entender.**
-
-En Athlete Mode:
-
-> **Entender + cuantificar + contextualizar respecto al objetivo.**
+Esta guía establece las directrices obligatorias para el motor de análisis nutricional, la generación de insights por parte de la IA (Gemini) y la activación de CTAs dinámicos. El sistema opera bajo una arquitectura de **alta precisión biológica**, cuidando estrictamente la **salud mental del usuario** (prevención de TCA) y **blindando legalmente** el producto.
 
 ---
 
-# 2. Arquitectura del análisis
+## 🏛️ Fundamento Clínico y Epidemiológico (BJSM, 2026)
 
-Cada comida pasa por cinco capas:
+> **Evidencia Científica de Base:** *«Prevalence of eating disorders and disordered eating in athletes: a systematic review and meta-analysis»*, publicado en el ***British Journal of Sports Medicine (BJSM, Julio 2026)*** sobre **127 estudios de alta calidad ($N = 43.006$ deportistas; 190 estudios y $58.335$ participantes en la revisión sistemática)**.
+
+1. **El 20,0% (1 de cada 5 personas que entrenan) presenta TCA o Conductas Alimentarias de Riesgo (*Disordered Eating*):**
+   * El estudio demuestra que la prevalencia agrupada es del **20,0% (IC 95%: 17,0%–23,0%)** y que **no existe diferencia estadística según el nivel de entrenamiento** (un usuario recreativo de gimnasio presenta el mismo riesgo que un atleta de élite).
+2. **Por qué se elimina el «Modo Athlete» y el Conteo Punitivo:**
+   * La meta-regresión de 2026 confirma que la prevalencia de conductas alimentarias desordenadas ha aumentado en los años más recientes, impulsada por herramientas de hiper-cuantificación (conteo estricto de calorías, gramos restantes, semáforos morales y compensación con ejercicio). Exponer a personas físicamente activas a un "Modo Atleta" de control numérico estricto agrava la ortorexia y el síndrome de deficiencia energética relativa en el deporte (**RED-S**).
+3. **Arquitectura Protectora (*Nutrition Awareness*):**
+   * Cada regla de este documento —desde el dial cualitativo `Alto / Medio / Bajo` sin números calóricos punitivos, hasta la **Regla de la Adición**, la **Prohibición de Compensación** y las **4 Categorías Situacionales (`Rutina`, `Social`, `Placer`, `Confort`)**— está diseñada para proteger activamente a ese **20% de usuarios vulnerables** mientras potencia la energía, la recuperación y la adherencia del 100% de la comunidad.
+
+---
+
+## 🔬 Sección I: Las 6 Reglas de Oro de la IA Nutricional
+
+### 1. Regla de la Neutralidad Absoluta (Plan de Contingencia Médica)
+
+* **Principio:** Al no solicitar historial clínico ni diagnósticos médicos en el registro, la IA debe asumir que cualquier usuario podría presentar una condición preexistente (como diabetes, resistencia a la insulina, celiaquía o hipertensión). Los insights **jamás deben predecir un impacto corporal estándar** ni asegurar que un alimento es inofensivo para todas las personas.
+* **Cómo aplicarlo:** Explicar el comportamiento fisiológico general de los alimentos y sus nutrientes sin asegurar cómo reaccionará el organismo específico del usuario.
+* ❌ **Incorrecto:** *"Este jugo de naranja es una excelente fuente de energía natural para arrancar el día."* *(Peligroso para un usuario con diabetes o resistencia a la insulina).*
+* ✔️ **Correcto:** *"El jugo aporta carbohidratos de absorción rápida. Para que la energía se libere de forma más progresiva en el cuerpo, una gran opción es acompañarlo con una fuente de fibra o proteína (como unos frutos secos)."*
+
+---
+
+### 2. Regla del Enfoque Educativo y de Adición (Sumar antes que Restar)
+
+* **Principio:** La IA actúa como una guía de optimización cotidiana, no como un policía de porciones. El foco debe estar siempre en **lo que el plato puede ganar** para estabilizar la digestión y la saciedad, nunca en lo que se debe quitar, censurar o prohibir.
+* **Cómo aplicarlo:** En lugar de señalar excesos o carencias de forma negativa, sugerir combinaciones inteligentes basadas en la adición de alimentos enteros.
+* ❌ **Incorrecto:** *"Este plato de pasta tiene demasiados carbohidratos refinados y le falta nutrición."*
+* ✔️ **Correcto:** *"Para lograr un plato más balanceado y aumentar tu saciedad por más tiempo, podés sumar una porción de vegetales (fibra) o pollo/legumbres (proteína)."*
+
+---
+
+### 3. Regla del Lenguaje Libre de Moral (Prevención de TCA / Cero Culpa)
+
+* **Principio:** Los alimentos no son *"buenos"* ni *"malos"*, *"permitidos"* ni *"pecados"*. Calificarlos moralmente daña la relación psicológica con la comida y puede detonar trastornos de la conducta alimentaria (TCA).
+* **Cómo aplicarlo:** Queda estrictamente prohibido el uso de términos alarmistas, morales o punitivos (*ultra-calórico*, *engordar*, *comida trampa / cheat meal*, *bomba de azúcar*, *pecado*, *limpio / clean*, *culpable*). Toda descripción debe ser amigable, descriptiva y neutra.
+* ❌ **Incorrecto:** *"Cuidado: esta porción de torta supera tu límite de azúcares permitidos para hoy."*
+* ✔️ **Correcto:** *"Un gusto para disfrutar. Al ser una opción de energía rápida, podés priorizar fuentes de fibra y alimentos frescos en tus próximas comidas para mantener el equilibrio del día."*
+
+---
+
+### 4. Regla del Contexto Amplio (Mirada Semanal)
+
+* **Principio:** Ningún plato por sí solo tiene la capacidad de definir la salud ni de arruinar un proceso metabólico. El bienestar es el resultado de un patrón de consumo acumulativo a lo largo del tiempo.
+* **Cómo aplicarlo:** Mitigar el estrés del usuario contextualizando el alimento dentro de un marco temporal amplio (semanal), evitando alertas de pánico por registros o fotografías aisladas.
+* ❌ **Incorrecto:** *"Este almuerzo superó las grasas recomendadas."*
+* ✔️ **Correcto:** *"Esta comida tuvo un aporte mayor de grasas. Recordá que el bienestar se construye en el balance de toda la semana, no en un solo plato. Venís registrando un buen equilibrio en tus días previos."*
+
+---
+
+### 5. Regla de Alerta Silenciosa por Conductas de Riesgo
+
+* **Principio:** Ante la detección de patrones de registro restrictivos, obsesivos o de ingestas peligrosamente bajas, el sistema debe priorizar de inmediato la salud mental y física del usuario.
+* **Cómo aplicarlo:** Si los algoritmos identifican registros de energía extremos o restrictivos durante días consecutivos, la IA tiene **prohibido felicitar al usuario** y activa un modo de baja presión (*Low-Pressure Mode*), sugiriendo sutilmente el autocuidado:
+  * ✔️ **Mensaje de cuidado:** *"Notamos que tus niveles de energía registrados podrían estar ajustados. Para cuidar tus funciones vitales, te sugerimos asegurar fuentes de energía completas o consultar con un profesional de la salud."*
+
+---
+
+### 6. Regla del Contexto Situacional (Estado Emocional y Entorno)
+
+* **Principio:** El impacto biológico y digestivo de un alimento varía según el entorno psicológico en el que se consume. El análisis nutricional técnico debe **subordinarse y adaptarse** a la etiqueta de contexto seleccionada por el usuario para eliminar la culpa y conectar de forma empática.
+* **Cómo aplicarlo:** Modificar el foco del insight y de los CTAs según la categoría seleccionada en el escáner (`Rutina`, `Social`, `Placer`, `Confort`). Si el usuario selecciona contextos de disfrute, sociales o de regulación emocional, la IA prioriza la salud mental y el bienestar fisiológico del momento (como la reducción del cortisol y la digestión tranquila) por sobre la disección de nutrientes, sin contradecir jamás las reglas de neutralidad y adición.
+
+---
+
+## 📲 Sección II: Las 4 Categorías de la Interfaz (Choice Chips) y su Matriz de Adaptación
+
+En la interfaz del escáner (`Foto` y `Texto`), el selector superior presenta **4 categorías mutuamente excluyentes (sin solapamientos)**. Cada opción representa un estado mental y metabólico único que condiciona el prompt de Gemini y la selección de CTAs:
+
+### 1. `Rutina` *(Seleccionado por defecto)*
+* **Definición:** El día a día, comidas normales, de oficina, estudio o la cena habitual.
+* **Enfoque del Insight (Gemini):** Lectura práctica sobre liberación progresiva de energía, saciedad durante la jornada y sugerencias de adición simple (sumar fibra, proteína o hidratación de apoyo).
+* **CTAs Prioritarios:** `Ideas de comidas` / `Sumar acompañamiento` / `Chequear hidratación (Escala Armstrong)`.
+* **Ejemplo de Insight:** *"Este plato aporta una base práctica para tu rutina diaria. Para que la energía se mantenga estable toda la tarde, podés sumar una porción de vegetales frescos o un puñado de frutos secos."*
+
+### 2. `Social`
+* **Definición:** Eventos, reuniones, salidas o comidas compartidas que reducen el cortisol.
+* **Enfoque del Insight (Gemini):** Celebra la comensalidad y la reducción del estrés (cortisol) que aporta compartir la mesa. Recuerda la **Mirada Semanal (Regla 4)** para desactivar cualquier ansiedad por el tipo de plato o horario.
+* **CTAs Prioritarios:** `Sumar acompañamiento` (ej. agua fresca de apoyo) o `Insight only` (silencio de CTAs para no interrumpir el momento social).
+* **Ejemplo de Insight:** *"Compartir la mesa en buena compañía ayuda a bajar el estrés y favorece una mejor asimilación digestiva. Disfrutá el momento: el bienestar se construye en el balance de toda la semana, no en una salida puntual."*
+
+### 3. `Placer`
+* **Definición:** Antojos, comidas altamente sabrosas por puro disfrute y recompensa.
+* **Enfoque del Insight (Gemini):** Validación 100% libre de culpa (**Regla 3**). Reconoce el valor del disfrute consciente y explica con neutralidad (**Regla 1**) cómo acompañar las siguientes ingestas del día con fibra o alimentos frescos (**Regla 2**).
+* **CTAs Prioritarios:** `Tomar una pausa` (disfrute consciente y digestión en calma) o `Ideas de platos` para las siguientes comidas.
+* **Ejemplo de Insight:** *"Un gusto para disfrutar sin apuro. Al aportar energía de absorción rápida, podés priorizar fuentes de fibra y alimentos frescos en tus próximas comidas para acompañar el equilibrio del día."*
+
+### 4. `Confort`
+* **Definición:** Platos cálidos, mimos para el alma o momentos que buscan regulación o alivio emocional.
+* **Enfoque del Insight (Gemini):** Empatía somática y regulación nerviosa. Prioriza la calma digestiva, el ritmo pausado al comer y la sensación de abrigo/alivio por encima del análisis técnico de nutrientes.
+* **CTAs Prioritarios:** `Tomar una pausa` (ejercicio guiado de 1 minuto de respiración para bajar el ritmo y digerir mejor).
+* **Ejemplo de Insight:** *"Un plato elegido para brindar calma y abrigo. Comer sin prisa y regalarte un minuto de respiración tranquila al terminar ayudará a tu cuerpo a descansar y digerir con total ligereza."*
+
+---
+
+## 🧭 Sección III: Arquitectura de Conciencia Nutricional (Nutrition Awareness) y CTAs Dinámicos
+
+### 1. Modelo Único: Nutrition Awareness (Sin modo Athlete)
+
+The Wellness Face opera bajo un único modelo de **conciencia nutricional (*"¿Qué características tiene esta comida?"*)**:
+
+* **Visible en la interfaz:**
+  * **`VALOR NUTRICIONAL` (`Alto / Medio / Bajo`)**: Representa la cantidad de características nutricionalmente favorables identificables en el plato, nunca la calidad moral de la comida.
+  * **`3 a 4 Indicadores Observables`**: Propiedades objetivas del plato (ej. *Mínimamente procesado*, *Buena fuente de fibra*, *Alta en proteína*, *Sin azúcar añadido*).
+* **No visible (Eliminado por diseño):**
+  * Calorías acumuladas o restantes del día (`630 / 2,370 kcal`).
+  * Gramos de macronutrientes acumulados o metas cuantitativas (`53 / 150g proteína`).
+  * Porcentaje de objetivo diario cumplido o mensajes de deuda (*"te faltan X gramos"*).
+
+### 2. Reglas de los Indicadores y del Valor Nutricional
+1. **Explicabilidad:** El nivel (`Alto / Medio / Bajo`) nunca debe dominar visualmente a los indicadores que lo explican.
+2. **Máximo 3–4 indicadores:** Selección de los vectores de mayor confianza visual, mezclando descriptivamente sin dividir en listas de *"Buenos vs. Malos"*.
+3. **Ausencia sin alarma:** La no detección de un nutriente se expresa de forma descriptiva (*"Sin fuente significativa de fibra detectada"*), nunca como reproche.
+
+### 3. Reglas Generales del Motor de CTAs Dinámicos
+1. **Prohibición Absoluta de Compensación:** Jamás vincular comida con ejercicio físico para *"quemar"* o *"compensar"* lo ingerido. El entrenamiento sólo aporta contexto de preparación (`Pre-Entreno`) o recuperación muscular (`Post-Entreno`).
+2. **Límite y Silencio Inteligente:**
+   * Cada tarjeta tiene como acción primaria **`Ver insight`**.
+   * Al desplegar el insight, el motor muestra **0, 1 o máximo 2 CTAs secundarios contextuales** (`Insight only`, `Insight + 1 CTA`, o `Insight + 2 CTAs`).
+3. **Orden de Prioridad de CTAs:**
+   1. **Comprensión:** `Ver insight`
+   2. **Contexto Situacional y Biológico:** Adaptado a `Rutina` / `Social` / `Placer` / `Confort` y ventana solar/entreno
+   3. **Exploración & Curiosidad Científica:** Sinergias, microbiota e ideas de adición
+   4. **Acción práctica somática & Interocepción:** Saciedad, digestión, hidratación Escala Armstrong y pausa de respiración
+   5. **Marketplace:** Sólo cuando el usuario expresa intención directa de búsqueda o compra.
+
+---
+
+### 4. Catálogo Oficial de CTAs Secundarios Dinámicos (Las 4 Dimensiones de Rotación)
+
+Diseñados específicamente bajo el enfoque de **Nutrition Awareness**: no cuentan calorías, no exigen métricas rígidas y respetan al 100% la prohibición de compensación física. El motor los rota a lo largo del día según el chip seleccionado:
+
+#### 🧘 Dimensión 1: Modulación del Eje Intestino-Cerebro & Saciedad
+*Ideales para los chips de **`Confort`**, **`Placer`** y almuerzos de **`Rutina`**, donde el foco está en la regulación del sistema nervioso y la digestión.*
+
+* **`"¿Cómo está tu nivel de saciedad?"`** ➔ Abre in-place una escala visual simple de 1 toque (`No hambriento` / `Satisfecho` / `Muy lleno`) para entrenar la lectura interoceptiva de señales de saciedad (leptina).
+* **`"Iniciar pausa de respiración (1 min)"`** ➔ Despliega **in-place dentro de la misma tarjeta** un widget interactivo con temporizador de 60 segundos, anillo animado (`Inhalá 4s` / `Exhalá 6s`) y botón Play/Pausa para bajar el ritmo antes o después de comer, sin abrir ningún modal o drawer externo.
+* **`"¿Cómo registrás tu digestión hoy?"`** ➔ Permite un tag rápido in-place (`Liviana y con energía` / `Confortable` / `Pesadez o inflamación`) para identificar cómo sientan ciertos platos o momentos del día.
+* **`"¿A qué ritmo comiste hoy?"`** ➔ Despliega in-place 3 píldoras de 1 toque (`Con calma` / `Ritmo normal` / `Con prisa / Frente a pantalla`) para revelar cómo la velocidad y las pantallas afectan la digestión más que el propio alimento (prevención de miedos alimentarios / ortorexia).
+
+#### 💼 Dimensión 2: Eficiencia Metabólica, Cronobiología & Continuidad
+*Perfectos para **`Rutina`**, **`Social`** y **`Placer`**, adaptándose automáticamente a la hora solar (Día vs. Noche `>= 19:30 hs`).*
+
+* **`"Ver estrategia anti-somnolencia"`** *(Horario diurno)* ➔ Despliega in-place un tip práctico inmediato (ej. una caminata suave de 5 minutos, luz natural o el orden de ingesta de los alimentos) para evitar el bajón de energía post-almuerzo.
+* **`"Preparar tu descanso de esta noche"`** *(Rotación nocturna automática `>= 19:30 hs`)* ➔ Reemplaza los consejos de energía diurna en la cena por pautas simples de digestión nocturna (ventana antes de acostarse, infusión tibia o luz cálida) para proteger el sueño profundo sin reflujo ni despertares.
+* **`"Ideas para balancear tu próxima comida"` (Con Memoria de Continuidad Activa)** ➔ Sugiere in-place opciones basadas en la **adición** (`+ Sumar hojas verdes / fibra`, `+ Priorizar proteína`, `+ Semillas o frutos secos`). Al tocar cualquiera de estas píldoras en 1 toque, la app guarda esa intención y la refleja en **dos lugares reales**:
+  1. **En el Escáner (`/scan`) al registrar la próxima comida:** Aparece como un banner sutil y descartable sobre el visor (*«Foco elegido para esta comida: Sumar hojas verdes / fibra»*).
+  2. **En el Coach Insight del siguiente plato:** La IA reconoce la intención previa y refuerza positivamente la continuidad del hábito.
+* **`"Sugerencia de colación inteligente"`** ➔ Muestra in-place ideas de alimentos con alta densidad nutricional para llegar a la cena con energía estable y sin hambre acumulada.
+
+#### 💦 Dimensión 3: Hidratación Fisiológica (Escala Armstrong)
+*CTAs dinámicos contextuales que aparecen dentro de la comida (especialmente en platos altos en sodio, proteínas o post-entreno) como referencia educativa sin exigir registros aislados en el botón `+` (FAB).*
+
+* **`"Ver guía de hidratación"`** ➔ Despliega **in-place dentro de la misma tarjeta** la paleta visual compacta de 8 tonos de la Escala Armstrong (`#FEFCE8` a `#713F12`) junto con las 3 zonas de referencia (`Tonos 1–3: Hidratación ideal`, `Tonos 4–5: Sumá 1–2 vasos de agua`, `Tonos 6–8: Priorizá hidratarte hoy`) para que el usuario la tenga en cuenta la próxima vez que vaya al baño, sin obligarlo a abrir un modal ni crear registros separados.
+* **`"¿Sentís sed o fatiga protectora?"`** ➔ Abre in-place una micro-explicación práctica sobre cómo el cuerpo a menudo confunde la deshidratación leve con cansancio mental o ganas de picotear algo dulce.
+
+#### 🔬 Dimensión 4: Educación Nutricional & Curiosidad (Estatus Técnico)
+*Aportan valor científico digerible y aumentan el enganche con la app al despertar la curiosidad del usuario sobre lo que acaba de registrar (ideal en **`Rutina`** y **`Social`**).*
+
+* **`"¿Cómo funciona este ingrediente en tu microbiota?"`** ➔ Revela in-place un dato breve sobre el impacto de los polifenoles, fibras prebióticas o fermentados del plato en las bacterias intestinales y el ánimo.
+* **`"Ver sinergia de este plato"`** ➔ Explica in-place de forma clara cómo un ingrediente potencia la absorción de otro (ej. cómo la vitamina C de los vegetales frescos multiplica la absorción del hierro del plato, o las grasas saludables la de las vitaminas liposolubles).
+
+---
+
+### 5. Ejemplos de Aplicación del Motor en la Interfaz
+
+* **Si el usuario escanea en chip `💼 Rutina`:**
+  * **Primary CTA:** `Ver insight`
+  * **Secondary CTA 1:** `"Ver estrategia anti-somnolencia"` *(Dimensión 2: Cronobiología)* o `"Ver sinergia de este plato"` *(Dimensión 4: Curiosidad)*
+  * **Secondary CTA 2:** `"Ver guía de hidratación"` *(Dimensión 3: Hidratación in-place)*
+* **Si el usuario escanea en chip `🧘 Confort`:**
+  * **Primary CTA:** `Ver insight`
+  * **Secondary CTA 1:** `"Iniciar pausa de respiración (1 min)"` *(Dimensión 1: Widget interactivo de 60s in-place)*
+  * **Secondary CTA 2 (Opcional):** *Ninguno (Silencio inteligente para no abrumar cuando el usuario busca calma).*
+* **Si el usuario escanea en chip `🍕 Placer`:**
+  * **Primary CTA:** `Ver insight`
+  * **Secondary CTA 1:** `"¿Cómo está tu nivel de saciedad?"` *(Dimensión 1: Interocepción sin culpa)*
+  * **Secondary CTA 2:** `"Ideas para balancear tu próxima comida"` *(Dimensión 2: Enfoque de adición)*
+* **Si el usuario escanea en chip `🎉 Social`:**
+  * **Primary CTA:** `Ver insight`
+  * **Secondary CTA 1:** `"¿Cómo registrás tu digestión hoy?"` *(Dimensión 1: Registro somático)* o `"Ver sinergia de este plato"` *(Dimensión 4)*
+  * **Secondary CTA 2 (Opcional):** *Ninguno o `"Ver guía de hidratación"`.*
+
+---
+
+## ⚙️ Sección IV: Arquitectura Técnica para la Integración con Gemini
 
 ```text
-COMIDA ESCANEADA
-        ↓
-IDENTIFICACIÓN
-        ↓
-ANÁLISIS NUTRICIONAL
-        ↓
-CONTEXTO DEL USUARIO
-        ↓
-MODO
-   ↙        ↘
-WELLNESS   ATHLETE
-   ↓          ↓
-Insight     Insight
-   ↓          ↓
-CTA        Objetivo / progreso
+                    FOOD SCAN (Foto o Texto)
+         + CHOICE CHIP (Rutina | Social | Placer | Confort)
+                              ↓
+                     FOOD IDENTIFICATION
+                              ↓
+                QUALITATIVE NUTRITION ENGINE
+                (Procesamiento, Fibra, Proteína,
+                 Azúcares, Grasas, Sodio, Variedad)
+                              ↓
+                       CONTEXT ENGINE
+         ┌────────────────────────────────────────────┐
+         │ • Categoría Situacional (Rutina/Social/    │
+         │   Placer/Confort)                          │
+         │ • Fase Solar & Ventana Pre/Post-Entreno    │
+         │ • Balance Semanal (Regla 4)                │
+         │ • Detector de Conductas de Riesgo (Regla 5)│
+         └────────────────────────────────────────────┘
+                              ↓
+                   6 GOLDEN RULES GUARDRAIL
+         ┌────────────────────────────────────────────┐
+         │ 1. Neutralidad Médica (Contingencia)       │
+         │ 2. Adición sobre Restricción (Sumar)       │
+         │ 3. Cero Moralidad / Prevención TCA         │
+         │ 4. Contexto Amplio (Mirada Semanal)        │
+         │ 5. Alerta Silenciosa (Low-Pressure Mode)   │
+         │ 6. Adaptación Empática al Choice Chip      │
+         └────────────────────────────────────────────┘
+                              ↓
+                  NUTRITION AWARENESS LAYER
+                 (Valor Nutricional + 3-4 Badges)
+                              ↓
+               INSIGHT PERSONALIZADO + CTA DINÁMICO
 ```
-
-La información nutricional base es la misma.
-
-Lo que cambia es **cómo se presenta y qué acciones puede desencadenar**.
-
----
-
-# 3. WELLNESS MODE
-
-Wellness Mode debe funcionar como:
-
-> **Nutrition Awareness**
-
-No como un tracker.
-
-El usuario puede saber qué contiene una comida, pero la aplicación no convierte esa información en una obligación diaria.
-
-### Visible
-
-**VALOR NUTRICIONAL**
-
-**Alto / Medio / Bajo**
-
-* características nutricionales.
-
-Por ejemplo:
-
-* Mínimamente procesado
-* Alto en fibra
-* Alto en proteína
-* Sin azúcar añadido
-
-### No visible
-
-* calorías acumuladas
-* calorías restantes
-* macros acumulados
-* objetivo diario
-* porcentaje de objetivo cumplido
-* “te faltan X gramos”
-* “te pasaste de X”
-* progreso diario cuantitativo
-
-Esto es importante porque **el usuario recibe información sin entrar necesariamente en un ciclo de control.**
-
----
-
-# 4. ATHLETE MODE
-
-Athlete Mode mantiene exactamente la misma capa cualitativa:
-
-**VALOR NUTRICIONAL**
-
-**Alto / Medio / Bajo**
-
-**Características**
-
-y agrega:
-
-**Calorías**
-
-**Proteína**
-
-**Carbohidratos**
-
-**Grasas**
-
-**Fibra**
-
-y el seguimiento diario correspondiente.
-
-Así no creás una experiencia completamente distinta: simplemente **activás una capa cuantitativa adicional**.
-
----
-
-# 5. Regla para “VALOR NUTRICIONAL”
-
-Esta es una de las reglas más importantes.
-
-No recomiendo que **“Bajo” signifique “comida poco saludable”**.
-
-El score debe representar la **cantidad de características nutricionalmente favorables que el sistema puede identificar**, no la calidad moral de la comida.
-
-Por ejemplo, podría considerar:
-
-* densidad nutricional
-* proteína
-* fibra
-* variedad
-* grasas insaturadas
-* micronutrientes relevantes
-* grado de procesamiento
-* azúcares añadidos
-* sodio
-
-Pero nunca:
-
-> “Healthy score”
-
-ni:
-
-> “Good food score”.
-
----
-
-# 6. Regla para el score
-
-El score debe ser **contextual y explicable**.
-
-Si aparece:
-
-> **Bajo**
-
-el usuario debería poder entender por qué mediante los indicadores.
-
-Por ejemplo:
-
-**Valor nutricional — Bajo**
-
-* Alto en azúcar añadido
-* Bajo en fibra
-* Bajo en variedad
-
-No:
-
-> “Bajo porque es una mala comida.”
-
-La aplicación describe **características**, no emite una sentencia.
-
----
-
-# 7. Regla de no moralización del score
-
-Nunca usar:
-
-> excelente  
-> bueno  
-> malo  
-> culpable  
-> limpio  
-> indulgente  
-> cheat  
-
-El score puede ser:
-
-**Alto / Medio / Bajo**
-
-pero la explicación debe ser neutral.
-
-Incluso consideraría utilizar visualmente:
-
-**Mayor / Moderado / Menor**
-
-si descubrís durante testing que “Bajo” se interpreta demasiado como desaprobación.
-
----
-
-# 8. Regla de los indicadores
-
-Los indicadores que aparecen junto al score deben cumplir una condición:
-
-> **Cada indicador debe representar una propiedad observable de la comida.**
-
-### Buenos ejemplos
-
-**Mínimamente procesado**
-
-**Alto en fibra**
-
-**Alto en proteína**
-
-**Sin azúcar añadido**
-
-**Fuente de grasas insaturadas**
-
-**Amplia variedad de ingredientes**
-
-### Evitar
-
-**Muy saludable**
-
-**Excelente elección**
-
-**Comida perfecta**
-
-**Superfood**
-
-**Clean**
-
-Porque mezclan información y juicio.
-
----
-
-# 9. Regla de máximo de indicadores
-
-No mostrar una lista interminable.
-
-Recomiendo:
-
-**3–4 indicadores máximo.**
-
-El motor debe elegir los más relevantes y confiables.
-
-Ejemplo:
-
-```text
-✓ Mínimamente procesado
-✓ Alto en fibra
-✓ Alto en proteína
-✓ Sin azúcar añadido
-```
-
-No:
-
-```text
-✓ Protein
-✓ Fiber
-✓ Vitamin C
-✓ Iron
-✓ Magnesium
-✓ Potassium
-✓ Calcium
-✓ Antioxidants
-✓ Low sodium
-✓ Unsaturated fat
-✓ Whole foods
-...
-```
-
-La interfaz pierde jerarquía.
-
----
-
-# 10. Regla de indicadores positivos y negativos
-
-No necesitás crear dos listas:
-
-**GOOD**
-
-vs.
-
-**BAD**
-
-Podés mezclar características de distintos tipos, siempre que el lenguaje permanezca descriptivo.
-
-Ejemplo:
-
-> Mínimamente procesado  
-> Alto en fibra  
-> Alto en proteína  
-> Alto en sodio  
-
-Eso comunica muchísimo sin crear una clasificación moral explícita.
-
----
-
-# 11. Regla de ausencia
-
-La ausencia de un atributo no debe presentarse automáticamente como una deficiencia.
-
-Ejemplo:
-
-Si no detectás fibra:
-
-❌
-
-> “Low fiber — you need fiber.”
-
-Preferible:
-
-> **“No significant source of fiber detected.”**
-
-Y sólo generar un CTA si realmente existe contexto suficiente para que sea útil.
-
----
-
-# 12. Regla de precisión
-
-Una característica sólo aparece si existe suficiente confianza.
-
-Por ejemplo:
-
-Si la IA no puede identificar si una salsa tiene azúcar añadido:
-
-❌
-
-> “Sin azúcar añadido”
-
-Debe omitirla o mostrarla como estimación cuando corresponda.
-
-Esto es especialmente importante porque estas etiquetas pueden adquirir mucho peso psicológico para el usuario.
-
----
-
-# 13. Regla de no sobreinterpretación
-
-El análisis de una foto no debe convertirse en una conclusión sobre la dieta completa.
-
-Ejemplo:
-
-El usuario come una pizza.
-
-No decir:
-
-> “Your diet is lacking vegetables.”
-
-Una fotografía sólo permite evaluar **esa comida**.
-
----
-
-# 14. Regla de contexto
-
-Cuando existe historial suficiente, el motor puede pasar de:
-
-> **“Esta comida contiene poca fibra.”**
-
-a:
-
-> **“Today, fiber has appeared less often across your meals.”**
-
-Pero sólo cuando existe suficiente información.
-
-Una sola comida no representa el patrón del usuario.
-
----
-
-# 15. Regla de Wellness Mode: sin objetivo
-
-En Wellness Mode no existe:
-
-> “deberías llegar a X”
-
-Por eso los CTAs deben ser principalmente:
-
-### Learn
-
-**See Insight**
-
-### Explore
-
-**Explore Meal Ideas**
-
-### Discover
-
-**Explore Ingredients**
-
-### Reflect
-
-**See Today's Pattern**
-
-### Context
-
-**Add What Else You Ate**
-
-No:
-
-> “Hit your target.”
-
----
-
-# 16. Regla de Athlete Mode: sí puede hablar de objetivos
-
-Athlete Mode sí puede utilizar:
-
-> **53 / 150g Protein**
-
-> **630 / 2,370 kcal**
-
-> **26 / 280g Carbs**
-
-Pero la app no debe transformar estos valores en una nota.
-
-### Correcto
-
-> “You’re currently at 63% of your calorie target.”
-
-### Incorrecto
-
-> “You're doing great.”
-
-o:
-
-> “You’re falling behind.”
-
----
-
-# 17. Regla de progreso sin juicio
-
-En Athlete:
-
-**Objetivo ≠ aprobación**
-
-**Objetivo ≠ fracaso**
-
-El sistema informa la relación con el objetivo.
-
-No evalúa emocionalmente al usuario.
-
----
-
-# 18. Regla anti-compensación
-
-Máxima prioridad en ambos modos.
-
-Está prohibido generar CTAs como:
-
-> Burn this meal
-
-> Exercise to offset calories
-
-> Skip your next meal
-
-> Eat less later
-
-> Compensate tomorrow
-
-> You have to make up for this
-
-> Earn your dinner
-
-Especialmente cuando se activa a partir de calorías o macros.
-
----
-
-# 19. Regla de ejercicio
-
-Nunca convertir:
-
-**calorías ingeridas ↔ calorías gastadas**
-
-en una transacción.
-
-Athlete Mode puede utilizar actividad para contexto:
-
-> “This meal was logged after your strength session.”
-
-Pero no:
-
-> “Your workout burned 500 kcal, so you can eat 500 more.”
-
----
-
-# 20. Regla de CTA obligatorio
-
-No todas las comidas tienen que producir un CTA.
-
-Tres posibles resultados:
-
-```text
-Insight only
-```
-
-```text
-Insight + CTA
-```
-
-```text
-Insight + CTA + secondary CTA
-```
-
-Pero **nunca generar un botón artificialmente**.
-
----
-
-# 21. Regla de máximo dos CTAs
-
-Mi recomendación para la interfaz final:
-
-### Principal
-
-**See Insight**
-
-### Secundario
-
-Una acción contextual.
-
-Ejemplo:
-
-**Explore Meal Ideas**
-
-Nada más.
-
-El botón flotante de IA ya funciona como tercera vía de interacción.
-
-
----
-
-# 22. Regla de prioridad de CTAs en Wellness
-
-Orden:
-
-```text
-1. Comprensión
-2. Contexto
-3. Exploración
-4. Acción práctica
-5. Marketplace
-```
-
-Por ejemplo:
-
-> Ver insight
-
-gana frente a:
-
-> Chequear hidratación (Escala Armstrong)
-
-si el insight es realmente relevante.
-
-> [!IMPORTANT]
-> **Prohibición de conteo volumétrico arbitrario:** Queda prohibido generar CTAs de conteo cuantitativo abstracto ("Registrar 1 vaso", "+250 ml", etc.). La hidratación se evalúa y registra exclusivamente mediante la **Escala Colorimétrica de Armstrong (1 a 8) (Ucol)** validada clínicamente. Todo CTA de hidratación debe orientarse a chequear o registrar el nivel fisiológico según dicha escala.
-
-
----
-
-# 23. Regla de prioridad en Athlete
-
-```text
-1. Progreso
-2. Planificación
-3. Contexto
-4. Exploración
-5. Marketplace
-```
-
-Por ejemplo:
-
-> **See Today's Progress**
-
-o:
-
-> **Plan Next Meal**
-
-puede tener prioridad sobre una recomendación genérica.
-
----
-
-# 24. Regla de Market
-
-The Wellness Face no debe utilizar una supuesta deficiencia nutricional como excusa para vender.
-
-❌
-
-> Low fiber → Buy chia seeds.
-
-✅
-
-> Explore fiber-rich ingredients
-
-Dentro de esa experiencia pueden aparecer:
-
-**frutas**
-
-**verduras**
-
-**legumbres**
-
-**semillas**
-
-**productos disponibles en Market**
-
-De esta manera el Market es una consecuencia de una intención, no el objetivo oculto de la recomendación.
-
----
-
-# 25. Regla de intención comercial
-
-El Market puede ganar prioridad cuando el usuario expresa intención:
-
-> “Quiero más proteína.”
-
-> “¿Qué puedo comprar para esto?”
-
-> “Busco semillas.”
-
-> “Quiero snacks.”
-
-En ese momento:
-
-**Explore Market**
-
-es totalmente coherente.
-
----
-
-# 26. Regla anti-TCA de frecuencia
-
-El motor no debe analizar obsesivamente cada interacción.
-
-Por ejemplo:
-
-```text
-Comida 1
-→ Insight
-
-Comida 2
-→ Sin CTA
-
-Snack
-→ Insight
-
-Comida 3
-→ Explore
-```
-
-No:
-
-```text
-Cada comida
-→ déficit
-→ recomendación
-→ corrección
-→ tarea
-```
-
----
-
-# 27. Regla de repetición
-
-Si el usuario recibe varias veces:
-
-> “Explore fiber-rich foods”
-
-el sistema debe bajar su prioridad.
-
-De lo contrario, la app puede terminar enseñando:
-
-> **“Fibra. Fibra. Fibra. Fibra.”**
-
-y eso justamente genera una atención excesiva sobre un único nutriente.
-
----
-
-# 28. Regla de diversidad nutricional
-
-El sistema debe rotar entre dimensiones:
-
-**Proteína**
-
-**Fibra**
-
-**Variedad**
-
-**Procesamiento**
-
-**Hidratación**
-
-**Grasas**
-
-**Azúcares añadidos**
-
-**Sodio**
-
-**Timing**
-
-**Satisfacción**
-
-**Recuperación**
-
-No optimizar una única métrica permanentemente.
-
----
-
-# 29. Regla de modo Wellness: lenguaje
-
-Wellness debe sentirse como:
-
-> **“Aprendé sobre lo que comés.”**
-
-Ejemplos:
-
-> This meal is high in protein and fiber.
-
-> This meal contains several minimally processed ingredients.
-
-> This meal includes a wide variety of foods.
-
-> Explore similar meals.
-
-No:
-
-> You need more protein.
-
-> Make your next meal healthier.
-
-> Balance this meal.
-
----
-
-# 30. Regla de modo Athlete: lenguaje
-
-Athlete puede ser más preciso:
-
-> This meal adds 53g of protein toward today's target.
-
-> You're currently at 71% of your calorie target.
-
-> You have 42g of protein remaining toward today's goal.
-
-Pero incluso aquí:
-
-> “remaining” describe planificación, no deuda.
-
----
-
-# 31. Regla específica para tu interfaz actual
-
-Tu card:
-
-> **VALOR NUTRICIONAL — Bajo**
-
-con:
-
-> Mínimamente procesado
-> Alto en fibra
-> Alto en proteína
-> Sin azúcar añadido
-
-es conceptualmente mucho mejor que una escala de:
-
-**Healthy 8/10**
-
-porque muestra **por qué** llegó al resultado.
-
-Pero yo aplicaría una condición:
-
-### El score nunca debe dominar visualmente a la explicación.
-
-El usuario debería recordar:
-
-> “Mi comida tiene estas características.”
-
-y no:
-
-> “Mi comida obtuvo un 4/10.”
-
----
-
-# 32. Ejemplo — Wellness Mode
-
-### Poke Bowl
-
-**VALOR NUTRICIONAL**
-
-**Alto**
-
-🌿 Mínimamente procesado  
-◌ Alto en fibra  
-◌ Alto en proteína  
-✦ Sin azúcar añadido  
-
-No muestra:
-
-> 630 / 2,370 kcal
-
-No muestra:
-
-> 53 / 150g protein
-
-### Insight
-
-> **This meal combines protein, fiber and a wide variety of ingredients.**
-
-### CTA
-
-**See Insight**
-
-**Explore Meal Ideas**
-
----
-
-# 33. Ejemplo — Athlete Mode
-
-### Poke Bowl
-
-**VALOR NUTRICIONAL**
-
-**Alto**
-
-🌿 Mínimamente procesado  
-◌ Alto en fibra  
-◌ Alto en proteína  
-✦ Sin azúcar añadido  
-
-↓
-
-**630 kcal**
-
-**Protein 53g**  
-**Carbs 26g**  
-**Fat 38g**  
-**Fiber 18g**  
-
-↓
-
-**53 / 150g protein today**
-
-**630 / 2,370 kcal**
-
-### Insight
-
-> **This meal adds 53g of protein toward today's target.**
-
-### CTA
-
-**See Progress**
-
-**Plan Next Meal**
-
----
-
-# 34. Ejemplo — comida con menor valor nutricional
-
-## Wellness
-
-**VALOR NUTRICIONAL**
-
-**Bajo**
-
-* Alto en azúcares añadidos
-* Bajo en fibra
-* Alto en procesamiento
-
-Insight:
-
-> **This meal contains a higher proportion of added sugars and highly processed ingredients.**
-
-CTA:
-
-**Explore Meal Ideas**
-
-No:
-
-> Balance this meal.
-
----
-
-# 35. Ejemplo — la misma comida en Athlete
-
-**VALOR NUTRICIONAL**
-
-**Bajo**
-
-* Alto en azúcares añadidos
-* Bajo en fibra
-* Alto en procesamiento
-
-**720 kcal**
-
-**Protein 8g**
-
-**Carbs 92g**
-
-**Fat 31g**
-
-Insight:
-
-> **This meal contributes a larger share of today's carbohydrate intake.**
-
-CTA:
-
-**See Today's Progress**
-
-No:
-
-> Eat less later.
-
----
-
-# 36. Regla de seguridad emocional
-
-Si el sistema detecta señales de:
-
-* preocupación excesiva por calorías
-* registros extremadamente frecuentes
-* lenguaje de culpa
-* intención de compensación
-* preocupación intensa por “comida buena/mala”
-* comportamiento obsesivo alrededor del objetivo
-
-entonces debe entrar en un **low-pressure mode**.
-
-Eso significa:
-
-```text
-menos CTAs
-+
-menos objetivos
-+
-menos optimización
-+
-más información neutral
-```
-
-No aumentar la presión precisamente cuando el usuario parece necesitar menos.
-
----
-
-# 37. Regla de desacoplamiento
-
-Hay tres cosas que The Wellness Face debe mantener separadas:
-
-### Nutrición
-
-> ¿Qué contiene esta comida?
-
-### Objetivo
-
-> ¿Cómo encaja con mi meta?
-
-### Valor personal
-
-> ¿Estoy haciendo las cosas bien?
-
-La aplicación puede responder las dos primeras.
-
-**Nunca debe responder la tercera.**
-
----
-
-# 38. Arquitectura técnica definitiva
-
-```text
-                    FOOD SCAN
-                       ↓
-              FOOD IDENTIFICATION
-                       ↓
-              NUTRITION ENGINE
-                       ↓
-       ┌───────────────┴────────────────┐
-       ↓                                ↓
-QUALITATIVE DATA                  QUANTITATIVE DATA
-       ↓                                ↓
-Processing                       Calories
-Fiber                            Protein
-Protein                          Carbs
-Added sugars                     Fat
-Sodium                           Fiber
-Variety
-       ↓                                ↓
-       └───────────────┬────────────────┘
-                       ↓
-                CONTEXT ENGINE
-                       ↓
-                  USER MODE
-                ↙           ↘
-           WELLNESS        ATHLETE
-              ↓               ↓
-       Awareness layer   Tracking layer
-              ↓               ↓
-            INSIGHT         INSIGHT
-              ↓               ↓
-             CTA             CTA
-```
-
-Y delante de todo eso:
-
-```text
-                SAFETY FILTER
-                     ↓
-        ┌─────────────────────────┐
-        │ No guilt                │
-        │ No moral labels         │
-        │ No compensation         │
-        │ No restriction          │
-        │ No overinterpretation   │
-        │ No excessive repetition │
-        └─────────────────────────┘
-```
-
----
-
-# 39. La regla definitiva de The Wellness Face
-
-> **Wellness Mode helps users understand what they eat without turning nutrition into a daily score.**
->
-> **Athlete Mode adds quantitative tracking for users who intentionally want to work toward nutrition and performance goals.**
->
-> **Both modes may inform, contextualize and guide — but neither mode should create guilt, reward food morally, or encourage compensation or restriction.**
-
-Y la distinción clave de UX:
-
-### Wellness
-
-**“What is this food like?”**
-
-### Athlete
-
-**“How does this food fit my goal?”**

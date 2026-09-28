@@ -46,13 +46,13 @@ export function ThemeToggle({
           className="rounded-xl font-bold text-xs gap-2 border-border/60 hover:bg-secondary transition-all"
         >
           {effectiveTheme === "dark" ? (
-            <Moon className="h-4 w-4 text-indigo-400 shrink-0" />
+            <Moon className="h-4 w-4 text-sky-400 shrink-0" />
           ) : (
             <Sun className="h-4 w-4 text-amber-500 shrink-0" />
           )}
           {showLabel && (
             <span className="capitalize">
-              {theme === "system" ? "Sistema" : theme === "dark" ? "Oscuro (Rimu)" : "Claro"}
+              {theme === "system" ? "Sistema" : theme === "dark" ? "Oscuro" : "Claro"}
             </span>
           )}
         </Button>
@@ -76,8 +76,8 @@ export function ThemeToggle({
             theme === "dark" ? "bg-secondary text-foreground font-black" : "text-muted-foreground"
           }`}
         >
-          <Moon className="h-4 w-4 text-indigo-400" />
-          <span>Modo Oscuro (Rimu)</span>
+          <Moon className="h-4 w-4 text-sky-400" />
+          <span>Modo Oscuro</span>
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => setTheme("system")}

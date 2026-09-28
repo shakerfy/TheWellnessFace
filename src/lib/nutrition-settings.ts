@@ -126,11 +126,6 @@ export function getUserAthleteGoal(): AthleteGoal {
 export function getUserWeight(): number {
   if (typeof window !== "undefined") {
     try {
-      const directWeight = localStorage.getItem("user_weight");
-      if (directWeight) {
-        const parsed = Number(directWeight);
-        if (!isNaN(parsed) && parsed > 0) return parsed;
-      }
       const profStr = localStorage.getItem("shakerfy_user_profile_edit");
       if (profStr) {
         const p = JSON.parse(profStr);
@@ -216,18 +211,20 @@ export function getNutritionSettings(): NutritionSettings {
         : getUserAthleteGoal();
 
     return {
-      mode: parsed.mode === "athlete" ? "athlete" : "wellness",
+      mode: "wellness",
       athleteGoal: validGoal,
-      customTargetsEnabled: Boolean(parsed.customTargetsEnabled),
-      customCalories: typeof parsed.customCalories === "number" ? parsed.customCalories : undefined,
-      customProtein: typeof parsed.customProtein === "number" ? parsed.customProtein : undefined,
-      customCarbs: typeof parsed.customCarbs === "number" ? parsed.customCarbs : undefined,
-      customFat: typeof parsed.customFat === "number" ? parsed.customFat : undefined,
+      customTargetsEnabled: false,
+      customCalories: undefined,
+      customProtein: undefined,
+      customCarbs: undefined,
+      customFat: undefined,
     };
   } catch (_) {
     return DEFAULT_NUTRITION_SETTINGS;
   }
 }
+
+import { applyTheme } from "@/lib/use-theme";
 
 /**
  * Guarda los ajustes de nutrición y dispara un evento reactivo para actualizar toda la app en tiempo real.
@@ -237,11 +234,13 @@ export function saveNutritionSettings(settings: Partial<NutritionSettings>): Nut
   const updated: NutritionSettings = {
     ...current,
     ...settings,
+    mode: "wellness",
   };
 
   if (typeof window !== "undefined") {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      applyTheme();
       window.dispatchEvent(new CustomEvent(SETTINGS_EVENT, { detail: updated }));
     } catch (_) {}
   }
@@ -276,9 +275,10 @@ export function useNutritionSettings() {
   const [userWeight, setUserWeight] = useState<number>(getUserWeight);
 
   useEffect(() => {
-    // Sincronizar ajustes iniciales
+    // Sincronizar ajustes iniciales y aplicar el tema global (Negro Carbón si está en Modo Atleta)
     setSettingsState(getNutritionSettings());
     setUserWeight(getUserWeight());
+    applyTheme();
 
     const handleUpdate = (e: Event) => {
       const customEvent = e as CustomEvent<NutritionSettings>;
@@ -288,6 +288,7 @@ export function useNutritionSettings() {
         setSettingsState(getNutritionSettings());
       }
       setUserWeight(getUserWeight());
+      applyTheme();
     };
 
     window.addEventListener(SETTINGS_EVENT, handleUpdate);
@@ -317,9 +318,9 @@ export function useNutritionSettings() {
     settings,
     athleteGoal,
     setAthleteGoal,
-    isAthleteMode: settings.mode === "athlete",
-    isWellnessMode: settings.mode === "wellness",
-    isUsingRecommendedRanges: !settings.customTargetsEnabled,
+    isAthleteMode: false,
+    isWellnessMode: true,
+    isUsingRecommendedRanges: true,
     updateSettings: update,
     userWeight,
     recommendedTargets,

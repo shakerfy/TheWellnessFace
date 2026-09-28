@@ -954,7 +954,7 @@ La FDA y normativas internacionales permiten hasta un **20% de margen de error**
     content: `
 El entrenamiento de fuerza y la hipertrofia muscular dependen de un equilibrio preciso entre el **estímulo estresante (carga mecánica y daño tisular)** y el **proceso fisiológico de reparación y supercompensación**. 
 
-Cuando el algoritmo de la IA de **Shakerfy** evalúa el estado de los grupos musculares del usuario, establece una regla clave: **cualquier grupo muscular cuyo porcentaje de recuperación sea inferior al 70% se excluye automáticamente de la generación de cargas pesadas o de alta intensidad.**
+Cuando la evidencia en ciencias del ejercicio evalúa la recuperación muscular, establece una regla clave: **cualquier grupo muscular cuyo nivel de reparación sea inferior al 70% debería preservarse de cargas pesadas o de alta intensidad.**
 
 Pero, ¿por qué el 70%? ¿Cuál es la evidencia biomecánica y metabólica detrás de esta cifra?
 
@@ -998,11 +998,11 @@ Un malentendido común es pensar que estar por debajo del 70% exige inmovilidad 
 
 ---
 
-### 4. Conclusiones y Metodología en Shakerfy AI
+### 4. Conclusiones y Aplicación Práctica en The Wellness Face
 
-El módulo de **Recuperación Muscular** de **Shakerfy** permite al usuario registrar sus sensaciones objetivas y subjetivas (agujetas al tacto, rigidez y pérdida de rango de movimiento). 
+En **The Wellness Face**, promovemos la interocepción somática: aprender a registrar las sensaciones de tu cuerpo (agujetas al tacto, rigidez articular y calidad del movimiento). 
 
-Al mantener la exclusión en el **70%**, garantizamos que cada rutina generada por la IA maximice el volumen efectivo de entrenamiento (*effective reps*) reduciendo a cero las sesiones basura (*junk volume*) que solo generan fatiga sin estímulo de crecimiento.
+Al respetar la recuperación tisular profunda, se garantiza maximizar el volumen efectivo de entrenamiento (*effective reps*) reduciendo a cero las sesiones basura (*junk volume*) que solo generan fatiga sin estímulo de crecimiento.
 
 ---
 
@@ -1389,9 +1389,9 @@ Estudios en *PNAS (Scheer et al.)* y *Nutrients (2024)* muestran que la desaline
 
 ---
 
-### Conclusión para tu Entrenamiento en Shakerfy
+### Conclusión para tu Bienestar en The Wellness Face
 
-En **Shakerfy / Studio Pulse Smart**, el módulo de **Gestión del Sueño** se integra con el **Monitor de Fatiga Muscular** y el **AI Coach**. Cuando registras un descanso < 6 horas, el algoritmo recalcula la fatiga muscular (+15%) y ajusta automáticamente la intensidad recomendada en tu próximo workout.
+En **The Wellness Face**, la gestión del sueño y la recuperación física se analizan de manera integral. Cuando registrás un descanso < 6 horas, tu cuerpo experimenta una disminución en la síntesis proteica regenerativa y en la capacidad de amortiguar impacto; por eso, escuchar las señales somáticas y modular la intensidad de tu actividad es la clave de la salud a largo plazo.
 
 ---
 

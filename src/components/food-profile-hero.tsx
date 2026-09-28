@@ -133,8 +133,9 @@ export function FoodProfileHero({
           <PopoverTrigger asChild>
             <button
               type="button"
+              onClick={(e) => e.stopPropagation()}
               className="w-7 h-7 -mr-1 rounded-full flex items-center justify-center text-muted-foreground/70 hover:text-foreground hover:bg-secondary/60 transition cursor-pointer"
-              aria-label="Más información sobre el Valor Nutricional"
+              aria-label="Más información sobre el Valor Nutricional y Precisión estimada"
             >
               <Info className="w-3.5 h-3.5" />
             </button>
@@ -142,23 +143,15 @@ export function FoodProfileHero({
           <PopoverContent
             align="end"
             side="bottom"
-            className="w-72 p-3.5 rounded-2xl bg-card border border-border shadow-lg text-left space-y-2 z-50"
+            onClick={(e) => e.stopPropagation()}
+            className="w-72 sm:w-80 p-4 rounded-2xl bg-card border border-border shadow-xl text-left space-y-2 z-50"
           >
             <h4 className="text-[11px] font-bold uppercase tracking-wider text-foreground">
-              {isAthleteMode ? "Valor Nutricional y Macros" : "Valor Nutricional"}
+              Valor Nutricional & IA Transparente
             </h4>
-            <div className="space-y-1.5 text-xs text-muted-foreground leading-relaxed">
-              <p>
-                {isAthleteMode
-                  ? "Evalúa la densidad de nutrientes y grado de procesamiento del alimento junto con el cálculo de macronutrientes."
-                  : "Evalúa la calidad global del alimento según su densidad de nutrientes, aporte de fibra y grado de procesamiento."}
-              </p>
-              <p className="text-[11px] text-muted-foreground/80 pt-1 border-t border-border/40">
-                {isAthleteMode
-                  ? "Las calorías, macros e identificación visual son estimaciones aproximadas por IA. Podés editar los valores según tus porciones reales o pesaje."
-                  : "La identificación visual por IA puede ser aproximada. Revisa siempre los detalles nutricionales importantes."}
-              </p>
-            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              La estimación visual y los insights de la IA son una guía inteligente aproximada de carácter puramente educativo; no constituyen consejo médico, diagnóstico ni tratamiento personalizado. Ante cualquier condición de salud, consultá siempre a un profesional matriculado.
+            </p>
           </PopoverContent>
         </Popover>
       </div>

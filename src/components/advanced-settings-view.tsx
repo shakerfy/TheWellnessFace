@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ChevronLeft, Sliders, Sparkles, Activity, RotateCcw, Check, Info, ShieldCheck } from "lucide-react";
+import { ChevronLeft, Sliders, Sparkles, Activity, RotateCcw, Check, Info, ShieldCheck, Sun, Moon, Laptop } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useTheme } from "@/lib/use-theme";
 import {
   useNutritionSettings,
   NutritionMode,
@@ -32,6 +33,7 @@ export function AdvancedSettingsView({ onBack }: AdvancedSettingsViewProps) {
     recommendedRanges,
     effectiveTargets,
   } = useNutritionSettings();
+  const { theme, setTheme } = useTheme();
 
   const currentGoal: AthleteGoal = settings.athleteGoal || "performance";
   const activeGoalConfig =
@@ -44,31 +46,31 @@ export function AdvancedSettingsView({ onBack }: AdvancedSettingsViewProps) {
   const [localFat, setLocalFat] = useState<number>(effectiveTargets.fat);
 
   // Trigger subtle haptic feedback if available
-  const triggerHaptic = () => {
+  const triggerHaptic = (ms = 15) => {
     if (typeof window !== "undefined" && "vibrate" in navigator) {
       try {
-        navigator.vibrate(15);
+        navigator.vibrate(ms);
       } catch (_) {}
     }
   };
 
   const handleModeChange = (checked: boolean) => {
-    triggerHaptic();
+    triggerHaptic(checked ? 12 : 18);
     const newMode: NutritionMode = checked ? "athlete" : "wellness";
     updateSettings({ mode: newMode });
     if (newMode === "athlete") {
-      toast.info("Modo Atleta activado", {
-        description: "Se mostrarán calorías numéricas y conteo de macronutrientes en gramos.",
+      toast.info("MODO ATLETA // TELEMETRÍA ACTIVA", {
+        description: "Cabina de rendimiento activada: gramos, calorías y rangos 80/20.",
       });
     } else {
       toast.success("Modo Bienestar activado", {
-        description: "Enfoque cualitativo, perfil nutricional y nutrición consciente.",
+        description: "Volviste al espacio de calma: perfil cualitativo sin conteo calórico.",
       });
     }
   };
 
   const handleSelectGoal = (goal: AthleteGoal) => {
-    triggerHaptic();
+    triggerHaptic(12);
     updateSettings({ athleteGoal: goal });
     const newTargets = getRecommendedTargets(userWeight, goal);
     if (!settings.customTargetsEnabled) {
@@ -84,7 +86,7 @@ export function AdvancedSettingsView({ onBack }: AdvancedSettingsViewProps) {
   };
 
   const handleCustomToggle = (checked: boolean) => {
-    triggerHaptic();
+    triggerHaptic(12);
     if (checked) {
       // Initialize with current effective or recommended
       const initialCal = settings.customCalories || recommendedTargets.calories;
@@ -135,7 +137,7 @@ export function AdvancedSettingsView({ onBack }: AdvancedSettingsViewProps) {
   };
 
   const handleResetToRecommended = () => {
-    triggerHaptic();
+    triggerHaptic(12);
     const activeGoal = settings.athleteGoal || "performance";
     const goalTargets = getRecommendedTargets(userWeight, activeGoal);
     setLocalCalories(goalTargets.calories);
@@ -173,322 +175,88 @@ export function AdvancedSettingsView({ onBack }: AdvancedSettingsViewProps) {
       {/* Encabezado */}
       <div className="space-y-1">
         <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-          Ajustes de Nutrición
+          Ajustes de Nutrición y Apariencia
         </h1>
         <p className="text-xs text-muted-foreground">
-          Configura tu enfoque de alimentación y personaliza tus metas diarias.
+          Configura el tema de la app y el cambio de habitación digital (Bienestar vs. Atleta).
         </p>
       </div>
 
-      {/* SECCIÓN 1: SELECTOR DE MODO */}
+      {/* SECCIÓN 0: TEMA DE LA APP (CLARO / OSCURO / AUTOMÁTICO) */}
       <div className="space-y-2">
         <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground px-0.5">
-          Enfoque
+          Tema de Iluminación
         </div>
-
-        <div className="border border-border bg-card rounded-3xl p-4 space-y-3">
-          <div className="grid grid-cols-2 gap-1.5 p-1 bg-secondary/40 rounded-2xl border border-border/50">
+        <div className="border border-border bg-card rounded-3xl p-4">
+          <div className="grid grid-cols-3 gap-1.5 p-1 bg-secondary/40 rounded-2xl border border-border/50">
             <button
               type="button"
-              onClick={() => handleModeChange(false)}
+              onClick={() => {
+                triggerHaptic(10);
+                setTheme("light");
+              }}
               className={cn(
-                "py-2.5 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer select-none",
-                isWellnessMode
+                "py-2 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer select-none",
+                theme === "light"
                   ? "bg-background text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
-              <span>Modo Bienestar</span>
+              <Sun className="w-3.5 h-3.5 text-amber-500" />
+              <span>Claro</span>
             </button>
             <button
               type="button"
-              onClick={() => handleModeChange(true)}
+              onClick={() => {
+                triggerHaptic(10);
+                setTheme("dark");
+              }}
               className={cn(
-                "py-2.5 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer select-none",
-                isAthleteMode
+                "py-2 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer select-none",
+                theme === "dark"
                   ? "bg-background text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Activity className="w-3.5 h-3.5 text-amber-500" />
-              <span>Modo Atleta</span>
+              <Moon className="w-3.5 h-3.5 text-indigo-400" />
+              <span>Oscuro</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                triggerHaptic(10);
+                setTheme("system");
+              }}
+              className={cn(
+                "py-2 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer select-none",
+                theme === "system"
+                  ? "bg-background text-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Laptop className="w-3.5 h-3.5 text-muted-foreground" />
+              <span>Sistema</span>
             </button>
           </div>
-
-          <p className="text-xs text-muted-foreground px-1 leading-relaxed">
-            {isAthleteMode
-              ? "Modo cuantitativo con conteo calórico y desglose de macronutrientes en gramos."
-              : "Modo cualitativo con perfil nutricional, saciedad somática y sin conteo calórico."}
-          </p>
         </div>
       </div>
 
-      {/* SECCIÓN 2: METAS Y MACRONUTRIENTES */}
+      {/* SECCIÓN 1: ENFOQUE NUTRICIONAL (MODO BIENESTAR) */}
       <div className="space-y-2">
-        <div className="flex items-center justify-between px-0.5">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-            Metas y Macronutrientes
-          </span>
-          <span className="text-[10px] text-muted-foreground font-mono">
-            {userWeight} kg
-          </span>
+        <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground px-0.5">
+          Enfoque Nutricional
         </div>
 
-        <div className="border border-border bg-card rounded-3xl p-4 sm:p-5 space-y-4">
-          {/* Fase Deportiva (Modo Atleta) */}
-          {isAthleteMode && (
-            <div className="space-y-1.5 pb-3 border-b border-border/40">
-              <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                <span>Fase</span>
-                <span className="font-mono text-[10px] text-foreground/70 lowercase">{activeGoalConfig.kcalTag}</span>
-              </div>
-              <div className="grid grid-cols-3 gap-1.5 p-1 bg-secondary/40 rounded-2xl border border-border/40">
-                {ATHLETE_GOAL_OPTIONS.map((g) => {
-                  const isSelected = currentGoal === g.id;
-                  return (
-                    <button
-                      key={g.id}
-                      type="button"
-                      onClick={() => handleSelectGoal(g.id)}
-                      className={cn(
-                        "py-2 px-2 rounded-xl text-xs font-semibold transition-all text-center cursor-pointer select-none",
-                        isSelected
-                          ? "bg-background text-foreground shadow-xs"
-                          : "text-muted-foreground hover:text-foreground"
-                      )}
-                    >
-                      {g.title}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Switch Personalizar */}
-          <div className="flex items-center justify-between gap-3">
-            <div className="space-y-0.5">
-              <Label htmlFor="custom-switch" className="text-xs font-bold text-foreground cursor-pointer">
-                Personalizar valores
-              </Label>
-              <p className="text-[11px] text-muted-foreground">
-                {settings.customTargetsEnabled
-                  ? "Valores fijos asignados manualmente."
-                  : `Rangos fisiológicos recomendados para ${userWeight} kg.`}
-              </p>
-            </div>
-            <Switch
-              id="custom-switch"
-              checked={settings.customTargetsEnabled}
-              onCheckedChange={handleCustomToggle}
-            />
+        <div className="rounded-3xl p-4 sm:p-5 space-y-2.5 border border-border bg-card text-card-foreground">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-emerald-500" />
+            <span className="text-sm font-bold text-foreground">
+              Modo Bienestar (Calma Diaria)
+            </span>
           </div>
-
-          {/* Vista de Datos: Rangos o Sliders */}
-          {!settings.customTargetsEnabled ? (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 animate-in fade-in duration-150">
-              <div className="p-3 rounded-2xl bg-secondary/25 border border-border/40 space-y-0.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">Calorías</span>
-                <span className="text-base font-black font-mono tabular-nums text-foreground block">
-                  {recommendedRanges.calories[0]}–{recommendedRanges.calories[1]}
-                </span>
-                <span className="text-[10px] font-mono text-muted-foreground block">kcal</span>
-              </div>
-              <div className="p-3 rounded-2xl bg-secondary/25 border border-border/40 space-y-0.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 block">Proteína</span>
-                <span className="text-base font-black font-mono tabular-nums text-foreground block">
-                  {recommendedRanges.protein[0]}–{recommendedRanges.protein[1]}g
-                </span>
-                <span className="text-[10px] font-mono text-muted-foreground block">{activeGoalConfig.protTag}</span>
-              </div>
-              <div className="p-3 rounded-2xl bg-secondary/25 border border-border/40 space-y-0.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 block">Carbos</span>
-                <span className="text-base font-black font-mono tabular-nums text-foreground block">
-                  {recommendedRanges.carbs[0]}–{recommendedRanges.carbs[1]}g
-                </span>
-                <span className="text-[10px] font-mono text-muted-foreground block">{activeGoalConfig.carbsTag}</span>
-              </div>
-              <div className="p-3 rounded-2xl bg-secondary/25 border border-border/40 space-y-0.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 block">Grasas</span>
-                <span className="text-base font-black font-mono tabular-nums text-foreground block">
-                  {recommendedRanges.fat[0]}–{recommendedRanges.fat[1]}g
-                </span>
-                <span className="text-[10px] font-mono text-muted-foreground block">{activeGoalConfig.fatTag}</span>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-4 pt-1 animate-in fade-in duration-150">
-              {/* Macro ratio bar */}
-              {(() => {
-                const pK = localProtein * 4;
-                const cK = localCarbs * 4;
-                const fK = localFat * 9;
-                const totalK = pK + cK + fK || 1;
-                const pPct = Math.round((pK / totalK) * 100);
-                const cPct = Math.round((cK / totalK) * 100);
-                const fPct = Math.max(0, 100 - pPct - cPct);
-                return (
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between text-[11px] font-mono">
-                      <span className="text-muted-foreground">Distribución:</span>
-                      <span className="font-bold text-foreground">
-                        {pPct}% P • {cPct}% C • {fPct}% G
-                      </span>
-                    </div>
-                    <div className="h-1.5 w-full rounded-full bg-secondary overflow-hidden flex">
-                      <div style={{ width: `${pPct}%` }} className="bg-emerald-600 transition-all duration-200" />
-                      <div style={{ width: `${cPct}%` }} className="bg-amber-500 transition-all duration-200" />
-                      <div style={{ width: `${fPct}%` }} className="bg-sky-500 transition-all duration-200" />
-                    </div>
-                  </div>
-                );
-              })()}
-
-              <div className="space-y-3">
-                {/* Calorías */}
-                <div className="p-3 rounded-2xl bg-secondary/20 border border-border/40 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-foreground">Calorías Diarias</span>
-                    <span className="text-xs font-black font-mono">{localCalories} kcal</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleUpdateField("customCalories", localCalories - 50)}
-                      className="w-7 h-7 rounded-lg border border-border bg-card hover:bg-secondary text-xs font-bold transition flex items-center justify-center shrink-0 cursor-pointer select-none active:scale-95"
-                    >
-                      -
-                    </button>
-                    <Slider
-                      value={[localCalories]}
-                      onValueChange={([v]) => handleUpdateField("customCalories", v)}
-                      min={1200}
-                      max={4200}
-                      step={25}
-                      className="cursor-pointer flex-1"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleUpdateField("customCalories", localCalories + 50)}
-                      className="w-7 h-7 rounded-lg border border-border bg-card hover:bg-secondary text-xs font-bold transition flex items-center justify-center shrink-0 cursor-pointer select-none active:scale-95"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-
-                {/* Proteína */}
-                <div className="p-3 rounded-2xl bg-secondary/20 border border-border/40 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">Proteína</span>
-                    <span className="text-xs font-black font-mono">{localProtein} g</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleUpdateField("customProtein", localProtein - 5)}
-                      className="w-7 h-7 rounded-lg border border-border bg-card hover:bg-secondary text-xs font-bold transition flex items-center justify-center shrink-0 cursor-pointer select-none active:scale-95"
-                    >
-                      -
-                    </button>
-                    <Slider
-                      value={[localProtein]}
-                      onValueChange={([v]) => handleUpdateField("customProtein", v)}
-                      min={50}
-                      max={260}
-                      step={5}
-                      className="cursor-pointer flex-1"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleUpdateField("customProtein", localProtein + 5)}
-                      className="w-7 h-7 rounded-lg border border-border bg-card hover:bg-secondary text-xs font-bold transition flex items-center justify-center shrink-0 cursor-pointer select-none active:scale-95"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-
-                {/* Carbohidratos */}
-                <div className="p-3 rounded-2xl bg-secondary/20 border border-border/40 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-amber-600 dark:text-amber-400">Carbohidratos</span>
-                    <span className="text-xs font-black font-mono">{localCarbs} g</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleUpdateField("customCarbs", localCarbs - 5)}
-                      className="w-7 h-7 rounded-lg border border-border bg-card hover:bg-secondary text-xs font-bold transition flex items-center justify-center shrink-0 cursor-pointer select-none active:scale-95"
-                    >
-                      -
-                    </button>
-                    <Slider
-                      value={[localCarbs]}
-                      onValueChange={([v]) => handleUpdateField("customCarbs", v)}
-                      min={60}
-                      max={500}
-                      step={5}
-                      className="cursor-pointer flex-1"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleUpdateField("customCarbs", localCarbs + 5)}
-                      className="w-7 h-7 rounded-lg border border-border bg-card hover:bg-secondary text-xs font-bold transition flex items-center justify-center shrink-0 cursor-pointer select-none active:scale-95"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-
-                {/* Grasas */}
-                <div className="p-3 rounded-2xl bg-secondary/20 border border-border/40 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-sky-600 dark:text-sky-400">Grasas</span>
-                    <span className="text-xs font-black font-mono">{localFat} g</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleUpdateField("customFat", localFat - 2)}
-                      className="w-7 h-7 rounded-lg border border-border bg-card hover:bg-secondary text-xs font-bold transition flex items-center justify-center shrink-0 cursor-pointer select-none active:scale-95"
-                    >
-                      -
-                    </button>
-                    <Slider
-                      value={[localFat]}
-                      onValueChange={([v]) => handleUpdateField("customFat", v)}
-                      min={25}
-                      max={150}
-                      step={2}
-                      className="cursor-pointer flex-1"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleUpdateField("customFat", localFat + 2)}
-                      className="w-7 h-7 rounded-lg border border-border bg-card hover:bg-secondary text-xs font-bold transition flex items-center justify-center shrink-0 cursor-pointer select-none active:scale-95"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex justify-end pt-1">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleResetToRecommended}
-                  className="rounded-xl text-xs text-muted-foreground hover:text-foreground gap-1.5 cursor-pointer h-7"
-                >
-                  <RotateCcw className="w-3 h-3" />
-                  Restablecer
-                </Button>
-              </div>
-            </div>
-          )}
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Nutrición consciente libre de conteo calórico restrictivo. Las recomendaciones priorizan saciedad, confort digestivo, energía sostenida y porciones de mano (Palma, Puño, Pulgar, Cuenco).
+          </p>
         </div>
       </div>
 

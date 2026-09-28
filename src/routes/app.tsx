@@ -111,7 +111,7 @@ import {
   ThumbsDown,
 } from "lucide-react";
 import { saveDietaryPreferenceToAiMemory } from "@/lib/ai-suggestion-generator";
-import { TypewriterText } from "@/components/typewriter-text";
+import { TypewriterText } from "@/components/typewriter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -144,7 +144,6 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { updateMuscleRecoveryForActivity, MUSCLE_GROUPS } from "@/lib/muscle-recovery";
 import {
   Dialog,
   DialogContent,

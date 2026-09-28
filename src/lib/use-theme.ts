@@ -7,10 +7,13 @@ export function getSystemTheme(): "light" | "dark" {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
-export function applyTheme(mode: ThemeMode) {
+export function applyTheme(mode?: ThemeMode) {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
-  const effectiveTheme = mode === "system" ? getSystemTheme() : mode;
+  root.classList.remove("athlete-mode");
+  const resolvedMode =
+    mode || ((localStorage.getItem("shakerfy_theme") as ThemeMode | null) ?? "system");
+  const effectiveTheme = resolvedMode === "system" ? getSystemTheme() : resolvedMode;
 
   if (effectiveTheme === "dark") {
     root.classList.add("dark");
@@ -32,6 +35,9 @@ export function useTheme() {
     setThemeState(newMode);
     localStorage.setItem("shakerfy_theme", newMode);
     applyTheme(newMode);
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("shakerfy:theme-updated", { detail: newMode }));
+    }
   };
 
   useEffect(() => {
@@ -46,8 +52,30 @@ export function useTheme() {
       }
     };
 
+    const handleCustomThemeChange = (e: Event) => {
+      const customEvent = e as CustomEvent<ThemeMode>;
+      if (customEvent.detail) {
+        setThemeState(customEvent.detail);
+      } else {
+        const saved = (localStorage.getItem("shakerfy_theme") as ThemeMode | null) || "system";
+        setThemeState(saved);
+      }
+    };
+
+    const handleNutritionModeChange = () => {
+      applyTheme(theme);
+    };
+
     mediaQuery.addEventListener("change", handleChange);
-    return () => mediaQuery.removeEventListener("change", handleChange);
+    window.addEventListener("shakerfy:theme-updated", handleCustomThemeChange);
+    window.addEventListener("shakerfy_nutrition_settings_updated", handleNutritionModeChange);
+    window.addEventListener("storage", handleCustomThemeChange);
+    return () => {
+      mediaQuery.removeEventListener("change", handleChange);
+      window.removeEventListener("shakerfy:theme-updated", handleCustomThemeChange);
+      window.removeEventListener("shakerfy_nutrition_settings_updated", handleNutritionModeChange);
+      window.removeEventListener("storage", handleCustomThemeChange);
+    };
   }, [theme]);
 
   return {

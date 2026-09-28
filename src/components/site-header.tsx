@@ -23,6 +23,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { WellnessSymbol } from "@/components/wellness-symbol";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function SiteHeader() {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
@@ -120,8 +121,9 @@ export function SiteHeader() {
           </Link>
         </div>
 
-        {/* Right: Actions (Botón Configuración & Desktop Profile Menu) */}
+        {/* Right: Actions (Selector Modo Oscuro/Claro, Botón Configuración & Desktop Profile Menu) */}
         <div className="flex items-center flex-1 justify-end gap-2">
+          <ThemeToggle variant="outline" size="icon" />
           {isLoggedIn ? (
             <>
               {/* Botón de Configuración (Settings) */}
