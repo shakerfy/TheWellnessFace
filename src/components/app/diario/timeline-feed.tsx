@@ -6,7 +6,7 @@ import { TimelineActivityCard } from "../timeline-activity-card";
 
 export interface TimelineFeedProps {
   timelineItems: any[];
-  isAthleteMode: boolean;
+  isAthleteMode?: boolean;
   expandedMealInsights: Record<string, boolean>;
   toggleMealInsights: (id: string) => void;
   expandedMealCta: Record<string, string | null>;
@@ -27,7 +27,7 @@ export interface TimelineFeedProps {
 
 export function TimelineFeed({
   timelineItems,
-  isAthleteMode,
+  isAthleteMode = false,
   expandedMealInsights,
   toggleMealInsights,
   expandedMealCta,

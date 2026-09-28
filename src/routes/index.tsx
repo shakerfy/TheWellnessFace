@@ -92,7 +92,7 @@ export function Index({ hideHeader = false }: { hideHeader?: boolean } = {}) {
 
       GYMS.forEach((g) => {
         let matchScore = 70; // baseline
-        let explanationParts: string[] = [];
+        const explanationParts: string[] = [];
 
         // Check tags / disciplines
         g.tags.forEach((tag) => {
@@ -116,7 +116,7 @@ export function Index({ hideHeader = false }: { hideHeader?: boolean } = {}) {
           q.includes("<") ||
           q.includes("menos")
         ) {
-          const matchNum = q.match(/\d+[\.\d+]*/);
+          const matchNum = q.match(/\d+[.\d+]*/);
           if (matchNum) {
             const parsedPrice = parseInt(matchNum[0].replace(".", ""));
             if (g.priceFrom <= parsedPrice) {

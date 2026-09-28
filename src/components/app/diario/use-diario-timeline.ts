@@ -472,7 +472,7 @@ export function useDiarioTimeline() {
         const currentList = resolveSuggestionIngredients(item);
         const updatedIngredients = currentList.map((ing: any, idx: number) => {
           if (idx !== ingIndex) return ing;
-          let currentObj = typeof ing === "object" && ing !== null ? { ...ing } : { name: String(ing), selectedIndex: 0 };
+          const currentObj = typeof ing === "object" && ing !== null ? { ...ing } : { name: String(ing), selectedIndex: 0 };
           let options = currentObj.options;
           if (!options || options.length <= 1) {
             const lower = currentObj.name.toLowerCase();

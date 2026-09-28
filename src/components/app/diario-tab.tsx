@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { useNutritionSettings } from "@/lib/nutrition-settings";
 import { BioStateCard } from "@/components/bio-state-card";
-import { updateMuscleRecoveryForActivity } from "@/lib/muscle-recovery";
 import {
   useDiarioTimeline,
   NutritionProBanner,
@@ -13,7 +11,6 @@ import {
 
 export function DiarioTab() {
   const navigate = useNavigate();
-  const { isAthleteMode } = useNutritionSettings();
   const timeline = useDiarioTimeline();
 
   const [isFabOpen, setIsFabOpen] = useState(false);
@@ -145,13 +142,6 @@ export function DiarioTab() {
     const timeStr = now.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
     const dateStr = now.toISOString().split("T")[0];
 
-    // Actualizar fatiga y recuperación muscular fisiológica
-    updateMuscleRecoveryForActivity(
-      data.className || "Check-in en Club",
-      "med",
-      data.durationMinutes || 45,
-    );
-
     const newCheckinItem = {
       id: `checkin-${Date.now()}`,
       createdAt: now.toISOString(),
@@ -161,7 +151,6 @@ export function DiarioTab() {
       title: data.className || "Check-in en Club",
       subtitle: data.club,
       desc: `Acceso validado en ${data.club} • ${data.durationMinutes || 45} min`,
-      calories: Math.round((data.baseMets || 150) * 2.2),
       coachFeedback: `✓ Check-in verificado en ${data.club}. ¡Excelente sesión!`,
       tag: "Check-in Verificado",
     };
@@ -214,7 +203,6 @@ export function DiarioTab() {
           {/* Feed de la Línea de Tiempo */}
           <TimelineFeed
             timelineItems={timeline.timelineItems}
-            isAthleteMode={isAthleteMode}
             expandedMealInsights={timeline.expandedCardInsights}
             toggleMealInsights={timeline.toggleCardInsights}
             expandedMealCta={timeline.expandedMealCta}
