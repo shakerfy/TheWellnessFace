@@ -1,15 +1,26 @@
 import React from "react";
-import { ChevronLeft, MoreHorizontal, Bookmark, Sparkles } from "lucide-react";
+import { ChevronLeft, MoreHorizontal, Bookmark, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { FoodProfileHero } from "@/components/food-profile-hero";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
+import { FoodProfileHero, FoodProfileDial } from "@/components/food-profile-hero";
+import { ScanNutrientList } from "./scan-nutrient-list";
 import { cn } from "@/lib/utils";
 import {
   CAL_AI_SAMPLE_MEALS,
   MealIngredientItem,
   NutritionVectorBadge,
+  getDescriptiveMealNarrative,
   getScanQualityProfile,
 } from "@/lib/scan-data";
 import { detectBiologicalContext } from "@/lib/ai-suggestion-generator";
+import { TimelineMealCtas } from "@/components/app/timeline/timeline-meal-ctas";
+import { getScanSampleCtas } from "@/lib/scan-sample-ctas";
+import { toast } from "sonner";
 
 export interface ScanNutritionReportProps {
   activeImage: string;
@@ -33,7 +44,7 @@ export interface ScanNutritionReportProps {
   onBackToScanner: () => void;
   onToggleOptions: () => void;
   onSelectSample: (index: number) => void;
-  onNavigateToFix: () => void;
+  onNavigateToFix?: () => void;
   onSaveToDiary: () => void;
 }
 
@@ -77,6 +88,22 @@ export function ScanNutritionReport({
       ? { label: bioContext.title, type: bioContext.type }
       : undefined;
 
+  const [expandedCtaId, setExpandedCtaId] = React.useState<string | null>(null);
+  const [loggedMicroAction, setLoggedMicroAction] = React.useState<
+    { type: string; level?: number } | undefined
+  >();
+
+  const currentSample = CAL_AI_SAMPLE_MEALS[selectedSampleIndex];
+  const sampleId = customImage ? "custom-scan" : currentSample?.id || "scan-sample";
+  const sampleCtas = React.useMemo(() => {
+    return getScanSampleCtas({ id: sampleId, title: reportTitle || title });
+  }, [sampleId, reportTitle, title]);
+
+  React.useEffect(() => {
+    setExpandedCtaId(null);
+    setLoggedMicroAction(undefined);
+  }, [selectedSampleIndex]);
+
   const heroBadges =
     vectorBadges && vectorBadges.length > 0
       ? vectorBadges.slice(0, 4).map((vb) => ({
@@ -98,6 +125,13 @@ export function ScanNutritionReport({
           },
           { id: "b-4", category: "sugar", label: "Sin azúcar añadido" },
         ];
+
+  const displayNarrative = getDescriptiveMealNarrative({
+    title: reportTitle || title,
+    narrative,
+    ingredients,
+    category: currentSample?.category,
+  });
 
   return (
     <div className="w-full h-full sm:min-h-screen bg-slate-950/95 dark:bg-black/95 flex items-center justify-center p-0 sm:p-4 overflow-y-auto custom-scrollbar animate-in fade-in duration-300 select-none">
@@ -124,10 +158,10 @@ export function ScanNutritionReport({
                 <span className="truncate">{sample.title}</span>
                 <span className="text-[10px] opacity-80 ml-1 shrink-0 font-medium text-muted-foreground">
                   {sample.bioGaugeIndex >= 4
-                    ? "Óptimo"
+                    ? "Alto"
                     : sample.bioGaugeIndex >= 3
-                      ? "Alto"
-                      : "Equilibrado"}
+                      ? "Medio"
+                      : "Ligero"}
                 </span>
               </button>
             ))}
@@ -154,7 +188,7 @@ export function ScanNutritionReport({
             </button>
 
             <span className="text-xs font-bold text-foreground px-3.5 py-1.5 rounded-full bg-background/80 backdrop-blur-xl border border-border/60 shadow-xs tracking-wide">
-              Reporte de Nutrición
+              Perfil Nutricional
             </span>
 
             <button
@@ -171,37 +205,101 @@ export function ScanNutritionReport({
         {/* 2. BOTTOM SHEET CARD */}
         <div className="-mt-6 relative z-30 rounded-t-[32px] sm:rounded-t-[36px] shadow-2xl flex-1 w-full px-5 pt-5 pb-4 flex flex-col justify-between text-left overflow-y-auto custom-scrollbar transition-colors duration-150 bg-white dark:bg-background">
           <div className="space-y-4">
-            {/* Title & Time Row */}
-            <div className="pt-0.5 space-y-1.5">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1.5">
-                  <Bookmark className="w-3.5 h-3.5 text-muted-foreground/80" />
-                  <span className="text-[11px] font-mono text-muted-foreground font-medium">
-                    {mealTime || "12:46 PM"}
-                  </span>
+            {/* Title & Dial Header Row */}
+            <div className="pt-0.5 flex items-center gap-3.5">
+              <FoodProfileDial
+                qualityLabel={quality.label}
+                qualityLevel={quality.level}
+                size="md"
+              />
+              <div className="space-y-1 flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex items-center gap-1.5">
+                    <Bookmark className="w-3.5 h-3.5 text-muted-foreground/80" />
+                    <span className="text-[11px] font-mono text-muted-foreground font-medium">
+                      {mealTime || "12:46 PM"}
+                    </span>
+                  </div>
+                  {contextBadge && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-secondary/80 text-foreground border border-border/60">
+                      <Zap className="w-2.5 h-2.5 text-amber-500 shrink-0" />
+                      <span>{contextBadge.label}</span>
+                    </span>
+                  )}
                 </div>
-              </div>
 
-              <div className="flex items-baseline justify-between gap-3">
-                <h1 className="text-base sm:text-lg font-bold text-slate-900 dark:text-foreground tracking-tight line-clamp-2">
-                  {reportTitle || title}
-                </h1>
+                <div className="flex items-baseline justify-between gap-3">
+                  <h1 className="text-base sm:text-lg font-bold text-slate-900 dark:text-foreground tracking-tight line-clamp-2">
+                    {reportTitle || title}
+                  </h1>
+                </div>
               </div>
             </div>
 
-            {narrative && (
-              <p className="text-xs text-slate-500/90 dark:text-muted-foreground leading-relaxed font-normal">
-                {narrative}
+            {displayNarrative && (
+              <p className="text-xs text-slate-500/90 dark:text-muted-foreground leading-relaxed font-normal text-left">
+                {displayNarrative}
               </p>
             )}
 
-            {/* HERO WIDGET: ANILLO SELECTOR RADIAL + BADGES (Modo Wellness) */}
-            <FoodProfileHero
-              qualityLabel={quality.label}
-              qualityLevel={quality.level}
-              badges={heroBadges}
-              contextBadge={contextBadge}
-            />
+            {/* ACCORDION DE ANÁLISIS NUTRICIONAL */}
+            <Accordion type="single" collapsible className="w-full border-none">
+              <AccordionItem value="nutrition-analysis" className="border-none">
+                <AccordionTrigger
+                  className="py-1.5 px-0 hover:no-underline flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 hover:text-foreground cursor-pointer group"
+                >
+                  <span>Análisis Nutricional</span>
+                </AccordionTrigger>
+                <AccordionContent className="pt-1.5 pb-0.5">
+                  <ScanNutrientList
+                    sampleId={sampleId}
+                    title={reportTitle || title}
+                    vectorBadges={vectorBadges}
+                    ingredients={ingredients}
+                    servings={servings}
+                    totalProtein={totalProtein}
+                    totalFiber={totalFiber}
+                    totalFat={totalFat}
+                    totalCarbs={totalCarbs}
+                    hideHeader={true}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+
+            {/* CTAs Y MINIJUEGO INTERACTIVO DEL ESCÁNER */}
+            <div className="space-y-2 pt-1 pb-1 text-left">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
+                Interacciones y Guías del Plato
+              </span>
+              <TimelineMealCtas
+                variant="accordion"
+                item={{
+                  id: sampleId,
+                  title: reportTitle || title,
+                  eatingReason: "rutina",
+                }}
+                dynamicCtas={sampleCtas}
+                expandedCtaId={expandedCtaId}
+                onToggleCta={(_itemId, ctaId) =>
+                  setExpandedCtaId((prev) => (prev === ctaId ? null : ctaId))
+                }
+                loggedMicroAction={loggedMicroAction}
+                onAddAccompaniment={(_itemId, acc) => {
+                  toast.success(`✓ Sumado a este plato: ${acc}`);
+                }}
+                onCompleteBreathing={() => {
+                  setLoggedMicroAction({ type: "vagal_pause" });
+                  toast.success(
+                    "✓ Pausa completada. Tu sistema parasimpático está activo.",
+                  );
+                }}
+                onLogArmstrongLevel={(_itemId, lvl) => {
+                  setLoggedMicroAction({ type: "armstrong", level: lvl });
+                  toast.success(`✓ Escala Armstrong: Nivel ${lvl} registrado`);
+                }}
+              />
+            </div>
 
             {/* INGREDIENTS PREVIEW CAROUSEL/LIST */}
             {ingredients && ingredients.length > 0 && (
@@ -210,13 +308,6 @@ export function ScanNutritionReport({
                   <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
                     Ingredientes ({ingredients.length})
                   </span>
-                  <button
-                    type="button"
-                    onClick={onNavigateToFix}
-                    className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
-                  >
-                    Ajustar
-                  </button>
                 </div>
 
                 <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-1.5 -mx-1 px-1">
@@ -247,18 +338,8 @@ export function ScanNutritionReport({
           <div className="sticky bottom-0 z-40 bg-white/95 dark:bg-background/95 backdrop-blur-md -mx-5 px-5 pt-3 pb-1 border-t border-slate-100 dark:border-border flex items-center gap-2.5 mt-4">
             <Button
               type="button"
-              variant="outline"
-              onClick={onNavigateToFix}
-              className="flex-1 rounded-full py-4 h-12 font-bold text-xs border border-slate-200 dark:border-slate-800 text-foreground hover:bg-secondary cursor-pointer shadow-xs"
-            >
-              <Sparkles className="w-4 h-4 mr-1.5 text-foreground" />
-              <span>Ajustar Resultados</span>
-            </Button>
-
-            <Button
-              type="button"
               onClick={onSaveToDiary}
-              className="flex-1 rounded-full py-4 h-12 font-bold text-xs bg-foreground text-background hover:opacity-90 shadow-md transition cursor-pointer"
+              className="w-full rounded-full py-4 h-12 font-bold text-xs bg-foreground text-background hover:opacity-90 shadow-md transition cursor-pointer"
             >
               <span>Guardar en Mi Diario</span>
             </Button>

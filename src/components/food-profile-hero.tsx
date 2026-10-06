@@ -26,20 +26,20 @@ export const QUALITY_LEVEL_CONFIG: Record<
 > = {
   1: {
     label: "Bajo",
-    strokeColor: "stroke-sky-500 dark:stroke-sky-400", // Azul informático / datos objetivos
-    textColor: "text-sky-600 dark:text-sky-400",
+    strokeColor: "stroke-sky-500 dark:stroke-sky-400",
+    textColor: "text-muted-foreground",
     description: "Menor densidad de micronutrientes o predominio de energía rápida.",
   },
   2: {
     label: "Medio",
-    strokeColor: "stroke-sky-500 dark:stroke-sky-400", // Azul informático uniforme
-    textColor: "text-sky-600 dark:text-sky-400",
+    strokeColor: "stroke-sky-500 dark:stroke-sky-400",
+    textColor: "text-muted-foreground",
     description: "Aporte nutricional intermedio y balance equilibrado de nutrientes.",
   },
   3: {
     label: "Alto",
-    strokeColor: "stroke-sky-500 dark:stroke-sky-400", // Azul informático uniforme
-    textColor: "text-sky-600 dark:text-sky-400",
+    strokeColor: "stroke-sky-500 dark:stroke-sky-400",
+    textColor: "text-muted-foreground",
     description: "Alta densidad de micronutrientes, alimentos enteros y ricos en fibra.",
   },
 };
@@ -54,35 +54,37 @@ export interface FoodProfileHeroProps {
     label: string;
     type?: "pre_workout" | "post_workout" | "circadian";
   };
-  isAthleteMode?: boolean;
+  hideBadges?: boolean;
   className?: string;
 }
 
-export function FoodProfileHero({
+export interface FoodProfileDialProps {
+  qualityLabel?: string;
+  qualityLevel?: FoodQualityLevel;
+  qualityTier?: number;
+  activeBarsCount?: number;
+  size?: "sm" | "md" | "lg";
+  className?: string;
+}
+
+export function FoodProfileDial({
   qualityLabel,
   qualityLevel,
   qualityTier,
   activeBarsCount,
-  badges = [],
-  contextBadge,
-  isAthleteMode = false,
+  size = "md",
   className,
-}: FoodProfileHeroProps) {
-  // En Modo Atleta no se muestra el dial con los badges de valor nutricional
-  if (isAthleteMode) return null;
-
-  // Regla 7 de The Wellness Face: escala neutral no moralizante (Alto / Medio / Bajo)
+}: FoodProfileDialProps) {
   const rawLabel = qualityLabel || "";
   const resolvedLabel =
     /excelente|bueno|alta|alto/i.test(rawLabel)
       ? "Alto"
-      : /regular|intermedio|medio/i.test(rawLabel)
+      : /regular|intermedio|medio|moderad/i.test(rawLabel)
         ? "Medio"
-        : /pobre|bajo|baja/i.test(rawLabel)
+        : /pobre|bajo|baja|ligero|ligera/i.test(rawLabel)
           ? "Bajo"
           : "";
 
-  // Resolver nivel a los 3 arcos exactos: 1 = Bajo, 2 = Medio, 3 = Alto
   let resolvedLevel: 1 | 2 | 3 = 2;
   if (resolvedLabel === "Alto") {
     resolvedLevel = 3;
@@ -101,21 +103,93 @@ export function FoodProfileHero({
   const finalLabel = resolvedLabel || QUALITY_LEVEL_CONFIG[resolvedLevel].label;
   const levelConfig = QUALITY_LEVEL_CONFIG[resolvedLevel];
 
-  // Geometría del anillo de 3 arcos discretos (circunferencia ~289.026)
-  // Arco 1 (Bajo): Izquierda/Abajo | Arco 2 (Medio): Superior | Arco 3 (Alto): Derecha/Abajo
   const radius = 46;
   const arcDash = 68;
   const arcGap = 221.026;
 
   const ARCS = [
-    { level: 1 as const, offset: 34, label: "Bajo" }, // Arriba (Bajo)
-    { level: 2 as const, offset: -62.34, label: "Medio" }, // Derecha (Medio)
-    { level: 3 as const, offset: -158.68, label: "Alto" }, // Izquierda (Alto)
+    { level: 1 as const, offset: 34, label: "Bajo" },
+    { level: 2 as const, offset: -62.34, label: "Medio" },
+    { level: 3 as const, offset: -158.68, label: "Alto" },
   ];
 
+  const sizeClasses = {
+    sm: "w-11 h-11",
+    md: "w-14 h-14 sm:w-15 sm:h-15",
+    lg: "w-16 h-16 sm:w-18 sm:h-18",
+  }[size];
+
+  const fontClasses = {
+    sm: "text-[7.5px] font-normal tracking-normal",
+    md: "text-[8.5px] sm:text-[9px] font-normal tracking-normal",
+    lg: "text-[9px] sm:text-[9.5px] font-normal tracking-normal",
+  }[size];
+
+  return (
+    <div
+      className={cn(
+        "relative shrink-0 flex items-center justify-center select-none",
+        sizeClasses,
+        className,
+      )}
+      title={`Perfil Nutricional: ${finalLabel}`}
+    >
+      <svg
+        className="w-full h-full -rotate-90 transform"
+        viewBox="0 0 120 120"
+        aria-hidden="true"
+      >
+        {ARCS.map((arc) => {
+          const isArcActive = arc.level <= resolvedLevel;
+          return (
+            <circle
+              key={arc.level}
+              cx="60"
+              cy="60"
+              r={radius}
+              strokeWidth="8"
+              strokeLinecap="round"
+              fill="none"
+              strokeDasharray={`${arcDash} ${arcGap}`}
+              strokeDashoffset={arc.offset}
+              className={cn(
+                "transition-all duration-500 ease-out",
+                isArcActive
+                  ? levelConfig.strokeColor
+                  : "stroke-secondary/70 dark:stroke-secondary/35",
+              )}
+            />
+          );
+        })}
+      </svg>
+
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-0.5">
+        <span
+          className={cn(
+            "leading-tight font-normal text-muted-foreground",
+            fontClasses,
+          )}
+        >
+          {finalLabel}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+export function FoodProfileHero({
+  qualityLabel,
+  qualityLevel,
+  qualityTier,
+  activeBarsCount,
+  badges = [],
+  contextBadge,
+  hideBadges = false,
+  className,
+}: FoodProfileHeroProps) {
   return (
     <div className={cn("text-left space-y-2.5 select-none", className)}>
-      {/* 1. Encabezado: 'Valor Nutricional' + Context Badge + Botón de información (i) a la derecha */}
+      {/* 1. Encabezado: 'Perfil Nutricional' + Context Badge + Botón de información (i) a la derecha */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 min-w-0">
           <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block shrink-0">
@@ -134,8 +208,8 @@ export function FoodProfileHero({
             <button
               type="button"
               onClick={(e) => e.stopPropagation()}
-              className="w-7 h-7 -mr-1 rounded-full flex items-center justify-center text-muted-foreground/70 hover:text-foreground hover:bg-secondary/60 transition cursor-pointer"
-              aria-label="Más información sobre el Valor Nutricional y Precisión estimada"
+              className="w-7 h-7 -mr-1 rounded-full flex items-center justify-center text-muted-foreground hover:text-sky-500 bg-black/[0.03] dark:bg-white/[0.06] backdrop-blur-xl border border-black/[0.08] dark:border-white/10 shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.8),0_1px_4px_0_rgba(0,0,0,0.03)] hover:bg-black/[0.06] dark:hover:bg-white/15 transition cursor-pointer"
+              aria-label="Más información sobre el Valor Nutricional"
             >
               <Info className="w-3.5 h-3.5" />
             </button>
@@ -144,68 +218,32 @@ export function FoodProfileHero({
             align="end"
             side="bottom"
             onClick={(e) => e.stopPropagation()}
-            className="w-72 sm:w-80 p-4 rounded-2xl bg-card border border-border shadow-xl text-left space-y-2 z-50"
+            className="w-72 sm:w-80 p-3.5 rounded-2xl bg-card/95 backdrop-blur-md border border-border shadow-xl text-left z-50 space-y-1.5"
           >
-            <h4 className="text-[11px] font-bold uppercase tracking-wider text-foreground">
-              Valor Nutricional & IA Transparente
+            <h4 className="text-xs font-bold text-foreground">
+              Aviso importante
             </h4>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              La estimación visual y los insights de la IA son una guía inteligente aproximada de carácter puramente educativo; no constituyen consejo médico, diagnóstico ni tratamiento personalizado. Ante cualquier condición de salud, consultá siempre a un profesional matriculado.
+              La identificación visual y los insights tienen fines exclusivamente educativos y de bienestar general, y no constituyen un diagnóstico médico ni una prescripción dietética. Ante cualquier condición clínica, consultá siempre a un profesional de la salud matriculado.
             </p>
           </PopoverContent>
         </Popover>
       </div>
 
-      {/* 2. Contenido: Indicador radial de 3 arcos progresivos (1 = Bajo, 2 = Medio, 3 = Alto) */}
+      {/* 2. Contenido: Indicador radial de 3 arcos progresivos */}
       <div className="flex items-center gap-3.5 sm:gap-5">
-        <div className="relative w-16 h-16 sm:w-20 sm:h-20 shrink-0 flex items-center justify-center select-none">
-          <svg
-            className="w-full h-full -rotate-90 transform"
-            viewBox="0 0 120 120"
-            aria-hidden="true"
-          >
-            {ARCS.map((arc) => {
-              // Llenado acumulativo progresivo: 1 arco si es Bajo, 2 arcos si es Medio, 3 arcos si es Alto
-              const isArcActive = arc.level <= resolvedLevel;
-              return (
-                <circle
-                  key={arc.level}
-                  cx="60"
-                  cy="60"
-                  r={radius}
-                  strokeWidth="6"
-                  strokeLinecap="round"
-                  fill="none"
-                  strokeDasharray={`${arcDash} ${arcGap}`}
-                  strokeDashoffset={arc.offset}
-                  className={cn(
-                    "transition-all duration-500 ease-out",
-                    isArcActive
-                      ? "stroke-sky-500 dark:stroke-sky-400"
-                      : "stroke-secondary/70 dark:stroke-secondary/35",
-                  )}
-                />
-              );
-            })}
-          </svg>
+        <FoodProfileDial
+          qualityLabel={qualityLabel}
+          qualityLevel={qualityLevel}
+          qualityTier={qualityTier}
+          activeBarsCount={activeBarsCount}
+          size="lg"
+        />
 
-          {/* Tipografía interna refinada: nombre del valor nutricional */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-1">
-            <span
-              className={cn(
-                "text-[8.5px] sm:text-[9.5px] font-bold uppercase tracking-wider leading-tight",
-                levelConfig.textColor,
-              )}
-            >
-              {finalLabel}
-            </span>
-          </div>
-        </div>
-
-        {/* Atributos / Especificaciones ordenadas con líneas divisorias sobrias */}
-        <div className="flex flex-col justify-center divide-y divide-border/40 dark:divide-border/30 flex-1 min-w-0">
-          {badges.length > 0 ? (
-            badges.slice(0, 4).map((badge) => (
+        {/* Atributos / Especificaciones ordenadas con líneas divisorias sobrias si no están ocultos */}
+        {!hideBadges && badges.length > 0 && (
+          <div className="flex flex-col justify-center divide-y divide-border/40 dark:divide-border/30 flex-1 min-w-0">
+            {badges.slice(0, 4).map((badge) => (
               <div
                 key={badge.id || badge.label}
                 className="py-1.5 first:pt-0 last:pb-0 flex items-center min-w-0"
@@ -214,13 +252,9 @@ export function FoodProfileHero({
                   {badge.label}
                 </span>
               </div>
-            ))
-          ) : (
-            <div className="text-xs text-muted-foreground italic py-1">
-              Sin componentes clave detectados
-            </div>
-          )}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

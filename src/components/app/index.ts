@@ -1,6 +1,5 @@
 export * from "./favoritos-tab";
 export * from "./clases-tab";
-export * from "./progreso-tab";
 export * from "./pagos-tab";
 export * from "./config-tab";
 export * from "./config";

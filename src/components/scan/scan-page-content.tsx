@@ -13,19 +13,17 @@ import {
   MealIngredientItem,
   NutritionVectorBadge,
   FoodScanCategory,
-  COMMON_FOODS_DATABASE,
   CAL_AI_SAMPLE_MEALS,
   inferContextualMealType,
   generateContextualAiInsight,
+  getDescriptiveMealNarrative,
 } from "@/lib/scan-data";
+import { getScanSampleCtas } from "@/lib/scan-sample-ctas";
 import {
   ScanViewfinder,
   ScanNutritionReport,
-  ScanFixScreen,
-  AddIngredientModal,
   LogEmptyFoodModal,
   parseFoodNotesToIngredients,
-  parseAiPromptAction,
 } from "@/components/scan";
 import { useCameraStream } from "./use-camera-stream";
 import { useFoodNotes } from "./use-food-notes";
@@ -34,8 +32,9 @@ export function ScanPageContent() {
   const navigate = useNavigate();
   useNutritionSettings();
 
-  // Screen State: "scanner" (Live Camera Viewfinder) | "nutrition" (Unified Bio Report) | "fix" (AI Correction)
-  const [currentScreen, setCurrentScreen] = useState<"scanner" | "nutrition" | "fix">("scanner");
+  // Screen State: "scanner" (Live Camera Viewfinder) | "nutrition" (Unified Bio Report)
+  // ponytail: removed "fix" screen in favor of direct 1-tap save or 1-line text entry
+  const [currentScreen, setCurrentScreen] = useState<"scanner" | "nutrition">("scanner");
 
   // Food Scanner Precision Tutorial Dialog State (auto-opens if first time)
   const [showTutorial, setShowTutorial] = useState(() => {
@@ -105,13 +104,6 @@ export function ScanPageContent() {
   const [, setCalloutPins] = useState<MealCalloutPin[]>(initialSample.calloutPins);
   const [ingredients, setIngredients] = useState<MealIngredientItem[]>(initialSample.ingredients);
 
-  // Fix screen states
-  const [aiPromptText, setAiPromptText] = useState("");
-  const [isAiThinking, setIsAiThinking] = useState(false);
-  const [isAddFoodOpen, setIsAddFoodOpen] = useState(false);
-  const [foodSearchQuery, setFoodSearchQuery] = useState("");
-  const [selectedAddFood, setSelectedAddFood] = useState(COMMON_FOODS_DATABASE[0]);
-  const [addGrams, setAddGrams] = useState(100);
   const [nextMealFocus, setNextMealFocus] = useState<string | null>(() => {
     try {
       return typeof window !== "undefined" ? localStorage.getItem("twf_next_meal_focus") : null;
@@ -202,145 +194,6 @@ export function ScanPageContent() {
   const totalFat = Math.round(baseFat * servings);
   const totalFiber = Math.round(baseFiber * servings * 10) / 10;
 
-  const handleUpdateGrams = (id: string, delta: number) => {
-    setIngredients((prev) =>
-      prev.map((item) => {
-        if (item.id !== id) return item;
-        const newGrams = Math.max(5, item.grams + delta);
-        const factor = newGrams / 100;
-        return {
-          ...item,
-          grams: newGrams,
-          calories: Math.round(item.calPer100g * factor),
-          protein: Math.round(item.pPer100g * factor * 10) / 10,
-          carbs: Math.round(item.cPer100g * factor * 10) / 10,
-          fat: Math.round(item.fPer100g * factor * 10) / 10,
-          fiber: Math.round(item.fiberPer100g * factor * 10) / 10,
-        };
-      }),
-    );
-  };
-
-  const handleSetExactGrams = (id: string, exactDisplayGrams: number) => {
-    const baseGrams = Math.max(5, Math.round(exactDisplayGrams / (servings || 1)));
-    setIngredients((prev) =>
-      prev.map((item) => {
-        if (item.id !== id) return item;
-        const factor = baseGrams / 100;
-        return {
-          ...item,
-          grams: baseGrams,
-          calories: Math.round(item.calPer100g * factor),
-          protein: Math.round(item.pPer100g * factor * 10) / 10,
-          carbs: Math.round(item.cPer100g * factor * 10) / 10,
-          fat: Math.round(item.fPer100g * factor * 10) / 10,
-          fiber: Math.round(item.fiberPer100g * factor * 10) / 10,
-        };
-      }),
-    );
-  };
-
-  const handleRenameIngredient = (id: string, newName: string) => {
-    setIngredients((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, name: newName } : item)),
-    );
-  };
-
-  const handleDeleteIngredient = (id: string) => {
-    const idx = ingredients.findIndex((i) => i.id === id);
-    if (idx === -1) return;
-    const removedItem = ingredients[idx];
-    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
-      try {
-        navigator.vibrate(15);
-      } catch (_) {}
-    }
-    setIngredients((prev) => prev.filter((i) => i.id !== id));
-    toast.info(`"${removedItem.name}" eliminado del plato`, {
-      duration: 5000,
-      action: {
-        label: "Deshacer",
-        onClick: () => {
-          setIngredients((prev) => {
-            const next = [...prev];
-            next.splice(idx, 0, removedItem);
-            return next;
-          });
-        },
-      },
-    });
-  };
-
-  const filteredFoods = COMMON_FOODS_DATABASE.filter((f) =>
-    f.name.toLowerCase().includes(foodSearchQuery.toLowerCase()),
-  );
-
-  const handleAddIngredientSubmit = () => {
-    const factor = addGrams / 100;
-    const isCustomQuery =
-      foodSearchQuery.trim().length > 0 &&
-      filteredFoods.length === 0;
-    const sourceFood = isCustomQuery
-      ? {
-          name: foodSearchQuery.trim(),
-          category: "carbs" as const,
-          calPer100g: 140,
-          pPer100g: 8,
-          cPer100g: 16,
-          fPer100g: 4.5,
-          fiberPer100g: 2,
-        }
-      : selectedAddFood;
-
-    const newItem: MealIngredientItem = {
-      id: `food-${Date.now()}`,
-      name: sourceFood.name,
-      category: sourceFood.category,
-      grams: addGrams,
-      calories: Math.round(sourceFood.calPer100g * factor),
-      protein: Math.round(sourceFood.pPer100g * factor * 10) / 10,
-      carbs: Math.round(sourceFood.cPer100g * factor * 10) / 10,
-      fat: Math.round(sourceFood.fPer100g * factor * 10) / 10,
-      fiber: Math.round(sourceFood.fiberPer100g * factor * 10) / 10,
-      calPer100g: sourceFood.calPer100g,
-      pPer100g: sourceFood.pPer100g,
-      cPer100g: sourceFood.cPer100g,
-      fPer100g: sourceFood.fPer100g,
-      fiberPer100g: sourceFood.fiberPer100g,
-    };
-    setIngredients((prev) => [...prev, newItem]);
-    setFoodSearchQuery("");
-    setIsAddFoodOpen(false);
-    toast.success(`+ ${sourceFood.name} (${addGrams}g) agregado`);
-  };
-
-  const handleApplyAiPrompt = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!aiPromptText.trim()) return;
-
-    setIsAiThinking(true);
-    setTimeout(() => {
-      const action = parseAiPromptAction(aiPromptText);
-      if (action.type === "remove") {
-        setIngredients((prev) =>
-          prev.filter((i) => !i.name.toLowerCase().includes(action.targetWord)),
-        );
-        toast.success(`✓ Se quitó "${action.targetWord}" del plato`);
-      } else if (action.type === "double") {
-        setServings((s) => s * 2);
-        toast.success("✓ Porción duplicada");
-      } else if (action.type === "half") {
-        setServings((s) => Math.max(0.5, Math.round((s / 2) * 10) / 10));
-        toast.success("✓ Ajustado a media porción");
-      } else if (action.type === "add") {
-        setIngredients((prev) => [...prev, action.item]);
-        toast.success(`✓ IA ajustó el plato (+ ${action.item.name})`);
-      }
-
-      setIsAiThinking(false);
-      setAiPromptText("");
-    }, 450);
-  };
 
   const handleSaveToDiary = useCallback(
     (overrides?: {
@@ -388,7 +241,15 @@ export function ScanPageContent() {
       const effectiveTitle =
         overrides?.customReportTitle || overrides?.customTitle || reportTitle || title;
       const effectiveImg = overrides?.customImg || activeImage;
-      const effectiveNarrative = overrides?.customNarrative || narrative;
+      const currentSample = CAL_AI_SAMPLE_MEALS[selectedSampleIndex];
+      const effectiveNarrative =
+        overrides?.customNarrative ||
+        getDescriptiveMealNarrative({
+          title: effectiveTitle,
+          narrative,
+          ingredients: effectiveIngredients,
+          category: currentSample?.category,
+        });
 
       const dynamicInsight = generateContextualAiInsight({
         baseNarrative: effectiveNarrative,
@@ -415,6 +276,14 @@ export function ScanPageContent() {
         console.warn("Timing fit calculation skipped:", e);
       }
 
+      const sampleId = customImage
+        ? `custom-${Date.now()}`
+        : currentSample?.id || `scan-${Date.now()}`;
+      const sampleCtas = getScanSampleCtas({
+        id: sampleId,
+        title: effectiveTitle,
+      });
+
       const newMealItem = {
         id: `meal-${Date.now()}`,
         createdAt: now.toISOString(),
@@ -423,7 +292,7 @@ export function ScanPageContent() {
         time: timeStr,
         date: dateStr,
         title: effectiveTitle,
-        subtitle: `${resolvedMealType} • Reporte Nutricional`,
+        subtitle: resolvedMealType,
         img: effectiveImg,
         calories: effectiveCalories,
         kcal: effectiveCalories,
@@ -437,15 +306,18 @@ export function ScanPageContent() {
         bioScore: bioScore || 82,
         bioGrade: bioGrade || "A-",
         scoreGrade: bioGrade || "A-",
-        bioQualityLabel: bioQualityLabel || "Densidad Nutritiva Óptima",
+        bioQualityLabel: bioQualityLabel || "Alta Densidad Nutritiva",
         bioGaugeIndex: bioGaugeIndex || 3,
         ingredients: effectiveIngredients,
+        narrative: effectiveNarrative,
+        description: effectiveNarrative,
         desc: `${effectiveTitle} (${effectiveCalories} kcal, ${effectiveProtein}g P, ${effectiveCarbs}g C, ${effectiveFat}g G)`,
         summary: dynamicInsight,
         coachFeedback: dynamicInsight,
         tag: "Nutrición Consciente",
         vectorBadges: vectorBadges,
         timingFit: resolvedTimingFit,
+        customCtas: sampleCtas,
         consumed: true,
       };
 
@@ -484,8 +356,9 @@ export function ScanPageContent() {
       bioGrade,
       bioQualityLabel,
       bioGaugeIndex,
-      servings,
       eatingReason,
+      customImage,
+      selectedSampleIndex,
       navigate,
     ],
   );
@@ -524,7 +397,7 @@ export function ScanPageContent() {
     );
     setBioScore(88);
     setBioGrade("A-");
-    setBioQualityLabel("Comida Real & Densidad Nutritiva Óptima");
+    setBioQualityLabel("Comida Real & Alta Densidad Nutritiva");
     setBioGaugeIndex(3);
     setHighlightNutrient("Vitamina C y Fibra Natural");
     setHighlightAmount("45mg");
@@ -605,12 +478,12 @@ export function ScanPageContent() {
       category: "carbs" as const,
     };
 
-    const factor = (addGrams || 100) / 100;
+    const factor = 1;
     const newItem: MealIngredientItem = {
       id: `food-${Date.now()}`,
       name: newFood.name,
       category: p > 15 ? "protein" : c > 15 ? "carbs" : "fats",
-      grams: addGrams || 100,
+      grams: 100,
       calories: Math.round(cal * factor),
       protein: Math.round(p * factor * 10) / 10,
       carbs: Math.round(c * factor * 10) / 10,
@@ -730,50 +603,9 @@ export function ScanPageContent() {
           onBackToScanner={() => setCurrentScreen("scanner")}
           onToggleOptions={() => setShowOptions(!showOptions)}
           onSelectSample={handleSelectSample}
-          onNavigateToFix={() => setCurrentScreen("fix")}
           onSaveToDiary={() => handleSaveToDiary()}
         />
       )}
-
-      {/* SCREEN 3: FIX RESULTS & EDIT INGREDIENTS SUB-SCREEN */}
-      {currentScreen === "fix" && (
-        <ScanFixScreen
-          reportTitle={reportTitle}
-          title={title}
-          servings={servings}
-          aiPromptText={aiPromptText}
-          isAiThinking={isAiThinking}
-          ingredients={ingredients}
-          onBackToNutrition={() => setCurrentScreen("nutrition")}
-          onTitleChange={(val) => {
-            setReportTitle(val);
-            setTitle(val);
-          }}
-          onServingsChange={setServings}
-          onAiPromptChange={setAiPromptText}
-          onApplyAiPrompt={handleApplyAiPrompt}
-          onOpenAddIngredient={() => setIsAddFoodOpen(true)}
-          onRenameIngredient={handleRenameIngredient}
-          onUpdateGrams={handleUpdateGrams}
-          onSetExactGrams={handleSetExactGrams}
-          onDeleteIngredient={handleDeleteIngredient}
-          onSaveToDiary={() => handleSaveToDiary()}
-        />
-      )}
-
-      {/* Add Food Dialog Modal */}
-      <AddIngredientModal
-        open={isAddFoodOpen}
-        onOpenChange={setIsAddFoodOpen}
-        foodSearchQuery={foodSearchQuery}
-        onFoodSearchChange={setFoodSearchQuery}
-        filteredFoods={filteredFoods}
-        selectedAddFood={selectedAddFood}
-        onSelectFood={setSelectedAddFood}
-        addGrams={addGrams}
-        onAddGramsChange={setAddGrams}
-        onSubmit={handleAddIngredientSubmit}
-      />
 
       {/* Log Empty Food Dialog Modal */}
       <LogEmptyFoodModal

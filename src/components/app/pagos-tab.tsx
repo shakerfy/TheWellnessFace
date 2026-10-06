@@ -95,7 +95,7 @@ export function PagosTab() {
             Nutrition Intelligence Pro
           </h3>
           <p className="text-xs text-muted-foreground max-w-md">
-            Desbloquea AI Food Scan, reporte semanal de hábitos y análisis nutricional consciente.
+            Desbloquea AI Food Scan ilimitado, timing fit con tus entrenamientos y micro-insights biológicos.
           </p>
         </div>
         <Button

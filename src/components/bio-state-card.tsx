@@ -61,44 +61,15 @@ export function DailyNutritionHeroCard({
   userWeight = 72,
   onSelectDate,
 }: DailyNutritionHeroCardProps) {
-  const { settings, isAthleteMode, isWellnessMode, effectiveTargets, updateSettings } =
+  const { settings, isWellnessMode, effectiveTargets, updateSettings } =
     useNutritionSettings();
-  const [activeTab, setActiveTab] = useState<"nutrition" | "activity">(() =>
-    isAthleteMode ? "nutrition" : "activity"
-  );
+  const [activeTab, setActiveTab] = useState<"nutrition" | "activity">("activity");
   // 0 = Essential (Ladder exact hero: Cal + Prot + Giant Concentric Rings), 1 = Detailed Macros
   const [nutritionView, setNutritionView] = useState<0 | 1>(0);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [isNutritionInfoOpen, setIsNutritionInfoOpen] = useState(false);
   // "consumed" = Show consumed & %, "remaining" = Show remaining & target range
   const [metricMode, setMetricMode] = useState<"consumed" | "remaining">("consumed");
-
-  useEffect(() => {
-    if (isAthleteMode) {
-      setActiveTab("nutrition");
-    } else {
-      setActiveTab("activity");
-    }
-  }, [isAthleteMode]);
-
-  const handleToggleAthleteRoom = (checked: boolean) => {
-    try {
-      if (typeof navigator !== "undefined" && navigator.vibrate) {
-        navigator.vibrate(checked ? 12 : 18);
-      }
-    } catch (_) {}
-    updateSettings({ mode: checked ? "athlete" : "wellness" });
-    setActiveTab(checked ? "nutrition" : "activity");
-    if (checked) {
-      toast.info("MODO ATLETA // CABINA ACTIVA", {
-        description: "Telemetría 80/20 activada. Apaga el switch al terminar para volver a Bienestar.",
-      });
-    } else {
-      toast.success("Modo Bienestar restaurado", {
-        description: "Cabina cerrada. Los números quedan fuera de tu espacio diario.",
-      });
-    }
-  };
 
   // Touch & Mouse Drag Swipe Detection (Gesture-First with axis discrimination & click suppression)
   const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);

@@ -26,7 +26,7 @@ export function NutritionProBanner({ onClick }: NutritionProBannerProps) {
             </Badge>
           </div>
           <p className="text-[11px] text-muted-foreground truncate">
-            AI Food Scan, reporte semanal y progreso somático.
+            AI Food Scan ilimitado, timing fit y bienestar somático.
           </p>
         </div>
       </div>

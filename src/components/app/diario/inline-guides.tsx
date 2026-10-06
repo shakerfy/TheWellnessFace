@@ -3,7 +3,13 @@ import { Play, Pause } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-export function InlineArmstrongGuideWidget() {
+export function InlineArmstrongGuideWidget({
+  selectedLevel,
+  onSelectLevel,
+}: {
+  selectedLevel?: number;
+  onSelectLevel?: (level: number) => void;
+}) {
   const tones = [
     { level: 1, hex: "#FEFCE8" },
     { level: 2, hex: "#FEF08A" },
@@ -15,27 +21,75 @@ export function InlineArmstrongGuideWidget() {
     { level: 8, hex: "#713F12" },
   ];
 
+  const handleSelect = (lvl: number) => {
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      try {
+        navigator.vibrate(15);
+      } catch (_) {}
+    }
+    onSelectLevel?.(lvl);
+  };
+
   return (
     <div className="pt-1.5 space-y-2.5 select-none">
+      <div className="flex items-center justify-between text-[11px] text-muted-foreground px-0.5">
+        <span>Toca tu tono de color actual:</span>
+        {selectedLevel && (
+          <span className="font-bold text-foreground">
+            Registrado: Nivel {selectedLevel}
+          </span>
+        )}
+      </div>
+
       {/* Barra compacta de 8 niveles de color */}
       <div className="grid grid-cols-8 gap-1.5">
-        {tones.map((t) => (
-          <div key={t.level} className="flex flex-col items-center gap-1">
-            <div
-              style={{ backgroundColor: t.hex }}
-              className="w-full h-6 rounded-lg border border-black/15 dark:border-white/15 shadow-2xs"
-              title={`Nivel ${t.level}`}
-            />
-            <span className="text-[10px] font-bold text-muted-foreground leading-none">
-              {t.level}
-            </span>
-          </div>
-        ))}
+        {tones.map((t) => {
+          const isSelected = selectedLevel === t.level;
+          return (
+            <button
+              key={t.level}
+              type="button"
+              onClick={() => handleSelect(t.level)}
+              className={cn(
+                "flex flex-col items-center gap-1 rounded-xl p-1 transition-all cursor-pointer hover:scale-105 active:scale-95",
+                isSelected
+                  ? "ring-2 ring-foreground bg-foreground/10 shadow-xs"
+                  : "hover:bg-secondary/50",
+              )}
+            >
+              <div
+                style={{ backgroundColor: t.hex }}
+                className={cn(
+                  "w-full h-7 rounded-lg border border-black/15 dark:border-white/15 shadow-2xs transition-transform",
+                  isSelected ? "scale-105" : "",
+                )}
+                title={`Nivel ${t.level}`}
+              />
+              <span
+                className={cn(
+                  "text-[10px] font-bold leading-none",
+                  isSelected ? "text-foreground" : "text-muted-foreground",
+                )}
+              >
+                {t.level}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {/* 3 Zonas clínicas de referencia rápida */}
       <div className="grid grid-cols-3 gap-1.5 text-left">
-        <div className="p-2 rounded-xl bg-secondary/40 border border-border/50">
+        <button
+          type="button"
+          onClick={() => handleSelect(2)}
+          className={cn(
+            "p-2 rounded-xl border text-left transition-colors cursor-pointer",
+            selectedLevel && selectedLevel >= 1 && selectedLevel <= 3
+              ? "bg-emerald-500/10 border-emerald-500/40 text-foreground"
+              : "bg-secondary/40 border-border/50 hover:bg-secondary/70",
+          )}
+        >
           <div className="flex items-center gap-1.5 mb-0.5">
             <span
               className="w-2 h-2 rounded-full shrink-0"
@@ -48,8 +102,17 @@ export function InlineArmstrongGuideWidget() {
           <p className="text-[10px] text-muted-foreground leading-tight">
             Hidratación ideal. Estás en equilibrio.
           </p>
-        </div>
-        <div className="p-2 rounded-xl bg-secondary/40 border border-border/50">
+        </button>
+        <button
+          type="button"
+          onClick={() => handleSelect(4)}
+          className={cn(
+            "p-2 rounded-xl border text-left transition-colors cursor-pointer",
+            selectedLevel && selectedLevel >= 4 && selectedLevel <= 5
+              ? "bg-amber-500/10 border-amber-500/40 text-foreground"
+              : "bg-secondary/40 border-border/50 hover:bg-secondary/70",
+          )}
+        >
           <div className="flex items-center gap-1.5 mb-0.5">
             <span
               className="w-2 h-2 rounded-full shrink-0"
@@ -62,8 +125,17 @@ export function InlineArmstrongGuideWidget() {
           <p className="text-[10px] text-muted-foreground leading-tight">
             Reponer agua. Sumá 1–2 vasos de a sorbos.
           </p>
-        </div>
-        <div className="p-2 rounded-xl bg-secondary/40 border border-border/50">
+        </button>
+        <button
+          type="button"
+          onClick={() => handleSelect(6)}
+          className={cn(
+            "p-2 rounded-xl border text-left transition-colors cursor-pointer",
+            selectedLevel && selectedLevel >= 6 && selectedLevel <= 8
+              ? "bg-rose-500/10 border-rose-500/40 text-foreground"
+              : "bg-secondary/40 border-border/50 hover:bg-secondary/70",
+          )}
+        >
           <div className="flex items-center gap-1.5 mb-0.5">
             <span
               className="w-2 h-2 rounded-full shrink-0"
@@ -76,7 +148,7 @@ export function InlineArmstrongGuideWidget() {
           <p className="text-[10px] text-muted-foreground leading-tight">
             Falta de agua. Priorizá hidratarte hoy.
           </p>
-        </div>
+        </button>
       </div>
     </div>
   );

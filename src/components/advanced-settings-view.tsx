@@ -25,7 +25,6 @@ interface AdvancedSettingsViewProps {
 export function AdvancedSettingsView({ onBack }: AdvancedSettingsViewProps) {
   const {
     settings,
-    isAthleteMode,
     isWellnessMode,
     updateSettings,
     userWeight,

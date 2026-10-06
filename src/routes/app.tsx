@@ -8,7 +8,6 @@ import {
   Sparkles,
   QrCode,
   Heart,
-  BarChart3,
   CreditCard,
   Settings,
   Clock,
@@ -20,7 +19,6 @@ import {
 import {
   FavoritosTab,
   ClasesTab,
-  ProgresoTab,
   PagosTab,
   ConfigTab,
   DiarioTab,
@@ -39,7 +37,6 @@ const TABS = [
   { id: "diario", label: "AI Coach", icon: Sparkles },
   { id: "clases", label: "Check-in", icon: QrCode },
   { id: "favoritos", label: "Favoritos", icon: Heart },
-  { id: "progreso", label: "Mi Progreso", icon: BarChart3 },
   { id: "pagos", label: "Suscripción", icon: CreditCard },
   { id: "config", label: "Configuración", icon: Settings },
 ];
@@ -50,12 +47,8 @@ function InicioTab() {
 
 function StudentDashboard() {
   const search = Route.useSearch();
-  // ponytail: start with search.tab if present client-side, fallback to "inicio"
-  const [activeTab, setActiveTab] = useState(() =>
-    typeof window !== "undefined" && search?.tab && TABS.some((t) => t.id === search.tab)
-      ? search.tab
-      : "inicio",
-  );
+  const validTab = search?.tab && TABS.some((t) => t.id === search.tab) ? (search.tab as string) : "inicio";
+  const [activeTab, setActiveTab] = useState(validTab);
 
   useEffect(() => {
     if (search?.tab && TABS.some((t) => t.id === search.tab)) {
@@ -126,7 +119,6 @@ function StudentDashboard() {
             />
           )}
           {activeTab === "favoritos" && <FavoritosTab />}
-          {activeTab === "progreso" && <ProgresoTab />}
           {activeTab === "pagos" && <PagosTab />}
           {activeTab === "config" && <ConfigTab />}
         </main>

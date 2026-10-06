@@ -318,7 +318,6 @@ export function useNutritionSettings() {
     settings,
     athleteGoal,
     setAthleteGoal,
-    isAthleteMode: false,
     isWellnessMode: true,
     isUsingRecommendedRanges: true,
     updateSettings: update,

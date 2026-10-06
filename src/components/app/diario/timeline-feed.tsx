@@ -23,6 +23,7 @@ export interface TimelineFeedProps {
   onEdit: (item: any) => void;
   onAddAccompaniment: (mealId: string, name: string) => void;
   onDoubleTapLike: (mealId: string) => void;
+  onLogArmstrongLevel?: (mealId: string, level: number) => void;
 }
 
 export function TimelineFeed({
@@ -44,6 +45,7 @@ export function TimelineFeed({
   onEdit,
   onAddAccompaniment,
   onDoubleTapLike,
+  onLogArmstrongLevel,
 }: TimelineFeedProps) {
   return (
     <div className="space-y-3">
@@ -115,7 +117,7 @@ export function TimelineFeed({
                             onFeedbackChange={(id) => onFeedback(id, "like")}
                             onSwapIngredient={onSwapIngredient}
                           />
-                        ) : item.type === "meal" || item.type === "hydration" ? (
+                        ) : item.type === "meal" ? (
                           <TimelineMealCard
                             item={item}
                             isAthleteMode={isAthleteMode}
@@ -139,6 +141,7 @@ export function TimelineFeed({
                                 },
                               }));
                             }}
+                            onLogArmstrongLevel={onLogArmstrongLevel}
                             doubleTapAnimationId={doubleTapAnimationId}
                             onDoubleTapLike={onDoubleTapLike}
                           />

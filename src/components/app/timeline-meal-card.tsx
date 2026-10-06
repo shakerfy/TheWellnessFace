@@ -1,22 +1,28 @@
 import React, { useRef } from "react";
-import { ThumbsUp, ThumbsDown, Sparkles } from "lucide-react";
+import { ThumbsUp, ThumbsDown, Sparkles, Zap } from "lucide-react";
 import {
   Card,
   CardHeader,
   CardTitle,
-  CardDescription,
   CardContent,
 } from "@/components/ui/card";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { FoodProfileHero } from "@/components/food-profile-hero";
+import { FoodProfileHero, FoodProfileDial } from "@/components/food-profile-hero";
+import { ScanNutrientList } from "@/components/scan";
+import { getDescriptiveMealNarrative } from "@/lib/scan-data";
 import {
   TypewriterMarkdown,
   getMealCoachInsightText,
   getMealDynamicCtas,
 } from "./diario-helpers";
 import {
-  TimelineHydrationCard,
   MealImageBanner,
   MealCardActions,
   MealAthleteMacros,
@@ -39,6 +45,7 @@ export interface TimelineMealCardProps {
   loggedMicroAction?: { type: string; level?: number };
   onAddAccompaniment: (itemId: string, accompaniment: string) => void;
   onCompleteBreathing: (itemId: string) => void;
+  onLogArmstrongLevel?: (itemId: string, level: number) => void;
   doubleTapAnimationId?: string | null;
   onDoubleTapLike?: (itemId: string) => void;
 }
@@ -57,22 +64,12 @@ export function TimelineMealCard({
   loggedMicroAction,
   onAddAccompaniment,
   onCompleteBreathing,
+  onLogArmstrongLevel,
   doubleTapAnimationId,
   onDoubleTapLike,
 }: TimelineMealCardProps) {
   const lastTapRef = useRef<{ id: string; time: number }>({ id: "", time: 0 });
   const touchStartPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-
-  // Hydration card variant
-  if (item.type === "hydration") {
-    return (
-      <TimelineHydrationCard
-        item={item}
-        onEdit={onEdit}
-        onDelete={onDelete}
-      />
-    );
-  }
 
   // Meal Macros calculations
   const { mealCalories, mealProtein, mealCarbs, mealFat, mealFiber } =
@@ -85,18 +82,11 @@ export function TimelineMealCard({
   const { heroBadges, qualityLevel, qualityLabel, contextBadge } =
     getMealQualityData(item, mealProtein, mealFiber);
 
+  // Meal description
+  const mealDescription = getDescriptiveMealNarrative(item);
+
   return (
     <Card
-      onClick={(e) => {
-        if (
-          (e.target as HTMLElement)?.closest(
-            'button, a, input, select, textarea, [role="button"]',
-          )
-        ) {
-          return;
-        }
-        onEdit(item);
-      }}
       onDoubleClick={(e) => {
         if (
           (e.target as HTMLElement)?.closest(
@@ -147,7 +137,7 @@ export function TimelineMealCard({
           }
         }
       }}
-      className="relative rounded-3xl border border-border bg-card shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg cursor-pointer select-none"
+      className="relative rounded-3xl border border-border bg-card shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg select-none"
     >
       {/* Animación Pop de Doble Toque (Like Burst) */}
       {doubleTapAnimationId === item.id && (
@@ -166,30 +156,12 @@ export function TimelineMealCard({
         onDelete={onDelete}
       />
 
-      {/* Card Header */}
-      <CardHeader className="p-5 pb-3">
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-1.5 flex-1 min-w-0 text-left">
-            <div className="flex items-center gap-2 flex-wrap">
-              <CardTitle className="text-base sm:text-lg font-black leading-tight text-foreground">
-                {item.title}
-              </CardTitle>
-              {item.isAiSuggestion && (
-                <Badge
-                  variant="outline"
-                  className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 text-[10px] font-black rounded-full px-2 py-0.5 shadow-none flex items-center gap-1 shrink-0"
-                >
-                  <Sparkles className="w-3 h-3 text-amber-500" />
-                  <span>Sugerencia IA</span>
-                </Badge>
-              )}
-            </div>
-            {item.subtitle ? (
-              <CardDescription className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                {item.subtitle}
-              </CardDescription>
-            ) : null}
-          </div>
+      {/* Card Header con Encabezado 'Valor Nutricional' + Acciones (si no hay foto) */}
+      <CardHeader className="p-5 pb-2 space-y-2.5">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block shrink-0">
+            Valor Nutricional
+          </span>
 
           {!item.img && (
             <MealCardActions
@@ -197,37 +169,86 @@ export function TimelineMealCard({
               onToggleSave={onToggleSave}
               onEdit={onEdit}
               onDelete={onDelete}
-              className="bg-secondary/80 px-1.5 py-1 shrink-0"
+              className="shrink-0"
             />
           )}
         </div>
+
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3.5 flex-1 min-w-0">
+            <FoodProfileDial
+              qualityLabel={qualityLabel}
+              qualityLevel={qualityLevel}
+              size="lg"
+            />
+
+            <div className="space-y-1 flex-1 min-w-0 text-left">
+              <div className="flex items-center gap-2 flex-wrap">
+                <CardTitle className="text-base sm:text-lg font-black leading-tight text-foreground">
+                  {item.title}
+                </CardTitle>
+                {item.isAiSuggestion && (
+                  <Badge
+                    variant="outline"
+                    className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 text-[10px] font-black rounded-full px-2 py-0.5 shadow-none flex items-center gap-1 shrink-0"
+                  >
+                    <Sparkles className="w-3 h-3 text-amber-500" />
+                    <span>Sugerencia IA</span>
+                  </Badge>
+                )}
+              </div>
+
+              {contextBadge && (
+                <div className="flex items-center gap-1">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-secondary/80 text-foreground border border-border/60">
+                    <Zap className="w-2.5 h-2.5 text-amber-500 shrink-0" />
+                    <span>{contextBadge.label}</span>
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Descripción del plato debajo del título y el dial */}
+        {mealDescription && (
+          <p className="text-xs text-muted-foreground leading-relaxed font-normal pt-2 text-left">
+            {mealDescription}
+          </p>
+        )}
       </CardHeader>
 
       {/* Card Content */}
-      <CardContent className="px-5 pb-4 pt-0 space-y-3.5">
-        <div className="space-y-3 pt-0.5 text-left">
-          {/* VALOR NUTRICIONAL: Dial radial con badges cualitativos (Visible en Modo Wellness) */}
-          {!isAthleteMode && (
-            <div className="pb-0.5">
-              <FoodProfileHero
-                qualityLabel={qualityLabel}
-                qualityLevel={qualityLevel}
-                badges={heroBadges}
-                contextBadge={contextBadge}
-              />
-            </div>
-          )}
-
-          {/* MODO ATLETA: Barra horizontal compacta de macros */}
-          {isAthleteMode && (
-            <MealAthleteMacros
-              calories={mealCalories}
-              protein={mealProtein}
-              fat={mealFat}
-              carbs={mealCarbs}
-              fiber={mealFiber}
-            />
-          )}
+      <CardContent className="px-5 pb-4 pt-1 space-y-3">
+        <div className="space-y-2.5 pt-0.5 text-left">
+          {/* VALOR NUTRICIONAL: Análisis Nutricional dentro de Accordion */}
+          <Accordion type="single" collapsible className="w-full border-none">
+            <AccordionItem value="nutrition-analysis" className="border-none">
+              <AccordionTrigger
+                onClick={(e) => e.stopPropagation()}
+                className="py-1.5 px-0 hover:no-underline flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 hover:text-foreground cursor-pointer group"
+              >
+                <span>Análisis Nutricional</span>
+              </AccordionTrigger>
+              <AccordionContent
+                onClick={(e) => e.stopPropagation()}
+                className="pt-1.5 pb-0.5"
+              >
+                <ScanNutrientList
+                  sampleId={item.sampleId || item.id}
+                  title={item.title || item.name}
+                  vectorBadges={item.vectorBadges || []}
+                  ingredients={item.ingredients || []}
+                  servings={item.servings || 1}
+                  totalProtein={mealProtein}
+                  totalFiber={mealFiber}
+                  totalFat={mealFat}
+                  totalCarbs={mealCarbs}
+                  hideHeader={true}
+                />
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
 
           {/* Fila con Botón Ver Insight y Reacciones (Mg / No Mg) */}
           <div className="flex items-center justify-between gap-2 py-1">
@@ -304,6 +325,7 @@ export function TimelineMealCard({
                 loggedMicroAction={loggedMicroAction}
                 onAddAccompaniment={onAddAccompaniment}
                 onCompleteBreathing={onCompleteBreathing}
+                onLogArmstrongLevel={onLogArmstrongLevel}
               />
             </div>
           )}

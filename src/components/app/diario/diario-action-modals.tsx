@@ -12,7 +12,6 @@ import { STREAK_FAQ, MET_ACTIVITIES } from "@/lib/met-activities";
 import { QRScannerModal } from "../qr-scanner-modal";
 import { VagalBreathingDrawer } from "@/components/vagal-breathing-drawer";
 import {
-  HydrationArmstrongDrawer,
   ActivityLogModal,
   EditTimelineItemModal,
 } from "../timeline-modals";
@@ -42,7 +41,6 @@ export interface DiarioActionModalsProps {
     intensity: "low" | "med" | "high",
     metPoints: number,
   ) => void;
-  onSaveHydration: (level: number, label: string, feedback: string) => void;
   onCheckinSuccess: (data: any) => void;
 }
 
@@ -66,7 +64,6 @@ export function DiarioActionModals({
   onSaveEditedTimelineItem,
   onToggleSaveTimelineItem,
   onSaveActivity,
-  onSaveHydration,
   onCheckinSuccess,
 }: DiarioActionModalsProps) {
   return (
@@ -204,13 +201,6 @@ export function DiarioActionModals({
           onScanSuccess={onCheckinSuccess}
         />
       )}
-
-      {/* Hydration Armstrong Drawer */}
-      <HydrationArmstrongDrawer
-        open={activeModal === "hydration-armstrong"}
-        onClose={() => setActiveModal("none")}
-        onSave={onSaveHydration}
-      />
 
       {/* Vagal Breathing Drawer */}
       <VagalBreathingDrawer

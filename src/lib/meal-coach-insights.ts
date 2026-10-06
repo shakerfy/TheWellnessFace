@@ -1,3 +1,7 @@
+import type { MiniGamePayload } from "@/components/app/mini-games/mini-game-types";
+import { resolvePedagogicalCtas } from "./pedagogical-decision-engine";
+import { calculateTimingFit } from "./timing-fit";
+
 // Helpers de Calidad Nutricional y Sinergia Somática para el Timeline
 export function getMealQualityProfile(mealItem: any): {
   label: "Óptima" | "Equilibrada" | "Simple";
@@ -65,173 +69,15 @@ export function getMealCombinationTip(mealItem: any, tier: 1 | 2 | 3): string {
 
 export interface MealDynamicCta {
   id: string;
-  type: "exploration" | "context" | "micro_action";
+  type: "exploration" | "context" | "micro_action" | "mini_game";
   title: string;
-  iconType: "sparkles" | "apple" | "plus" | "droplet" | "wind" | "pause";
+  iconType: "sparkles" | "apple" | "plus" | "droplet" | "wind" | "pause" | "gamepad";
   isOneTap?: boolean;
+  gamePayload?: MiniGamePayload;
 }
 
 export function getMealDynamicCtas(mealItem: any): MealDynamicCta[] {
-  const reason: "rutina" | "social" | "placer" | "confort" =
-    mealItem?.eatingReason || "rutina";
-  const text = `${mealItem?.title || ""} ${mealItem?.narrative || mealItem?.desc || ""}`.toLowerCase();
-  const quality = getMealQualityProfile(mealItem);
-  // Deterministic rotation seed per meal item so consecutive meals rotate across the 4 Dimensions
-  const hashSeed = String(mealItem?.id || mealItem?.title || "0")
-    .split("")
-    .reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
-  const variant = hashSeed % 2;
-
-  // 1. Categoría CONFORT: Dimensión 1 + Silencio Inteligente (1 solo CTA secundario para no abrumar)
-  if (reason === "confort") {
-    return [
-      {
-        id: "take_a_pause",
-        type: "micro_action",
-        title: "Iniciar pausa de respiración (1 min)",
-        iconType: "wind",
-      },
-    ];
-  }
-
-  // 2. Categoría PLACER: Dimensión 1 (Saciedad/Interocepción) + Dimensión 2 (Adición en próxima comida)
-  if (reason === "placer") {
-    return [
-      {
-        id: "check-satiety",
-        type: "micro_action",
-        title: "¿Cómo está tu nivel de saciedad?",
-        iconType: "sparkles",
-      },
-      {
-        id: "balance-next-meal",
-        type: "exploration",
-        title: "Ideas para balancear tu próxima comida",
-        iconType: "apple",
-      },
-    ];
-  }
-
-  // Detectar si es horario nocturno / cena (>= 19:30 hs) para Cronobiología Nocturna
-  const timeMatch = String(mealItem?.time || "").match(/(\d{1,2}):(\d{2})/);
-  const parsedHour = timeMatch ? parseInt(timeMatch[1], 10) : new Date().getHours();
-  const isNightMeal =
-    parsedHour >= 19 ||
-    parsedHour < 4 ||
-    /cena|noche/i.test(`${mealItem?.mealType || ""} ${text}`);
-
-  // 3. Categoría SOCIAL: Dimensión 1 (Digestión) + Dimensión 2/3 (Descanso nocturno si es cena, o Hidratación Armstrong)
-  if (reason === "social") {
-    return [
-      {
-        id: "check-digestion",
-        type: "micro_action",
-        title: "¿Cómo registrás tu digestión hoy?",
-        iconType: "sparkles",
-      },
-      isNightMeal
-        ? {
-            id: "night-rest-prep",
-            type: "exploration",
-            title: "Preparar tu descanso de esta noche",
-            iconType: "sparkles",
-          }
-        : {
-            id: "evaluate-hydration",
-            type: "micro_action",
-            title: "Ver guía de hidratación",
-            iconType: "droplet",
-          },
-    ];
-  }
-
-  // 4. Categoría RUTINA (Trabajo/Estudio): Rota según hora solar (Día vs Noche) y variante
-  const isAfternoonOrSnack = /merienda|snack|colaci|caf[eé]|yogur/i.test(
-    `${mealItem?.mealType || ""} ${text}`,
-  );
-
-  if (isAfternoonOrSnack && !isNightMeal) {
-    return [
-      {
-        id: "smart-snack-idea",
-        type: "exploration",
-        title: "Sugerencia de colación inteligente",
-        iconType: "apple",
-      },
-      {
-        id: "thirst-or-fatigue",
-        type: "micro_action",
-        title: "¿Sentís sed o fatiga protectora?",
-        iconType: "droplet",
-      },
-    ];
-  }
-
-  if (isNightMeal) {
-    return [
-      {
-        id: "night-rest-prep",
-        type: "exploration",
-        title: "Preparar tu descanso de esta noche",
-        iconType: "sparkles",
-      },
-      {
-        id: "check-eating-pace",
-        type: "micro_action",
-        title: "¿A qué ritmo comiste hoy?",
-        iconType: "sparkles",
-      },
-    ];
-  }
-
-  if (quality.tier === 3 && variant === 1) {
-    return [
-      {
-        id: "plate-synergy",
-        type: "exploration",
-        title: "Ver sinergia de este plato",
-        iconType: "sparkles",
-      },
-      {
-        id: "microbiota-function",
-        type: "exploration",
-        title: "¿Cómo funciona este ingrediente en tu microbiota?",
-        iconType: "apple",
-      },
-    ];
-  }
-
-  if (variant === 2) {
-    return [
-      {
-        id: "check-eating-pace",
-        type: "micro_action",
-        title: "¿A qué ritmo comiste hoy?",
-        iconType: "sparkles",
-      },
-      {
-        id: "balance-next-meal",
-        type: "exploration",
-        title: "Ideas para balancear tu próxima comida",
-        iconType: "apple",
-      },
-    ];
-  }
-
-  return [
-    {
-      id: "anti-drowsiness-strategy",
-      type: "exploration",
-      title: "Ver estrategia anti-somnolencia",
-      iconType: "sparkles",
-    },
-    {
-      id: "evaluate-hydration",
-      type: "micro_action",
-      title: "Ver guía de hidratación",
-      iconType: "droplet",
-    },
-  ];
+  return resolvePedagogicalCtas(mealItem);
 }
 
 export function getMealCoachInsightText(mealItem: any): string {
@@ -253,6 +99,38 @@ export function getMealCoachInsightText(mealItem: any): string {
 
   if (reason === "confort") {
     return `Un plato elegido para brindar calma y abrigo. Comer sin prisa y regalarte *un minuto de respiración tranquila* al terminar ayudará a tu cuerpo a descansar y digerir con mayor ligereza.${continuityNote}`;
+  }
+
+  // Regla 9 y 10: Detección y Sincronización Pre/Post-Entreno y Reservas Somáticas
+  const timing = mealItem?.timingFit || calculateTimingFit(mealItem);
+  const tag =
+    timing?.tag ||
+    (typeof mealItem?.contextBadge === "string" ? mealItem.contextBadge : mealItem?.contextBadge?.label) ||
+    "";
+  const isPreWorkout =
+    mealItem?.isPreWorkout ||
+    mealItem?.mealType === "Pre-entreno" ||
+    /pre-entreno/i.test(tag) ||
+    /pre-entreno/i.test(mealItem?.contextTag || "");
+  const isPostWorkout =
+    mealItem?.isPostWorkout ||
+    mealItem?.mealType === "Post-entreno" ||
+    /post-entreno/i.test(tag) ||
+    /post-entreno/i.test(mealItem?.contextTag || "");
+  const isEnergyRecharge =
+    /recarga energ[eé]tica/i.test(tag) ||
+    /recarga energ[eé]tica/i.test(mealItem?.contextTag || "");
+
+  if (isPreWorkout) {
+    return `Registrado en tu ventana previa al entrenamiento. **${title}** aporta combustible disponible para el movimiento; comer a un ritmo pausado y asegurar una hidratación ligera te permitirá iniciar tu sesión con confort digestivo y total soltura.${continuityNote}`;
+  }
+
+  if (isPostWorkout) {
+    return `Registrado tras tu actividad física. Los nutrientes de **${title}** apoyan la síntesis proteica y la recarga de tus reservas de combustible muscular sin sobrecargar la digestión. Acompañar con agua fresca completará tu recuperación somática.${continuityNote}`;
+  }
+
+  if (isEnergyRecharge) {
+    return `Tu cuerpo reporta una mayor demanda biológica de energía. **${title}** ayuda a restituir tus reservas somáticas; masticar despacio y comer hasta una saciedad cómoda sostendrá tu vitalidad.${continuityNote}`;
   }
 
   if (

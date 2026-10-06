@@ -214,6 +214,7 @@ export function ClasesTab({
       name: "CrossFit WOD",
       instructor: "Mateo Rossi",
       timeLabel: "Hoy, 19:00 hs",
+      time: "19:00",
       location: "Belgrano, CABA",
       status: "booked",
     },
@@ -223,6 +224,7 @@ export function ClasesTab({
       name: "Yoga Vinyasa Flow",
       instructor: "Valeria Soto",
       timeLabel: "Hoy, 22:00 hs",
+      time: "22:00",
       location: "Recoleta, CABA",
       status: "booked",
     },
@@ -232,10 +234,23 @@ export function ClasesTab({
       name: "Musculacion & Funcional",
       instructor: "Daniel Gomez",
       timeLabel: "Manana, 10:00 hs",
+      time: "10:00",
       location: "Palermo, CABA",
       status: "booked",
     },
   ];
+
+  // Sincronizar reservas con localStorage para motor de fit circadiano/pre-entreno
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("shakerfy_user_reservations");
+        if (!stored) {
+          localStorage.setItem("shakerfy_user_reservations", JSON.stringify(upcomingReservations));
+        }
+      } catch (_) {}
+    }
+  }, []);
 
   const allClasses = [
     {
@@ -502,4 +517,3 @@ export function ClasesTab({
   );
 }
 
-// Subcomponent: Progreso Tab

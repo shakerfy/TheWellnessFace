@@ -2,6 +2,7 @@ import {
   Coffee, Utensils, Apple, Cake, HeartPulse, Clock, Users,
   Sparkles, Wind, Timer, Zap, Moon, Activity, Flame
 } from "lucide-react";
+import type { MealDynamicCta } from "./meal-coach-insights";
 
 export interface MealCalloutPin {
   name: string;
@@ -30,43 +31,59 @@ export interface MealIngredientItem {
 
 export interface NutritionVectorBadge {
   id: string;
-  category: "processing" | "fiber" | "protein" | "sugar" | "fat" | "grains" | "sodium";
+  category: "processing" | "fiber" | "protein" | "sugar" | "fat" | "grains" | "carbs" | "sodium";
   badgeText: string;
   description: string;
 }
 
 export const NUTRIENT_VECTOR_SPECS = [
   { category: "processing", label: "Procesamiento" },
-  { category: "fiber", label: "Fibra" },
   { category: "protein", label: "Proteína" },
+  { category: "carbs", label: "Carbohidratos" },
+  { category: "fiber", label: "Fibra" },
   { category: "sugar", label: "Azúcares añadidos" },
   { category: "fat", label: "Grasas" },
-  { category: "grains", label: "Granos" },
   { category: "sodium", label: "Sodio" },
 ] as const;
 
 const EN_TO_ES_NUTRIENTS: Record<string, string> = {
   "minimally processed": "Mínimamente procesado",
+  "ultra-processed": "Ultraprocesado",
+  "ultraprocessed": "Ultraprocesado",
   "moderately processed": "Moderadamente procesado",
   "unprocessed": "Sin procesar",
   "good source": "Buena fuente",
   "high fiber": "Alto en fibra",
   "source of fiber": "Fuente de fibra",
-  "lean": "Proteína magra",
-  "lean / high": "Magra / Alta calidad",
-  "plant / light": "Vegetal ligero",
-  "high quality": "Alta calidad",
+  "lean and complete": "Magra y completa",
+  "magra y completa": "Magra y completa",
+  "high protein": "Alto en proteína",
+  "plant source": "Fuente vegetal",
+  "fuente vegetal": "Fuente vegetal",
+  "lean": "Magra y completa",
+  "lean / high": "Magra y completa",
+  "plant / light": "Fuente vegetal",
+  "high quality": "Alto en proteína",
   "zero": "Sin azúcar añadido",
   "low": "Bajo",
   "moderate": "Moderadas",
   "healthy fats": "Grasas saludables",
   "healthy fats (omega-3)": "Saludables (Omega-3)",
+  "saludables (omega-3)": "Saludables (Omega-3)",
   "healthy fats (avocado)": "Saludables (Palta)",
   "healthy fats (chia)": "Saludables (Chía)",
-  "refined": "Refinados",
-  "whole grains": "Granos enteros",
+  "high fat": "Alto en grasas",
+  "alto en grasas": "Alto en grasas",
+  "complex": "Complejos",
+  "complejos": "Complejos",
+  "fast absorption": "Absorción rápida",
+  "absorción rápida": "Absorción rápida",
+  "refined": "Absorción rápida",
+  "whole grains": "Complejos",
   "grain-free": "Sin granos",
-  "elevated": "Elevado",
+  "high sodium": "Alto en sodio",
+  "alto en sodio": "Alto en sodio",
+  "elevated": "Alto en sodio",
   "very low": "Muy bajo",
 };
 
@@ -89,12 +106,12 @@ export function getMealNutrientRows(
 
     if (!rawValue) {
       if (category === "processing") rawValue = "Mínimamente procesado";
-      else if (category === "fiber") rawValue = totalFiber >= 4 ? "Buena fuente" : totalFiber >= 2 ? "Moderada" : "Bajo aporte";
-      else if (category === "protein") rawValue = totalProtein >= 25 ? "Proteína magra" : totalProtein >= 12 ? "Moderada" : "Aporte ligero";
+      else if (category === "fiber") rawValue = totalFiber >= 5 ? "Alto en fibra" : totalFiber >= 2 ? "Buena fuente" : "";
+      else if (category === "protein") rawValue = totalProtein >= 25 ? "Alto en proteína" : totalProtein >= 18 ? "Magra y completa" : totalProtein >= 10 ? "Buena fuente" : "";
       else if (category === "sugar") rawValue = "Sin azúcar añadido";
-      else if (category === "fat") rawValue = totalFat >= 15 ? "Moderadas" : totalFat >= 5 ? "Moderadas" : "Bajo aporte";
-      else if (category === "grains") rawValue = totalCarbs > 35 ? "Refinados" : totalCarbs > 15 ? "Granos enteros" : "Sin granos";
-      else if (category === "sodium") rawValue = "Moderado";
+      else if (category === "fat") rawValue = totalFat >= 15 ? "Alto en grasas" : totalFat >= 5 ? "Grasas saludables" : "";
+      else if (category === "carbs") rawValue = totalCarbs >= 25 ? "Complejos" : totalCarbs >= 10 ? "Absorción rápida" : "";
+      else if (category === "sodium") rawValue = "";
     }
 
     const valKey = (rawValue || "").trim().toLowerCase();
@@ -112,6 +129,103 @@ export function getMealNutrientRows(
       iconType,
     };
   });
+}
+
+export interface OrderedNutritionRow {
+  category: "processing" | "fiber" | "protein" | "sugar" | "fat" | "carbs" | "sodium" | string;
+  label: string;
+  value: string;
+  isSubItem?: boolean;
+}
+
+export function getOrderedNutritionReportRows(
+  badges: NutritionVectorBadge[] = [],
+  ingredients: MealIngredientItem[] = [],
+  servings: number = 1,
+  sampleId?: string,
+  explicitMacros?: { protein?: number; fiber?: number; fat?: number; carbs?: number },
+): OrderedNutritionRow[] {
+  // Caso de muestra calibrada 'calai-pho'
+  if (sampleId === "calai-pho") {
+    return [
+      { category: "processing", label: "Procesamiento", value: "Mínimamente procesado", isSubItem: false },
+      { category: "protein", label: "Proteína", value: "Magra y completa", isSubItem: false },
+      { category: "carbs", label: "Carbohidratos", value: "Absorción moderada", isSubItem: false },
+      { category: "fiber", label: "Fibra", value: "Buena fuente", isSubItem: false },
+      { category: "sugar", label: "Azúcares añadidos", value: "Sin azúcar añadido", isSubItem: false },
+      { category: "fat", label: "Grasas", value: "Grasas saludables", isSubItem: false },
+      { category: "sodium", label: "Sodio", value: "Alto en sodio", isSubItem: false },
+    ];
+  }
+
+  const badgeMap = new Map<string, string>();
+  badges.forEach((b) => badgeMap.set(b.category, b.badgeText));
+
+  const totalFiber =
+    explicitMacros?.fiber !== undefined && explicitMacros.fiber > 0
+      ? explicitMacros.fiber
+      : ingredients.reduce((sum, i) => sum + (i.fiber || 0), 0) * servings;
+  const totalProtein =
+    explicitMacros?.protein !== undefined && explicitMacros.protein > 0
+      ? explicitMacros.protein
+      : ingredients.reduce((sum, i) => sum + (i.protein || 0), 0) * servings;
+  const totalFat =
+    explicitMacros?.fat !== undefined && explicitMacros.fat > 0
+      ? explicitMacros.fat
+      : ingredients.reduce((sum, i) => sum + (i.fat || 0), 0) * servings;
+  const totalCarbs =
+    explicitMacros?.carbs !== undefined && explicitMacros.carbs > 0
+      ? explicitMacros.carbs
+      : ingredients.reduce((sum, i) => sum + (i.carbs || 0), 0) * servings;
+
+  const resolveVal = (category: string, defaultVal: string) => {
+    const raw = badgeMap.get(category);
+    if (!raw) return defaultVal;
+    return raw;
+  };
+
+  // 1. Procesamiento (Sello de comida real / Alerta de refinado)
+  const procVal = resolveVal("processing", "Mínimamente procesado");
+
+  // 2. Proteína (Calidad y densidad biológica; jamás dice 'Bajo en proteína')
+  const proteinVal = resolveVal(
+    "protein",
+    totalProtein >= 25 ? "Alto en proteína" : totalProtein >= 18 ? "Magra y completa" : totalProtein >= 10 ? "Buena fuente" : "Aporte moderado",
+  );
+
+  // 3. Carbohidratos (Cinética de energía sostenida; jamás dice 'Bajo en carbs')
+  const carbsVal = resolveVal(
+    "grains",
+    totalCarbs > 35 ? "Absorción rápida" : totalCarbs > 15 ? "Complejos" : "Aporte moderado",
+  );
+
+  // 4. Fibra (Vector de alta relevancia; jamás dice 'Bajo en fibra')
+  const fiberVal = resolveVal(
+    "fiber",
+    totalFiber >= 5 ? "Alto en fibra" : totalFiber >= 2 ? "Buena fuente" : "Aporte moderado",
+  );
+
+  // 5. Azúcares añadidos (Vector de confirmación / alerta)
+  const sugarVal = resolveVal("sugar", "Sin azúcar añadido");
+
+  // 6. Grasas (Perfil lipídico somático)
+  const fatVal = resolveVal(
+    "fat",
+    totalFat >= 18 ? "Alto en grasas" : totalFat >= 8 ? "Grasas saludables" : "Aporte moderado",
+  );
+
+  // 7. Sodio (Balance hidroelectrolítico)
+  const sodVal = resolveVal("sodium", "Moderado");
+
+  return [
+    { category: "processing", label: "Procesamiento", value: procVal, isSubItem: false },
+    { category: "protein", label: "Proteína", value: proteinVal, isSubItem: false },
+    { category: "carbs", label: "Carbohidratos", value: carbsVal, isSubItem: false },
+    { category: "fiber", label: "Fibra", value: fiberVal, isSubItem: false },
+    { category: "sugar", label: "Azúcares añadidos", value: sugarVal, isSubItem: false },
+    { category: "fat", label: "Grasas", value: fatVal, isSubItem: false },
+    { category: "sodium", label: "Sodio", value: sodVal, isSubItem: false },
+  ];
 }
 
 export type FoodScanCategory = "bebida" | "comida" | "snack" | "postre";
@@ -194,6 +308,246 @@ export interface SampleMealModel {
   phytoColors: PhytoColorItem[];
   calloutPins: MealCalloutPin[];
   ingredients: MealIngredientItem[];
+  customCtas?: MealDynamicCta[];
+}
+
+function isDryIngredientList(
+  text: string,
+  ingredients?: Array<{ name?: string } | string>,
+): boolean {
+  if (!text || !text.trim()) return true;
+  const trimmed = text.trim();
+
+  // Si contiene etiquetas de calorías o macros como "(120 kcal, 24g P)"
+  if (/\b\d+\s*kcal\b|\(\s*\d+\s*(kcal|g|cal)/i.test(trimmed)) {
+    return true;
+  }
+
+  // Si empieza con "Ingredientes:" o "Contiene:"
+  if (/^(ingredientes|contiene|alimentos)\s*:/i.test(trimmed)) {
+    return true;
+  }
+
+  // Si es un volcado de nombres separados por coma o "y"
+  const rawParts = trimmed.split(/,\s*|\s+y\s+/i).map((p) => p.trim());
+  if (rawParts.length >= 2) {
+    const allShortParts = rawParts.every((p) => p.split(/\s+/).length <= 4);
+    const hasVerbsOrAdjectives =
+      /\b(tierno|tierna|dorado|dorada|crujiente|crocante|fresco|fresca|frescos|frescas|asado|asada|horneado|horneada|cremoso|cremosa|suave|suaves|arom[aá]tico|arom[aá]tica|reconfortante|ligero|ligera|liviano|liviana|esponjoso|esponjosa|sedoso|sedosa|aterciopelado|aterciopelada|jugoso|jugosa|maduro|madura|salteado|salteada|pochado|pochada|hervido|hervida|estaci[oó]n|digesti[oó]n|saciedad|textura|sabor|preparad|cocinad|servid|acompañad|elaborad|combinad|pensad|ideal)\b/i.test(
+        trimmed,
+      );
+    if (allShortParts && !hasVerbsOrAdjectives) {
+      return true;
+    }
+  }
+
+  // Comparación contra array de ingredientes
+  if (Array.isArray(ingredients) && ingredients.length > 0) {
+    const ingNames = ingredients
+      .map((i) => (typeof i === "string" ? i : i?.name || ""))
+      .filter(Boolean)
+      .map((n) => n.toLowerCase().trim());
+
+    const lowerTrimmed = trimmed.toLowerCase();
+    const joinedIngs = ingNames.join(", ");
+    if (lowerTrimmed === joinedIngs || joinedIngs.includes(lowerTrimmed)) {
+      return true;
+    }
+  }
+
+  // Si es muy corto (< 6 palabras) y carece de estructura narrativa
+  const words = trimmed.split(/\s+/);
+  if (words.length <= 6 && !/\b(con|en|para|de|al|y)\b/i.test(trimmed)) {
+    return true;
+  }
+
+  return false;
+}
+
+export function getDescriptiveMealNarrative(item?: {
+  title?: string;
+  name?: string;
+  narrative?: string;
+  description?: string;
+  desc?: string;
+  summary?: string;
+  ingredients?: Array<{ name?: string } | string>;
+  mealType?: string;
+  category?: string;
+} | null): string {
+  if (!item) return "";
+
+  const title = (item.title || item.name || "").trim();
+  const lowerTitle = title.toLowerCase();
+
+  // 1. Si existe una narrativa explícita y NO es un simple volcado de ingredientes ni calorías
+  const explicit = item.description || item.narrative;
+  if (explicit && explicit.trim()) {
+    const cleaned = explicit
+      .replace(/\b(con solo \d+\s*kcal(\s*por\s*100g)?|\d+\s*kcal|\d+\s*calorías)\b/gi, "")
+      .replace(/\s{2,}/g, " ")
+      .trim();
+
+    if (
+      cleaned.length > 20 &&
+      cleaned.toLowerCase() !== lowerTitle &&
+      !isDryIngredientList(cleaned, item.ingredients) &&
+      !cleaned.toLowerCase().startsWith("análisis completo de tus notas") &&
+      !cleaned.includes("P, ")
+    ) {
+      return cleaned;
+    }
+  }
+
+  // 2. Extracción de ingredientes principales para tejer la narrativa culinaria
+  const ingNames = Array.isArray(item.ingredients)
+    ? item.ingredients
+        .map((i) => (typeof i === "string" ? i : i?.name || ""))
+        .filter(Boolean)
+    : [];
+
+  const translations: Record<string, string> = {
+    "natural raspberry": "frambuesas silvestres",
+    raspberry: "frambuesas",
+    blueberries: "arándanos frescos",
+    "fresh blueberries": "arándanos frescos",
+    "chicken breast": "pechuga de pollo",
+    "rice noodles": "fideos de arroz",
+    "sweet potato": "batata horneada",
+    avocado: "palta fresca",
+    "green apple": "manzana verde",
+    "dark chocolate": "chocolate amargo",
+    "greek yogurt": "yogur griego",
+  };
+
+  const mainIngs = ingNames.slice(0, 3).map((n) => {
+    const raw = n.toLowerCase().replace(/\s*\(.*?\)/g, "").trim();
+    return translations[raw] || raw;
+  });
+
+  const ingsPhrase =
+    mainIngs.length === 1
+      ? mainIngs[0]
+      : mainIngs.length === 2
+        ? `${mainIngs[0]} y ${mainIngs[1]}`
+        : mainIngs.length >= 3
+          ? `${mainIngs[0]}, ${mainIngs[1]} y ${mainIngs[2]}`
+          : "";
+
+  // 3. Mapeo culinario, sensorial y somático por tipo de plato con límites de palabra estrictos (\b)
+  if (
+    /\b(frambuesa|frambuesas|frutilla|frutillas|manzana|manzanas|ar[aá]ndano|ar[aá]ndanos|banana|bananas|fruta|frutas|berry|berries)\b/i.test(
+      lowerTitle,
+    )
+  ) {
+    return ingsPhrase
+      ? `Selección fresca y natural de ${ingsPhrase}, con acidez y dulzura equilibradas, alta concentración de agua y antioxidantes vivos.`
+      : "Porción de fruta fresca de estación, jugosa y naturalmente rica en fibra y vitaminas protectoras.";
+  }
+
+  if (
+    /\b(salm[oó]n|pescado|pescados|fish|at[uú]n|merluza|trucha|marisco|mariscos|camar[oó]n|camarones|langostino|langostinos)\b/i.test(
+      lowerTitle,
+    )
+  ) {
+    return ingsPhrase
+      ? `Filete tierno de pescado dorado al punto justo con ${ingsPhrase}, combinando frescura marina, grasas saludables y liviandad digestiva.`
+      : "Filete tierno de pescado dorado al grill con vegetales al vapor, rico en grasas saludables y proteína marina de fácil asimilación.";
+  }
+
+  if (/\b(pollo|chicken|pechuga|pechugas|pavo)\b/i.test(lowerTitle)) {
+    return ingsPhrase
+      ? `Plato principal a base de ${ingsPhrase}, dorado a las finas hierbas para brindar saciedad confortable y energía progresiva.`
+      : "Pechuga de pollo tierna dorada al grill, acompañada de guarnición fresca para un balance proteico ideal.";
+  }
+
+  if (
+    /\b(carne|carnes|lomo|bife|bifes|asado|\bres\b|vacun[oa]|ternera|cerdo|costilla|costillas)\b/i.test(
+      lowerTitle,
+    )
+  ) {
+    return ingsPhrase
+      ? `Corte tierno de carne cocido a la plancha acompañado de ${ingsPhrase}, de cocción cuidada para una saciedad plena y reconfortante.`
+      : "Corte tierno de carne asada al punto justo con guarnición fresca y saciedad duradera.";
+  }
+
+  if (/\b(bowl|bowls|poke|pokes)\b/i.test(lowerTitle)) {
+    return ingsPhrase
+      ? `Bowl fresco y colorido sobre una base equilibrada de ${ingsPhrase}, combinando texturas crujientes con suavidad y saciedad prolongada.`
+      : "Bowl fresco y equilibrado con vegetales crocantes, granos enteros y fuentes nobles de proteína y grasas saludables.";
+  }
+
+  if (/\b(ensalada|ensaladas|salad|salads)\b/i.test(lowerTitle)) {
+    return ingsPhrase
+      ? `Ensalada fresca y crujiente a base de ${ingsPhrase}, pensada para una digestión liviana, óptima hidratación y aporte vivo de micronutrientes.`
+      : "Ensalada fresca y colorida con hojas verdes crocantes, vegetales frescos y aderezo equilibrado para una digestión ágil.";
+  }
+
+  if (/\b(sopa|sopas|pho|phở|ramen|caldo|caldos|guiso|guisos|stew)\b/i.test(lowerTitle)) {
+    return ingsPhrase
+      ? `Preparación caliente y reconfortante en caldo aromático con ${ingsPhrase}, de asimilación pausada y excelente confort digestivo.`
+      : "Sopa cálida y aromática elaborada con caldo casero, hierbas frescas e ingredientes suaves de fácil digestión.";
+  }
+
+  if (/\b(huevo|huevos|egg|eggs|omelette|omelettes|revuelto|revueltos|tortilla)\b/i.test(lowerTitle)) {
+    return ingsPhrase
+      ? `Preparación suave y cremosa con ${ingsPhrase}, cocinados al punto justo para una energía limpia y saciedad prolongada.`
+      : "Huevos de campo revueltos al punto cremoso, acompañados de tostadas o vegetales para una energía matutina estable.";
+  }
+
+  if (/\b(tostad[ao]s?|tost[oó]n|pan|sandwich|sandwiches|avocado toast|wrap|wraps|arepa|arepas)\b/i.test(lowerTitle)) {
+    return ingsPhrase
+      ? `Tostada artesanal crocante coronada con ${ingsPhrase}, equilibrando texturas suaves y crujientes con grasas saludables.`
+      : "Tostada crujiente de masa madre con cubierta fresca y nutritiva para una saciedad limpia.";
+  }
+
+  if (/\b(smoothie|smoothies|batido|batidos|licuado|licuados|shake|shakes)\b/i.test(lowerTitle)) {
+    return ingsPhrase
+      ? `Batido cremoso y refrescante a base de ${ingsPhrase}, ideal para una rápida absorción de micronutrientes e hidratación ligera.`
+      : "Batido funcional suave y refrescante, preparado con frutas enteras e hidratación ligera.";
+  }
+
+  if (/\b(matcha|caf[eé]|latte|t[eé]|infusi[oó]n|infusiones)\b/i.test(lowerTitle)) {
+    return ingsPhrase
+      ? `Infusión aromática y revitalizante a base de ${ingsPhrase}, diseñada para un foco sostenido y una digestión serena.`
+      : "Bebida aromática emulsionada al punto justo, ideal para acompañar la jornada con energía equilibrada.";
+  }
+
+  if (/\b(yogur|yogurt|chia|pudding|avena|porridge)\b/i.test(lowerTitle)) {
+    return ingsPhrase
+      ? `Copa fresca y aterciopelada a base de ${ingsPhrase}, rica en cultivos vivos, textura cremosa y bienestar digestivo.`
+      : "Yogur natural cremoso con frutas frescas y semillas, aportando frescura láctea y confort digestivo.";
+  }
+
+  if (/\b(mousse|pancake|pancakes|postre|postres|dulce|dulces|brownie|torta|tortas)\b/i.test(lowerTitle)) {
+    return ingsPhrase
+      ? `Preparación dulce y delicada elaborada con ${ingsPhrase}, de textura sedosa y perfil amable para una sobremesa sin pesadez.`
+      : "Postre artesanal equilibrado, combinando dulzura noble con ingredientes enteros de asimilación pausada.";
+  }
+
+  if (/\b(burger|burgers|hamburguesa|hamburguesas|pizza|pizzas|papas?)\b/i.test(lowerTitle)) {
+    return ingsPhrase
+      ? `Comida sabrosa y reconfortante con ${ingsPhrase}, pensada para disfrutar el momento con sabores intensos y texturas doradas.`
+      : "Hamburguesa clásica a la parrilla con ingredientes seleccionados y guarnición dorada para disfrutar sin prisa.";
+  }
+
+  if (/\b(pasta|pastas|fideo|fideos|arroz|arroces|risotto|quinoa)\b/i.test(lowerTitle)) {
+    return ingsPhrase
+      ? `Plato reconfortante preparado con ${ingsPhrase}, cocinado al dente para una recarga gradual de energía y bienestar digestivo.`
+      : "Plato caliente de granos al dente con aderezo fresco e ingredientes seleccionados de digestión amable.";
+  }
+
+  if (/\b(lenteja|lentejas|garbanzo|garbanzos|poroto|porotos|legumbre|legumbres)\b/i.test(lowerTitle)) {
+    return ingsPhrase
+      ? `Guisado tierno de legumbres con ${ingsPhrase}, rico en fibra prebiótica, minerales y saciedad sostenida.`
+      : "Plato tibio y reconfortante de legumbres tiernas cocinadas a fuego lento con hierbas aromáticas.";
+  }
+
+  if (ingsPhrase) {
+    return `Plato nutritivo y equilibrado preparado con ${ingsPhrase}, combinando frescura, texturas naturales y saciedad confortable.`;
+  }
+
+  return `Preparación casera y nutritiva con ingredientes frescos, pensada para sostener tu energía y brindar confort digestivo.`;
 }
 
 export const CAL_AI_SAMPLE_MEALS: SampleMealModel[] = [
@@ -211,7 +565,7 @@ export const CAL_AI_SAMPLE_MEALS: SampleMealModel[] = [
     highlightAmount: "25mg",
     healthScore: 10,
     narrative:
-      "Las frambuesas silvestres son un fruto ligero y nutritivo con solo 52 kcal por 100g. Ricas en vitamina C natural, polifenoles antioxidantes y fibra activa.",
+      "Frutos rojos frescos de recolección silvestre con acidez equilibrada y textura jugosa, ricos en vitamina C natural, polifenoles antioxidantes y fibra activa.",
     bioScore: 98,
     bioGrade: "A+",
     bioQualityLabel: "Fuente de Vitamina C",
@@ -281,7 +635,7 @@ export const CAL_AI_SAMPLE_MEALS: SampleMealModel[] = [
     servings: 1,
     healthScore: 8,
     narrative:
-      "Sopa tradicional vietnamita con proteína magra de pechuga hervida y fibra de brotes frescos. Matriz de alimentos enteros con alta biodisponibilidad y digestión ligera.",
+      "Sopa tradicional vietnamita con caldo aromático infusionado con especias suaves, fideos elásticos de arroz, pechuga de pollo pochada y brotes crocantes de soja fresca.",
     bioScore: 88,
     bioGrade: "A",
     bioQualityLabel: "Nutrición Superior & Alta Densidad",
@@ -290,44 +644,44 @@ export const CAL_AI_SAMPLE_MEALS: SampleMealModel[] = [
       {
         id: "v-proc",
         category: "processing",
-        badgeText: "Mínimamente procesado",
+        badgeText: "Minimally Processed",
         description: "Ingredientes enteros cocidos sin aditivos ultraprocesados.",
       },
       {
         id: "v-fib",
         category: "fiber",
-        badgeText: "Alto en fibra",
+        badgeText: "Good Source",
         description: "Aporte prebiótico de brotes de soja frescos y hierbas digestivas.",
       },
       {
         id: "v-prot",
         category: "protein",
-        badgeText: "Proteína magra",
+        badgeText: "Lean & Complete",
         description: "Pollo hervido con perfil completo de aminoácidos esenciales.",
       },
       {
         id: "v-sug",
         category: "sugar",
-        badgeText: "Sin azúcar añadido",
+        badgeText: "Zero",
         description: "Sin glucosa refinada ni endulzantes industriales.",
       },
       {
         id: "v-fat",
         category: "fat",
-        badgeText: "Grasas moderadas",
-        description: "Contenido graso bajo que facilita una rápida asimilación.",
+        badgeText: "Mostly Unsaturated",
+        description: "Contenido graso moderado mayormente insaturado de asimilación ligera.",
       },
       {
         id: "v-grain",
         category: "grains",
-        badgeText: "Granos simples",
+        badgeText: "Moderate-Fast Absorption",
         description: "Fideos de arroz bánh phở como combustible glucogénico limpio.",
       },
       {
         id: "v-sod",
         category: "sodium",
-        badgeText: "Sodio moderado",
-        description: "Caldo de huesos sazonado con anís estrellado y salsa de pescado tradicional.",
+        badgeText: "Elevated",
+        description: "Caldo sazonado con salsa de pescado tradicional rica en sodio.",
       },
     ],
     phytoColors: [
@@ -409,10 +763,10 @@ export const CAL_AI_SAMPLE_MEALS: SampleMealModel[] = [
     servings: 1,
     healthScore: 9,
     narrative:
-      "Máxima densidad micronutricional con ácidos grasos esenciales Omega-3 (EPA/DHA), proteína marina magra y fitonutrientes crucíferos antiinflamatorios.",
+      "Filete tierno de salmón salvaje dorado al grill, acompañado de ramilletes crujientes de brócoli al vapor con sal marina y aceite de oliva virgen extra para una digestión liviana y saciedad limpia.",
     bioScore: 96,
     bioGrade: "A+",
-    bioQualityLabel: "Densidad Nutricional Óptima",
+    bioQualityLabel: "Alta Densidad Nutricional",
     bioGaugeIndex: 4,
     vectorBadges: [
       {
@@ -520,10 +874,10 @@ export const CAL_AI_SAMPLE_MEALS: SampleMealModel[] = [
     servings: 1,
     healthScore: 9,
     narrative:
-      "Equilibrio neuromuscular completo: carbohidratos complejos de batata para recarga de glucógeno, proteína magra de pechuga y grasas monoinsaturadas de palta fresca.",
+      "Pechuga de pollo tierna dorada a las finas hierbas con cubos de batata horneada caramelizada y rodajas cremosas de palta fresca sobre hojas verdes crujientes.",
     bioScore: 92,
     bioGrade: "A+",
-    bioQualityLabel: "Densidad Nutricional Óptima",
+    bioQualityLabel: "Alta Densidad Nutricional",
     bioGaugeIndex: 4,
     vectorBadges: [
       {
@@ -649,10 +1003,10 @@ export const CAL_AI_SAMPLE_MEALS: SampleMealModel[] = [
     servings: 1,
     healthScore: 9,
     narrative:
-      "Bebida funcional regenerativa: matriz líquida con polifenoles antioxidantes de frutos del bosque, proteína aislada y ácidos grasos Omega-3 vegetales.",
+      "Batido cremoso y refrescante de frutos silvestres y chía hidratada con un toque suave de vainilla, ideal para hidratar y revitalizar el cuerpo de forma ligera.",
     bioScore: 94,
     bioGrade: "A+",
-    bioQualityLabel: "Densidad Nutricional Óptima",
+    bioQualityLabel: "Alta Densidad Nutricional",
     bioGaugeIndex: 4,
     vectorBadges: [
       {
@@ -760,7 +1114,7 @@ export const CAL_AI_SAMPLE_MEALS: SampleMealModel[] = [
     servings: 1,
     healthScore: 9,
     narrative:
-      "Infusión energizante sostenida con L-teanina y EGCG de té verde matcha puro, combinada con leche de avena sin azúcar y canela reguladora de glucosa.",
+      "Té matcha ceremonial batido a la espuma con leche tibia de avena y una pizca sutil de canela dulce, para una energía serena y foco prolongado sin sobresaltos.",
     bioScore: 90,
     bioGrade: "A",
     bioQualityLabel: "Antioxidante & Foco Sostenido",
@@ -836,10 +1190,10 @@ export const CAL_AI_SAMPLE_MEALS: SampleMealModel[] = [
     servings: 1,
     healthScore: 9,
     narrative:
-      "Colación de saciedad inteligente: pectina de manzana verde para ralentizar absorción, polifenoles de chocolate 85% y magnesio de frutos secos.",
+      "Mix crocante de almendras tostadas con rodajas crujientes de manzana verde y bocados intensos de chocolate amargo 85%, ideal para una pausa equilibrada.",
     bioScore: 93,
     bioGrade: "A+",
-    bioQualityLabel: "Densidad Nutricional Óptima",
+    bioQualityLabel: "Alta Densidad Nutricional",
     bioGaugeIndex: 4,
     vectorBadges: [
       {
@@ -940,7 +1294,7 @@ export const CAL_AI_SAMPLE_MEALS: SampleMealModel[] = [
     servings: 1,
     healthScore: 9,
     narrative:
-      "Colación proteica probiótica con cultivos vivos que optimizan la microbiota intestinal y antocianinas antiinflamatorias.",
+      "Yogur griego espeso y aterciopelado servido con arándanos frescos de estación, combinando frescura láctea, suave acidez y bienestar digestivo.",
     bioScore: 95,
     bioGrade: "A+",
     bioQualityLabel: "Alta Proteína & Probióticos",
@@ -1022,7 +1376,7 @@ export const CAL_AI_SAMPLE_MEALS: SampleMealModel[] = [
     servings: 1,
     healthScore: 9,
     narrative:
-      "Postre funcional consciente: textura sedosa lograda con grasas monoinsaturadas de palta, cacao amargo 100% rico en teobromina y magnesio relajante nocturno.",
+      "Mousse artesanal de textura sedosa y aterciopelada a base de palta y cacao puro, coronada con frutillas frescas para un dulce indulgente y ligero.",
     bioScore: 90,
     bioGrade: "A",
     bioQualityLabel: "Dulce Consciente & Bajo Impacto Glucémico",
@@ -1109,7 +1463,7 @@ export const CAL_AI_SAMPLE_MEALS: SampleMealModel[] = [
     servings: 1,
     healthScore: 7,
     narrative:
-      "Desayuno o postre energético con arándanos enteros ricos en antocianinas antioxidantes y fibra, equilibrado con carbohidratos de asimilación activa y jarabe puro de arce.",
+      "Torre de pancakes caseros esponjosos y dorados, coronados con arándanos frescos jugosos y un baño suave de sirope puro de maple.",
     bioScore: 78,
     bioGrade: "B+",
     bioQualityLabel: "Energía Matutina Equilibrada",
@@ -1237,7 +1591,7 @@ export const CAL_AI_SAMPLE_MEALS: SampleMealModel[] = [
     servings: 1,
     healthScore: 4,
     narrative:
-      "Combinación de alta densidad energética y baja densidad de micronutrientes. Presencia de grasas saturadas, aceites de fritura y sodio industrial con escaso aporte de fibra.",
+      "Hamburguesa doble a la plancha con queso derretido en pan artesanal dorado, acompañada de papas crujientes para disfrutar el momento con calma.",
     bioScore: 42,
     bioGrade: "C",
     bioQualityLabel: "Alimento Ultraprocesado",
@@ -1621,7 +1975,7 @@ export function inferContextualMealType(timelineItems?: any[]): {
   };
 }
 
-// Helper: Contextual Natural Language AI Insight (Cumple las 6 Reglas de Oro y se adapta al Choice Chip)
+// Helper: Contextual Natural Language AI Insight (Cumple las 11 Reglas de Oro de Nutrition Intelligence)
 export function generateContextualAiInsight(params: {
   baseNarrative?: string;
   isPreWorkout: boolean;
@@ -1702,7 +2056,7 @@ export function getScanQualityProfile({
   const protein = badgeMap.get("protein") || "";
   const sugar = badgeMap.get("sugar") || "";
   const fat = badgeMap.get("fat") || "";
-  const grains = badgeMap.get("grains") || "";
+  const carbs = badgeMap.get("carbs") || badgeMap.get("grains") || "";
 
   const isUltraProcessed =
     processing.includes("ultra") ||
@@ -1728,8 +2082,10 @@ export function getScanQualityProfile({
     /salmón|salmon|palta|aguacate|nuez|almendra|chía|oliva/i.test(text);
 
   const hasHighQualityProtein =
+    protein.includes("magra y completa") ||
     protein.includes("alta calidad") ||
     protein.includes("magra") ||
+    protein.includes("alto en proteína") ||
     totalProtein >= 22 ||
     /pechuga|pollo|pescado|huevo|tofu|lenteja|garbanzo/i.test(text);
 
@@ -1737,7 +2093,8 @@ export function getScanQualityProfile({
     fiber.includes("buena fuente") ||
     fiber.includes("alto en fibra") ||
     totalFiber >= 3.5 ||
-    grains.includes("entero") ||
+    carbs.includes("complejos") ||
+    carbs.includes("entero") ||
     /quinoa|avena|integral|brócoli|espinaca|legumbre/i.test(text);
 
   // 1. POBRE (Nivel 1): Azúcar simple / Ultraprocesado / Mínima fibra y proteína

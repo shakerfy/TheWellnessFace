@@ -42,7 +42,7 @@ export function useDiarioTimeline() {
 
   const [expandedMealCta, setExpandedMealCta] = useState<Record<string, string | null>>({});
   const [loggedMicroActions, setLoggedMicroActions] = useState<
-    Record<string, { type: string; itemId: string; level?: number; time: string } | null>
+    Record<string, { type: string; itemId?: string; level?: number; time: string } | null>
   >({});
 
   const toggleMealCta = (mealId: string, ctaId: string) => {
@@ -74,19 +74,6 @@ export function useDiarioTimeline() {
       }
     }
     return [
-      {
-        id: "hydration-demo",
-        date: todayStr,
-        time: "08:15 AM",
-        title: "Registro de Hidratación",
-        subtitle: "Chequeo Matutino / Hidratación",
-        type: "hydration",
-        level: 2,
-        desc: "Nivel 2 — Amarillo Pálido",
-        tag: "Nivel 2",
-        coachFeedback:
-          "💧 Consejo Fisiológico: Estado hídrico ideal para el rendimiento físico y deportivo continuo. Mantén sorbos constantes.",
-      },
       {
         id: "activity-demo-1",
         date: todayStr,
@@ -144,42 +131,24 @@ export function useDiarioTimeline() {
   const handleLogArmstrongLevel = (mealId: string, level: number) => {
     if (typeof navigator !== "undefined" && navigator.vibrate) {
       try {
-        navigator.vibrate([25, 40, 25]);
+        navigator.vibrate(15);
       } catch (_) {}
     }
     const currentObj = ARMSTRONG_LEVELS.find((l) => l.level === level) || ARMSTRONG_LEVELS[1];
     const now = new Date();
     const timeStr = now.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
-    const hydrationId = `hydration-${Date.now()}`;
-    const newHydration = {
-      id: hydrationId,
-      date: selectedTimelineDate || todayIso,
-      time: timeStr,
-      title: `Nivel ${level} Armstrong`,
-      subtitle: `${currentObj.title} (${currentObj.state})`,
-      type: "hydration",
-      level,
-      desc: `${currentObj.title} — ${currentObj.state}`,
-      tag: `Nivel ${level} Armstrong`,
-      coachFeedback: `💧 Consejo Fisiológico: ${currentObj.advice}`,
-      createdAt: now.toISOString(),
-    };
 
-    setUserTimelineItems((prev) => [newHydration, ...prev]);
+    // ponytail: Armstrong check is instantaneous in-place biofeedback on the meal card; no separate timeline card created
     setLoggedMicroActions((prev) => ({
       ...prev,
-      [mealId]: { type: "armstrong", itemId: hydrationId, level, time: timeStr },
+      [mealId]: { type: "armstrong", itemId: `armstrong-${mealId}`, level, time: timeStr },
     }));
-    toast.success(`💧 Registrado: Nivel ${level} Armstrong (${currentObj.state})`);
+    toast.success(`💧 Chequeo: Nivel ${level} Armstrong (${currentObj.state})`);
   };
 
   const handleUndoMicroAction = (mealId: string) => {
-    const action = loggedMicroActions[mealId];
-    if (action && action.itemId) {
-      setUserTimelineItems((prev) => prev.filter((it) => it.id !== action.itemId));
-      setLoggedMicroActions((prev) => ({ ...prev, [mealId]: null }));
-      toast.info("Registro de hidratación deshecho");
-    }
+    setLoggedMicroActions((prev) => ({ ...prev, [mealId]: null }));
+    toast.info("Acción deshecha");
   };
 
   const handleAddAccompanimentToMeal = (mealId: string, accompanimentName: string) => {

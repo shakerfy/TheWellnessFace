@@ -1,4 +1,5 @@
 import type { FoodQualityLevel } from "@/components/food-profile-hero";
+import { calculateTimingFit } from "@/lib/timing-fit";
 
 export interface MealMacros {
   mealCalories: number;
@@ -129,11 +130,16 @@ export function getMealQualityData(
         ? "Medio"
         : "Bajo");
 
-  const contextBadge = item.timingFit?.label
-    ? { label: item.timingFit.label, type: item.timingFit.type }
-    : item.contextBadge
-      ? { label: item.contextBadge }
-      : undefined;
+  const fitTag = item.timingFit?.tag || item.timingFit?.label;
+  const dynamicFit = !fitTag && !item.contextBadge ? calculateTimingFit(item) : null;
+  const resolvedTag =
+    fitTag ||
+    dynamicFit?.tag ||
+    (typeof item.contextBadge === "string" ? item.contextBadge : item.contextBadge?.label);
+  const resolvedType =
+    item.timingFit?.type || dynamicFit?.type || item.contextBadge?.type || "optimal";
+
+  const contextBadge = resolvedTag ? { label: resolvedTag, type: resolvedType } : undefined;
 
   return { heroBadges, qualityLevel, qualityLabel, contextBadge };
 }

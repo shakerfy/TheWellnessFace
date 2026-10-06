@@ -60,7 +60,7 @@ export function MobileBottomNav() {
   const isAiCoachActive = pathname === "/app" && currentTab === "diario";
   const isFavoritosActive = pathname === "/app" && currentTab === "favoritos";
   const isPerfilActive =
-    pathname === "/app" && ["config", "pagos", "progreso"].includes(currentTab);
+    pathname === "/app" && ["config", "pagos"].includes(currentTab);
 
   const handleNavClick = (tabId: string) => {
     setSheetOpen(false);

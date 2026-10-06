@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ScanRouteImport } from './routes/scan'
 import { Route as NutritionIntelligenceRouteImport } from './routes/nutrition-intelligence'
+import { Route as MinigamesRouteImport } from './routes/minigames'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
@@ -34,6 +35,11 @@ const ScanRoute = ScanRouteImport.update({
 const NutritionIntelligenceRoute = NutritionIntelligenceRouteImport.update({
   id: '/nutrition-intelligence',
   path: '/nutrition-intelligence',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MinigamesRoute = MinigamesRouteImport.update({
+  id: '/minigames',
+  path: '/minigames',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRoute
   '/auth': typeof AuthRouteWithChildren
   '/dashboard': typeof DashboardRoute
+  '/minigames': typeof MinigamesRoute
   '/nutrition-intelligence': typeof NutritionIntelligenceRoute
   '/scan': typeof ScanRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -95,6 +102,7 @@ export interface FileRoutesByTo {
   '/app': typeof AppRoute
   '/auth': typeof AuthRouteWithChildren
   '/dashboard': typeof DashboardRoute
+  '/minigames': typeof MinigamesRoute
   '/nutrition-intelligence': typeof NutritionIntelligenceRoute
   '/scan': typeof ScanRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -109,6 +117,7 @@ export interface FileRoutesById {
   '/app': typeof AppRoute
   '/auth': typeof AuthRouteWithChildren
   '/dashboard': typeof DashboardRoute
+  '/minigames': typeof MinigamesRoute
   '/nutrition-intelligence': typeof NutritionIntelligenceRoute
   '/scan': typeof ScanRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -124,6 +133,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/dashboard'
+    | '/minigames'
     | '/nutrition-intelligence'
     | '/scan'
     | '/sitemap.xml'
@@ -137,6 +147,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/dashboard'
+    | '/minigames'
     | '/nutrition-intelligence'
     | '/scan'
     | '/sitemap.xml'
@@ -150,6 +161,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/dashboard'
+    | '/minigames'
     | '/nutrition-intelligence'
     | '/scan'
     | '/sitemap.xml'
@@ -164,6 +176,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRoute
   AuthRoute: typeof AuthRouteWithChildren
   DashboardRoute: typeof DashboardRoute
+  MinigamesRoute: typeof MinigamesRoute
   NutritionIntelligenceRoute: typeof NutritionIntelligenceRoute
   ScanRoute: typeof ScanRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -193,6 +206,13 @@ declare module '@tanstack/react-router' {
       path: '/nutrition-intelligence'
       fullPath: '/nutrition-intelligence'
       preLoaderRoute: typeof NutritionIntelligenceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/minigames': {
+      id: '/minigames'
+      path: '/minigames'
+      fullPath: '/minigames'
+      preLoaderRoute: typeof MinigamesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -269,6 +289,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRoute,
   AuthRoute: AuthRouteWithChildren,
   DashboardRoute: DashboardRoute,
+  MinigamesRoute: MinigamesRoute,
   NutritionIntelligenceRoute: NutritionIntelligenceRoute,
   ScanRoute: ScanRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,

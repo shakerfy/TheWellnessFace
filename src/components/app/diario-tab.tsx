@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { BioStateCard } from "@/components/bio-state-card";
+import { Gamepad2, ChevronRight } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import {
   useDiarioTimeline,
   NutritionProBanner,
@@ -110,31 +112,7 @@ export function DiarioTab() {
     });
   };
 
-  const handleSaveHydration = (level: number, label: string, feedback: string) => {
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
-    const dateStr = timeline.selectedTimelineDate || timeline.todayIso;
 
-    const newHydrationItem = {
-      id: `hydration-${Date.now()}`,
-      createdAt: now.toISOString(),
-      type: "hydration",
-      time: timeStr,
-      date: dateStr,
-      title: "Registro de Hidratación",
-      subtitle: "Chequeo Matutino / Hidratación",
-      desc: label
-        .replace(/\s*\(Hidratación Saludable\)/gi, "")
-        .replace(/\s*\(Armstrong\)/gi, "")
-        .trim(),
-      level: level,
-      coachFeedback: `💧 Consejo Fisiológico: ${feedback}`,
-      tag: `Nivel ${level}`,
-    };
-
-    timeline.setUserTimelineItems((prev) => [newHydrationItem, ...prev]);
-    toast.success(`✓ Hidratación registrada: Nivel ${level}`);
-  };
 
   const handleCheckinSuccess = (data: any) => {
     setActiveModal("none");
@@ -197,8 +175,38 @@ export function DiarioTab() {
             />
           </div>
 
-          {/* Banner sutil a Nutrition Intelligence Suite */}
-          <NutritionProBanner onClick={() => navigate({ to: "/nutrition-intelligence" })} />
+          {/* Banners: Nutrition Intelligence Suite & Minijuegos Lab */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <NutritionProBanner onClick={() => navigate({ to: "/nutrition-intelligence" })} />
+            <div
+              onClick={() => navigate({ to: "/minigames" })}
+              className="rounded-3xl border border-border/80 bg-card p-4 sm:p-5 shadow-2xs hover:-translate-y-0.5 hover:border-foreground/30 hover:shadow-md transition-all duration-300 cursor-pointer flex items-center justify-between gap-3 text-left group"
+            >
+              <div className="flex items-center gap-3.5 min-w-0">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <Gamepad2 className="w-5 h-5" />
+                </div>
+                <div className="min-w-0 space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-foreground">Minijuegos Lab</span>
+                    <Badge
+                      variant="outline"
+                      className="text-[9px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20 py-0 px-1.5 rounded-full"
+                    >
+                      10 JUEGOS
+                    </Badge>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground truncate">
+                    Probá los 10 juegos y testeá su responsividad.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 text-xs font-bold text-muted-foreground group-hover:text-foreground shrink-0 pr-1">
+                <span className="hidden sm:inline">Probar</span>
+                <ChevronRight className="w-4 h-4" />
+              </div>
+            </div>
+          </div>
 
           {/* Feed de la Línea de Tiempo */}
           <TimelineFeed
@@ -219,11 +227,12 @@ export function DiarioTab() {
             onEdit={timeline.setEditingTimelineItem}
             onAddAccompaniment={timeline.handleAddAccompanimentToMeal}
             onDoubleTapLike={timeline.handleDoubleTapLike}
+            onLogArmstrongLevel={timeline.handleLogArmstrongLevel}
           />
         </div>
       </div>
 
-      {/* FAB & Action Modals (Streak, QR, Armstrong, Breathing, Activity, Edit) */}
+      {/* FAB & Action Modals (Streak, QR, Breathing, Activity, Edit) */}
       <DiarioActionModals
         isFabOpen={isFabOpen}
         setIsFabOpen={setIsFabOpen}
@@ -244,7 +253,6 @@ export function DiarioTab() {
         onSaveEditedTimelineItem={timeline.handleSaveEditedTimelineItem}
         onToggleSaveTimelineItem={timeline.handleToggleSaveTimelineItem}
         onSaveActivity={handleSaveActivity}
-        onSaveHydration={handleSaveHydration}
         onCheckinSuccess={handleCheckinSuccess}
       />
     </div>

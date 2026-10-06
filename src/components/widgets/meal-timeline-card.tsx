@@ -66,11 +66,11 @@ export function MealTimelineCard({
   const getNutritionalBadgeClass = (val: string) => {
     switch (val) {
       case "Alto":
-        return "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30";
+        return "bg-secondary text-foreground border-border/80";
       case "Medio":
-        return "bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/30";
+        return "bg-secondary/70 text-foreground/90 border-border/60";
       default:
-        return "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30";
+        return "bg-secondary/50 text-muted-foreground border-border/40";
     }
   };
 
@@ -83,7 +83,7 @@ export function MealTimelineCard({
       )}
     >
       <div>
-        {/* Header Kicker + Badge de Valor Nutricional + Favorito */}
+        {/* Header Kicker + Badge de Perfil Nutricional + Favorito */}
         <div className="flex items-center justify-between gap-2 pb-2">
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 flex items-center gap-1.5">
@@ -104,7 +104,7 @@ export function MealTimelineCard({
                 getNutritionalBadgeClass(nutritionalValue)
               )}
             >
-              Valor {nutritionalValue}
+              Perfil {nutritionalValue}
             </Badge>
 
             <button

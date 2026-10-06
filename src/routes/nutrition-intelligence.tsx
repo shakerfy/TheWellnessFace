@@ -4,12 +4,14 @@ import {
   X,
   Camera,
   Sparkles,
-  Utensils,
+  Dumbbell,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { NutritionCalibrationView } from "@/components/nutrition-calibration-view";
+import { NutritionIntelligencePreview } from "@/components/nutrition-intelligence-preview";
 
 export const Route = createFileRoute("/nutrition-intelligence")({
   component: NutritionIntelligencePage,
@@ -57,27 +59,27 @@ export function NutritionIntelligencePage() {
   const benefits = [
     {
       id: "scan",
-      title: "Analizá tus comidas",
-      desc: "Obtené información nutricional a partir de una foto.",
+      title: "AI Food Scan Ilimitado",
+      desc: "Sacá una foto en cualquier restaurante, oficina o casa y entendé el valor real de tu comida en 3 segundos sin anotar nada.",
       icon: Camera,
       iconColor: "text-amber-500",
       iconBg: "bg-amber-500/10",
     },
     {
+      id: "timing",
+      title: "Timing Fit con tu Gimnasio y el Sol",
+      desc: "La IA sincroniza tu plato con tus clases agendadas y la hora solar: ventana pre-entreno, post-recuperación o corte nocturno.",
+      icon: Dumbbell,
+      iconColor: "text-emerald-500",
+      iconBg: "bg-emerald-500/10",
+    },
+    {
       id: "insights",
-      title: "Recibí insights personalizados",
-      desc: "Convertí cada comida en una oportunidad para aprender.",
+      title: "Micro-Insights y Sinergias del Plato",
+      desc: "Hacks biológicos de 1 toque en cada sobremesa: combinaciones de absorción, desmitificación de creencias y saciedad sin culpa.",
       icon: Sparkles,
       iconColor: "text-sky-500",
       iconBg: "bg-sky-500/10",
-    },
-    {
-      id: "balance",
-      title: "Equilibrá tu plato sin vueltas",
-      desc: "Ideas simples de qué sumar a tu comida para tener más energía y sentirte bien.",
-      icon: Utensils,
-      iconColor: "text-emerald-500",
-      iconBg: "bg-emerald-500/10",
     },
   ];
 
@@ -142,16 +144,23 @@ export function NutritionIntelligencePage() {
         {/* Header / Kicker + Title + Subtitle */}
         <div className="text-center space-y-3">
           <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-            NUTRITION INTELLIGENCE
+            NUTRITION INTELLIGENCE PRO
           </span>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-            Entendé mejor cómo te alimentás.
+            Tu plato sincronizado con tu cuerpo.
           </h1>
           <div className="space-y-1 text-sm sm:text-base text-muted-foreground leading-relaxed max-w-md mx-auto">
-            <p>No se trata de contar calorías.</p>
-            <p>Se trata de transformar lo que comés en información que puedas usar.</p>
+            <p className="font-semibold text-foreground/90">
+              Cero pesajes. Cero calorías. Cero reportes que te juzguen.
+            </p>
+            <p>
+              Claridad biológica instantánea en cada comida, conectada con tu entrenamiento diario.
+            </p>
           </div>
         </div>
+
+        {/* Visual Demonstration: Cal AI style before/after */}
+        <NutritionIntelligencePreview />
 
         {/* Active Member Banner */}
         {isActive && (
@@ -161,7 +170,7 @@ export function NutritionIntelligencePage() {
                 Tu membresía a Nutrition Intelligence está activa
               </span>
               <p className="text-[11px] text-muted-foreground">
-                Tenés acceso ilimitado al escáner y análisis de tus comidas.
+                Tenés acceso ilimitado al escáner y análisis en tiempo real.
               </p>
             </div>
             <Button
@@ -175,7 +184,7 @@ export function NutritionIntelligencePage() {
           </div>
         )}
 
-        {/* 3 Beneficios Máximo */}
+        {/* 3 Beneficios Principales */}
         <div className="space-y-3">
           {benefits.map((benefit) => {
             const IconComp = benefit.icon;
@@ -206,15 +215,31 @@ export function NutritionIntelligencePage() {
           })}
         </div>
 
+        {/* Anti-Diet Peace of Mind Pills */}
+        <div className="flex flex-wrap items-center justify-center gap-2 py-1 text-[11px] font-semibold text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/60 border border-border/60">
+            <Check className="w-3.5 h-3.5 text-emerald-500" />
+            Sin pesar comida
+          </span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/60 border border-border/60">
+            <Check className="w-3.5 h-3.5 text-emerald-500" />
+            Sin contar calorías
+          </span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/60 border border-border/60">
+            <Check className="w-3.5 h-3.5 text-emerald-500" />
+            Sin deberes ni reportes
+          </span>
+        </div>
+
         {/* Pricing & CTA Section */}
-        <div className="space-y-3 pt-2">
+        <div className="space-y-3 pt-1">
           {/* Pricing Callout */}
-          <div className="rounded-2xl border border-border/80 bg-secondary/30 p-4 text-center space-y-1">
+          <div className="rounded-3xl border border-border/80 bg-card p-4.5 text-center space-y-1 shadow-xs">
             <div className="text-base sm:text-lg font-bold text-foreground">
-              7 días gratis
+              7 días de prueba completa sin cargo
             </div>
             <div className="text-xs sm:text-sm text-muted-foreground font-medium">
-              Después AR$ 9.900 / mes
+              Luego AR$ 9.900 / mes • Cancelás con un toque cuando quieras
             </div>
           </div>
 
@@ -229,7 +254,7 @@ export function NutritionIntelligencePage() {
 
           {/* Subtext */}
           <p className="text-center text-xs text-muted-foreground font-medium">
-            Cancelá cuando quieras.
+            Activación instantánea. Escaneá tu próxima comida hoy mismo.
           </p>
         </div>
       </main>
