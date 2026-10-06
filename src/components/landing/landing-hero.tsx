@@ -8,25 +8,71 @@ interface LandingHeroProps {
   isSearching: boolean;
 }
 
+const HERO_VIDEOS = [
+  "/hero-recovery.mp4",
+  "/hero-pilates.mp4",
+  "/hero-hyrox.mp4",
+];
+
 export function LandingHero({ onSearch, isSearching }: LandingHeroProps) {
+  const [activeVideoIndex, setActiveVideoIndex] = useState(0);
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+
+  const handleVideoEnded = (index: number) => {
+    const nextIndex = (index + 1) % HERO_VIDEOS.length;
+    const nextVideo = videoRefs.current[nextIndex];
+    if (nextVideo) {
+      nextVideo.currentTime = 0;
+      nextVideo.play().catch(() => {});
+    }
+    setActiveVideoIndex(nextIndex);
+  };
+
+  useEffect(() => {
+    videoRefs.current.forEach((vid) => {
+      if (vid) {
+        vid.muted = true;
+        vid.defaultMuted = true;
+      }
+    });
+    const currentVideo = videoRefs.current[activeVideoIndex];
+    if (currentVideo) {
+      currentVideo.currentTime = 0;
+      currentVideo.play().catch(() => {});
+    }
+  }, [activeVideoIndex]);
+
   return (
     <section className="relative pb-20 pt-20 md:pb-28 md:pt-28 bg-[#0E0D0C] border-b border-[#26221E] overflow-hidden transition-colors">
-      {/* Ambient subtle warm illumination (Remedy Place style) */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-1/2 top-0 -translate-x-1/2 h-[500px] w-[800px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(197,186,168,0.07)_0%,transparent_70%)] blur-[90px]" />
+      {/* Looping ambient background video playlist with smooth crossfade */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        {HERO_VIDEOS.map((src, idx) => (
+          <video
+            key={src}
+            ref={(el) => {
+              videoRefs.current[idx] = el;
+            }}
+            autoPlay={idx === 0}
+            muted
+            playsInline
+            preload="auto"
+            onEnded={() => handleVideoEnded(idx)}
+            className={`absolute inset-0 h-full w-full object-cover scale-105 transition-opacity duration-1000 ease-in-out ${
+              activeVideoIndex === idx ? "opacity-90 z-[1]" : "opacity-0 z-0 pointer-events-none"
+            }`}
+          >
+            <source src={src} type="video/mp4" />
+          </video>
+        ))}
+        {/* Soft edge fade: smooth blend with header and footer without washing out the center */}
+        <div className="absolute inset-0 z-[2] bg-gradient-to-b from-[#0E0D0C]/50 via-transparent to-[#0E0D0C]" />
       </div>
 
       <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center px-6 text-center">
-        {/* Overline Sanctuary Badge */}
-        <div className="inline-flex items-center gap-2 rounded-full border border-[#2E2924] bg-[#181614]/80 px-4 py-1.5 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.22em] text-[#C5BAA8] backdrop-blur-md mb-6 animate-fade-in">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#C5BAA8]" />
-          The Wellness Face • Concierge de Movimiento & Recuperación
-        </div>
-
-        <h1 className="text-balance text-3xl font-light tracking-tight text-[#F6F4EE] sm:text-4xl md:text-[44px] lg:text-[48px] leading-[1.15]">
+        <h1 className="text-balance text-3xl font-light tracking-tight text-[#F6F4EE] sm:text-4xl md:text-[44px] lg:text-[48px] leading-[1.15] drop-shadow-[0_2px_14px_rgba(0,0,0,0.85)]">
           Encuentra tu santuario de bienestar, rendimiento y calma
         </h1>
-        <p className="mt-4 w-full max-w-2xl mx-auto text-center text-[14px] text-[#A39C91] sm:text-[15px] md:text-[16px] leading-relaxed">
+        <p className="mt-4 w-full max-w-2xl mx-auto text-center text-[14px] text-[#DDD6CB] sm:text-[15px] md:text-[16px] leading-relaxed drop-shadow-[0_1px_8px_rgba(0,0,0,0.85)] font-normal">
           Buscador asistido por IA de estudios de Pilates, boxes de Hyrox, yoga, funcional y centros de recuperación seleccionados.
         </p>
 
@@ -47,6 +93,8 @@ function PromptBox({
   const [isFocused, setIsFocused] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<any>(null);
+
+  const isSolid = isFocused || inputValue.trim().length > 0;
 
   useEffect(() => {
     if (
@@ -97,12 +145,12 @@ function PromptBox({
     <div className="mt-10 w-full max-w-2xl px-2 relative z-20">
       <form
         onSubmit={handleSubmit}
-        className={`relative rounded-3xl border transition-all duration-500 bg-[#151311] p-5 text-left shadow-[0_20px_50px_rgba(0,0,0,0.6)] ${
+        className={`relative rounded-3xl border transition-all duration-500 p-5 text-left ${
           isSearching
-            ? "border-[#C5BAA8] ring-2 ring-[#C5BAA8]/20"
-            : isFocused
-              ? "border-[#C5BAA8]/60 shadow-[0_20px_60px_rgba(197,186,168,0.08)]"
-              : "border-[#2A2621] hover:border-[#38332C]"
+            ? "bg-[#11100E] border-[#C5BAA8] ring-2 ring-[#C5BAA8]/20 shadow-[0_25px_65px_rgba(0,0,0,0.9)]"
+            : isSolid
+              ? "bg-[#11100E] backdrop-blur-2xl border-[#C5BAA8]/70 shadow-[0_25px_65px_rgba(0,0,0,0.9)] ring-1 ring-[#C5BAA8]/20"
+              : "bg-[#151311]/45 backdrop-blur-xl border-white/[0.1] hover:border-white/[0.2] hover:bg-[#151311]/60 shadow-[0_15px_45px_rgba(0,0,0,0.55)]"
         }`}
       >
         <div className="relative min-h-[64px] text-[15px] leading-relaxed">
@@ -139,7 +187,11 @@ function PromptBox({
           )}
         </div>
 
-        <div className="mt-4 flex items-center justify-end gap-3 pt-2 border-t border-[#221F1B]">
+        <div
+          className={`mt-4 flex items-center justify-end gap-3 pt-2 border-t transition-colors duration-500 ${
+            isSolid ? "border-[#221F1B]" : "border-white/[0.08]"
+          }`}
+        >
           <button
             type="button"
             onClick={toggleListening}
