@@ -382,5 +382,56 @@ select {
   animation: weekLabelInFromRight 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* ==========================================================================
+   Vidrio Ahumado Glassmorphism (The Wellness Face Sanctuary Design System)
+   ========================================================================== */
+
+@utility glass-smoked {
+  background-color: rgba(21, 19, 17, 0.45);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.45);
+}
+
+@utility glass-smoked-interactive {
+  background-color: rgba(21, 19, 17, 0.45);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.45);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &:hover {
+    background-color: rgba(21, 19, 17, 0.65);
+    border-color: rgba(255, 255, 255, 0.18);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  }
+}
+
+@utility glass-smoked-pill {
+  border-radius: 9999px;
+  background-color: rgba(24, 22, 20, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #a39c91;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &:hover {
+    color: #f6f4ee;
+    background-color: rgba(32, 29, 26, 0.85);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+}
+
+@utility glass-obsidian-solid {
+  background-color: #11100e;
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid rgba(197, 186, 168, 0.6);
+  box-shadow: 0 25px 65px rgba(0, 0, 0, 0.9);
+}
+
 
 
