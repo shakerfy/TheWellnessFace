@@ -10,14 +10,24 @@ interface LandingHeroProps {
 
 export function LandingHero({ onSearch, isSearching }: LandingHeroProps) {
   return (
-    <section className="relative pb-20 pt-20 md:pb-28 md:pt-28 bg-[#f8fafc] dark:bg-background border-b border-border/40 transition-colors">
+    <section className="relative pb-20 pt-20 md:pb-28 md:pt-28 bg-[#0E0D0C] border-b border-[#26221E] overflow-hidden transition-colors">
+      {/* Ambient subtle warm illumination (Remedy Place style) */}
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute left-1/2 top-0 -translate-x-1/2 h-[500px] w-[800px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(197,186,168,0.07)_0%,transparent_70%)] blur-[90px]" />
+      </div>
+
       <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center px-6 text-center">
-        <h1 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-[42px] lg:text-[46px]">
-          Encuentra donde entrenar como te lo imaginas
+        {/* Overline Sanctuary Badge */}
+        <div className="inline-flex items-center gap-2 rounded-full border border-[#2E2924] bg-[#181614]/80 px-4 py-1.5 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.22em] text-[#C5BAA8] backdrop-blur-md mb-6 animate-fade-in">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#C5BAA8]" />
+          The Wellness Face • Concierge de Movimiento & Recuperación
+        </div>
+
+        <h1 className="text-balance text-3xl font-light tracking-tight text-[#F6F4EE] sm:text-4xl md:text-[44px] lg:text-[48px] leading-[1.15]">
+          Encuentra tu santuario de bienestar, rendimiento y calma
         </h1>
-        <p className="mt-4 w-full max-w-5xl mx-auto text-center text-[14px] text-muted-foreground/85 dark:text-slate-200 sm:text-[15px] md:text-[16px] lg:whitespace-nowrap">
-          Busca, reserva y gestiona tu entrenamiento en los mejores gimnasios, studios
-          y fitness centers con IA.
+        <p className="mt-4 w-full max-w-2xl mx-auto text-center text-[14px] text-[#A39C91] sm:text-[15px] md:text-[16px] leading-relaxed">
+          Buscador asistido por IA de estudios de Pilates, boxes de Hyrox, yoga, funcional y centros de recuperación seleccionados.
         </p>
 
         <PromptBox onSearch={onSearch} isSearching={isSearching} />
@@ -87,12 +97,12 @@ function PromptBox({
     <div className="mt-10 w-full max-w-2xl px-2 relative z-20">
       <form
         onSubmit={handleSubmit}
-        className={`relative rounded-3xl border transition-all duration-300 bg-background p-5 text-left ${
+        className={`relative rounded-3xl border transition-all duration-500 bg-[#151311] p-5 text-left shadow-[0_20px_50px_rgba(0,0,0,0.6)] ${
           isSearching
-            ? "border-foreground ring-2 ring-foreground/10"
+            ? "border-[#C5BAA8] ring-2 ring-[#C5BAA8]/20"
             : isFocused
-              ? "border-foreground"
-              : "border-border/80"
+              ? "border-[#C5BAA8]/60 shadow-[0_20px_60px_rgba(197,186,168,0.08)]"
+              : "border-[#2A2621] hover:border-[#38332C]"
         }`}
       >
         <div className="relative min-h-[64px] text-[15px] leading-relaxed">
@@ -108,39 +118,38 @@ function PromptBox({
               }
             }}
             placeholder=""
-            className="w-full min-h-[64px] bg-transparent text-foreground placeholder-transparent focus:outline-none resize-none border-none p-0 focus:ring-0"
+            className="w-full min-h-[64px] bg-transparent text-[#F6F4EE] placeholder-transparent focus:outline-none resize-none border-none p-0 focus:ring-0"
             disabled={isSearching}
           />
 
           {!inputValue && !isFocused && (
-            <div className="absolute inset-0 pointer-events-none text-muted-foreground select-none">
+            <div className="absolute inset-0 pointer-events-none text-[#7D766D] select-none">
               <Typewriter
                 phrases={[
-                  "Quiero un gimnasio con sala de musculación cerca de Palermo bajo $20.000…",
-                  "Buscame clases de yoga matutino en Recoleta…",
-                  "Necesito un box de CrossFit con WOD a las 19hs…",
-                  "Pilates reformer con grupos reducidos en Villa Crespo…",
-                  "Estudio de spinning con luces y buena música en Belgrano…",
-                  "Un gimnasio que abra 24 horas y tenga estacionamiento…",
-                  "Clases de funcional al aire libre para los sábados a la mañana…",
-                  "Lugar de powerlifting con discos olímpicos y barras buenas…",
-                  "Busco clases de zumba o baile divertidas después del trabajo…",
+                  "Pilates reformer con luz natural y grupos reducidos en Pichincha…",
+                  "Box de Hyrox o CrossFit con zona de movilidad y recovery…",
+                  "Sesiones de yoga restaurativo y respiración cerca de Bv. Oroño…",
+                  "Estudio boutique para entrenar fuerza sin impacto articular…",
+                  "Centro de entrenamiento funcional con sauna o contraste frío…",
+                  "Estudio con pocas personas para entrenar a las 7 AM antes de la oficina…",
+                  "Box de funcional atlético con vestuarios impecables y buena vibra…",
                 ]}
               />
             </div>
           )}
         </div>
 
-        <div className="mt-4 flex items-center justify-end gap-3 pt-2">
+        <div className="mt-4 flex items-center justify-end gap-3 pt-2 border-t border-[#221F1B]">
           <button
             type="button"
             onClick={toggleListening}
             className={`grid h-8 w-8 place-items-center rounded-full transition ${
               isListening
-                ? "bg-red-500 text-white animate-pulse"
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-rose-500 text-white animate-pulse"
+                : "text-[#8C857B] hover:text-[#F6F4EE] hover:bg-[#221F1B]"
             }`}
             disabled={isSearching}
+            title={isListening ? "Escuchando voz..." : "Búsqueda por voz"}
           >
             <Mic className="h-4 w-4" />
           </button>
@@ -149,13 +158,13 @@ function PromptBox({
             size="icon"
             className={`h-8 w-8 rounded-full transition-all duration-300 ${
               inputValue.trim()
-                ? "bg-foreground text-background hover:bg-foreground/90"
-                : "bg-muted text-muted-foreground cursor-not-allowed"
+                ? "bg-[#E8E2D5] text-[#141312] hover:bg-[#F6F4EE]"
+                : "bg-[#221F1B] text-[#5C554D] cursor-not-allowed"
             }`}
             disabled={isSearching || !inputValue.trim()}
           >
             {isSearching ? (
-              <span className="h-4 w-4 border-2 border-background border-t-transparent rounded-full animate-spin" />
+              <span className="h-4 w-4 border-2 border-[#141312] border-t-transparent rounded-full animate-spin" />
             ) : (
               <ArrowUp className="h-4 w-4" />
             )}

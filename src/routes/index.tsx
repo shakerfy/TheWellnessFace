@@ -201,8 +201,8 @@ export function Index({ hideHeader = false }: { hideHeader?: boolean } = {}) {
   const gyms = baseGyms.filter((g) => !showOnlyFavorites || favorites.includes(g.slug));
 
   return (
-    <div className="min-h-screen bg-background">
-      {!hideHeader && <SiteHeader />}
+    <div className="min-h-screen bg-[#0E0D0C] text-[#F6F4EE] selection:bg-[#C5BAA8] selection:text-[#0E0D0C]">
+      {!hideHeader && <SiteHeader variant="sanctuary" />}
       <LandingHero onSearch={handleSearch} isSearching={isSearching} />
       <LandingStats />
       <LandingGymSearch
@@ -224,7 +224,7 @@ export function Index({ hideHeader = false }: { hideHeader?: boolean } = {}) {
       <LandingTestimonials />
       <LandingFAQ />
       <LandingCTASection />
-      <SiteFooter />
+      <SiteFooter variant="sanctuary" />
     </div>
   );
 }

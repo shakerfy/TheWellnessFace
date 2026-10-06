@@ -24,7 +24,7 @@ import {
 import { WellnessSymbol } from "@/components/wellness-symbol";
 import { ThemeToggle } from "@/components/theme-toggle";
 
-export function SiteHeader() {
+export function SiteHeader({ variant = "default" }: { variant?: "default" | "sanctuary" } = {}) {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [userPhoto, setUserPhoto] = useState(() => {
@@ -78,8 +78,17 @@ export function SiteHeader() {
     }, 150);
   };
 
+  const isSanctuary = variant === "sanctuary";
+
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
+    <header
+      className={cn(
+        "sticky top-0 z-40 backdrop-blur-xl transition-colors duration-300",
+        isSanctuary
+          ? "border-b border-[#26221E] bg-[#0E0D0C]/90 text-[#F5F3EE]"
+          : "border-b border-border/60 bg-background/80",
+      )}
+    >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 relative">
         {/* Left: User Profile Photo avatar on mobile, Nav links on desktop */}
         <div className="flex items-center flex-1 justify-start gap-3">
@@ -87,20 +96,46 @@ export function SiteHeader() {
             <button
               type="button"
               onClick={() => navigate({ to: "/app", search: { tab: "config" } })}
-              className="md:hidden w-8 h-8 rounded-full border border-border/80 overflow-hidden bg-secondary shrink-0 shadow-2xs select-none cursor-pointer active:scale-95 transition-transform"
+              className={cn(
+                "md:hidden w-8 h-8 rounded-full border overflow-hidden shrink-0 shadow-2xs select-none cursor-pointer active:scale-95 transition-transform",
+                isSanctuary ? "border-[#3A352F] bg-[#1A1816]" : "border-border/80 bg-secondary",
+              )}
               title="Ver mi perfil"
             >
               <img src={userPhoto} alt="Foto de Perfil" className="w-full h-full object-cover" />
             </button>
           )}
-          <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
-            <a href="/#como-funciona" className="transition hover:text-foreground">
+          <nav
+            className={cn(
+              "hidden items-center gap-6 text-sm md:flex transition-colors",
+              isSanctuary ? "text-[#A39C91]" : "text-muted-foreground",
+            )}
+          >
+            <a
+              href="/#como-funciona"
+              className={cn(
+                "transition",
+                isSanctuary ? "hover:text-[#F5F3EE]" : "hover:text-foreground",
+              )}
+            >
               Cómo funciona
             </a>
-            <Link to="/blog" className="transition hover:text-foreground">
+            <Link
+              to="/blog"
+              className={cn(
+                "transition",
+                isSanctuary ? "hover:text-[#F5F3EE]" : "hover:text-foreground",
+              )}
+            >
               Blog
             </Link>
-            <a href="/#para-gimnasios" className="transition hover:text-foreground">
+            <a
+              href="/#para-gimnasios"
+              className={cn(
+                "transition",
+                isSanctuary ? "hover:text-[#F5F3EE]" : "hover:text-foreground",
+              )}
+            >
               Partners
             </a>
           </nav>
@@ -260,18 +295,42 @@ export function SiteHeader() {
   );
 }
 
-export function SiteFooter() {
+export function SiteFooter({ variant = "default" }: { variant?: "default" | "sanctuary" } = {}) {
+  const isSanctuary = variant === "sanctuary";
+
   return (
-    <footer className="border-t border-border/60 bg-background pb-16 md:pb-0">
+    <footer
+      className={cn(
+        "border-t pb-16 md:pb-0 transition-colors duration-300",
+        isSanctuary
+          ? "border-[#26221E] bg-[#0A0909] text-[#F5F3EE]"
+          : "border-border/60 bg-background",
+      )}
+    >
       <div className="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-6 py-12 md:grid-cols-4">
         <div>
           <Link to="/" className="flex items-center gap-2.5 group select-none">
-            <WellnessSymbol className="w-6 h-6 text-foreground transition-transform duration-300 group-hover:scale-105" />
-            <span className="text-xl font-poppins font-semibold tracking-tight text-foreground">
+            <WellnessSymbol
+              className={cn(
+                "w-6 h-6 transition-transform duration-300 group-hover:scale-105",
+                isSanctuary ? "text-[#E8E2D5]" : "text-foreground",
+              )}
+            />
+            <span
+              className={cn(
+                "text-xl font-poppins font-semibold tracking-tight",
+                isSanctuary ? "text-[#F5F3EE]" : "text-foreground",
+              )}
+            >
               The Wellness Face
             </span>
           </Link>
-          <p className="mt-4 max-w-xs text-sm text-muted-foreground">
+          <p
+            className={cn(
+              "mt-4 max-w-xs text-sm",
+              isSanctuary ? "text-[#A39C91]" : "text-muted-foreground",
+            )}
+          >
             Tu bienestar, bien elegido.
           </p>
         </div>
@@ -281,11 +340,29 @@ export function SiteFooter() {
           { t: "Legal", l: ["Términos", "Privacidad", "Cookies"] },
         ].map((c) => (
           <div key={c.t}>
-            <div className="text-sm font-semibold text-foreground">{c.t}</div>
-            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+            <div
+              className={cn(
+                "text-sm font-semibold tracking-wide",
+                isSanctuary ? "text-[#F5F3EE] uppercase text-[12px] tracking-[0.15em]" : "text-foreground",
+              )}
+            >
+              {c.t}
+            </div>
+            <ul
+              className={cn(
+                "mt-3 space-y-2 text-sm",
+                isSanctuary ? "text-[#A39C91]" : "text-muted-foreground",
+              )}
+            >
               {c.l.map((i) => (
                 <li key={i}>
-                  <a href="#" className="transition hover:text-foreground">
+                  <a
+                    href="#"
+                    className={cn(
+                      "transition",
+                      isSanctuary ? "hover:text-[#F5F3EE]" : "hover:text-foreground",
+                    )}
+                  >
                     {i}
                   </a>
                 </li>
@@ -294,10 +371,20 @@ export function SiteFooter() {
           </div>
         ))}
       </div>
-      <div className="border-t border-border/60">
-        <div className="mx-auto flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between px-6 py-5 text-xs text-muted-foreground text-center sm:text-left">
+      <div
+        className={cn(
+          "border-t",
+          isSanctuary ? "border-[#1F1C19]" : "border-border/60",
+        )}
+      >
+        <div
+          className={cn(
+            "mx-auto flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between px-6 py-5 text-xs text-center sm:text-left",
+            isSanctuary ? "text-[#7D766D]" : "text-muted-foreground",
+          )}
+        >
           <span>© {new Date().getFullYear()} The Wellness Face. Todos los derechos reservados.</span>
-          <span>Hecho con precisión.</span>
+          <span>Hecho con precisión y calma.</span>
         </div>
       </div>
     </footer>
