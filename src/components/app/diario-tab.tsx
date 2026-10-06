@@ -180,7 +180,7 @@ export function DiarioTab() {
             <NutritionProBanner onClick={() => navigate({ to: "/nutrition-intelligence" })} />
             <div
               onClick={() => navigate({ to: "/minigames" })}
-              className="rounded-3xl border border-border/80 bg-card p-4 sm:p-5 shadow-2xs hover:-translate-y-0.5 hover:border-foreground/30 hover:shadow-md transition-all duration-300 cursor-pointer flex items-center justify-between gap-3 text-left group"
+              className="rounded-3xl glass-smoked-interactive p-4 sm:p-5 cursor-pointer flex items-center justify-between gap-3 text-left group"
             >
               <div className="flex items-center gap-3.5 min-w-0">
                 <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">

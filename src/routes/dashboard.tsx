@@ -255,7 +255,7 @@ function GymDashboard() {
   return (
     <div className="min-h-screen bg-slate-50/70 dark:bg-background text-foreground flex flex-col md:flex-row">
       {/* Sidebar */}
-      <aside className="w-full md:w-64 bg-card border-b md:border-b-0 md:border-r border-border p-4 md:p-5 flex flex-col h-auto md:h-screen sticky top-0 z-30 shrink-0">
+      <aside className="w-full md:w-64 dark:bg-[#13110F]/90 bg-card border-b md:border-b-0 md:border-r border-border p-4 md:p-5 flex flex-col h-auto md:h-screen sticky top-0 z-30 shrink-0 backdrop-blur-xl">
         <div className="flex items-center justify-between mb-5 w-full shrink-0">
           <Link
             to="/"

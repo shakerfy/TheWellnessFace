@@ -34,7 +34,7 @@ export const Route = createFileRoute("/app")({
 
 const TABS = [
   { id: "inicio", label: "Inicio", icon: User },
-  { id: "diario", label: "AI Coach", icon: Sparkles },
+  { id: "diario", label: "Diario", icon: Sparkles },
   { id: "clases", label: "Check-in", icon: QrCode },
   { id: "favoritos", label: "Favoritos", icon: Heart },
   { id: "pagos", label: "Suscripción", icon: CreditCard },
@@ -100,7 +100,7 @@ function StudentDashboard() {
 
   return (
     <div
-      className={`min-h-screen ${activeTab === "diario" ? "bg-[#f8fafc] dark:bg-background" : "bg-background"} text-foreground flex flex-col transition-colors duration-200 w-full`}
+      className="min-h-screen bg-background text-foreground flex flex-col transition-colors duration-200 w-full"
     >
       {/* Site Header with User Dropdown Menu always visible at top */}
       <SiteHeader />
@@ -142,8 +142,8 @@ function StudentDashboard() {
 
       {/* QR Modal Overlay */}
       {qrOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 z-50 animate-fade-in">
-          <div className="relative bg-card border border-border w-full max-w-[360px] rounded-3xl p-6 sm:p-8 text-center">
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-md flex items-center justify-center p-6 z-50 animate-fade-in">
+          <div className="relative glass-obsidian-solid w-full max-w-[360px] rounded-3xl p-6 sm:p-8 text-center">
             <button
               onClick={() => setQrOpen(false)}
               className="absolute right-4 top-4 p-2 rounded-full hover:bg-secondary transition"
@@ -174,8 +174,8 @@ function StudentDashboard() {
 
       {/* Cancellation Blocked Alert Modal */}
       {blockedCancellationClass && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 z-50 animate-fade-in">
-          <div className="relative bg-card border border-border w-full max-w-[420px] rounded-3xl p-6 flex flex-col text-center items-center">
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-md flex items-center justify-center p-6 z-50 animate-fade-in">
+          <div className="relative glass-obsidian-solid w-full max-w-[420px] rounded-3xl p-6 flex flex-col text-center items-center">
             <button
               onClick={() => setBlockedCancellationClass(null)}
               className="absolute right-4 top-4 p-2 rounded-full hover:bg-secondary transition z-10"

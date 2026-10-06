@@ -119,7 +119,7 @@ function BlogIndexPage() {
                   placeholder="Buscar por tema, palabra clave o autor..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-12 rounded-2xl border-border bg-card pl-11 pr-4 text-sm shadow-sm transition-all focus:border-foreground focus:ring-1 focus:ring-foreground"
+                  className="h-12 rounded-2xl glass-smoked pl-11 pr-4 text-sm transition-all focus:border-[#C5BAA8] focus:ring-1 focus:ring-[#C5BAA8]/30 text-foreground placeholder:text-muted-foreground"
                 />
                 {searchQuery && (
                   <button
@@ -140,8 +140,8 @@ function BlogIndexPage() {
                   onClick={() => setSelectedCategory(cat)}
                   className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
                     selectedCategory === cat
-                      ? "bg-foreground text-background shadow-md"
-                      : "border border-border bg-card/60 text-muted-foreground hover:border-foreground/40 hover:text-foreground"
+                      ? "bg-[#E8E2D5] text-[#0E0D0C] shadow-md font-bold"
+                      : "glass-smoked-pill"
                   }`}
                 >
                   {cat}
@@ -163,7 +163,7 @@ function BlogIndexPage() {
               <Link
                 to="/blog/$slug"
                 params={{ slug: featuredPost.slug }}
-                className="group relative grid grid-cols-1 overflow-hidden rounded-3xl border border-border bg-card transition-all duration-300 hover:border-foreground/30 hover:shadow-xl lg:grid-cols-12"
+                className="group relative grid grid-cols-1 overflow-hidden rounded-3xl glass-smoked-interactive lg:grid-cols-12"
               >
                 <div className="relative aspect-[16/10] overflow-hidden bg-muted lg:col-span-7 lg:aspect-auto">
                   <img
@@ -248,7 +248,7 @@ function BlogIndexPage() {
                   key={post.id}
                   to="/blog/$slug"
                   params={{ slug: post.slug }}
-                  className="group flex flex-col overflow-hidden rounded-3xl border border-border bg-card transition-all duration-300 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-lg"
+                  className="group flex flex-col overflow-hidden rounded-3xl glass-smoked-interactive"
                 >
                   <div className="relative aspect-[16/10] overflow-hidden bg-muted">
                     <img

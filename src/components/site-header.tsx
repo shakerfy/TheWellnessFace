@@ -24,7 +24,7 @@ import {
 import { WellnessSymbol } from "@/components/wellness-symbol";
 import { ThemeToggle } from "@/components/theme-toggle";
 
-export function SiteHeader({ variant = "default" }: { variant?: "default" | "sanctuary" } = {}) {
+export function SiteHeader({ variant = "sanctuary" }: { variant?: "default" | "sanctuary" } = {}) {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [userPhoto, setUserPhoto] = useState(() => {
@@ -277,7 +277,7 @@ export function SiteHeader({ variant = "default" }: { variant?: "default" | "san
                       <DropdownMenuItem asChild className={cn("cursor-pointer", isSanctuary && "hover:bg-white/[0.06] focus:bg-white/[0.06]")}>
                         <Link to="/app" search={{ tab: "diario" }}>
                           <Sparkles className="mr-2 h-4 w-4 text-amber-400" />
-                          <span>AI Coach</span>
+                          <span>Diario</span>
                         </Link>
                       </DropdownMenuItem>
 
@@ -351,7 +351,7 @@ export function SiteHeader({ variant = "default" }: { variant?: "default" | "san
   );
 }
 
-export function SiteFooter({ variant = "default" }: { variant?: "default" | "sanctuary" } = {}) {
+export function SiteFooter({ variant = "sanctuary" }: { variant?: "default" | "sanctuary" } = {}) {
   const isSanctuary = variant === "sanctuary";
 
   return (

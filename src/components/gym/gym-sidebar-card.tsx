@@ -13,19 +13,19 @@ export function GymSidebarCard({ gym }: GymSidebarCardProps) {
   return (
     <aside className="lg:col-span-1 space-y-6">
       {/* Price & CTA Card */}
-      <div className="rounded-2xl border border-border bg-secondary p-6">
+      <div className="rounded-3xl glass-smoked p-6">
         <div className="text-xs uppercase tracking-wider text-muted-foreground">Desde</div>
-        <div className="mt-1 text-3xl font-semibold tracking-tight">
+        <div className="mt-1 text-3xl font-light tracking-tight text-foreground">
           ${gym.priceFrom.toLocaleString("es-AR")}
           <span className="text-sm font-normal text-muted-foreground"> / mes</span>
         </div>
         <Link
           to="/auth"
-          className={buttonVariants({ className: "mt-5 w-full rounded-full" })}
+          className={buttonVariants({ className: "mt-5 w-full rounded-full bg-[#E8E2D5] text-[#0E0D0C] hover:bg-[#F6F4EE] font-medium" })}
         >
           Reservar clase de prueba
         </Link>
-        <Button variant="outline" className="mt-2 w-full rounded-full">
+        <Button variant="outline" className="mt-2 w-full rounded-full glass-smoked-pill">
           Contactar al gimnasio
         </Button>
         <div className="mt-5 border-t border-border pt-4 text-xs text-muted-foreground">
@@ -34,7 +34,7 @@ export function GymSidebarCard({ gym }: GymSidebarCardProps) {
       </div>
 
       {/* Stylized Google Maps Placeholder */}
-      <div className="border border-border bg-card rounded-2xl overflow-hidden hover:border-foreground/20 transition duration-300">
+      <div className="glass-smoked rounded-3xl overflow-hidden hover:border-[#C5BAA8]/40 transition duration-300">
         <div
           id="google-maps-container"
           className="w-full h-40 bg-secondary/50 relative flex items-center justify-center overflow-hidden"
