@@ -70,7 +70,7 @@ export function LandingHero({ onSearch, isSearching }: LandingHeroProps) {
 
       <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center px-6 text-center">
         <h1 className="text-balance text-3xl font-light tracking-tight text-[#F6F4EE] sm:text-4xl md:text-[44px] lg:text-[48px] leading-[1.15] drop-shadow-[0_2px_14px_rgba(0,0,0,0.85)]">
-          Encuentra tu santuario de bienestar, rendimiento y calma
+          Encuentra tu centro de bienestar, rendimiento y calma
         </h1>
         <p className="mt-4 w-full max-w-2xl mx-auto text-center text-[14px] text-[#DDD6CB] sm:text-[15px] md:text-[16px] leading-relaxed drop-shadow-[0_1px_8px_rgba(0,0,0,0.85)] font-normal">
           Buscador asistido por IA de estudios de Pilates, boxes de Hyrox, yoga, funcional y centros de recuperación seleccionados.
