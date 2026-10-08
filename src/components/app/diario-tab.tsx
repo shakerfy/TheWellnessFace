@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { BioStateCard } from "@/components/bio-state-card";
-import { Gamepad2, ChevronRight } from "lucide-react";
+import { Gamepad2, ChevronRight, Droplet } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   useDiarioTimeline,
@@ -175,8 +175,8 @@ export function DiarioTab() {
             />
           </div>
 
-          {/* Banners: Nutrition Intelligence Suite & Minijuegos Lab */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Banners: Nutrition Intelligence Suite, Minijuegos Lab & CTAs Lab */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <NutritionProBanner onClick={() => navigate({ to: "/nutrition-intelligence" })} />
             <div
               onClick={() => navigate({ to: "/minigames" })}
@@ -198,6 +198,34 @@ export function DiarioTab() {
                   </div>
                   <p className="text-[11px] text-muted-foreground truncate">
                     Probá los 10 juegos y testeá su responsividad.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 text-xs font-bold text-muted-foreground group-hover:text-foreground shrink-0 pr-1">
+                <span className="hidden sm:inline">Probar</span>
+                <ChevronRight className="w-4 h-4" />
+              </div>
+            </div>
+            <div
+              onClick={() => navigate({ to: "/ctas" })}
+              className="rounded-3xl glass-smoked-interactive p-4 sm:p-5 cursor-pointer flex items-center justify-between gap-3 text-left group sm:col-span-2 lg:col-span-1"
+            >
+              <div className="flex items-center gap-3.5 min-w-0">
+                <div className="w-10 h-10 rounded-2xl bg-sky-500/10 text-sky-500 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <Droplet className="w-5 h-5" />
+                </div>
+                <div className="min-w-0 space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-foreground">Hábitos de Bienestar</span>
+                    <Badge
+                      variant="outline"
+                      className="text-[9px] font-black uppercase tracking-wider text-sky-600 dark:text-sky-400 bg-sky-500/10 border-sky-500/20 py-0 px-1.5 rounded-full"
+                    >
+                      10 ACCIONES
+                    </Badge>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground truncate">
+                    Hidratación, respiración, saciedad y pausas.
                   </p>
                 </div>
               </div>

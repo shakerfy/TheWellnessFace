@@ -14,6 +14,7 @@ import { Route as ScanRouteImport } from './routes/scan'
 import { Route as NutritionIntelligenceRouteImport } from './routes/nutrition-intelligence'
 import { Route as MinigamesRouteImport } from './routes/minigames'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CtasRouteImport } from './routes/ctas'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
@@ -45,6 +46,11 @@ const MinigamesRoute = MinigamesRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CtasRoute = CtasRouteImport.update({
+  id: '/ctas',
+  path: '/ctas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
   '/auth': typeof AuthRouteWithChildren
+  '/ctas': typeof CtasRoute
   '/dashboard': typeof DashboardRoute
   '/minigames': typeof MinigamesRoute
   '/nutrition-intelligence': typeof NutritionIntelligenceRoute
@@ -101,6 +108,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
   '/auth': typeof AuthRouteWithChildren
+  '/ctas': typeof CtasRoute
   '/dashboard': typeof DashboardRoute
   '/minigames': typeof MinigamesRoute
   '/nutrition-intelligence': typeof NutritionIntelligenceRoute
@@ -116,6 +124,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
   '/auth': typeof AuthRouteWithChildren
+  '/ctas': typeof CtasRoute
   '/dashboard': typeof DashboardRoute
   '/minigames': typeof MinigamesRoute
   '/nutrition-intelligence': typeof NutritionIntelligenceRoute
@@ -132,6 +141,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/auth'
+    | '/ctas'
     | '/dashboard'
     | '/minigames'
     | '/nutrition-intelligence'
@@ -146,6 +156,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/auth'
+    | '/ctas'
     | '/dashboard'
     | '/minigames'
     | '/nutrition-intelligence'
@@ -160,6 +171,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/auth'
+    | '/ctas'
     | '/dashboard'
     | '/minigames'
     | '/nutrition-intelligence'
@@ -175,6 +187,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRoute
   AuthRoute: typeof AuthRouteWithChildren
+  CtasRoute: typeof CtasRoute
   DashboardRoute: typeof DashboardRoute
   MinigamesRoute: typeof MinigamesRoute
   NutritionIntelligenceRoute: typeof NutritionIntelligenceRoute
@@ -220,6 +233,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ctas': {
+      id: '/ctas'
+      path: '/ctas'
+      fullPath: '/ctas'
+      preLoaderRoute: typeof CtasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -288,6 +308,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRoute,
   AuthRoute: AuthRouteWithChildren,
+  CtasRoute: CtasRoute,
   DashboardRoute: DashboardRoute,
   MinigamesRoute: MinigamesRoute,
   NutritionIntelligenceRoute: NutritionIntelligenceRoute,
