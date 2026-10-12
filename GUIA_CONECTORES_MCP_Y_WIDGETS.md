@@ -85,14 +85,14 @@ Todos los widgets que se renderizan vía conector o dentro de la app deben cumpl
 
 ### Regla 4: Dualidad de Entrega (Visual + Fallback de Texto Somático)
 * No todos los clientes soportan componentes interactivos (ej: si el usuario consulta por **WhatsApp**).
-* Cada Tool MCP debe devolver **siempre** un bloque de texto humano y conciso según la **Regla 12 de AGENTS.md (UX Writing: Beneficio sobre Mecanismo / iPod Rule)**:
+* Cada Tool MCP debe devolver **siempre** un bloque de texto humano y conciso según la **Regla 10 de AGENTS.md (UX Writing: Beneficio sobre Mecanismo / iPod Rule)**:
   -  *"Tenés tu lugar reservado para las 19:00hs con Mateo. Quedan 4 cupos en la sala."*
   - ❌ *"Se ha ejecutado la mutación de clase con éxito. Saldo: 3 créditos."*
 
-### Regla 5: Cumplimiento de las 26 Reglas Nutricionales
+### Regla 5: Cumplimiento de las Reglas Nutricionales Oficiales
 * Si el widget es de nutrición (`MealTimelineCard`):
   - **Cero moralidad alimentaria:** Nada de "comida trampa" o "quema calorías".
-  - **Cero números calóricos punitivos:** La porción se comunica en **Porciones de Mano** (Palma de proteína, Puño de granos, Pulgar de grasas).
+  - **Cero números calóricos punitivos:** La lectura se rige estrictamente por [`REGLAS_ANALISIS_NUTRICIONAL_Y_CTAS.md`](file:///c:/Users/shake/.gemini/antigravity/scratch/studio-pulse-smart/REGLAS_ANALISIS_NUTRICIONAL_Y_CTAS.md).
   - **Fit del momento:** Solo mostrar badges contextuales si hay evento real (*"Ideal Post-Entreno"*).
 
 ---

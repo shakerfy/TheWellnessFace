@@ -1,6 +1,5 @@
 import React from "react";
 import { Calendar } from "lucide-react";
-import { TimelineSuggestionCard } from "../timeline-suggestion-card";
 import { TimelineMealCard } from "../timeline-meal-card";
 import { TimelineActivityCard } from "../timeline-activity-card";
 
@@ -9,17 +8,17 @@ export interface TimelineFeedProps {
   isAthleteMode?: boolean;
   expandedMealInsights: Record<string, boolean>;
   toggleMealInsights: (id: string) => void;
-  expandedMealCta: Record<string, string | null>;
+  expandedMealCta: Record<string, string[] | string | null>;
   toggleMealCta: (mealId: string, ctaId: string) => void;
   loggedMicroActions: Record<string, any>;
   setLoggedMicroActions: React.Dispatch<React.SetStateAction<any>>;
   doubleTapAnimationId: string | null;
-  onToggleMealConsumed: (id: string) => void;
-  onConsumeOption: (id: string, optIdx: number, macros?: any) => void;
+  onToggleMealConsumed?: (id: string) => void;
+  onConsumeOption?: (id: string, optIdx: number, macros?: any) => void;
   onToggleSave: (id: string) => void;
   onDelete: (id: string) => void;
   onFeedback: (id: string, type: "like" | "dislike") => void;
-  onSwapIngredient: (id: string, idx: number) => void;
+  onSwapIngredient?: (id: string, idx: number) => void;
   onEdit: (item: any) => void;
   onAddAccompaniment: (mealId: string, name: string) => void;
   onDoubleTapLike: (mealId: string) => void;
@@ -99,25 +98,7 @@ export function TimelineFeed({
 
                       {/* Card Container */}
                       <div className={`pl-7 sm:pl-8 md:pl-0 w-full min-w-0 ${showOnLeft ? "md:order-1" : "md:order-2"}`}>
-                        {item.type === "ai_suggestion" || item.isAiSuggestion ? (
-                          <TimelineSuggestionCard
-                            item={item}
-                            onToggleConsumed={onToggleMealConsumed}
-                            onConsumeOption={(id, optIdx, macros) =>
-                              onConsumeOption(
-                                id,
-                                optIdx,
-                                macros || { calories: 380, protein: 28, carbs: 40, fat: 12 },
-                              )
-                            }
-                            onToggleSave={onToggleSave}
-                            onDelete={onDelete}
-                            onLike={(id) => onFeedback(id, "like")}
-                            onDislike={(id) => onFeedback(id, "dislike")}
-                            onFeedbackChange={(id) => onFeedback(id, "like")}
-                            onSwapIngredient={onSwapIngredient}
-                          />
-                        ) : item.type === "meal" ? (
+                        {item.type === "meal" ? (
                           <TimelineMealCard
                             item={item}
                             isAthleteMode={isAthleteMode}
@@ -127,7 +108,8 @@ export function TimelineFeed({
                             onToggleSave={onToggleSave}
                             onDelete={onDelete}
                             onFeedback={onFeedback}
-                            expandedCtaId={expandedMealCta[item.id]}
+                            expandedCtaId={Array.isArray(expandedMealCta[item.id]) ? (expandedMealCta[item.id] as string[])[0] : (expandedMealCta[item.id] as string | null)}
+                            expandedCtaIds={Array.isArray(expandedMealCta[item.id]) ? (expandedMealCta[item.id] as string[]) : (expandedMealCta[item.id] ? [expandedMealCta[item.id] as string] : [])}
                             onToggleCta={toggleMealCta}
                             loggedMicroAction={loggedMicroActions[item.id] || undefined}
                             onAddAccompaniment={onAddAccompaniment}

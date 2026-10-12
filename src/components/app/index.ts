@@ -9,7 +9,6 @@ export * from "./diario";
 export * from "./diario-helpers";
 export * from "./timeline-modals";
 export * from "./timeline";
-export * from "./timeline-suggestion-card";
 export * from "./timeline-meal-card";
 export * from "./timeline-activity-card";
 export * from "./app-utils";

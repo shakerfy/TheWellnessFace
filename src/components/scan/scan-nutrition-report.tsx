@@ -1,5 +1,5 @@
 import React from "react";
-import { ChevronLeft, MoreHorizontal, Bookmark, Zap } from "lucide-react";
+import { ChevronLeft, MoreHorizontal, Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Accordion,
@@ -17,7 +17,6 @@ import {
   getDescriptiveMealNarrative,
   getScanQualityProfile,
 } from "@/lib/scan-data";
-import { detectBiologicalContext } from "@/lib/ai-suggestion-generator";
 import { TimelineMealCtas } from "@/components/app/timeline/timeline-meal-ctas";
 import { getScanSampleCtas } from "@/lib/scan-sample-ctas";
 import { toast } from "sonner";
@@ -82,13 +81,7 @@ export function ScanNutritionReport({
     totalCarbs,
   });
 
-  const bioContext = detectBiologicalContext();
-  const contextBadge =
-    bioContext.type === "pre_workout" || bioContext.type === "post_workout"
-      ? { label: bioContext.title, type: bioContext.type }
-      : undefined;
-
-  const [expandedCtaId, setExpandedCtaId] = React.useState<string | null>(null);
+  const [expandedCtaIds, setExpandedCtaIds] = React.useState<string[]>([]);
   const [loggedMicroAction, setLoggedMicroAction] = React.useState<
     { type: string; level?: number } | undefined
   >();
@@ -100,7 +93,7 @@ export function ScanNutritionReport({
   }, [sampleId, reportTitle, title]);
 
   React.useEffect(() => {
-    setExpandedCtaId(null);
+    setExpandedCtaIds([]);
     setLoggedMicroAction(undefined);
   }, [selectedSampleIndex]);
 
@@ -208,7 +201,7 @@ export function ScanNutritionReport({
             {/* Title & Dial Header Row */}
             <div className="pt-0.5 flex items-center gap-3.5">
               <FoodProfileDial
-                qualityLabel={quality.label}
+                qualityLabel={currentSample?.bioQualityLabel || quality.label}
                 qualityLevel={quality.level}
                 size="md"
               />
@@ -220,12 +213,6 @@ export function ScanNutritionReport({
                       {mealTime || "12:46 PM"}
                     </span>
                   </div>
-                  {contextBadge && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-secondary/80 text-foreground border border-border/60">
-                      <Zap className="w-2.5 h-2.5 text-amber-500 shrink-0" />
-                      <span>{contextBadge.label}</span>
-                    </span>
-                  )}
                 </div>
 
                 <div className="flex items-baseline justify-between gap-3">
@@ -267,37 +254,26 @@ export function ScanNutritionReport({
               </AccordionItem>
             </Accordion>
 
-            {/* CTAs Y MINIJUEGO INTERACTIVO DEL ESCÁNER */}
+            {/* INSIGHTS Y CTAS EN MARKDOWN DEL ESCÁNER */}
             <div className="space-y-2 pt-1 pb-1 text-left">
               <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block">
-                Interacciones y Guías del Plato
+                Guías e Insights del Plato
               </span>
               <TimelineMealCtas
                 variant="accordion"
                 item={{
                   id: sampleId,
                   title: reportTitle || title,
-                  eatingReason: "rutina",
+                  eatingReason: currentSample?.eatingReason || "rutina",
+                  coachFeedback: currentSample?.coachFeedback,
                 }}
                 dynamicCtas={sampleCtas}
-                expandedCtaId={expandedCtaId}
+                expandedCtaIds={expandedCtaIds}
                 onToggleCta={(_itemId, ctaId) =>
-                  setExpandedCtaId((prev) => (prev === ctaId ? null : ctaId))
+                  setExpandedCtaIds((prev) =>
+                    prev.includes(ctaId) ? prev.filter((id) => id !== ctaId) : [...prev, ctaId],
+                  )
                 }
-                loggedMicroAction={loggedMicroAction}
-                onAddAccompaniment={(_itemId, acc) => {
-                  toast.success(`✓ Sumado a este plato: ${acc}`);
-                }}
-                onCompleteBreathing={() => {
-                  setLoggedMicroAction({ type: "vagal_pause" });
-                  toast.success(
-                    "✓ Pausa completada. Tu sistema parasimpático está activo.",
-                  );
-                }}
-                onLogArmstrongLevel={(_itemId, lvl) => {
-                  setLoggedMicroAction({ type: "armstrong", level: lvl });
-                  toast.success(`✓ Escala Armstrong: Nivel ${lvl} registrado`);
-                }}
               />
             </div>
 

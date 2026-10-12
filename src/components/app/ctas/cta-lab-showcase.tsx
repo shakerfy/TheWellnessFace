@@ -63,9 +63,9 @@ export function CtaLabShowcase() {
   // Estado del simulador de comida real
   const [selectedMealIndex, setSelectedMealIndex] = useState(0);
   const [simulatorVariant, setSimulatorVariant] = useState<"pills" | "accordion">("pills");
-  const [simulatorExpandedCtaId, setSimulatorExpandedCtaId] = useState<string | null>(
-    "evaluate-hydration",
-  );
+  const [simulatorExpandedCtaIds, setSimulatorExpandedCtaIds] = useState<string[]>([
+    "view-insight",
+  ]);
   const [simulatorLoggedMicro, setSimulatorLoggedMicro] = useState<{
     type: string;
     level?: number;
@@ -108,7 +108,7 @@ export function CtaLabShowcase() {
         toast.info("Foco de siguiente comida reiniciado");
         break;
       case "meal_simulator":
-        setSimulatorExpandedCtaId(null);
+        setSimulatorExpandedCtaIds([]);
         setSimulatorLoggedMicro({ type: "none" });
         toast.info("Simulador de comida reiniciado");
         break;
@@ -656,7 +656,7 @@ export function CtaLabShowcase() {
                       type="button"
                       onClick={() => {
                         setSelectedMealIndex(idx);
-                        setSimulatorExpandedCtaId(null);
+                        setSimulatorExpandedCtaIds([]);
                       }}
                       className={cn(
                         "px-3 py-1.5 rounded-xl border text-xs font-semibold shrink-0 transition-all cursor-pointer",
@@ -689,10 +689,12 @@ export function CtaLabShowcase() {
               <TimelineMealCtas
                 item={activeMeal}
                 dynamicCtas={dynamicSimulatorCtas}
-                expandedCtaId={simulatorExpandedCtaId}
+                expandedCtaIds={simulatorExpandedCtaIds}
                 variant={simulatorVariant}
                 onToggleCta={(_itemId, ctaId) => {
-                  setSimulatorExpandedCtaId((prev) => (prev === ctaId ? null : ctaId));
+                  setSimulatorExpandedCtaIds((prev) =>
+                    prev.includes(ctaId) ? prev.filter((id) => id !== ctaId) : [...prev, ctaId],
+                  );
                 }}
                 loggedMicroAction={simulatorLoggedMicro}
                 onLogArmstrongLevel={(_itemId, level) => {

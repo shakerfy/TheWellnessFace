@@ -1,397 +1,132 @@
 import type { MealDynamicCta } from "./meal-coach-insights";
-import type { MiniGamePayload } from "@/components/app/mini-games/mini-game-types";
 
 export interface ScanSamplePresetCtaConfig {
   ctas: MealDynamicCta[];
-  miniGame?: MiniGamePayload;
 }
 
+/**
+ * Los 4 Arquetipos Canónicos Oficiales de The Wellness Face
+ * (Definidos en la Sección IV de REGLAS_ANALISIS_NUTRICIONAL_Y_CTAS.md).
+ * Cada arquetipo cuenta con su acción primaria obligatoria ('Ver insight')
+ * y exactamente 2 CTAs secundarios interactivos con resolución 100% in-place.
+ */
 export const SCAN_SAMPLE_PRESET_CTAS: Record<string, ScanSamplePresetCtaConfig> = {
-  // =========================================================================
-  // GRUPO A: EJEMPLOS CON MINIJUEGO OPORTUNO (4 de 11)
-  // Se justifica porque la interacción táctil educa un concepto o derriba un mito
-  // =========================================================================
-
-  // 1. Frambuesas Silvestres Frescas (Fitoquímicos invisibles que se revelan)
-  "calai-raspberry": {
-    miniGame: {
-      type: "scratch_reveal",
-      title: "Raspa y Descubre",
-      teaser: "Las frambuesas guardan un fitoquímico protector invisible...",
-      revealedTitle: "Antioxidantes Vegetales Activos",
-      revealedText:
-        "Tienen antioxidantes naturales que cuidan tus células por dentro y ayudan a mantenerte con energía limpia y renovada.",
-      badge: "Nutrición Celular",
-      foodSource: "Frambuesas Silvestres",
-    },
+  // 1. Almuerzo de Rutina (Alta Densidad Biológica)
+  "calai-chicken-quinoa": {
     ctas: [
       {
-        id: "smart-snack-idea",
-        type: "exploration",
-        title: "Sugerencia de combinación inteligente",
-        iconType: "apple",
+        id: "view-insight",
+        type: "insight",
+        title: "Ver insight",
+        iconType: "sparkles",
+        markdown:
+          "Un plato con excelente densidad celular. La combinación de proteína completa y fibra de la quinoa y los vegetales permite que la energía se libere de forma sostenida a lo largo de toda la tarde, evitando pesadez digestiva o bajones de energía durante tu jornada.",
       },
-      {
-        id: "mini-game-scratch_reveal",
-        type: "mini_game",
-        title: "Raspa y Descubre",
-        iconType: "gamepad",
-        gamePayload: {
-          type: "scratch_reveal",
-          title: "Raspa y Descubre",
-          teaser: "Las frambuesas guardan un fitoquímico protector invisible...",
-          revealedTitle: "Antioxidantes Vegetales Activos",
-          revealedText:
-            "Tienen antioxidantes naturales que cuidan tus células por dentro y ayudan a mantenerte con energía limpia y renovada.",
-          badge: "Nutrición Celular",
-          foodSource: "Frambuesas Silvestres",
-        },
-      },
-    ],
-  },
-
-  // 2. Bowl de Salmón & Quinoa (Aprender físicamente qué nutriente absorbe a cuál)
-  "calai-salmon": {
-    miniGame: {
-      type: "tap_to_pair",
-      title: "Emparejar Nutrientes",
-      instruction:
-        "Toca un nutriente y su par complementario para activar la absorción:",
-      items: [
-        {
-          id: "omega3",
-          label: "Omega-3 (Salmón)",
-          category: "nutrient",
-          pairId: "p1",
-        },
-        {
-          id: "quinoa_fe",
-          label: "Hierro vegetal (Quinoa)",
-          category: "nutrient",
-          pairId: "p2",
-        },
-        {
-          id: "carotenes",
-          label: "Carotenos (Vegetales)",
-          category: "nutrient",
-          pairId: "p3",
-        },
-        {
-          id: "vitd",
-          label: "Vitamina D natural",
-          category: "function",
-          pairId: "p1",
-        },
-        {
-          id: "lemon_c",
-          label: "Vitamina C (Toque de limón)",
-          category: "function",
-          pairId: "p2",
-        },
-        {
-          id: "healthy_fats",
-          label: "Grasas buenas (Asimilación)",
-          category: "function",
-          pairId: "p3",
-        },
-      ],
-      explanation:
-        "Las grasas buenas del salmón activan la vitamina D y los carotenos, mientras que el toque cítrico multiplica la absorción del hierro vegetal.",
-    },
-    ctas: [
       {
         id: "plate-synergy",
-        type: "exploration",
-        title: "Ver sinergia de este plato",
+        type: "education",
+        title: "Sinergia de nutrientes",
         iconType: "sparkles",
+        markdown:
+          "**Cómo interactúa este plato en tu cuerpo:**\nLa grasa saludable del aceite de oliva actúa como vehículo natural para absorber las vitaminas liposolubles (A y K) presentes en los vegetales verdes y la zanahoria, optimizando su asimilación celular.",
       },
       {
-        id: "mini-game-tap_to_pair",
-        type: "mini_game",
-        title: "Emparejar Nutrientes",
-        iconType: "gamepad",
-        gamePayload: {
-          type: "tap_to_pair",
-          title: "Emparejar Nutrientes",
-          instruction:
-            "Toca un nutriente y su par complementario para activar la absorción:",
-          items: [
-            {
-              id: "omega3",
-              label: "Omega-3 (Salmón)",
-              category: "nutrient",
-              pairId: "p1",
-            },
-            {
-              id: "quinoa_fe",
-              label: "Hierro vegetal (Quinoa)",
-              category: "nutrient",
-              pairId: "p2",
-            },
-            {
-              id: "carotenes",
-              label: "Carotenos (Vegetales)",
-              category: "nutrient",
-              pairId: "p3",
-            },
-            {
-              id: "vitd",
-              label: "Vitamina D natural",
-              category: "function",
-              pairId: "p1",
-            },
-            {
-              id: "lemon_c",
-              label: "Vitamina C (Toque de limón)",
-              category: "function",
-              pairId: "p2",
-            },
-            {
-              id: "healthy_fats",
-              label: "Grasas buenas (Asimilación)",
-              category: "function",
-              pairId: "p3",
-            },
-          ],
-          explanation:
-            "Las grasas buenas del salmón activan la vitamina D y los carotenos, mientras que el toque cítrico multiplica la absorción del hierro vegetal.",
-        },
-      },
-    ],
-  },
-
-  // 3. Pechuga Grillada con Vegetales (Aprender a armar la tríada post-entreno)
-  "calai-chicken": {
-    miniGame: {
-      type: "slot_builder",
-      title: "Constructor Post-Entreno",
-      prompt:
-        "Armá las 3 ranuras esenciales para optimizar la reconstrucción muscular de hoy:",
-      slots: [
-        { id: "s1", targetCategory: "protein", label: "Proteína" },
-        { id: "s2", targetCategory: "carbs", label: "Glucógeno" },
-        { id: "s3", targetCategory: "hydration", label: "Hidratación" },
-      ],
-      pool: [
-        { id: "p1", label: "Pechuga grillada", category: "protein" },
-        { id: "p2", label: "Batata asada", category: "carbs" },
-        { id: "p3", label: "Agua fresca", category: "hydration" },
-        { id: "p4", label: "Golosinas", category: "empty" },
-        { id: "p5", label: "Bebida energizante", category: "stimulant" },
-      ],
-      comboName: "Trilogía de Recuperación",
-      explanation:
-        "Combinar proteína magra con carbohidratos naturales y buena hidratación repone tu energía muscular de forma liviana.",
-    },
-    ctas: [
-      {
-        id: "evaluate-hydration",
-        type: "micro_action",
-        title: "Ver guía de hidratación Armstrong",
+        id: "hydration-afternoon",
+        type: "balance",
+        title: "Hidratación para la tarde",
         iconType: "droplet",
-      },
-      {
-        id: "mini-game-slot_builder",
-        type: "mini_game",
-        title: "Constructor Post-Entreno",
-        iconType: "gamepad",
-        gamePayload: {
-          type: "slot_builder",
-          title: "Constructor Post-Entreno",
-          prompt:
-            "Armá las 3 ranuras esenciales para optimizar la reconstrucción muscular de hoy:",
-          slots: [
-            { id: "s1", targetCategory: "protein", label: "Proteína" },
-            { id: "s2", targetCategory: "carbs", label: "Glucógeno" },
-            { id: "s3", targetCategory: "hydration", label: "Hidratación" },
-          ],
-          pool: [
-            { id: "p1", label: "Pechuga grillada", category: "protein" },
-            { id: "p2", label: "Batata asada", category: "carbs" },
-            { id: "p3", label: "Agua fresca", category: "hydration" },
-            { id: "p4", label: "Golosinas", category: "empty" },
-            { id: "p5", label: "Bebida energizante", category: "stimulant" },
-          ],
-          comboName: "Trilogía de Recuperación",
-          explanation:
-            "Combinar proteína magra con carbohidratos naturales y buena hidratación repone tu energía muscular de forma liviana.",
-        },
+        markdown:
+          "**Energía sostenida sin bajón:**\nAcompañar tu tarde con agua fresca guiándote por la sed fisiológica mantendrá tu nivel de alerta mental y evitará la típica somnolencia que aparece por deshidratación tras el almuerzo.",
       },
     ],
   },
 
-  // 4. Hamburguesa Clásica Artesanal (Desmitificar físicamente la culpa de fin de semana)
+  // 2. Comida por Antojo o Salida (Disfrute Consciente y Anti-Culpa)
   "calai-burger": {
-    miniGame: {
-      type: "swipe_card",
-      title: "Mito Flash del Balance",
-      statement:
-        "¿Disfrutar de una hamburguesa el fin de semana arruina los hábitos saludables de tu semana?",
-      isTruth: false,
-      explanation:
-        "¡Mito total! El cuerpo aprovecha los nutrientes en el balance acumulado de toda la semana. Disfrutá tu comida con calma y sin culpa.",
-      takeaway:
-        "Comé sin prisa, masticá despacio y disfrutá de la buena compañía.",
-    },
     ctas: [
       {
-        id: "check-eating-pace",
-        type: "micro_action",
-        title: "¿A qué ritmo comiste hoy?",
+        id: "view-insight",
+        type: "insight",
+        title: "Ver insight",
         iconType: "sparkles",
+        markdown:
+          "Un momento de puro disfrute sensorial para saborear sin prisa. Al aportar energía rápida y mayor densidad de grasas, comer a un ritmo pausado ayudará a tu estómago a asimilarlo con mayor confort. Recordá que el bienestar digestivo y metabólico se construye en el balance de toda la semana, no en un solo plato.",
       },
       {
-        id: "mini-game-swipe_card",
-        type: "mini_game",
-        title: "Mito Flash del Balance",
-        iconType: "gamepad",
-        gamePayload: {
-          type: "swipe_card",
-          title: "Mito Flash del Balance",
-          statement:
-            "¿Disfrutar de una hamburguesa el fin de semana arruina los hábitos saludables de tu semana?",
-          isTruth: false,
-          explanation:
-            "¡Mito total! El cuerpo aprovecha los nutrientes en el balance acumulado de toda la semana. Disfrutá tu comida con calma y sin culpa.",
-          takeaway:
-            "Comé sin prisa, masticá despacio y disfrutá de la buena compañía.",
-        },
+        id: "balance-my-day",
+        type: "balance",
+        title: "Balance para tus próximas comidas",
+        iconType: "apple",
+        markdown:
+          "**Enfoque de adición positiva:**\nPara acompañar el equilibrio de tu día, una gran idea para tu próxima ingesta es sumar alimentos frescos con buena cantidad de agua y fibra (hojas verdes, fruta de estación o vegetales crudos), manteniendo una hidratación cómoda y tranquila.",
+      },
+      {
+        id: "check-satiety",
+        type: "education",
+        title: "¿Cómo sentís tu saciedad?",
+        iconType: "activity",
+        markdown:
+          "**Escuchar a tu cuerpo:**\nPrestá atención a cómo se siente tu estómago al comer. Si llegás a un punto de satisfacción cómoda, podés pausar y saborear el momento sin necesidad de terminar por inercia.",
       },
     ],
   },
 
-  // =========================================================================
-  // GRUPO B: EJEMPLOS CON SOLO INFORMACIÓN EDUCATIVA Y CIENCIA CELULAR (3 de 11)
-  // Cero juegos: Refuerzo positivo del plato con lectura rápida y relevante
-  // =========================================================================
-
-  // 5. Chicken Phở Tradicional
-  "calai-pho": {
+  // 3. Momento de Sobrecarga o Estrés (Regulación Somática)
+  "calai-pumpkin-soup": {
     ctas: [
       {
-        id: "plate-synergy",
-        type: "exploration",
-        title: "Ver bondades del caldo herbal",
+        id: "view-insight",
+        type: "insight",
+        title: "Ver insight",
         iconType: "sparkles",
+        markdown:
+          "Un plato elegido para brindar abrigo, pausa y descanso. La textura tibia y suave favorece el vaciamiento gástrico sin demandar un gran esfuerzo a tu sistema digestivo. Regaláte comer despacio, disfrutando el calor del plato como un momento para desconectar de la rutina.",
       },
       {
         id: "take_a_pause",
-        type: "micro_action",
-        title: "Iniciar pausa de respiración (1 min)",
+        type: "education",
+        title: "Pausa de respiración (1 min)",
         iconType: "wind",
+        markdown:
+          "**Un minuto para calmar el ritmo:**\nInhalá suavemente por la nariz durante 4 segundos y exhalá lentamente por la boca durante 6 segundos. Repetir 5 o 6 ciclos ayuda a tu cuerpo a bajar las revoluciones y activa la señal de descanso que tu estómago necesita para digerir con ligereza.",
+      },
+      {
+        id: "warm-comfort-digestion",
+        type: "education",
+        title: "Confort y digestión tibia",
+        iconType: "sun",
+        markdown:
+          "**Beneficio somático del calor:**\nLos alimentos calientes y de textura suave relajan la musculatura lisa del tracto digestivo, reduciendo la tensión gástrica que suele provocar el estrés acumulado del día.",
       },
     ],
   },
 
-  // 6. Matcha Latte con Avena
-  "calai-matcha": {
+  // 4. Cena Tardía y Descanso (Cronobiología y Sueño)
+  "calai-spinach-omelette": {
     ctas: [
       {
-        id: "plate-synergy",
-        type: "exploration",
-        title: "Enfoque sereno con L-teanina",
+        id: "view-insight",
+        type: "insight",
+        title: "Ver insight",
         iconType: "sparkles",
+        markdown:
+          "Excelente elección para cerrar la jornada. Al estar cerca de la hora de dormir, este plato aporta aminoácidos esenciales para la regeneración muscular nocturna con una digestión muy rápida y liviana, evitando la sensación de pesadez que suele interferir con el sueño profundo.",
       },
-      {
-        id: "smart-snack-idea",
-        type: "exploration",
-        title: "Sugerencia para tu jornada",
-        iconType: "apple",
-      },
-    ],
-  },
-
-  // 7. Yogur Griego con Berries
-  "calai-greek-yogurt": {
-    ctas: [
-      {
-        id: "microbiota-function",
-        type: "exploration",
-        title: "Cuidado de tu flora intestinal",
-        iconType: "sparkles",
-      },
-      {
-        id: "add-accompaniment",
-        type: "exploration",
-        title: "Toca para sumar a este plato",
-        iconType: "plus",
-      },
-    ],
-  },
-
-  // =========================================================================
-  // GRUPO C: EJEMPLOS CON SUGERENCIAS SOMÁTICAS, HÁBITOS Y ADICIÓN (4 de 11)
-  // Cero juegos: Hábitos reales de saciedad, hidratación y balance
-  // =========================================================================
-
-  // 8. Pancakes de Avena & Banana
-  "calai-pancakes": {
-    ctas: [
-      {
-        id: "balance-next-meal",
-        type: "exploration",
-        title: "Ideas para balancear tu próxima comida",
-        iconType: "apple",
-      },
-      {
-        id: "check-satiety",
-        type: "micro_action",
-        title: "¿Cómo está tu saciedad?",
-        iconType: "sparkles",
-      },
-    ],
-  },
-
-  // 9. Mix Energético de Frutos Secos
-  "calai-snack-mix": {
-    ctas: [
-      {
-        id: "check-satiety",
-        type: "micro_action",
-        title: "Escala de saciedad (1 toque)",
-        iconType: "sparkles",
-      },
-      {
-        id: "evaluate-hydration",
-        type: "micro_action",
-        title: "Ver guía de hidratación Armstrong",
-        iconType: "droplet",
-      },
-    ],
-  },
-
-  // 10. Smoothie Verde Detox
-  "calai-smoothie": {
-    ctas: [
-      {
-        id: "check-digestion",
-        type: "micro_action",
-        title: "¿Cómo sentís tu digestión hoy?",
-        iconType: "sparkles",
-      },
-      {
-        id: "anti-drowsiness-strategy",
-        type: "exploration",
-        title: "Estrategia de energía sostenida",
-        iconType: "sparkles",
-      },
-    ],
-  },
-
-  // 11. Mousse de Cacao Amargo
-  "calai-mousse": {
-    ctas: [
       {
         id: "night-rest-prep",
-        type: "exploration",
-        title: "Preparar tu descanso nocturno",
-        iconType: "sparkles",
+        type: "balance",
+        title: "Preparar el descanso",
+        iconType: "moon",
+        markdown:
+          "**Para un descanso profundo:**\nSi buscás potenciar la calidad de tu sueño, acompañar el final de la noche con una infusión tibia sin cafeína (como manzanilla o tilo) y atenuar las pantallas al menos 30 minutos antes de acostarte facilitará una conciliación más rápida y un descanso reparador.",
       },
       {
-        id: "check-digestion",
-        type: "micro_action",
-        title: "Confort digestivo",
-        iconType: "sparkles",
+        id: "night-gastric-comfort",
+        type: "education",
+        title: "Confort gástrico nocturno",
+        iconType: "shield",
+        markdown:
+          "**Digestión sin interrupciones:**\nAl combinar proteínas de fácil asimilación con vegetales cocidos y bajo contenido graso, tu estómago no necesitará horas extra de trabajo pesado, protegiendo las fases de sueño delta/reparador.",
       },
     ],
   },
@@ -399,7 +134,7 @@ export const SCAN_SAMPLE_PRESET_CTAS: Record<string, ScanSamplePresetCtaConfig> 
 
 /**
  * Retorna los CTAs exactos configurados para un plato de muestra del escáner.
- * Si el plato es personalizado, delega al motor pedagógico.
+ * Si el plato es personalizado, delega un set pedagógico estándar.
  */
 export function getScanSampleCtas(
   sampleIdOrMeal: string | { id?: string; title?: string },
@@ -412,19 +147,25 @@ export function getScanSampleCtas(
     return config.ctas;
   }
 
-  // Fallback pedagógico para escaneos personalizados
+  // Fallback de CTAs para escaneos personalizados
   return [
     {
-      id: "balance-next-meal",
-      type: "exploration",
-      title: "Ideas para balancear tu próxima comida",
+      id: "view-insight",
+      type: "insight",
+      title: "Ver insight",
+      iconType: "sparkles",
+    },
+    {
+      id: "balance-my-day",
+      type: "balance",
+      title: "Equilibrar mi día",
       iconType: "apple",
     },
     {
-      id: "evaluate-hydration",
-      type: "micro_action",
-      title: "Ver guía de hidratación",
-      iconType: "droplet",
+      id: "why-protein-matters",
+      type: "education",
+      title: "Por qué es importante la proteína",
+      iconType: "shield",
     },
   ];
 }

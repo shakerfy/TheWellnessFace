@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { ThumbsUp, ThumbsDown, Sparkles, Zap } from "lucide-react";
+import { ThumbsUp, ThumbsDown, Sparkles } from "lucide-react";
 import {
   Card,
   CardHeader,
@@ -40,7 +40,8 @@ export interface TimelineMealCardProps {
   onToggleSave: (id: string) => void;
   onDelete: (id: string) => void;
   onFeedback: (id: string, feedback: "like" | "dislike") => void;
-  expandedCtaId?: string | null;
+  expandedCtaId?: string | string[] | null;
+  expandedCtaIds?: string[];
   onToggleCta: (itemId: string, ctaId: string) => void;
   loggedMicroAction?: { type: string; level?: number };
   onAddAccompaniment: (itemId: string, accompaniment: string) => void;
@@ -60,6 +61,7 @@ export function TimelineMealCard({
   onDelete,
   onFeedback,
   expandedCtaId,
+  expandedCtaIds,
   onToggleCta,
   loggedMicroAction,
   onAddAccompaniment,
@@ -79,7 +81,7 @@ export function TimelineMealCard({
   const coachInsightText = getMealCoachInsightText(item);
 
   // Quality and Vector Badges
-  const { heroBadges, qualityLevel, qualityLabel, contextBadge } =
+  const { heroBadges, qualityLevel, qualityLabel } =
     getMealQualityData(item, mealProtein, mealFiber);
 
   // Meal description
@@ -197,15 +199,6 @@ export function TimelineMealCard({
                   </Badge>
                 )}
               </div>
-
-              {contextBadge && (
-                <div className="flex items-center gap-1">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-secondary/80 text-foreground border border-border/60">
-                    <Zap className="w-2.5 h-2.5 text-amber-500 shrink-0" />
-                    <span>{contextBadge.label}</span>
-                  </span>
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -316,16 +309,15 @@ export function TimelineMealCard({
                 />
               </div>
 
-              {/* CTAs Dinámicos */}
+              {/* CTAs Dinámicos de Continuidad y Educación (Markdown Puro) */}
               <TimelineMealCtas
                 item={item}
-                dynamicCtas={dynamicCtas}
+                dynamicCtas={dynamicCtas.filter(
+                  (c) => c.id !== "view-insight" && c.id !== "ver-insight",
+                )}
                 expandedCtaId={expandedCtaId}
+                expandedCtaIds={expandedCtaIds}
                 onToggleCta={onToggleCta}
-                loggedMicroAction={loggedMicroAction}
-                onAddAccompaniment={onAddAccompaniment}
-                onCompleteBreathing={onCompleteBreathing}
-                onLogArmstrongLevel={onLogArmstrongLevel}
               />
             </div>
           )}

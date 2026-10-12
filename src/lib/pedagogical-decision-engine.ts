@@ -1,16 +1,16 @@
 import type { MealDynamicCta } from "./meal-coach-insights";
 import { getScanSampleCtas, SCAN_SAMPLE_PRESET_CTAS } from "./scan-sample-ctas";
-import { getSampleMiniGameForMeal } from "./mini-game-samples";
 
 /**
- * Motor de Decisión Pedagógica y Somática (The Wellness Face)
+ * Motor de Decisión de CTAs y Educación Somática (The Wellness Face)
  *
  * Principio rector:
  * 1. Cero moralidad alimentaria (sin palabras punitivas como engordar, culpa o trampa).
- * 2. Lenguaje equilibrado: ni abstracto de laboratorio ni infantil; beneficio somático tangible.
- * 3. Los minijuegos son un recurso pedagógico OPORTUNO (aparecen solo cuando su interacción
- *    fija un concepto o derriba un mito mejor que un texto). En los demás momentos,
- *    prioriza información educativa, sugerencias de platos o regulación somática.
+ * 2. Cero minijuegos o mecánicas lúdicas artificiales: información en Markdown puro y revelación progresiva.
+ * 3. Jerarquía predecible de hasta 3 CTAs por comida:
+ *    - CTA 1 (Primario): "Ver insight" (análisis somático inmediato).
+ *    - CTA 2 (Continuidad): "Equilibrar mi día" o "Digestión y descanso" (de noche).
+ *    - CTA 3 (Educación contextual): según tipo de comida (proteína, energía, sinergia, combustible).
  */
 export function resolvePedagogicalCtas(mealItem: any): MealDynamicCta[] {
   // 1. Si el ítem ya trae CTAs personalizados explícitos (ej. guardados desde el escáner)
@@ -29,22 +29,10 @@ export function resolvePedagogicalCtas(mealItem: any): MealDynamicCta[] {
 
   const reason: "rutina" | "social" | "placer" | "confort" =
     mealItem?.eatingReason || "rutina";
-  const text = `${mealItem?.title || ""} ${mealItem?.narrative || mealItem?.desc || ""}`.toLowerCase();
+  const title = mealItem?.title || "Comida";
+  const text = `${title} ${mealItem?.narrative || mealItem?.desc || ""}`.toLowerCase();
 
-  // 3. REGLA ANTI-ESTRÉS: Comidas por Confort / Ansiedad
-  // Prohibidos los juegos y quizzes. El sistema nervioso necesita calma autonómica pura.
-  if (reason === "confort") {
-    return [
-      {
-        id: "take_a_pause",
-        type: "micro_action",
-        title: "Iniciar pausa de respiración (1 min)",
-        iconType: "wind",
-      },
-    ];
-  }
-
-  // 4. CRONOBIOLOGÍA NOCTURNA: Cenas después de las 19:30 o indicadas como noche
+  // Detectar Cronobiología (Cenas después de las 19:30 o indicadas como noche)
   const timeMatch = String(mealItem?.time || "").match(/(\d{1,2}):(\d{2})/);
   const parsedHour = timeMatch ? parseInt(timeMatch[1], 10) : new Date().getHours();
   const isNightMeal =
@@ -52,125 +40,110 @@ export function resolvePedagogicalCtas(mealItem: any): MealDynamicCta[] {
     parsedHour < 4 ||
     /cena|noche/i.test(`${mealItem?.mealType || ""} ${text}`);
 
-  if (isNightMeal) {
-    return [
-      {
+  // Detectar Pre/Post Entrenamiento
+  const tag =
+    mealItem?.timingFit?.tag ||
+    (typeof mealItem?.contextBadge === "string" ? mealItem.contextBadge : mealItem?.contextBadge?.label) ||
+    "";
+  const isWorkoutRelated =
+    mealItem?.isPreWorkout ||
+    mealItem?.isPostWorkout ||
+    /pre-entreno|post-entreno|entrenamiento/i.test(`${tag} ${mealItem?.contextTag || ""}`);
+
+  // Detectar si el plato es vegetariano o requiere educación sobre proteína
+  const isVeggieOrLowProtein =
+    /hamburguesa vegetariana|veggie|vegetariano|tofu|soja|ensalada|arroz|fruta|avena/i.test(text) ||
+    (mealItem?.protein !== undefined && mealItem.protein < 18);
+
+  // Detectar si es denso en azúcares simples / golosinas / energía rápida
+  const isQuickEnergy =
+    /sour patch|golosina|caramelo|galleta|dulce|factura|medialuna|pan blanco|gaseosa/i.test(text);
+
+  // Detectar platos densos en micronutrientes (Tier 3)
+  const isNutrientDense =
+    /salmón|salmon|quinoa|pechuga|huevo|legumbre|lenteja|garbanzo|semillas|palta|brócoli/i.test(text);
+
+  // Detectar si es snack o merienda
+  const isSnack =
+    /merienda|snack|colaci|tarde/i.test(`${mealItem?.mealType || ""} ${text}`);
+
+  // 1. CTA PRIMARIO (Siempre presente)
+  const primaryCta: MealDynamicCta = {
+    id: "view-insight",
+    type: "insight",
+    title: "Ver insight",
+    iconType: "sparkles",
+  };
+
+  // 2. CTA SECUNDARIO 1 (Continuidad Diaria / Balance 24h)
+  const balanceCta: MealDynamicCta = isNightMeal
+    ? {
         id: "night-rest-prep",
-        type: "exploration",
-        title: "Preparar tu descanso de esta noche",
-        iconType: "sparkles",
-      },
-      {
-        id: "check-digestion",
-        type: "micro_action",
-        title: "¿Cómo sentís tu digestión?",
-        iconType: "sparkles",
-      },
-    ];
-  }
-
-  // 5. MEDIA TARDE / SNACK: Estabilidad glucémica sin bajón de energía
-  const isAfternoonOrSnack = /merienda|snack|colaci|caf[eé]|yogur/i.test(
-    `${mealItem?.mealType || ""} ${text}`,
-  );
-
-  if (isAfternoonOrSnack) {
-    return [
-      {
-        id: "smart-snack-idea",
-        type: "exploration",
-        title: "Sugerencia de colación inteligente",
+        type: "balance",
+        title: "Digestión y descanso",
+        iconType: "moon",
+      }
+    : {
+        id: "balance-my-day",
+        type: "balance",
+        title: "Equilibrar mi día",
         iconType: "apple",
-      },
-      {
-        id: "evaluate-hydration",
-        type: "micro_action",
-        title: "Ver guía de hidratación",
-        iconType: "droplet",
-      },
-    ];
-  }
+      };
 
-  // 6. CADENCIA DE MINIJUEGOS OPORTUNOS:
-  // Solo se activa cuando hay una oportunidad pedagógica genuina (aprox. 1 de cada 3 comidas)
-  const hashSeed = String(mealItem?.id || mealItem?.title || "0")
-    .split("")
-    .reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  // 3. CTA SECUNDARIO 2 (Educación contextual adaptativa)
+  let educationCta: MealDynamicCta;
 
-  const isGameOpportuneMoment = hashSeed % 3 === 0;
-
-  if (isGameOpportuneMoment) {
-    const miniGame = getSampleMiniGameForMeal(mealItem);
-    return [
-      {
-        id: "balance-next-meal",
-        type: "exploration",
-        title: "Ideas para balancear tu próxima comida",
-        iconType: "apple",
-      },
-      {
-        id: `mini-game-${miniGame.type}`,
-        type: "mini_game",
-        title: miniGame.title,
-        iconType: "gamepad",
-        gamePayload: miniGame,
-      },
-    ];
-  }
-
-  // 7. PLATOS TIER 3 (Completos, salmón, legumbres, ensaladas): Información celular sin juegos
-  const isOptimalTier = /salmón|salmon|quinoa|pechuga|pollo|ensalada|huevo|avena|tofu|pescado|lenteja|garbanzo|integral|brócoli/i.test(
-    text,
-  );
-
-  if (isOptimalTier) {
-    return [
-      {
-        id: "plate-synergy",
-        type: "exploration",
-        title: "Ver sinergia de este plato",
-        iconType: "sparkles",
-      },
-      {
-        id: "evaluate-hydration",
-        type: "micro_action",
-        title: "Ver guía de hidratación",
-        iconType: "droplet",
-      },
-    ];
-  }
-
-  // 8. COMIDAS SOCIALES O DE PLACER: Escala somática de saciedad / confort
-  if (reason === "social" || reason === "placer") {
-    return [
-      {
-        id: "check-satiety",
-        type: "micro_action",
-        title: "¿Cómo está tu saciedad hoy?",
-        iconType: "sparkles",
-      },
-      {
-        id: "check-eating-pace",
-        type: "micro_action",
-        title: "¿A qué ritmo comiste hoy?",
-        iconType: "sparkles",
-      },
-    ];
-  }
-
-  // 9. DEFAULT PEDAGÓGICO: Enfoque de adición positiva en 1 toque
-  return [
-    {
-      id: "balance-next-meal",
-      type: "exploration",
-      title: "Ideas para balancear tu próxima comida",
+  if (isVeggieOrLowProtein) {
+    educationCta = {
+      id: "why-protein-matters",
+      type: "education",
+      title: "Por qué es importante la proteína",
+      iconType: "shield",
+    };
+  } else if (isWorkoutRelated) {
+    educationCta = {
+      id: "workout-fuel",
+      type: "education",
+      title: "Recuperación y combustible",
+      iconType: "activity",
+    };
+  } else if (isQuickEnergy) {
+    educationCta = {
+      id: "sustained-energy",
+      type: "education",
+      title: "Energía sostenida sin bajón",
+      iconType: "sun",
+    };
+  } else if (isNutrientDense) {
+    educationCta = {
+      id: "plate-synergy",
+      type: "education",
+      title: "Sinergia de nutrientes",
+      iconType: "sparkles",
+    };
+  } else if (isSnack) {
+    educationCta = {
+      id: "smart-snack-idea",
+      type: "education",
+      title: "Saciedad inteligente",
       iconType: "apple",
-    },
-    {
+    };
+  } else if (reason === "confort") {
+    educationCta = {
+      id: "take_a_pause",
+      type: "education",
+      title: "Un minuto de respiración",
+      iconType: "wind",
+    };
+  } else {
+    educationCta = {
       id: "evaluate-hydration",
-      type: "micro_action",
-      title: "Ver guía de hidratación",
+      type: "education",
+      title: "Hidratación de apoyo",
       iconType: "droplet",
-    },
-  ];
+    };
+  }
+
+  // Retornar exactamente de 2 a 3 CTAs limpios
+  return [primaryCta, balanceCta, educationCta];
 }

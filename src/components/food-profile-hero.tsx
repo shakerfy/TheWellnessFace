@@ -1,6 +1,6 @@
 import React from "react";
 import { cn } from "@/lib/utils";
-import { Zap, Info } from "lucide-react";
+import { Info } from "lucide-react";
 import {
   Popover,
   PopoverTrigger,
@@ -50,10 +50,6 @@ export interface FoodProfileHeroProps {
   qualityTier?: number;
   activeBarsCount?: number;
   badges?: FoodHeroBadge[];
-  contextBadge?: {
-    label: string;
-    type?: "pre_workout" | "post_workout" | "circadian";
-  };
   hideBadges?: boolean;
   className?: string;
 }
@@ -183,24 +179,17 @@ export function FoodProfileHero({
   qualityTier,
   activeBarsCount,
   badges = [],
-  contextBadge,
   hideBadges = false,
   className,
 }: FoodProfileHeroProps) {
   return (
     <div className={cn("text-left space-y-2.5 select-none", className)}>
-      {/* 1. Encabezado: 'Perfil Nutricional' + Context Badge + Botón de información (i) a la derecha */}
+      {/* 1. Encabezado: 'Perfil Nutricional' + Botón de información (i) a la derecha */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 min-w-0">
           <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 block shrink-0">
             Valor Nutricional
           </span>
-          {contextBadge && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-secondary/80 text-foreground border border-border/60 truncate">
-              <Zap className="w-2.5 h-2.5 text-amber-500 shrink-0" />
-              <span className="truncate">{contextBadge.label}</span>
-            </span>
-          )}
         </div>
 
         <Popover>

@@ -40,16 +40,22 @@ export function useDiarioTimeline() {
     setExpandedCardInsights((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const [expandedMealCta, setExpandedMealCta] = useState<Record<string, string | null>>({});
+  const [expandedMealCta, setExpandedMealCta] = useState<Record<string, string[]>>({});
   const [loggedMicroActions, setLoggedMicroActions] = useState<
     Record<string, { type: string; itemId?: string; level?: number; time: string } | null>
   >({});
 
   const toggleMealCta = (mealId: string, ctaId: string) => {
-    setExpandedMealCta((prev) => ({
-      ...prev,
-      [mealId]: prev[mealId] === ctaId ? null : ctaId,
-    }));
+    setExpandedMealCta((prev) => {
+      const current = prev[mealId] || [];
+      const updated = current.includes(ctaId)
+        ? current.filter((id) => id !== ctaId)
+        : [...current, ctaId];
+      return {
+        ...prev,
+        [mealId]: updated,
+      };
+    });
   };
 
   const [userTimelineItems, setUserTimelineItems] = useState<any[]>(() => {
@@ -487,7 +493,7 @@ export function useDiarioTimeline() {
 
   const timelineItems = useMemo(() => {
     const processedUserItems = userTimelineItems.filter((item) => {
-      if (!item || !item.id || ["sunrise", "sunset", "peak", "circadian", "weight"].includes(item.type)) {
+      if (!item || !item.id || item.type === "ai_suggestion" || item.isAiSuggestion) {
         return false;
       }
       if (item.date === selectedTimelineDate) return true;

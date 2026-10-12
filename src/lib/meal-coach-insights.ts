@@ -1,6 +1,4 @@
-import type { MiniGamePayload } from "@/components/app/mini-games/mini-game-types";
 import { resolvePedagogicalCtas } from "./pedagogical-decision-engine";
-import { calculateTimingFit } from "./timing-fit";
 
 // Helpers de Calidad Nutricional y Sinergia Somática para el Timeline
 export function getMealQualityProfile(mealItem: any): {
@@ -69,11 +67,21 @@ export function getMealCombinationTip(mealItem: any, tier: 1 | 2 | 3): string {
 
 export interface MealDynamicCta {
   id: string;
-  type: "exploration" | "context" | "micro_action" | "mini_game";
+  type?: "insight" | "balance" | "education" | "exploration" | "context";
   title: string;
-  iconType: "sparkles" | "apple" | "plus" | "droplet" | "wind" | "pause" | "gamepad";
+  iconType:
+    | "sparkles"
+    | "apple"
+    | "droplet"
+    | "wind"
+    | "pause"
+    | "moon"
+    | "sun"
+    | "activity"
+    | "shield"
+    | "plus";
+  markdown?: string;
   isOneTap?: boolean;
-  gamePayload?: MiniGamePayload;
 }
 
 export function getMealDynamicCtas(mealItem: any): MealDynamicCta[] {
@@ -102,9 +110,8 @@ export function getMealCoachInsightText(mealItem: any): string {
   }
 
   // Regla 9 y 10: Detección y Sincronización Pre/Post-Entreno y Reservas Somáticas
-  const timing = mealItem?.timingFit || calculateTimingFit(mealItem);
   const tag =
-    timing?.tag ||
+    mealItem?.timingFit?.tag ||
     (typeof mealItem?.contextBadge === "string" ? mealItem.contextBadge : mealItem?.contextBadge?.label) ||
     "";
   const isPreWorkout =
@@ -156,107 +163,123 @@ export function getMealCoachInsightText(mealItem: any): string {
 
 export function getMealCtaMarkdownContent(ctaId: string, mealItem: any): string {
   const title = mealItem?.title || "Comida";
+  const text = `${title} ${mealItem?.narrative || mealItem?.desc || ""}`.toLowerCase();
 
-  if (ctaId === "evaluate-hydration" || ctaId === "check_hydration_armstrong") {
-    return `Para asimilar bien **${title}** y sostener tu energía, acompañá con agua fresca. En tu próxima ida al baño, tené en cuenta esta referencia visual (**Escala Armstrong**):`;
+  // CTA Primario: Ver Insight Somático Completo
+  if (ctaId === "view-insight" || ctaId === "ver-insight") {
+    return getMealCoachInsightText(mealItem);
   }
 
-  if (ctaId === "take_a_pause") {
-    return `Inhalá en **4 segundos**, exhalá en **6 segundos**. Un minuto de calma aquí mismo para bajar el ritmo y digerir **${title}** con mayor ligereza:`;
+  // CTA Secundario 1: Equilibrar mi día (Continuidad Positiva / Visión 24h)
+  if (ctaId === "balance-my-day" || ctaId === "balance-next-meal") {
+    if (/hamburguesa vegetariana|veggie|tofu|soja|legumbre|vegetariano/i.test(text)) {
+      return `Por ahora registraste **${title}**. Para equilibrar el resto del día, podés sumar una comida con lentejas o tofu, verduras de temporada y algún cereal como arroz o quinoa. Así incorporás más proteína y fibra sin dejar de lado los sabores vegetarianos que te gustan.`;
+    }
+    if (/cereal|galleta|pan blanco|factura|medialuna|dulce|sour patch|golosina/i.test(text)) {
+      return `Por ahora registraste **${title}**, que aporta energía rápida. Para equilibrar el resto del día, priorizá una fuente de proteína limpia (como huevos, pollo o legumbres) y una porción generosa de vegetales frescos en tu siguiente comida para estabilizar tu saciedad.`;
+    }
+    if (/pasta|arroz|fideo|pizza/i.test(text)) {
+      return `Por ahora registraste **${title}**. Para equilibrar el resto del día, tu siguiente comida puede priorizar hojas verdes frescas, grasas saludables (como palta o aceite de oliva extra virgen) y proteína magra para disfrutar de una digestión ligera.`;
+    }
+    if (/carne|pollo|salmón|pescado|bife|asado/i.test(text)) {
+      return `Por ahora registraste **${title}**, con excelente aporte proteico. Para equilibrar el resto del día, podés sumar fibras variadas (vegetales crujientes o frutas de estación) y abundante agua fresca para acompañar una digestión liviana y despejada.`;
+    }
+    return `Opciones basadas en la **adición positiva** para tu siguiente comida tras **${title}**:
+
+- **🥗 Sumar fibra vegetal fresca:** Hojas verdes, brócoli o tomate con oliva para aportar saciedad prolongada y suavizar la digestión.
+- **🥚 Incorporar una fuente de proteína:** Huevo de campo, legumbres, pollo o tofu para sostener tu energía de forma pareja.
+- **🥑 Grasas saludables de apoyo:** Palta o semillas que prolongan la sensación de plenitud sin generar pesadez.`;
   }
 
-  if (ctaId === "anti-drowsiness-strategy") {
-    return `Tres gestos simples para mantener la mente despejada y evitar el sueño después de comer **${title}**:
+  // CTA Secundario 2: Por qué es importante la proteína
+  if (ctaId === "why-protein-matters" || ctaId === "por-que-proteina") {
+    return `La proteína ayuda a mantener y reparar los músculos, algo clave para sentirte más fuerte y progresar hacia tu objetivo de estar en forma.
+
+- **Variedad vegetal:** Lentejas, garbanzos, porotos, tofu y semillas de chía o cáñamo.
+- **Opciones prácticas:** Huevos de campo, yogur natural entero o quesos magros.
+- **Combinación estratégica:** Como vegetariano o comensal variado, combinar legumbres con verduras y cereales (arroz o quinoa) hace más fácil y completo cubrir tus requerimientos diarios.`;
+  }
+
+  // CTA Secundario 2: Energía sostenida sin bajón
+  if (ctaId === "sustained-energy" || ctaId === "anti-drowsiness-strategy") {
+    return `Tres gestos simples para mantener la mente despejada y evitar el cansancio después de comer **${title}**:
 
 - **🚶 Caminata suave de 5 a 10 minutos:** Mover las piernas después de comer ayuda a que tus músculos utilicen la energía del plato de forma gradual, evitando el pico de cansancio a media tarde.
 - **🥗 El orden importa:** Empezar por las fibras vegetales o proteínas antes de los almidones hace que la digestión sea más progresiva y estable.
 - **☀️ Luz natural y agua fresca:** Un vaso de agua fresca y unos minutos de luz natural reactivan el estado de alerta sin necesidad de sumar más cafeína.`;
   }
 
-  if (ctaId === "night-rest-prep") {
-    return `Pautas simples después de cenar **${title}** para dormir profundo y despertar con energía:
+  // CTA Secundario 2: Preparar el descanso nocturno
+  if (ctaId === "night-rest-prep" || ctaId === "digestion-descanso") {
+    return `Pautas simples después de cenar **${title}** para dormir profundo y despertar con energía renovada:
 
-- **⏳ Ventana de digestión (60 a 90 min):** Esperar al menos una hora antes de acostarte del todo evita el reflujo y permite que tu ritmo cardíaco baje durante la noche.
-- **🍵 Infusión tibia o agua a temperatura ambiente:** Manzanilla, tilo o jengibre suave relajan el tracto digestivo sin interrumpir el sueño.
-- **🌙 Luz cálida y baja:** Reducir el brillo de las pantallas ayuda a tu cerebro a liberar melatonina mientras terminás de digerir.`;
+- **⏳ Ventana de digestión (60 a 90 min):** Esperar al menos una hora antes de acostarte evita el reflujo y permite que tu ritmo cardíaco descienda durante la noche.
+- **🍵 Infusión tibia:** Manzanilla, tilo o jengibre suave relajan el tracto digestivo y promueven una digestión confortable.
+- **🌙 Luz cálida y baja:** Reducir el brillo de pantallas y luces ambientales ayuda a tu cerebro a liberar melatonina mientras terminás de digerir.`;
   }
 
-  if (ctaId === "check-eating-pace") {
-    return `La velocidad y el entorno en que comemos **${title}** cambian por completo cómo se absorben los nutrientes y cómo se siente tu abdomen:`;
+  // CTA Secundario 2: Combustible y recuperación muscular
+  if (ctaId === "workout-fuel" || ctaId === "explore_postworkout_fuel") {
+    return `Nutrición en sincronía con tu entrenamiento para **${title}**:
+
+- **⚡ Reposición de reservas:** Los nutrientes de este plato recargan el glucógeno muscular de forma progresiva sin saturar el sistema digestivo.
+- **💪 Reparación somática:** Los aminoácidos disponibles apoyan la síntesis proteica y la recuperación muscular posterior al esfuerzo.
+- **💧 Hidratación de apoyo:** Acompañar con agua fresca y sales minerales optimiza la entrega de nutrientes a las células.`;
   }
 
-  if (ctaId === "balance-next-meal") {
-    return `Opciones basadas en la **adición** para tu siguiente comida. Tocá una intención abajo para que el escáner te la recuerde en tu próximo registro:
+  // CTA Secundario 2: Sinergia de nutrientes en el plato
+  if (ctaId === "plate-synergy" || ctaId === "nutrient-synergy") {
+    return `Sinergia nutricional: cómo los ingredientes de **${title}** se potencian entre sí:
 
-- **🥗 Sumar fibra vegetal fresca:** Hojas verdes, brócoli o tomate con aceite de oliva para aportar saciedad prolongada y suavizar la digestión.
-- **🥚 Incorporar una fuente de proteína:** Huevo de campo, pollo, legumbres o tofu para sostener tu energía de forma pareja.
-- **🥑 Grasas saludables de apoyo:** Media palta o un puñado de semillas/nueces que prolongan la sensación de plenitud sin pesadez.`;
+- **🍋 Vitamina C + Hierro vegetal:** Los cítricos, el tomate o el morrón fresco multiplican la absorción del hierro presente en legumbres, semillas o espinacas.
+- **🫒 Grasas saludables + Vitaminas A, D, E y K:** El aceite de oliva virgen extra, la palta o las semillas permiten asimilar los antioxidantes y vitaminas liposolubles de los vegetales del plato.
+- **🌱 Fibras prebióticas:** Alimentan las bacterias intestinales beneficiosas, favoreciendo la motilidad digestiva y la saciedad.`;
   }
 
+  // CTA Secundario 2: Saciedad inteligente entre comidas
   if (ctaId === "smart-snack-idea") {
     return `Ideas de colaciones con alta densidad nutricional para llegar a la noche sin hambre acumulada:
 
-- **🫐 Yogur natural con arándanos y semillas de chía:** Combina proteínas de digestión suave y fibra soluble que mantiene la saciedad por horas.
-- **🥕 Bastones de vegetales crujientes con hummus:** Aporta fibra prebiótica y energía gradual sin generar pesadez.
+- **🫐 Yogur natural con arándanos y semillas:** Combina proteínas de digestión suave y fibra soluble que sostiene la saciedad durante horas.
+- **🥕 Bastones de vegetales crujientes con hummus:** Aporta fibra prebiótica y energía gradual sin generar pesadez ni letargo.
 - **🥜 Puñado de almendras o nueces con una fruta fresca:** El aporte conjunto de fibra, agua y grasas saludables estabiliza el apetito antes de la cena.`;
   }
 
-  if (ctaId === "thirst-or-fatigue") {
-    return `¿Por qué a veces sentimos cansancio o antojos repentinos a mitad del día?
+  // CTA Secundario: Hidratación Fisiológica
+  if (ctaId === "evaluate-hydration" || ctaId === "check_hydration_armstrong") {
+    return `Para asimilar bien **${title}** y sostener tu vitalidad, acompañá con agua fresca a lo largo del día.
 
-- **💧 La señal cruzada:** Una deshidratación leve (incluso del 1% al 2%) reduce la oxigenación y suele percibirse como falta de concentración, pesadez mental o ganas de comer algo rápido.
-- **✨ Qué hacer ahora:** Tomá un vaso de agua fresca sin prisa y esperá 10 minutos; notarás cómo recupera claridad tu foco mental.`;
+- **💧 Indicador visual natural:** El color de la orina es tu mejor referencia fisiológica (tonos claros como limonada indican hidratación óptima; tonos oscuros sugieren sumar un vaso de agua).
+- **🌿 Sin forzar cantidades:** Beber pequeños sorbos durante la jornada es mucho más efectivo para tus células que tomar grandes volúmenes de golpe.`;
   }
 
-  if (ctaId === "microbiota-function") {
-    return `Cómo los ingredientes de **${title}** alimentan tu ecosistema digestivo:
-
-- **🌱 Fibras prebióticas y polifenoles:** Las fibras vegetales y los pigmentos naturales de los alimentos frescos sirven de alimento directo para tus bacterias intestinales beneficiosas.
-- **🧠 Conexión intestino-ánimo:** Al fermentar estas fibras, tu microbiota produce compuestos que desinflaman el intestino y envían señales de calma y saciedad a tu cerebro.`;
-  }
-
-  if (ctaId === "plate-synergy") {
-    return `Sinergia nutricional: cómo los ingredientes de **${title}** se potencian entre sí:
-
-- **🍋 Vitamina C + Hierro vegetal:** Los cítricos, el tomate o el morrón fresco multiplican la absorción del hierro presente en legumbres, carnes o espinacas.
-- **🫒 Grasas saludables + Vitaminas A, D, E y K:** El aceite de oliva virgen extra, la palta o las semillas permiten absorber los antioxidantes y vitaminas liposolubles de los vegetales del plato.`;
+  // CTA Secundario: Pausa de respiración y calma
+  if (ctaId === "take_a_pause") {
+    return `Inhalá en **4 segundos**, exhalá en **6 segundos**. Un minuto de respiración tranquila al terminar de comer **${title}** activa tu sistema nervioso de descanso y favorece una digestión liviana y confortable.`;
   }
 
   if (ctaId === "check-satiety") {
-    return `Escuchar tus señales de saciedad (leptina) unos minutos después de terminar **${title}** te ayuda a reconectar con lo que tu cuerpo necesita hoy:`;
+    return `Escuchar tus señales de saciedad unos minutos después de terminar **${title}** te ayuda a reconectar con lo que tu cuerpo necesita hoy, reconociendo cuándo el estómago se siente cómodo sin llegar a la pesadez.`;
   }
 
   if (ctaId === "check-digestion") {
-    return `Registrar cómo sentís tu digestión después de **${title}** te permite descubrir qué combinaciones y horarios te sientan más livianos:`;
+    return `Registrar cómo sentís tu digestión después de **${title}** te permite descubrir qué combinaciones y horarios te sientan con mayor ligereza y energía.`;
   }
 
-  if (ctaId === "explore_postworkout_fuel") {
-    return `Opciones prácticas para acompañar tu recuperación después de moverte:
-
-- **🍠 Batata asada con pollo o tofu:** Energía progresiva y proteína para reponer fuerzas sin pesadez.
-- **🥑 Tostón de masa madre con huevo y palta:** Grasas saludables y proteínas de digestión amigable.
-- **🥣 Yogur natural con avena y frutos rojos:** Fresco, fácil de asimilar y con buen aporte de fibra.`;
+  if (ctaId === "hydration-afternoon") {
+    return `**Energía sostenida sin bajón:**\nAcompañar tu tarde con agua fresca guiándote por la sed fisiológica mantendrá tu nivel de alerta mental y evitará la típica somnolencia que aparece por deshidratación tras el almuerzo.`;
   }
 
-  if (ctaId === "balanced-meal-ideas") {
-    return `Combinaciones simples para sumar variedad y saciedad a tu semana:
-
-- **🥑 Bowl de quinoa, salmón o garbanzos y palta:** Aporta fibra vegetal, proteínas completas y grasas saludables para sostener tu energía toda la tarde.
-- **🍠 Pechuga o tofu a las hierbas con vegetales al vapor:** Una opción cálida y saciante que favorece una digestión liviana.
-- **🥗 Ensalada completa con huevo de campo y semillas:** Suma variedad de plantas, fibra y micronutrientes en pocos minutos.`;
+  if (ctaId === "warm-comfort-digestion") {
+    return `**Beneficio somático del calor:**\nLos alimentos calientes y de textura suave relajan la musculatura lisa del tracto digestivo, reduciendo la tensión gástrica que suele provocar el estrés acumulado del día.`;
   }
 
-  if (ctaId === "explore-real-food") {
-    return `Opciones prácticas para sumar en este plato o en tu próxima comida (Enfoque de Adición):
-
-- **🥗 Sumar una fuente de fibra:** Una guarnición de hojas verdes, tomate o una fruta entera ayuda a que la energía se absorba de forma más progresiva.
-- **🥚 Acompañar con proteína:** Sumar huevo, pollo, legumbres o yogur natural prolonga la saciedad durante más horas.
-- **🥜 Incorporar grasas saludables:** Un toque de palta, semillas o frutos secos aporta saciedad y suaviza la digestión.`;
+  if (ctaId === "night-gastric-comfort") {
+    return `**Digestión sin interrupciones:**\nAl combinar proteínas de fácil asimilación con vegetales cocidos y bajo contenido graso, tu estómago no necesitará horas extra de trabajo pesado, protegiendo las fases de sueño delta/reparador.`;
   }
 
-  if (ctaId === "add-accompaniment") {
-    return `Si acompañaste **${title}** con una bebida, ensalada o complemento, podés sumarlo en un toque:`;
-  }
+  return `Sugerencias de adición y bienestar para **${title}**:
 
-  return `Sugerencias de adición y bienestar para **${title}**:`;
+- Sumar vegetales frescos o una porción de fibra aporta saciedad prolongada.
+- Acompañar con agua fresca favorece una digestión confortable.`;
 }

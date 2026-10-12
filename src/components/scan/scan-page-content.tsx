@@ -7,7 +7,6 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useNutritionSettings } from "@/lib/nutrition-settings";
-import { calculateTimingFit } from "@/lib/timing-fit";
 import {
   MealCalloutPin,
   MealIngredientItem,
@@ -260,22 +259,6 @@ export function ScanPageContent() {
         eatingReason,
       });
 
-      let resolvedTimingFit = null;
-      try {
-        resolvedTimingFit = calculateTimingFit(
-          {
-            time: timeStr,
-            date: dateStr,
-            bioScore,
-            vectorBadges,
-            title: effectiveTitle,
-          },
-          stored,
-        );
-      } catch (e) {
-        console.warn("Timing fit calculation skipped:", e);
-      }
-
       const sampleId = customImage
         ? `custom-${Date.now()}`
         : currentSample?.id || `scan-${Date.now()}`;
@@ -316,7 +299,6 @@ export function ScanPageContent() {
         coachFeedback: dynamicInsight,
         tag: "Nutrición Consciente",
         vectorBadges: vectorBadges,
-        timingFit: resolvedTimingFit,
         customCtas: sampleCtas,
         consumed: true,
       };

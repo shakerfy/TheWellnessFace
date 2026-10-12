@@ -203,7 +203,7 @@ Ubicado de forma discreta dentro del detalle del alimento: `[ ⚠️ Reportar er
 
 ## 6. Especificaciones de UI/UX (Drawers vs. Modales)
 
-En cumplimiento estricto con la **Sección 13 de `AGENTS.md` (Los 5 Modelos Mentales Clave)**:
+En cumplimiento estricto con la **Sección 11 de `AGENTS.md` (Los 5 Modelos Mentales Clave)**:
 
 ### 6.1. Comportamiento Adaptativo
 * **Dispositivos Móviles (`max-md`):** Se abren como **Bottom Sheets / Drawers** (`Drawer` / `Vaul`), con barra de agarre superior (*pill handle*), arrastrables hacia abajo para descartar (`diffY > 80px`).

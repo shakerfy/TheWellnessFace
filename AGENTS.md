@@ -51,22 +51,14 @@
 
 - Utilizar la clase `.custom-scrollbar` (barra de 7px, redondeada _pill radius_ `9999px`, pista transparente) y `overflow-hidden` en el contenedor para evitar scrollbars toscas del navegador.
 
-## 8. 🧠 Reglas de IA Ética, Responsable y Nutricional (The Wellness Face AI)
+## 8. 🥗 Dominio Nutricional, Bioética y Coach IA (Single Source of Truth)
 
-- **Integración del Perfil Biométrico:** Los algoritmos deben calcular los requerimientos basales tomando estrictamente las variables del perfil (Edad, Sexo, Altura, Peso, Nivel de Actividad y Objetivo Biológico).
-- **Contexto Temporal e Hitos Solares (Latitud/Longitud):** Las sugerencias calculan astronómicamente la declinación solar y el ángulo horario según la latitud y longitud del usuario (posicionando con precisión la fase solar: _Pre-Amanecer, Post-Amanecer, Cenit/Mediodía Solar, Ocaso con Corte de Cafeína, y Ventana Regenerativa Nocturna_).
-- **Respeto a la Alacena y Preferencias Reales (Zero-Waste):** La IA únicamente sugiere combinaciones basadas en los alimentos marcados como activos en la alacena del usuario y bajo el formato de su elección (Recetas paso a paso o Porciones de mano).
-- **Nutrición Consciente sin Caloric-Counting Punitivo:** La IA jamás muestra números calóricos restrictivos ni genera ansiedad alimentaria; comunica la recomendación a través de **Porciones de Mano (Palma, Puño, Pulgar, Cuenco)** y los **7 Vectores Nutricionales** (Procesamiento, Fibra, Proteína, Azúcar, Grasas, Granos, Sodio).
+- **Fuente de Verdad Única:** Toda lógica, componente, cálculo, visualización, dial, vector o CTA relacionado con nutrición, comidas, escáner, hábitos o diarización se rige **única y estrictamente** por el archivo [`REGLAS_ANALISIS_NUTRICIONAL_Y_CTAS.md`](file:///c:/Users/shake/.gemini/antigravity/scratch/studio-pulse-smart/REGLAS_ANALISIS_NUTRICIONAL_Y_CTAS.md). Prohibido duplicar especificaciones técnicas de nutrición o definir reglas paralelas en este archivo.
+- **Prohibiciones Inviolables (Anti-Orthorexia):** Prohibido el conteo calórico acumulado o restante, metas rígidas de macronutrientes numéricos, pesaje obsesivo, moralidad alimentaria (*"pecado"*, *"comida trampa"*, *"compensar"*, *"bueno/malo"*) y prescripción médica o clínica patológica.
+- **Scope of Practice:** La IA opera estrictamente como un optimizador de hábitos y educador de bienestar somático (energía, saciedad, confort digestivo y descanso), manteniendo siempre visible el descargo de responsabilidad legal (_Educational & Wellness Disclaimer_).
+- **Silencio Visual en Cabecera:** La tarjeta de comida mantiene una cabecera limpia centrada exclusivamente en el título fáctico del plato y su dial. Las consideraciones contextuales de descanso o recuperación se abordan de forma orgánica dentro del insight educativo de la IA, eliminando badges rígidos o sobre-análisis visual en la tarjeta.
 
-## 9. 🛡️ Bioética, Prevención de TCA y Blindaje Legal en IA (Anti-Orthorexia Framework)
-
-- **Cero Moralidad Alimentaria & Anti-Culpa:** Prohibido el uso de términos punitivos (_"pecado"_, _"comida trampa / cheat meal"_, _"compensar"_, _"quemar calorías"_, _"alimento prohibido"_, _"engordar"_). Ningún alimento se cataloga como "bueno" o "malo".
-- **Enfoque de Adición sobre Restricción:** Las sugerencias de mejora siempre proponen qué sumar (ej. hidratación de apoyo, porciones de fibra o proteína en la siguiente ingesta) en lugar de censurar o exigir la eliminación de alimentos.
-- **Fit del Momento (Renderizado Condicional por Excepción):** Los badges contextuales (_"Ideal Post-Entreno"_, _"Digestión Nocturna"_) solo se renderizan cuando existe una oportunidad biológica o una consideración fisiológica genuina; en comidas habituales sin evento especial, se mantiene el silencio visual para evitar saturación y sobre-análisis.
-- **Foco en Fisiología Somática:** La comunicación se centra exclusivamente en variables de confort y rendimiento (energía sostenida, saciedad, confort digestivo, recuperación muscular y descanso nocturno), nunca en peso corporal, porcentaje graso o estética punitiva.
-- **Blindaje Legal & Scope of Practice:** La IA opera estrictamente como un asistente educativo y de hábitos de bienestar. No emite diagnósticos médicos, no prescribe dietoterapia clínica para patologías y mantiene visible el descargo de responsabilidad legal (_Educational & Wellness Disclaimer_).
-
-## 10. ⚡ Estándar de Interacción "Frictionless & Gesture-First"
+## 9. ⚡ Estándar de Interacción "Frictionless & Gesture-First"
 
 - **Regla de los 2 Toques (Two-Tap Rule):** Ninguna acción cotidiana o frecuente (anotar peso, marcar una serie, registrar un alimento, cambiar un estado) puede requerir más de 2 toques desde la vista activa. Prohibido anidar menús dentro de menús para flujos de registro diario.
 - **Edición In-Place Obligatoria:** Los campos simples y editables (repeticiones, peso/carga, minutos, porciones, notas) deben ser **inputs nativos directos** dentro de la tarjeta (`[ 12 reps ] • [ 24 kg ]`). Prohibido abrir diálogos modales o popups solo para modificar valores numéricos.
@@ -80,14 +72,7 @@
 - **Feedback Multisensorial Obligatorio:** Integrar micro-vibraciones hápticas (`navigator.vibrate`) en swaps, eliminaciones y confirmaciones, y síntesis sonora con Web Audio API al completar temporizadores o descansos (sin dependencias de archivos `.mp3` pesados).
 - **Auto-Guardado Silencioso:** Los cambios en campos de texto, selectores y switches se persisten automáticamente al cambiar de valor; el usuario nunca debe buscar un botón de "Guardar cambios".
 
-## 11. 🧭 Reglas Definitivas del Motor de Análisis Nutricional y CTAs (26 Reglas Unificadas)
-
-- **Referencia Mandatoria:** Consultar y cumplir estrictamente el archivo [`REGLAS_ANALISIS_NUTRICIONAL_Y_CTAS.md`](file:///c:/Users/shake/.gemini/antigravity/scratch/studio-pulse-smart/REGLAS_ANALISIS_NUTRICIONAL_Y_CTAS.md).
-- **Modelo Único (Nutrition Awareness):** La plataforma opera bajo un único modo de conciencia nutricional (*"¿Qué características tiene esta comida?"*). Sin modo Athlete, sin conteo calórico o de macros acumulado/restante, sin metas cuantitativas impuestas y sin ansiedad de control. Muestra `Valor Nutricional (Alto / Medio / Bajo)` sustentado en 3–4 indicadores observables.
-- **Cero Moralización & Anti-Compensación:** Prohibido calificar comidas como buenas o malas y prohibido vincular ejercicio o castigo para compensar ingestas.
-- **Hidratación Fisiológica (Escala Armstrong):** Prohibido usar CTAs de conteo de vasos ("Registrar 1 vaso", "+250 ml"). Todo seguimiento hídrico utiliza la Escala Colorimétrica de Orina de Armstrong (1 a 8) (Ucol) validada clínicamente.
-
-## 12. 🍏 UX Writing: Beneficio sobre Mecanismo (The iPod Rule / Jobs Test)
+## 10. 🍏 UX Writing: Beneficio sobre Mecanismo (The iPod Rule / Jobs Test)
 
 - **El Mantra Central:** *Nunca vendas el disco duro de 5 GB; vende las 1.000 canciones en tu bolsillo.*
 - **Enfoque en el Resultado Humano:** Prohibido describir el mecanismo biológico, anatómico o técnico en la interfaz cotidiana de acción (*"activación parasimpática"*, *"tono autonómico"*, *"motilidad gástrica"*, *"densidad osmolar urinaria"*). Toda comunicación debe centrarse en lo que el usuario siente, gana y experimenta en su vida diaria (*"un minuto de calma"*, *"digerir mejor"*, *"recuperación sin pesadez"*).
@@ -98,7 +83,7 @@
   - *Capa 1 (Interfaz Rápida y Acciones):* 100% humana, minimalista, relajante y libre de ansiedad o tecnicismos.
   - *Capa 2 (Profundización / Blog Educativo):* El rigor científico (citas clínicas, autores, fórmulas y métricas de laboratorio) se aloja en los artículos del Blog mediante enlaces sutiles (ej. *«Escala Armstrong ↗»*), sin entorpecer el hábito diario.
 
-## 13. 🧠 Los 5 Modelos Mentales Clave (Ley de Jakob: Adopción por Familiaridad)
+## 11. 🧠 Los 5 Modelos Mentales Clave (Ley de Jakob: Adopción por Familiaridad)
 
 *«Los usuarios pasan la mayor parte de su tiempo en otras aplicaciones; esperan que tu producto funcione igual que los que ya conocen y dominan.»*
 
@@ -124,7 +109,7 @@
 
 
 
-## 14. 🏛️ Regla Anti-Monolitos & Modularización Preventiva (Clean Architecture Ceilings)
+## 12. 🏛️ Regla Anti-Monolitos & Modularización Preventiva (Clean Architecture Ceilings)
 
 *«Un archivo de miles de líneas no es código rápido; es deuda técnica y lentitud asegurada. Ningún archivo debe crecer indefinidamente sin modularizarse.»*
 
