@@ -6,3 +6,6 @@ export * from "./landing-testimonials";
 export * from "./landing-faq";
 export * from "./landing-cta-section";
 export * from "./landing-smart-assistant";
+export * from "./marketplace-category-ribbon";
+export * from "./marketplace-bottom-dock";
+export * from "./marketplace-shelf-row";
