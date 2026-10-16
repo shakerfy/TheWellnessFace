@@ -83,10 +83,8 @@ export function SiteHeader({ variant = "sanctuary" }: { variant?: "default" | "s
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 transition-all duration-500",
-        isSanctuary
-          ? "border-b border-white/[0.08] bg-[#151311]/45 backdrop-blur-xl text-[#F6F4EE] shadow-[0_15px_45px_rgba(0,0,0,0.45)]"
-          : "border-b border-border/60 bg-background/80 backdrop-blur-xl",
+        "sticky top-0 z-40 transition-all duration-300",
+        "border-b border-border/80 bg-background/85 backdrop-blur-xl text-foreground shadow-2xs",
       )}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 relative">
@@ -96,47 +94,28 @@ export function SiteHeader({ variant = "sanctuary" }: { variant?: "default" | "s
             <button
               type="button"
               onClick={() => navigate({ to: "/app", search: { tab: "config" } })}
-              className={cn(
-                "md:hidden w-8 h-8 rounded-full border overflow-hidden shrink-0 shadow-2xs select-none cursor-pointer active:scale-95 transition-transform",
-                isSanctuary
-                  ? "border-white/[0.1] bg-[#181614]/60 hover:border-white/[0.2]"
-                  : "border-border/80 bg-secondary",
-              )}
+              className="md:hidden w-8 h-8 rounded-full border border-border/80 bg-card hover:bg-muted overflow-hidden shrink-0 shadow-2xs select-none cursor-pointer active:scale-95 transition-transform"
               title="Ver mi perfil"
             >
               <img src={userPhoto} alt="Foto de Perfil" className="w-full h-full object-cover" />
             </button>
           )}
-          <nav
-            className={cn(
-              "hidden items-center gap-6 text-sm md:flex transition-colors",
-              isSanctuary ? "text-[#A39C91]" : "text-muted-foreground",
-            )}
-          >
+          <nav className="hidden items-center gap-6 text-sm md:flex transition-colors text-muted-foreground">
             <a
               href="/#como-funciona"
-              className={cn(
-                "transition",
-                isSanctuary ? "hover:text-[#F6F4EE]" : "hover:text-foreground",
-              )}
+              className="transition hover:text-foreground"
             >
               Cómo funciona
             </a>
             <Link
               to="/blog"
-              className={cn(
-                "transition",
-                isSanctuary ? "hover:text-[#F6F4EE]" : "hover:text-foreground",
-              )}
+              className="transition hover:text-foreground"
             >
               Blog
             </Link>
             <a
               href="/#para-gimnasios"
-              className={cn(
-                "transition",
-                isSanctuary ? "hover:text-[#F6F4EE]" : "hover:text-foreground",
-              )}
+              className="transition hover:text-foreground"
             >
               Partners
             </a>
@@ -150,18 +129,8 @@ export function SiteHeader({ variant = "sanctuary" }: { variant?: "default" | "s
             onClick={() => window.scrollTo(0, 0)}
             className="flex items-center gap-2.5 sm:gap-3 select-none group"
           >
-            <WellnessSymbol
-              className={cn(
-                "w-7 h-7 sm:w-8 sm:h-8 transition-transform duration-300 group-hover:scale-105",
-                isSanctuary ? "text-[#E8E2D5]" : "text-foreground",
-              )}
-            />
-            <span
-              className={cn(
-                "text-xl sm:text-2xl font-poppins font-semibold tracking-tight whitespace-nowrap",
-                isSanctuary ? "text-[#F6F4EE]" : "text-foreground",
-              )}
-            >
+            <WellnessSymbol className="w-7 h-7 sm:w-8 sm:h-8 transition-transform duration-300 group-hover:scale-105 text-foreground" />
+            <span className="text-xl sm:text-2xl font-poppins font-semibold tracking-tight whitespace-nowrap text-foreground">
               The Wellness Face
             </span>
           </Link>
@@ -169,12 +138,7 @@ export function SiteHeader({ variant = "sanctuary" }: { variant?: "default" | "s
 
         {/* Right: Actions (Selector Modo Oscuro/Claro, Botón Configuración & Desktop Profile Menu) */}
         <div className="flex items-center flex-1 justify-end gap-2">
-          <div
-            className={cn(
-              isSanctuary &&
-                "[&_button]:border-white/[0.1] [&_button]:bg-[#181614]/60 [&_button]:text-[#A39C91] hover:[&_button]:text-[#F6F4EE] hover:[&_button]:bg-[#201D1A]",
-            )}
-          >
+          <div>
             <ThemeToggle variant="outline" size="icon" />
           </div>
           {isLoggedIn ? (
@@ -188,12 +152,7 @@ export function SiteHeader({ variant = "sanctuary" }: { variant?: "default" | "s
                   }
                   navigate({ to: "/app", search: { tab: "config" } });
                 }}
-                className={cn(
-                  "w-8 h-8 rounded-full border flex items-center justify-center transition cursor-pointer active:scale-95 shadow-2xs",
-                  isSanctuary
-                    ? "border-white/[0.1] bg-[#181614]/60 text-[#A39C91] hover:text-[#F6F4EE] hover:bg-[#201D1A] hover:border-white/[0.2]"
-                    : "border-border/80 bg-card hover:bg-secondary text-muted-foreground hover:text-foreground",
-                )}
+                className="w-8 h-8 rounded-full border border-border/80 bg-card hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition cursor-pointer active:scale-95 shadow-2xs"
                 title="Ajustes & Configuración"
               >
                 <Settings className="w-4 h-4" />
@@ -209,109 +168,85 @@ export function SiteHeader({ variant = "sanctuary" }: { variant?: "default" | "s
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
-                      className={cn(
-                        "flex items-center gap-2 rounded-full pl-1.5 pr-2.5 py-1 border transition",
-                        isSanctuary
-                          ? "border-white/[0.1] bg-[#181614]/60 hover:bg-[#201D1A] hover:border-white/[0.2] text-[#F6F4EE]"
-                          : "hover:bg-secondary border-border/50",
-                      )}
+                      className="flex items-center gap-2 rounded-full pl-1.5 pr-2.5 py-1 border border-border/80 bg-card hover:bg-muted text-foreground transition"
                     >
                       {/* User Profile Photo */}
-                      <div
-                        className={cn(
-                          "w-7 h-7 rounded-full overflow-hidden shrink-0 shadow-2xs border",
-                          isSanctuary ? "border-white/20 bg-[#201D1A]" : "bg-secondary border-white/50",
-                        )}
-                      >
+                      <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 shadow-2xs border border-border/80 bg-muted">
                         <img
                           src={userPhoto}
                           alt="Foto de Perfil"
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <span
-                        className={cn(
-                          "text-xs font-bold hidden sm:inline-block",
-                          isSanctuary ? "text-[#F6F4EE]" : "text-foreground",
-                        )}
-                      >
+                      <span className="text-xs font-bold hidden sm:inline-block text-foreground">
                         {userName}
                       </span>
-                      <ChevronDown
-                        className={cn("w-3.5 h-3.5", isSanctuary ? "text-[#A39C91]" : "text-muted-foreground")}
-                      />
+                      <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
                     </Button>
                   </DropdownMenuTrigger>
 
                   <DropdownMenuContent
-                    className={cn(
-                      "w-56",
-                      isSanctuary &&
-                        "bg-[#141210]/95 backdrop-blur-2xl border-white/[0.1] text-[#F6F4EE] shadow-[0_20px_50px_rgba(0,0,0,0.85)]",
-                    )}
+                    className="w-56 bg-card/95 backdrop-blur-2xl border-border text-foreground shadow-xl rounded-2xl"
                     align="end"
                     onMouseEnter={handleMouseEnter}
                     onMouseLeave={handleMouseLeave}
                   >
                     <DropdownMenuLabel className="font-normal">
                       <div className="flex flex-col space-y-1">
-                        <p className={cn("text-xs font-bold leading-none", isSanctuary ? "text-[#F6F4EE]" : "text-foreground")}>
+                        <p className="text-xs font-bold leading-none text-foreground">
                           Agustín Gómez
                         </p>
-                        <p className={cn("text-[11px] leading-none truncate", isSanctuary ? "text-[#A39C91]" : "text-muted-foreground")}>
+                        <p className="text-[11px] leading-none truncate text-muted-foreground">
                           agustin.gomez@email.com
                         </p>
                       </div>
                     </DropdownMenuLabel>
 
-                    <DropdownMenuSeparator className={cn(isSanctuary && "bg-white/[0.08]")} />
+                    <DropdownMenuSeparator className="bg-border/60" />
 
                     <DropdownMenuGroup>
-                      <DropdownMenuItem asChild className={cn("cursor-pointer", isSanctuary && "hover:bg-white/[0.06] focus:bg-white/[0.06]")}>
+                      <DropdownMenuItem asChild className="cursor-pointer hover:bg-muted focus:bg-muted">
                         <Link to="/app" search={{ tab: "inicio" }}>
-                          <User className="mr-2 h-4 w-4 text-[#C5BAA8]" />
+                          <User className="mr-2 h-4 w-4 text-foreground" />
                           <span>Inicio</span>
                         </Link>
                       </DropdownMenuItem>
 
-                      <DropdownMenuItem asChild className={cn("cursor-pointer", isSanctuary && "hover:bg-white/[0.06] focus:bg-white/[0.06]")}>
+                      <DropdownMenuItem asChild className="cursor-pointer hover:bg-muted focus:bg-muted">
                         <Link to="/app" search={{ tab: "diario" }}>
-                          <Sparkles className="mr-2 h-4 w-4 text-amber-400" />
+                          <Sparkles className="mr-2 h-4 w-4 text-amber-500" />
                           <span>Diario</span>
                         </Link>
                       </DropdownMenuItem>
 
-                      <DropdownMenuItem asChild className={cn("cursor-pointer", isSanctuary && "hover:bg-white/[0.06] focus:bg-white/[0.06]")}>
+                      <DropdownMenuItem asChild className="cursor-pointer hover:bg-muted focus:bg-muted">
                         <Link to="/app" search={{ tab: "clases" }}>
-                          <QrCode className="mr-2 h-4 w-4 text-emerald-400" />
+                          <QrCode className="mr-2 h-4 w-4 text-emerald-500" />
                           <span>Check-in</span>
                         </Link>
                       </DropdownMenuItem>
 
-                      <DropdownMenuItem asChild className={cn("cursor-pointer", isSanctuary && "hover:bg-white/[0.06] focus:bg-white/[0.06]")}>
+                      <DropdownMenuItem asChild className="cursor-pointer hover:bg-muted focus:bg-muted">
                         <Link to="/app" search={{ tab: "pagos" }}>
-                          <CreditCard className="mr-2 h-4 w-4 text-sky-400" />
+                          <CreditCard className="mr-2 h-4 w-4 text-sky-500" />
                           <span>Membresías & Pagos</span>
                         </Link>
                       </DropdownMenuItem>
                     </DropdownMenuGroup>
 
-                    <DropdownMenuSeparator className={cn(isSanctuary && "bg-white/[0.08]")} />
+                    <DropdownMenuSeparator className="bg-border/60" />
 
-                    <DropdownMenuItem asChild className={cn("cursor-pointer", isSanctuary && "hover:bg-white/[0.06] focus:bg-white/[0.06]")}>
+                    <DropdownMenuItem asChild className="cursor-pointer hover:bg-muted focus:bg-muted">
                       <Link to="/app" search={{ tab: "config" }}>
-                        <Settings className="mr-2 h-4 w-4 text-[#A39C91]" />
+                        <Settings className="mr-2 h-4 w-4 text-muted-foreground" />
                         <span>Configuración</span>
                       </Link>
                     </DropdownMenuItem>
 
-                    <DropdownMenuSeparator className={cn(isSanctuary && "bg-white/[0.08]")} />
+                    <DropdownMenuSeparator className="bg-border/60" />
 
                     <DropdownMenuItem
-                      className={cn(
-                        "cursor-pointer text-destructive focus:text-destructive",
-                        isSanctuary && "hover:bg-rose-950/30 focus:bg-rose-950/30",
-                      )}
+                      className="cursor-pointer text-destructive focus:text-destructive hover:bg-destructive/10 focus:bg-destructive/10"
                       onClick={() => navigate({ to: "/" })}
                     >
                       <LogOut className="mr-2 h-4 w-4" />
@@ -327,8 +262,7 @@ export function SiteHeader({ variant = "sanctuary" }: { variant?: "default" | "s
                 to="/auth"
                 className={cn(
                   buttonVariants({ variant: "ghost", size: "sm" }),
-                  "hidden sm:inline-flex",
-                  isSanctuary && "text-[#A39C91] hover:text-[#F6F4EE] hover:bg-white/[0.05]",
+                  "hidden sm:inline-flex text-muted-foreground hover:text-foreground",
                 )}
               >
                 Iniciar sesión
@@ -337,8 +271,7 @@ export function SiteHeader({ variant = "sanctuary" }: { variant?: "default" | "s
                 to="/auth"
                 className={cn(
                   buttonVariants({ size: "sm" }),
-                  "rounded-full px-4",
-                  isSanctuary && "bg-[#E8E2D5] text-[#141312] hover:bg-[#F6F4EE]",
+                  "rounded-full px-4 bg-foreground text-background hover:bg-foreground/90",
                 )}
               >
                 Empezar
@@ -352,41 +285,17 @@ export function SiteHeader({ variant = "sanctuary" }: { variant?: "default" | "s
 }
 
 export function SiteFooter({ variant = "sanctuary" }: { variant?: "default" | "sanctuary" } = {}) {
-  const isSanctuary = variant === "sanctuary";
-
   return (
-    <footer
-      className={cn(
-        "border-t pb-16 md:pb-0 transition-colors duration-300",
-        isSanctuary
-          ? "border-[#26221E] bg-[#0A0909] text-[#F5F3EE]"
-          : "border-border/60 bg-background",
-      )}
-    >
+    <footer className="border-t border-border/80 bg-card/40 text-foreground pb-16 md:pb-0 transition-colors duration-300">
       <div className="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-6 py-12 md:grid-cols-4">
         <div>
           <Link to="/" className="flex items-center gap-2.5 group select-none">
-            <WellnessSymbol
-              className={cn(
-                "w-6 h-6 transition-transform duration-300 group-hover:scale-105",
-                isSanctuary ? "text-[#E8E2D5]" : "text-foreground",
-              )}
-            />
-            <span
-              className={cn(
-                "text-xl font-poppins font-semibold tracking-tight",
-                isSanctuary ? "text-[#F5F3EE]" : "text-foreground",
-              )}
-            >
+            <WellnessSymbol className="w-6 h-6 transition-transform duration-300 group-hover:scale-105 text-foreground" />
+            <span className="text-xl font-poppins font-semibold tracking-tight text-foreground">
               The Wellness Face
             </span>
           </Link>
-          <p
-            className={cn(
-              "mt-4 max-w-xs text-sm",
-              isSanctuary ? "text-[#A39C91]" : "text-muted-foreground",
-            )}
-          >
+          <p className="mt-4 max-w-xs text-sm text-muted-foreground">
             Tu bienestar, bien elegido.
           </p>
         </div>
@@ -396,28 +305,15 @@ export function SiteFooter({ variant = "sanctuary" }: { variant?: "default" | "s
           { t: "Legal", l: ["Términos", "Privacidad", "Cookies"] },
         ].map((c) => (
           <div key={c.t}>
-            <div
-              className={cn(
-                "text-sm font-semibold tracking-wide",
-                isSanctuary ? "text-[#F5F3EE] uppercase text-[12px] tracking-[0.15em]" : "text-foreground",
-              )}
-            >
+            <div className="text-sm font-semibold tracking-wide text-foreground uppercase text-[12px] tracking-[0.15em]">
               {c.t}
             </div>
-            <ul
-              className={cn(
-                "mt-3 space-y-2 text-sm",
-                isSanctuary ? "text-[#A39C91]" : "text-muted-foreground",
-              )}
-            >
+            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               {c.l.map((i) => (
                 <li key={i}>
                   <a
                     href="#"
-                    className={cn(
-                      "transition",
-                      isSanctuary ? "hover:text-[#F5F3EE]" : "hover:text-foreground",
-                    )}
+                    className="transition hover:text-foreground"
                   >
                     {i}
                   </a>
@@ -427,18 +323,8 @@ export function SiteFooter({ variant = "sanctuary" }: { variant?: "default" | "s
           </div>
         ))}
       </div>
-      <div
-        className={cn(
-          "border-t",
-          isSanctuary ? "border-[#1F1C19]" : "border-border/60",
-        )}
-      >
-        <div
-          className={cn(
-            "mx-auto flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between px-6 py-5 text-xs text-center sm:text-left",
-            isSanctuary ? "text-[#7D766D]" : "text-muted-foreground",
-          )}
-        >
+      <div className="border-t border-border/80">
+        <div className="mx-auto flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between px-6 py-5 text-xs text-center sm:text-left text-muted-foreground">
           <span>© {new Date().getFullYear()} The Wellness Face. Todos los derechos reservados.</span>
           <span>Hecho con precisión y calma.</span>
         </div>

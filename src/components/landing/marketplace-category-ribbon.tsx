@@ -61,38 +61,38 @@ export function MarketplaceCategoryRibbon({
   return (
     <div
       className={cn(
-        "w-full bg-[#11100E]/90 backdrop-blur-md border-b border-[#262320]/80 py-2.5 px-4 sm:px-6 sticky top-16 z-30 transition-all select-none",
+        "w-full bg-background/85 backdrop-blur-md border-b border-border py-2.5 px-4 sm:px-6 sticky top-16 z-30 transition-all select-none",
         className,
       )}
     >
       <div className="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth">
-        {/* 1. Location Selector (DoorDash style 'CASA v') */}
+        {/* 1. Location Selector (DoorDash style) */}
         {selectedLocation && onSelectLocation && (
           <>
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-1.5 whitespace-nowrap rounded-full border border-white/10 bg-[#1A1815] px-3.5 py-1.5 text-xs font-semibold text-[#F6F4EE] hover:border-white/25 hover:text-white transition cursor-pointer outline-none shrink-0 shadow-2xs active:scale-95">
-                <MapPin className="w-3.5 h-3.5 text-[#C5BAA8]" />
+              <DropdownMenuTrigger className="flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition cursor-pointer outline-none shrink-0 shadow-2xs active:scale-95">
+                <MapPin className="w-3.5 h-3.5 text-foreground" />
                 <span>{selectedLocation}</span>
-                <ChevronDown className="w-3 h-3 text-[#A39C91]" />
+                <ChevronDown className="w-3 h-3 text-muted-foreground" />
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="start"
-                className="bg-[#171513] border-[#2C2824] text-[#F6F4EE] rounded-2xl shadow-2xl p-1 min-w-[200px] z-50"
+                className="bg-card border-border text-foreground rounded-2xl shadow-xl p-1 min-w-[200px] z-50"
               >
                 {locations?.map((loc) => (
                   <DropdownMenuItem
                     key={loc}
                     onClick={() => onSelectLocation(loc)}
-                    className="flex items-center justify-between text-xs px-3 py-2 rounded-xl cursor-pointer hover:bg-[#25221E] focus:bg-[#25221E]"
+                    className="flex items-center justify-between text-xs px-3 py-2 rounded-xl cursor-pointer hover:bg-muted focus:bg-muted"
                   >
                     <span>{loc}</span>
-                    {selectedLocation === loc && <Check className="w-3.5 h-3.5 text-[#C5BAA8]" />}
+                    {selectedLocation === loc && <Check className="w-3.5 h-3.5 text-foreground" />}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <div className="h-4 w-[1px] bg-[#2A2622] shrink-0 mx-0.5" />
+            <div className="h-4 w-[1px] bg-border shrink-0 mx-0.5" />
           </>
         )}
 
@@ -101,27 +101,27 @@ export function MarketplaceCategoryRibbon({
           type="button"
           onClick={onToggleFavorites}
           className={cn(
-            "flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-all shrink-0 cursor-pointer select-none",
+            "flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all shrink-0 cursor-pointer select-none",
             showOnlyFavorites
-              ? "border-[#C5BAA8] bg-[#C5BAA8]/20 text-[#F6F4EE] shadow-xs"
-              : "border-[#262320] bg-[#171513] text-[#A39C91] hover:border-[#3D3833] hover:text-[#F6F4EE]",
+              ? "border-foreground/30 bg-foreground/10 text-foreground font-semibold shadow-xs"
+              : "border-border bg-card text-muted-foreground hover:border-foreground/20 hover:text-foreground",
           )}
         >
           <Heart
             className={cn(
               "w-3.5 h-3.5 transition-transform",
-              showOnlyFavorites ? "fill-[#C5BAA8] text-[#C5BAA8] scale-110" : "text-[#7D766D]",
+              showOnlyFavorites ? "fill-rose-500 text-rose-500 scale-110" : "text-muted-foreground",
             )}
           />
           <span>Favoritos</span>
           {favoritesCount > 0 && (
-            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-[#262320] text-[#E8E2D5] font-bold">
+            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-muted text-foreground font-bold">
               {favoritesCount}
             </span>
           )}
         </button>
 
-        <div className="h-4 w-[1px] bg-[#2A2622] shrink-0 mx-0.5" />
+        <div className="h-4 w-[1px] bg-border shrink-0 mx-0.5" />
 
         {/* 3. Categories Pills */}
         {categories.map((cat) => {
@@ -136,8 +136,8 @@ export function MarketplaceCategoryRibbon({
               className={cn(
                 "flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all shrink-0 cursor-pointer select-none",
                 isActive
-                  ? "border-[#C5BAA8] bg-[#221F1B] text-[#F6F4EE] font-semibold shadow-xs"
-                  : "border-[#262320] bg-[#141311] text-[#A39C91] hover:border-[#3D3833] hover:text-[#F6F4EE]",
+                  ? "border-foreground bg-foreground text-background font-semibold shadow-xs"
+                  : "border-border bg-card text-muted-foreground hover:border-foreground/20 hover:text-foreground",
               )}
             >
               <span className="shrink-0">{icon}</span>

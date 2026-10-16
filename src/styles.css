@@ -76,76 +76,76 @@
 :root {
   --font-geist: "Geist Variable", sans-serif;
   --font-geist-mono: "Geist Mono Variable", monospace;
-  --radius: 0.625rem;
-  /* Finanzas Minimalistas: blanco, negro, gris claro, gris oscuro */
-  --background: oklch(1 0 0); /* #ffffff */
-  --foreground: oklch(0.145 0 0); /* #0f0f0f */
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --radius: 0.75rem;
+  /* Light Theme (Inspirado en la captura minimalista clara: fondo piedra cálido y tarjeta blanca pura) */
+  --background: oklch(0.938 0.005 85); /* #EAE8E2 Canvas cálido tono piedra / alabastro */
+  --foreground: oklch(0.14 0.005 50); /* #111113 Tipografía carbón profundo */
+  --card: oklch(1 0 0); /* #FFFFFF Tarjeta blanca pura con contraste limpio */
+  --card-foreground: oklch(0.14 0.005 50); /* #111113 */
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.145 0 0); /* negro */
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.967 0 0); /* #f3f4f6 */
-  --secondary-foreground: oklch(0.145 0 0);
-  --muted: oklch(0.967 0 0); /* #f3f4f6 */
-  --muted-foreground: oklch(0.42 0 0); /* #555555 */
-  --accent: oklch(0.967 0 0);
-  --accent-foreground: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.14 0.005 50);
+  --primary: oklch(0.14 0.005 50); /* #111113 Botón negro de alta jerarquía */
+  --primary-foreground: oklch(1 0 0); /* #FFFFFF Texto blanco en botón */
+  --secondary: oklch(0.90 0.005 85); /* #E0DED7 */
+  --secondary-foreground: oklch(0.14 0.005 50);
+  --muted: oklch(0.91 0.005 85);
+  --muted-foreground: oklch(0.50 0.008 75); /* #6E6D74 Texto secundario sutil */
+  --accent: oklch(0.91 0.005 85);
+  --accent-foreground: oklch(0.14 0.005 50);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.92 0 0);
-  --input: oklch(0.92 0 0);
-  --ring: oklch(0.145 0 0);
+  --border: oklch(0.875 0.005 85); /* #DCDAD2 Borde suave */
+  --input: oklch(0.875 0.005 85);
+  --ring: oklch(0.14 0.005 50);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.984 0.003 247.858);
-  --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.208 0.042 265.755);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.968 0.007 247.896);
-  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.704 0.04 256.788);
+  --sidebar: oklch(0.94 0.005 85);
+  --sidebar-foreground: oklch(0.14 0.005 50);
+  --sidebar-primary: oklch(0.14 0.005 50);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.90 0.005 85);
+  --sidebar-accent-foreground: oklch(0.14 0.005 50);
+  --sidebar-border: oklch(0.875 0.005 85);
+  --sidebar-ring: oklch(0.14 0.005 50);
 }
 
 .dark {
-  /* Remedy Place Sanctuary Theme: Obsidian #0E0D0C, Deep Card #151311, Linen/Bone #F6F4EE, Warm Bronze #C5BAA8, Hairline #26221E */
-  --background: oklch(0.14 0.005 50); /* #0E0D0C Obsidian sanctuary surface */
-  --foreground: oklch(0.97 0.008 85); /* #F6F4EE Crisp linen/bone primary text */
-  --card: oklch(0.17 0.006 50); /* #151311 Deep sanctuary card surface */
-  --card-foreground: oklch(0.97 0.008 85); /* #F6F4EE */
-  --popover: oklch(0.16 0.006 50); /* #141210 Popover surface */
-  --popover-foreground: oklch(0.97 0.008 85);
-  --primary: oklch(0.91 0.015 80); /* #E8E2D5 Warm bone / linen pill */
-  --primary-foreground: oklch(0.14 0.005 50); /* #0E0D0C Obsidian text on primary */
-  --secondary: oklch(0.20 0.008 55); /* #1E1B18 Secondary pill / button */
-  --secondary-foreground: oklch(0.97 0.008 85);
-  --muted: oklch(0.20 0.008 55); /* #1E1B18 */
-  --muted-foreground: oklch(0.68 0.015 75); /* #A39C91 Stone / air secondary text */
-  --accent: oklch(0.24 0.01 55); /* #26221E Hover / active surface */
-  --accent-foreground: oklch(0.97 0.008 85);
+  /* Dark Theme (Inspirado en la captura minimalista oscura: fondo obsidiana mate y tarjeta grafito elevada) */
+  --background: oklch(0.135 0.005 260); /* #0E0E11 Canvas obsidiana mate profundo */
+  --foreground: oklch(0.98 0 0); /* #FFFFFF Tipografía blanca nítida */
+  --card: oklch(0.185 0.005 260); /* #1A1A1E Tarjeta grafito elevada */
+  --card-foreground: oklch(0.98 0 0); /* #FFFFFF */
+  --popover: oklch(0.185 0.005 260);
+  --popover-foreground: oklch(0.98 0 0);
+  --primary: oklch(0.98 0 0); /* #FFFFFF Botón blanco puro */
+  --primary-foreground: oklch(0.135 0.005 260); /* #0E0E11 Texto oscuro en botón */
+  --secondary: oklch(0.22 0.006 260); /* #24242A Superficie secundaria */
+  --secondary-foreground: oklch(0.98 0 0);
+  --muted: oklch(0.22 0.006 260);
+  --muted-foreground: oklch(0.66 0.008 260); /* #9E9EA8 Texto secundario plata/gris */
+  --accent: oklch(0.24 0.006 260);
+  --accent-foreground: oklch(0.98 0 0);
   --destructive: oklch(0.62 0.21 25);
-  --destructive-foreground: oklch(0.97 0.008 85);
-  --border: oklch(0.24 0.01 55); /* #26221E Hairline sanctuary divider */
-  --input: oklch(0.24 0.01 55); /* #26221E */
-  --ring: oklch(0.78 0.025 75); /* #C5BAA8 Warm bronze focus ring */
-  --chart-1: oklch(0.78 0.025 75); /* Champagne bronze */
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.24 0.006 260); /* #26262E Borde hairline sutil */
+  --input: oklch(0.24 0.006 260);
+  --ring: oklch(0.98 0 0);
+  --chart-1: oklch(0.78 0.025 75);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.14 0.005 50); /* #0E0D0C Sanctuary sidebar */
-  --sidebar-foreground: oklch(0.97 0.008 85);
-  --sidebar-primary: oklch(0.91 0.015 80);
-  --sidebar-primary-foreground: oklch(0.14 0.005 50);
-  --sidebar-accent: oklch(0.20 0.008 55); /* #1E1B18 */
-  --sidebar-accent-foreground: oklch(0.97 0.008 85);
-  --sidebar-border: oklch(0.24 0.01 55); /* #26221E */
-  --sidebar-ring: oklch(0.78 0.025 75);
+  --sidebar: oklch(0.135 0.005 260);
+  --sidebar-foreground: oklch(0.98 0 0);
+  --sidebar-primary: oklch(0.98 0 0);
+  --sidebar-primary-foreground: oklch(0.135 0.005 260);
+  --sidebar-accent: oklch(0.22 0.006 260);
+  --sidebar-accent-foreground: oklch(0.98 0 0);
+  --sidebar-border: oklch(0.24 0.006 260);
+  --sidebar-ring: oklch(0.98 0 0);
 }
 
 

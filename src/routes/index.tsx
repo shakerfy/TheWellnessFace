@@ -193,7 +193,7 @@ export function Index({ hideHeader = false }: { hideHeader?: boolean } = {}) {
   const isFilterActive = aiActive || category !== "Todos" || showOnlyFavorites;
 
   return (
-    <div className="min-h-screen bg-[#0E0D0C] text-[#F6F4EE] selection:bg-[#C5BAA8] selection:text-[#0E0D0C] pb-24 sm:pb-28">
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-300 pb-28 sm:pb-32">
       {/* 1. Main Header */}
       {!hideHeader && <SiteHeader variant="sanctuary" />}
 
@@ -225,17 +225,17 @@ export function Index({ hideHeader = false }: { hideHeader?: boolean } = {}) {
         {/* Active AI Search Banner */}
         {aiActive && (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6">
-            <div className="rounded-3xl border border-[#C5BAA8]/40 bg-[#171513] p-4 sm:p-5 flex items-center justify-between gap-4 shadow-xl">
+            <div className="rounded-3xl border border-border bg-card p-4 sm:p-5 flex items-center justify-between gap-4 shadow-sm">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-2xl bg-amber-400/10 text-amber-300 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-500 dark:text-amber-400 flex items-center justify-center shrink-0">
                   <Sparkles className="w-5 h-5" />
                 </div>
                 <div className="min-w-0 space-y-0.5">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#C5BAA8] block">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
                     Búsqueda Asistida con IA
                   </span>
-                  <p className="text-xs sm:text-sm text-[#F6F4EE] font-medium truncate">
-                    Espacios afines a: <strong className="text-white font-bold">"{aiQuery}"</strong>
+                  <p className="text-xs sm:text-sm text-foreground font-medium truncate">
+                    Espacios afines a: <strong className="font-bold">"{aiQuery}"</strong>
                   </p>
                 </div>
               </div>
@@ -246,7 +246,7 @@ export function Index({ hideHeader = false }: { hideHeader?: boolean } = {}) {
                   setAiActive(false);
                   setAiQuery("");
                 }}
-                className="text-xs font-semibold text-[#A39C91] hover:text-[#F6F4EE] flex items-center gap-1.5 shrink-0 px-3 py-1.5 rounded-full border border-white/10 hover:border-white/20 transition cursor-pointer"
+                className="text-xs font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1.5 shrink-0 px-3 py-1.5 rounded-full border border-border hover:bg-muted transition cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Limpiar filtro</span>
@@ -300,11 +300,11 @@ export function Index({ hideHeader = false }: { hideHeader?: boolean } = {}) {
               <button
                 type="button"
                 onClick={() => setShowAllGrid(true)}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#38332C] bg-[#141311] hover:bg-[#1E1B18] text-[#DDD6CB] hover:text-[#F6F4EE] text-xs font-semibold transition-all duration-200 cursor-pointer shadow-sm hover:border-[#C5BAA8]/40"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-border bg-card hover:bg-muted text-foreground text-xs font-semibold transition-all duration-200 cursor-pointer shadow-xs hover:border-foreground/30"
               >
-                <Grid3X3 className="w-4 h-4 text-[#C5BAA8]" />
+                <Grid3X3 className="w-4 h-4 text-muted-foreground" />
                 <span>Explorar los {GYMS.length} estudios en lista completa</span>
-                <ArrowRight className="w-3.5 h-3.5 text-[#A39C91]" />
+                <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
               </button>
             </div>
           </div>
@@ -315,11 +315,11 @@ export function Index({ hideHeader = false }: { hideHeader?: boolean } = {}) {
           <div className="pt-2">
             {showAllGrid && !isFilterActive && (
               <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-4 flex items-center justify-between">
-                <span className="text-xs text-[#A39C91]">Mostrando catálogo completo</span>
+                <span className="text-xs text-muted-foreground">Mostrando catálogo completo</span>
                 <button
                   type="button"
                   onClick={() => setShowAllGrid(false)}
-                  className="text-xs font-semibold text-[#C5BAA8] hover:text-white transition cursor-pointer"
+                  className="text-xs font-semibold text-foreground hover:text-muted-foreground transition cursor-pointer"
                 >
                   ← Volver a estantes destacados
                 </button>
@@ -359,7 +359,7 @@ export function Index({ hideHeader = false }: { hideHeader?: boolean } = {}) {
         )}
 
         {/* Discreet FAQ section at the end for trust */}
-        <div className="border-t border-[#1C1A17] pt-8">
+        <div className="border-t border-border pt-8">
           <LandingFAQ />
         </div>
       </main>
