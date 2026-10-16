@@ -17,6 +17,9 @@ export interface LandingGymSearchProps {
   toggleFavorite: (slug: string, e: React.MouseEvent) => void;
   showOnlyFavorites: boolean;
   setShowOnlyFavorites: (s: boolean) => void;
+  hideCategoryBar?: boolean;
+  customTitle?: string;
+  customSubtitle?: string;
 }
 
 export function LandingGymSearch({
@@ -33,57 +36,63 @@ export function LandingGymSearch({
   toggleFavorite,
   showOnlyFavorites,
   setShowOnlyFavorites,
+  hideCategoryBar = false,
+  customTitle,
+  customSubtitle,
 }: LandingGymSearchProps) {
   return (
-    <section id="descubrir" className="mx-auto max-w-7xl px-6 pb-24 pt-16 scroll-mt-16 bg-[#0E0D0C]">
-      <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
+    <section id="descubrir" className="mx-auto max-w-7xl px-4 sm:px-6 pb-20 pt-6 scroll-mt-16 bg-[#0E0D0C]">
+      <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end mb-6">
         <div>
-          <div className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.22em] text-[#C5BAA8] mb-2">
-            Curaduría de Espacios
+          <div className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.22em] text-[#C5BAA8] mb-1.5">
+            {customTitle ? "Selección Filtrada" : "Curaduría de Espacios"}
           </div>
-          <h2 className="text-2xl font-light tracking-tight md:text-3xl lg:text-4xl text-[#F6F4EE]">
-            Estudios, Boxes y Santuarios
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-light tracking-tight text-[#F6F4EE]">
+            {customTitle || "Estudios, Boxes y Santuarios"}
           </h2>
-          <p className="mt-1.5 text-sm text-[#A39C91]">
-            Curados por nuestra IA según tu disciplina, ubicación y confort somático.
+          <p className="mt-1 text-xs sm:text-sm text-[#A39C91]">
+            {customSubtitle || "Curados por nuestra IA según tu disciplina, ubicación y confort somático."}
           </p>
         </div>
-        <div className="flex w-full gap-2 overflow-x-auto max-w-full md:overflow-visible pb-1 md:pb-0">
-          <button
-            onClick={() => {
-              setShowOnlyFavorites(!showOnlyFavorites);
-              setAiActive(false);
-              setCategory("Todos");
-            }}
-            className={`flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 py-1.5 text-xs font-semibold transition ${
-              showOnlyFavorites
-                ? "border-[#C5BAA8] bg-[#C5BAA8]/15 text-[#E8E2D5]"
-                : "border-[#262320] bg-[#141311] text-[#A39C91] hover:border-[#3D3833] hover:text-[#F6F4EE]"
-            }`}
-          >
-            <Heart
-              className={`h-3.5 w-3.5 ${showOnlyFavorites ? "fill-[#C5BAA8] text-[#C5BAA8]" : "text-[#7D766D]"}`}
-            />
-            Favoritos ({favorites.length})
-          </button>
-          {categories.map((c) => (
+
+        {!hideCategoryBar && (
+          <div className="flex w-full gap-2 overflow-x-auto max-w-full md:overflow-visible pb-1 md:pb-0">
             <button
-              key={c}
               onClick={() => {
-                setCategory(c);
+                setShowOnlyFavorites(!showOnlyFavorites);
                 setAiActive(false);
-                setShowOnlyFavorites(false);
+                setCategory("Todos");
               }}
-              className={`whitespace-nowrap rounded-full border px-3.5 py-1.5 text-xs font-medium transition ${
-                category === c && !aiActive && !showOnlyFavorites
-                  ? "border-[#C5BAA8] bg-[#221F1B] text-[#F6F4EE] shadow-xs"
+              className={`flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 py-1.5 text-xs font-semibold transition ${
+                showOnlyFavorites
+                  ? "border-[#C5BAA8] bg-[#C5BAA8]/15 text-[#E8E2D5]"
                   : "border-[#262320] bg-[#141311] text-[#A39C91] hover:border-[#3D3833] hover:text-[#F6F4EE]"
               }`}
             >
-              {c}
+              <Heart
+                className={`h-3.5 w-3.5 ${showOnlyFavorites ? "fill-[#C5BAA8] text-[#C5BAA8]" : "text-[#7D766D]"}`}
+              />
+              Favoritos ({favorites.length})
             </button>
-          ))}
-        </div>
+            {categories.map((c) => (
+              <button
+                key={c}
+                onClick={() => {
+                  setCategory(c);
+                  setAiActive(false);
+                  setShowOnlyFavorites(false);
+                }}
+                className={`whitespace-nowrap rounded-full border px-3.5 py-1.5 text-xs font-medium transition ${
+                  category === c && !aiActive && !showOnlyFavorites
+                    ? "border-[#C5BAA8] bg-[#221F1B] text-[#F6F4EE] shadow-xs"
+                    : "border-[#262320] bg-[#141311] text-[#A39C91] hover:border-[#3D3833] hover:text-[#F6F4EE]"
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* AI Searching State */}

@@ -9,7 +9,16 @@ import {
   Zap,
   Droplets,
   Award,
+  MapPin,
+  ChevronDown,
+  Check,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
 export interface MarketplaceCategoryRibbonProps {
@@ -19,6 +28,9 @@ export interface MarketplaceCategoryRibbonProps {
   favoritesCount: number;
   showOnlyFavorites: boolean;
   onToggleFavorites: () => void;
+  selectedLocation?: string;
+  locations?: string[];
+  onSelectLocation?: (location: string) => void;
   className?: string;
 }
 
@@ -41,17 +53,50 @@ export function MarketplaceCategoryRibbon({
   favoritesCount,
   showOnlyFavorites,
   onToggleFavorites,
+  selectedLocation,
+  locations,
+  onSelectLocation,
   className,
 }: MarketplaceCategoryRibbonProps) {
   return (
     <div
       className={cn(
-        "w-full bg-[#11100E]/80 backdrop-blur-md border-b border-[#262320]/80 py-2.5 px-4 sm:px-6 sticky top-16 z-30 transition-all",
+        "w-full bg-[#11100E]/90 backdrop-blur-md border-b border-[#262320]/80 py-2.5 px-4 sm:px-6 sticky top-16 z-30 transition-all select-none",
         className,
       )}
     >
       <div className="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth">
-        {/* Favoritos button */}
+        {/* 1. Location Selector (DoorDash style 'CASA v') */}
+        {selectedLocation && onSelectLocation && (
+          <>
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center gap-1.5 whitespace-nowrap rounded-full border border-white/10 bg-[#1A1815] px-3.5 py-1.5 text-xs font-semibold text-[#F6F4EE] hover:border-white/25 hover:text-white transition cursor-pointer outline-none shrink-0 shadow-2xs active:scale-95">
+                <MapPin className="w-3.5 h-3.5 text-[#C5BAA8]" />
+                <span>{selectedLocation}</span>
+                <ChevronDown className="w-3 h-3 text-[#A39C91]" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="start"
+                className="bg-[#171513] border-[#2C2824] text-[#F6F4EE] rounded-2xl shadow-2xl p-1 min-w-[200px] z-50"
+              >
+                {locations?.map((loc) => (
+                  <DropdownMenuItem
+                    key={loc}
+                    onClick={() => onSelectLocation(loc)}
+                    className="flex items-center justify-between text-xs px-3 py-2 rounded-xl cursor-pointer hover:bg-[#25221E] focus:bg-[#25221E]"
+                  >
+                    <span>{loc}</span>
+                    {selectedLocation === loc && <Check className="w-3.5 h-3.5 text-[#C5BAA8]" />}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <div className="h-4 w-[1px] bg-[#2A2622] shrink-0 mx-0.5" />
+          </>
+        )}
+
+        {/* 2. Favoritos button */}
         <button
           type="button"
           onClick={onToggleFavorites}
@@ -78,7 +123,7 @@ export function MarketplaceCategoryRibbon({
 
         <div className="h-4 w-[1px] bg-[#2A2622] shrink-0 mx-0.5" />
 
-        {/* Categories Pills */}
+        {/* 3. Categories Pills */}
         {categories.map((cat) => {
           const isActive = activeCategory === cat && !showOnlyFavorites;
           const icon = CATEGORY_ICONS[cat] || <Compass className="w-3.5 h-3.5" />;
