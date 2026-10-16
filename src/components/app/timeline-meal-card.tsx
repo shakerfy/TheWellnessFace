@@ -205,7 +205,7 @@ export function TimelineMealCard({
 
         {/* Descripción del plato debajo del título y el dial */}
         {mealDescription && (
-          <p className="text-xs text-muted-foreground leading-relaxed font-normal pt-2 text-left">
+          <p className="text-xs sm:text-[13px] text-muted-foreground leading-relaxed font-normal pt-2 text-left">
             {mealDescription}
           </p>
         )}
@@ -302,12 +302,10 @@ export function TimelineMealCard({
           {/* Sección de Insight Expandida */}
           {isExpanded && (
             <div className="pt-1 pb-1 space-y-3.5 text-left animate-in fade-in slide-in-from-top-2 duration-300">
-              <div className="p-3.5 sm:p-4 rounded-2xl border border-border/50 bg-secondary/20 hover:border-foreground/30 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-                <TypewriterMarkdown
-                  content={coachInsightText}
-                  className="text-xs sm:text-[13px] text-muted-foreground leading-relaxed font-normal"
-                />
-              </div>
+              <TypewriterMarkdown
+                content={coachInsightText}
+                className="text-xs sm:text-[13px] text-muted-foreground leading-relaxed font-normal"
+              />
 
               {/* CTAs Dinámicos de Continuidad y Educación (Markdown Puro) */}
               <TimelineMealCtas

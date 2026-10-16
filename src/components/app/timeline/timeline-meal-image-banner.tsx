@@ -26,7 +26,6 @@ export function MealImageBanner({
         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none select-none"
       />
 
-
       {/* Top Right Action Pill */}
       <MealCardActions
         item={item}

@@ -6,3 +6,5 @@ export * from "./timeline-meal-actions";
 export * from "./timeline-meal-image-banner";
 export * from "./timeline-meal-athlete-macros";
 export * from "./timeline-meal-ctas";
+export * from "./workout-live-modal";
+export * from "./activity-manual-modal";

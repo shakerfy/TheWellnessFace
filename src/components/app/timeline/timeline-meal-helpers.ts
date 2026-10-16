@@ -1,4 +1,5 @@
 import type { FoodQualityLevel } from "@/components/food-profile-hero";
+import { formatStandaloneBadgeLabel } from "@/lib/scan-data";
 
 export interface MealMacros {
   mealCalories: number;
@@ -84,7 +85,10 @@ export function getMealQualityData(
       ? item.vectorBadges.slice(0, 4).map((vb: any) => ({
           id: vb.id || vb.category,
           category: vb.category,
-          label: vb.badgeText || vb.label || vb.text,
+          label: formatStandaloneBadgeLabel(
+            vb.category,
+            vb.badgeText || vb.label || vb.text,
+          ),
         }))
       : [
           { id: "b-1", category: "processing", label: "Mínimamente procesado" },

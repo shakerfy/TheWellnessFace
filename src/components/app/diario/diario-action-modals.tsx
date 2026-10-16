@@ -1,5 +1,5 @@
 import React from "react";
-import { Camera, Timer, Activity, Plus, Flame } from "lucide-react";
+import { Camera, Timer, Activity, Plus, Flame, Droplet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -8,9 +8,12 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { Drawer, DrawerContent } from "@/components/ui/drawer";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { STREAK_FAQ, MET_ACTIVITIES } from "@/lib/met-activities";
 import { QRScannerModal } from "../qr-scanner-modal";
 import { VagalBreathingDrawer } from "@/components/vagal-breathing-drawer";
+import { HydrationCheckCard } from "@/components/widgets/hydration-check-card";
 import {
   ActivityLogModal,
   EditTimelineItemModal,
@@ -40,8 +43,11 @@ export interface DiarioActionModalsProps {
     duration: number,
     intensity: "low" | "med" | "high",
     metPoints: number,
+    extra?: any,
   ) => void;
+  userWeight?: number;
   onCheckinSuccess: (data: any) => void;
+  onSaveHydration?: (level: number, details: any) => void;
 }
 
 export function DiarioActionModals({
@@ -64,8 +70,11 @@ export function DiarioActionModals({
   onSaveEditedTimelineItem,
   onToggleSaveTimelineItem,
   onSaveActivity,
+  userWeight,
   onCheckinSuccess,
+  onSaveHydration,
 }: DiarioActionModalsProps) {
+  const isMobile = useIsMobile();
   return (
     <>
       {/* FAB Overlay Blur */}
@@ -118,6 +127,19 @@ export function DiarioActionModals({
               <Activity className="w-4 h-4 text-orange-500 group-hover:scale-110 transition-transform shrink-0" />
               <span className="text-xs font-semibold text-foreground flex-1">
                 Registrar actividad
+              </span>
+            </button>
+
+            <button
+              onClick={() => {
+                setIsFabOpen(false);
+                setActiveModal("check-hidratacion");
+              }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-secondary/70 transition-colors text-left group cursor-pointer"
+            >
+              <Droplet className="w-4 h-4 text-cyan-500 group-hover:scale-110 transition-transform shrink-0" />
+              <span className="text-xs font-semibold text-foreground flex-1">
+                Check de hidratación
               </span>
             </button>
           </div>
@@ -217,6 +239,7 @@ export function DiarioActionModals({
           onClose={() => setActiveModal("none")}
           onSave={onSaveActivity}
           activities={MET_ACTIVITIES}
+          userWeight={userWeight}
         />
       )}
 
@@ -229,6 +252,33 @@ export function DiarioActionModals({
           onToggleSave={onToggleSaveTimelineItem}
         />
       )}
+
+      {/* Check de Hidratación Adaptativo (Drawer en Mobile, Dialog en Desktop) */}
+      {activeModal === "check-hidratacion" &&
+        (isMobile ? (
+          <Drawer open onOpenChange={(open) => !open && setActiveModal("none")}>
+            <DrawerContent className="p-4 pb-8 border-none bg-card max-w-lg mx-auto">
+              <HydrationCheckCard
+                onSave={(level, details) => {
+                  setActiveModal("none");
+                  onSaveHydration?.(level, details);
+                }}
+                className="border-none shadow-none p-1 sm:p-2 bg-transparent"
+              />
+            </DrawerContent>
+          </Drawer>
+        ) : (
+          <Dialog open onOpenChange={() => setActiveModal("none")}>
+            <DialogContent className="sm:max-w-md p-0 border-none bg-transparent shadow-none max-h-[90vh] overflow-y-auto custom-scrollbar">
+              <HydrationCheckCard
+                onSave={(level, details) => {
+                  setActiveModal("none");
+                  onSaveHydration?.(level, details);
+                }}
+              />
+            </DialogContent>
+          </Dialog>
+        ))}
     </>
   );
 }

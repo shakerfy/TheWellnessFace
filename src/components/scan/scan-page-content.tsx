@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { useState, useRef, useMemo, useCallback } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import {
   FoodScannerTutorialDialog,
@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useNutritionSettings } from "@/lib/nutrition-settings";
 import {
-  MealCalloutPin,
   MealIngredientItem,
   NutritionVectorBadge,
   FoodScanCategory,
@@ -20,8 +19,6 @@ import {
 import { getScanSampleCtas } from "@/lib/scan-sample-ctas";
 import {
   ScanViewfinder,
-  ScanNutritionReport,
-  LogEmptyFoodModal,
   parseFoodNotesToIngredients,
 } from "@/components/scan";
 import { useCameraStream } from "./use-camera-stream";
@@ -30,10 +27,6 @@ import { useFoodNotes } from "./use-food-notes";
 export function ScanPageContent() {
   const navigate = useNavigate();
   useNutritionSettings();
-
-  // Screen State: "scanner" (Live Camera Viewfinder) | "nutrition" (Unified Bio Report)
-  // ponytail: removed "fix" screen in favor of direct 1-tap save or 1-line text entry
-  const [currentScreen, setCurrentScreen] = useState<"scanner" | "nutrition">("scanner");
 
   // Food Scanner Precision Tutorial Dialog State (auto-opens if first time)
   const [showTutorial, setShowTutorial] = useState(() => {
@@ -57,20 +50,11 @@ export function ScanPageContent() {
 
   // Camera stream custom hook
   const isCameraEnabled =
-    currentScreen === "scanner" && !customImage && scanMode !== "food_label" && scanMode !== "database";
+    !customImage && scanMode !== "food_label" && scanMode !== "database";
   const camera = useCameraStream({ enabled: isCameraEnabled });
 
   // Food notes custom hook
   const foodNotes = useFoodNotes();
-
-  // Empty food modal states
-  const [showLogEmptyFoodModal, setShowLogEmptyFoodModal] = useState(false);
-  const [emptyFoodName, setEmptyFoodName] = useState("");
-  const [emptyFoodCalories, setEmptyFoodCalories] = useState("120");
-  const [emptyFoodProtein, setEmptyFoodProtein] = useState("10");
-  const [emptyFoodCarbs, setEmptyFoodCarbs] = useState("12");
-  const [emptyFoodFat, setEmptyFoodFat] = useState("3");
-  const [emptyFoodServing, setEmptyFoodServing] = useState("1 porción");
 
   const libraryInputRef = useRef<HTMLInputElement>(null);
   const [isScanningLaser, setIsScanningLaser] = useState(false);
@@ -84,15 +68,6 @@ export function ScanPageContent() {
   const [bioScore, setBioScore] = useState(initialSample.bioScore);
   const [bioGrade, setBioGrade] = useState(initialSample.bioGrade);
   const [bioQualityLabel, setBioQualityLabel] = useState(initialSample.bioQualityLabel);
-  const [, setHighlightNutrient] = useState<string>(
-    initialSample.highlightNutrient || "Source of Vitamin C",
-  );
-  const [, setHighlightAmount] = useState<string>(
-    initialSample.highlightAmount || "25mg",
-  );
-  const [, setServingLabel] = useState<string>(
-    initialSample.servingLabel || "100g per day",
-  );
   const [bioGaugeIndex, setBioGaugeIndex] = useState(initialSample.bioGaugeIndex);
   const [vectorBadges, setVectorBadges] = useState<NutritionVectorBadge[]>(
     initialSample.vectorBadges,
@@ -100,7 +75,6 @@ export function ScanPageContent() {
   const [mealType, setMealType] = useState(initialSample.mealType || "Almuerzo");
   const [servings, setServings] = useState(initialSample.servings);
   const [healthScore, setHealthScore] = useState(initialSample.healthScore);
-  const [, setCalloutPins] = useState<MealCalloutPin[]>(initialSample.calloutPins);
   const [ingredients, setIngredients] = useState<MealIngredientItem[]>(initialSample.ingredients);
 
   const [nextMealFocus, setNextMealFocus] = useState<string | null>(() => {
@@ -125,15 +99,11 @@ export function ScanPageContent() {
     setBioScore(s.bioScore);
     setBioGrade(s.bioGrade);
     setBioQualityLabel(s.bioQualityLabel);
-    setHighlightNutrient(s.highlightNutrient || s.bioQualityLabel || "Source of Vitamin C");
-    setHighlightAmount(s.highlightAmount || "25mg");
-    setServingLabel(s.servingLabel || (s.servings === 1 ? "100g per day" : `${s.servings} porciones`));
     setBioGaugeIndex(s.bioGaugeIndex);
     setVectorBadges(s.vectorBadges);
     setMealType(s.mealType);
     setServings(s.servings);
     setHealthScore(s.healthScore);
-    setCalloutPins(s.calloutPins);
     setIngredients(s.ingredients);
     setShowOptions(false);
     toast.success(`Plato seleccionado: ${s.title}`);
@@ -151,7 +121,7 @@ export function ScanPageContent() {
         setTimeout(() => {
           setIsScanningLaser(false);
           camera.stopStream();
-          setCurrentScreen("nutrition");
+          handleSaveToDiary({ customImg: uploadedImg });
         }, 450);
       };
       reader.readAsDataURL(file);
@@ -160,9 +130,11 @@ export function ScanPageContent() {
 
   const triggerCaptureScan = () => {
     setIsScanningLaser(true);
-    if (!customImage) {
+    let capturedImg = customImage;
+    if (!capturedImg) {
       const snapshot = camera.captureSnapshot();
       if (snapshot) {
+        capturedImg = snapshot;
         setCustomImage(snapshot);
       }
     }
@@ -170,7 +142,7 @@ export function ScanPageContent() {
     setTimeout(() => {
       setIsScanningLaser(false);
       camera.stopStream();
-      setCurrentScreen("nutrition");
+      handleSaveToDiary({ customImg: capturedImg || undefined });
     }, 450);
   };
 
@@ -368,21 +340,19 @@ export function ScanPageContent() {
         ? `Registro: ${parsedIngredients.slice(0, 2).map((p) => p.name.split(" ")[0]).join(" & ")}`
         : "Notas de Alimentos";
 
+    const customNarrative = `Análisis completo de tus notas de comida: ${itemsToAnalyze.length} alimentos registrados. Distribución balanceada de macronutrientes, micronutrientes y aporte de fibra natural sin ultraprocesados.`;
+
     setTitle(primaryTitle);
     setReportTitle("Registro Nutricional Markdown IA");
     setMealTime(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
     setMealType("Comida");
     setIngredients(parsedIngredients);
     setServings(1);
-    setNarrative(
-      `Análisis completo de tus notas de comida: ${itemsToAnalyze.length} alimentos registrados. Distribución balanceada de macronutrientes, micronutrientes y aporte de fibra natural sin ultraprocesados.`,
-    );
+    setNarrative(customNarrative);
     setBioScore(88);
     setBioGrade("A-");
     setBioQualityLabel("Comida Real & Alta Densidad Nutritiva");
     setBioGaugeIndex(3);
-    setHighlightNutrient("Vitamina C y Fibra Natural");
-    setHighlightAmount("45mg");
 
     setVectorBadges([
       {
@@ -429,59 +399,21 @@ export function ScanPageContent() {
       },
     ]);
 
-    setCalloutPins([
-      { name: parsedIngredients[0]?.name || "Desayuno", calories: parsedIngredients[0]?.calories || 150, topPct: 35, leftPct: 25 },
-      { name: parsedIngredients[1]?.name || "Complemento", calories: parsedIngredients[1]?.calories || 80, topPct: 45, rightPct: 25 },
-    ]);
-
-    setCustomImage("https://images.unsplash.com/photo-1494859802809-d069c3b71a8a?w=800&auto=format&fit=crop&q=80");
+    const notesImg = "https://images.unsplash.com/photo-1494859802809-d069c3b71a8a?w=800&auto=format&fit=crop&q=80";
+    setCustomImage(notesImg);
 
     setIsScanningLaser(true);
     setTimeout(() => {
       setIsScanningLaser(false);
       camera.stopStream();
-      setCurrentScreen("nutrition");
+      handleSaveToDiary({
+        customTitle: primaryTitle,
+        customReportTitle: "Registro Nutricional Markdown IA",
+        customIngredients: parsedIngredients,
+        customNarrative,
+        customImg: notesImg,
+      });
     }, 450);
-  };
-
-  const handleSaveEmptyFood = () => {
-    const name = emptyFoodName.trim() || "Alimento Personalizado";
-    const cal = Math.max(0, parseInt(emptyFoodCalories, 10) || 100);
-    const p = Math.max(0, parseFloat(emptyFoodProtein) || 0);
-    const c = Math.max(0, parseFloat(emptyFoodCarbs) || 0);
-    const f = Math.max(0, parseFloat(emptyFoodFat) || 0);
-
-    const newFood = {
-      name,
-      calories: cal,
-      protein: p,
-      carbs: c,
-      fat: f,
-      category: "carbs" as const,
-    };
-
-    const factor = 1;
-    const newItem: MealIngredientItem = {
-      id: `food-${Date.now()}`,
-      name: newFood.name,
-      category: p > 15 ? "protein" : c > 15 ? "carbs" : "fats",
-      grams: 100,
-      calories: Math.round(cal * factor),
-      protein: Math.round(p * factor * 10) / 10,
-      carbs: Math.round(c * factor * 10) / 10,
-      fat: Math.round(f * factor * 10) / 10,
-      fiber: 0,
-      calPer100g: cal,
-      pPer100g: p,
-      cPer100g: c,
-      fPer100g: f,
-      fiberPer100g: 0,
-    };
-
-    setIngredients((prev) => [...prev, newItem]);
-    setShowLogEmptyFoodModal(false);
-    setEmptyFoodName("");
-    toast.success(`✓ ${name} agregado al plato`);
   };
 
   return (
@@ -493,119 +425,71 @@ export function ScanPageContent() {
           : "bg-slate-950 text-foreground",
       )}
     >
-      {/* SCREEN 1: SCANNER FULL SCREEN */}
-      {currentScreen === "scanner" && (
-        <ScanViewfinder
-          videoRef={camera.videoRef}
-          customImage={customImage}
-          activeImage={activeImage}
-          cameraFacing={camera.cameraFacing}
-          selectedCameraId={camera.selectedCameraId}
-          flashlightOn={camera.flashlightOn}
-          isScanningLaser={isScanningLaser}
-          isCameraLoading={camera.isCameraLoading}
-          cameraError={camera.cameraError}
-          scanMode={scanMode}
-          isCameraActive={camera.isCameraActive}
-          availableCameras={camera.availableCameras}
-          selectedSampleIndex={selectedSampleIndex}
-          showOptions={showOptions}
-          nextMealFocus={nextMealFocus}
-          eatingReason={eatingReason}
-          foodNoteItems={foodNotes.foodNoteItems}
-          totalNotesItemsCount={foodNotes.totalNotesItemsCount}
-          libraryInputRef={libraryInputRef}
-          onNavigateBack={() => {
-            if (scanMode === "food_label" || scanMode === "database") {
-              setScanMode("scan_food");
-            } else if (scanMode === "barcode") {
-              setScanMode("database");
-            } else {
-              navigate({ to: "/app", search: { tab: "diario" } });
-            }
-          }}
-          onSetScanMode={setScanMode}
-          onToggleCameraFacing={camera.handleToggleCameraFacing}
-          onOpenTutorial={() => setShowTutorial(true)}
-          onToggleOptions={() => setShowOptions(!showOptions)}
-          onSelectCamera={(id, label) => {
-            setCustomImage(null);
-            camera.setSelectedCameraId(id);
-            camera.setActiveCameraLabel(label);
-            setShowOptions(false);
-            toast.success(`Cámara: ${label}`);
-          }}
-          onSelectSample={handleSelectSample}
-          onActivateLiveCamera={() => {
-            setCustomImage(null);
-            setShowOptions(false);
-          }}
-          onResetNotes={foodNotes.handleResetNotes}
-          onClearNotes={foodNotes.handleClearNotes}
-          onNoteItemChange={foodNotes.handleNoteItemChange}
-          onNoteItemKeyDown={foodNotes.handleNoteItemKeyDown}
-          onAddNoteItem={foodNotes.handleAddNoteItem}
-          onRemoveNoteItem={foodNotes.handleRemoveNoteItem}
-          onAnalyzeFoodNotes={handleAnalyzeFoodNotes}
-          onSetEatingReason={(reason) => {
-            setEatingReason(reason);
-            if ("vibrate" in navigator) navigator.vibrate(15);
-          }}
-          onDismissNextMealFocus={() => {
-            setNextMealFocus(null);
-            try {
-              localStorage.removeItem("twf_next_meal_focus");
-            } catch (_) {}
-          }}
-          onFileUpload={handleFileUpload}
-          onTriggerCapture={triggerCaptureScan}
-          onRetryCamera={camera.startCamera}
-        />
-      )}
-
-      {/* SCREEN 2: BIO-REPORTE NUTRICIONAL DE LA IA */}
-      {currentScreen === "nutrition" && (
-        <ScanNutritionReport
-          activeImage={activeImage}
-          reportTitle={reportTitle}
-          title={title}
-          mealTime={mealTime}
-          narrative={narrative}
-          bioScore={bioScore}
-          vectorBadges={vectorBadges}
-          totalProtein={totalProtein}
-          totalFiber={totalFiber}
-          totalFat={totalFat}
-          totalCarbs={totalCarbs}
-          ingredients={ingredients}
-          servings={servings}
-          selectedSampleIndex={selectedSampleIndex}
-          customImage={customImage}
-          showOptions={showOptions}
-          onBackToScanner={() => setCurrentScreen("scanner")}
-          onToggleOptions={() => setShowOptions(!showOptions)}
-          onSelectSample={handleSelectSample}
-          onSaveToDiary={() => handleSaveToDiary()}
-        />
-      )}
-
-      {/* Log Empty Food Dialog Modal */}
-      <LogEmptyFoodModal
-        open={showLogEmptyFoodModal}
-        onOpenChange={setShowLogEmptyFoodModal}
-        emptyFoodName={emptyFoodName}
-        onEmptyFoodNameChange={setEmptyFoodName}
-        emptyFoodCalories={emptyFoodCalories}
-        onEmptyFoodCaloriesChange={setEmptyFoodCalories}
-        emptyFoodServing={emptyFoodServing}
-        onEmptyFoodServingChange={setEmptyFoodServing}
-        emptyFoodProtein={emptyFoodProtein}
-        onEmptyFoodProteinChange={setEmptyFoodProtein}
-        emptyFoodCarbs={emptyFoodCarbs}
-        onEmptyFoodCarbsChange={setEmptyFoodCarbs}
-        emptyFoodFat={emptyFoodFat}
-        onEmptyFoodFatChange={setEmptyFoodFat}
-        onSave={handleSaveEmptyFood}
+      <ScanViewfinder
+        videoRef={camera.videoRef}
+        customImage={customImage}
+        activeImage={activeImage}
+        cameraFacing={camera.cameraFacing}
+        selectedCameraId={camera.selectedCameraId}
+        flashlightOn={camera.flashlightOn}
+        isScanningLaser={isScanningLaser}
+        isCameraLoading={camera.isCameraLoading}
+        cameraError={camera.cameraError}
+        scanMode={scanMode}
+        isCameraActive={camera.isCameraActive}
+        availableCameras={camera.availableCameras}
+        selectedSampleIndex={selectedSampleIndex}
+        showOptions={showOptions}
+        nextMealFocus={nextMealFocus}
+        eatingReason={eatingReason}
+        foodNoteItems={foodNotes.foodNoteItems}
+        totalNotesItemsCount={foodNotes.totalNotesItemsCount}
+        libraryInputRef={libraryInputRef}
+        onNavigateBack={() => {
+          if (scanMode === "food_label" || scanMode === "database") {
+            setScanMode("scan_food");
+          } else if (scanMode === "barcode") {
+            setScanMode("database");
+          } else {
+            navigate({ to: "/app", search: { tab: "diario" } });
+          }
+        }}
+        onSetScanMode={setScanMode}
+        onToggleCameraFacing={camera.handleToggleCameraFacing}
+        onOpenTutorial={() => setShowTutorial(true)}
+        onToggleOptions={() => setShowOptions(!showOptions)}
+        onSelectCamera={(id, label) => {
+          setCustomImage(null);
+          camera.setSelectedCameraId(id);
+          camera.setActiveCameraLabel(label);
+          setShowOptions(false);
+          toast.success(`Cámara: ${label}`);
+        }}
+        onSelectSample={handleSelectSample}
+        onActivateLiveCamera={() => {
+          setCustomImage(null);
+          setShowOptions(false);
+        }}
+        onResetNotes={foodNotes.handleResetNotes}
+        onClearNotes={foodNotes.handleClearNotes}
+        onNoteItemChange={foodNotes.handleNoteItemChange}
+        onNoteItemKeyDown={foodNotes.handleNoteItemKeyDown}
+        onAddNoteItem={foodNotes.handleAddNoteItem}
+        onRemoveNoteItem={foodNotes.handleRemoveNoteItem}
+        onAnalyzeFoodNotes={handleAnalyzeFoodNotes}
+        onSetEatingReason={(reason) => {
+          setEatingReason(reason);
+          if ("vibrate" in navigator) navigator.vibrate(15);
+        }}
+        onDismissNextMealFocus={() => {
+          setNextMealFocus(null);
+          try {
+            localStorage.removeItem("twf_next_meal_focus");
+          } catch (_) {}
+        }}
+        onFileUpload={handleFileUpload}
+        onTriggerCapture={triggerCaptureScan}
+        onRetryCamera={camera.startCamera}
       />
 
       {/* Food Scanner Precision Guide / Tutorial Modal */}

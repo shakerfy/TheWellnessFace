@@ -136,13 +136,11 @@ export function TimelineMealCtas({
                   </span>
                 </div>
               </AccordionTrigger>
-              <AccordionContent className="pb-3.5 pt-0 text-left">
-                <div className="p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-border/60 bg-slate-100/50 dark:bg-card/40 transition-all">
-                  <TypewriterMarkdown
-                    content={content}
-                    className="text-xs sm:text-[13px] text-muted-foreground leading-relaxed font-normal"
-                  />
-                </div>
+              <AccordionContent className="pb-3.5 pt-1 text-left">
+                <TypewriterMarkdown
+                  content={content}
+                  className="text-xs sm:text-[13px] text-muted-foreground leading-relaxed font-normal"
+                />
               </AccordionContent>
             </AccordionItem>
           );
@@ -161,7 +159,7 @@ export function TimelineMealCtas({
         return (
           <div key={cta.id} className="space-y-2 text-left">
             {/* Botón Píldora del CTA */}
-            <div className="flex items-center">
+            <div className="flex items-center min-w-0 max-w-full">
               <button
                 type="button"
                 onClick={(e) => {
@@ -169,17 +167,17 @@ export function TimelineMealCtas({
                   handleToggle(cta.id);
                 }}
                 className={cn(
-                  "relative z-10 rounded-full px-3.5 py-1.5 text-xs font-semibold flex items-center gap-1.5 border transition-all duration-200 cursor-pointer shadow-2xs hover:-translate-y-0.5",
+                  "relative z-10 max-w-full min-w-0 rounded-full px-3.5 py-1.5 text-xs font-semibold inline-flex items-center gap-1.5 border transition-all duration-200 cursor-pointer shadow-2xs hover:-translate-y-0.5",
                   isExpanded
                     ? "bg-secondary text-foreground border-foreground/30 shadow-xs"
                     : "bg-secondary/60 hover:bg-secondary text-foreground/90 border-border/70 hover:border-foreground/30",
                 )}
               >
                 {getCtaIcon(cta.iconType)}
-                <span className="truncate">{cta.title}</span>
+                <span className="truncate min-w-0">{cta.title}</span>
                 <ChevronDown
                   className={cn(
-                    "w-3 h-3 text-muted-foreground transition-transform duration-200",
+                    "w-3 h-3 text-muted-foreground transition-transform duration-200 shrink-0",
                     isExpanded ? "rotate-180 text-foreground" : "",
                   )}
                 />
@@ -188,13 +186,11 @@ export function TimelineMealCtas({
 
             {/* Texto respectivo de este CTA justo debajo de su píldora */}
             {isExpanded && (
-              <div className="animate-in fade-in slide-in-from-top-1 duration-200 text-left">
-                <div className="p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-border/60 bg-slate-100/60 dark:bg-card/40 transition-all hover:border-foreground/30 hover:shadow-xs">
-                  <TypewriterMarkdown
-                    content={getCtaMarkdown(cta)}
-                    className="text-xs sm:text-[13px] text-muted-foreground leading-relaxed font-normal"
-                  />
-                </div>
+              <div className="animate-in fade-in slide-in-from-top-1 duration-200 text-left pt-1">
+                <TypewriterMarkdown
+                  content={getCtaMarkdown(cta)}
+                  className="text-xs sm:text-[13px] text-muted-foreground leading-relaxed font-normal"
+                />
               </div>
             )}
           </div>

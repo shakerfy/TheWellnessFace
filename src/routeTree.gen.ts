@@ -13,7 +13,6 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ScanRouteImport } from './routes/scan'
 import { Route as NutritionIntelligenceRouteImport } from './routes/nutrition-intelligence'
 import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as CtasRouteImport } from './routes/ctas'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
@@ -40,11 +39,6 @@ const NutritionIntelligenceRoute = NutritionIntelligenceRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CtasRoute = CtasRouteImport.update({
-  id: '/ctas',
-  path: '/ctas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -87,7 +81,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
   '/auth': typeof AuthRouteWithChildren
-  '/ctas': typeof CtasRoute
   '/dashboard': typeof DashboardRoute
   '/nutrition-intelligence': typeof NutritionIntelligenceRoute
   '/scan': typeof ScanRoute
@@ -101,7 +94,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
   '/auth': typeof AuthRouteWithChildren
-  '/ctas': typeof CtasRoute
   '/dashboard': typeof DashboardRoute
   '/nutrition-intelligence': typeof NutritionIntelligenceRoute
   '/scan': typeof ScanRoute
@@ -116,7 +108,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
   '/auth': typeof AuthRouteWithChildren
-  '/ctas': typeof CtasRoute
   '/dashboard': typeof DashboardRoute
   '/nutrition-intelligence': typeof NutritionIntelligenceRoute
   '/scan': typeof ScanRoute
@@ -132,7 +123,6 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/auth'
-    | '/ctas'
     | '/dashboard'
     | '/nutrition-intelligence'
     | '/scan'
@@ -146,7 +136,6 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/auth'
-    | '/ctas'
     | '/dashboard'
     | '/nutrition-intelligence'
     | '/scan'
@@ -160,7 +149,6 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/auth'
-    | '/ctas'
     | '/dashboard'
     | '/nutrition-intelligence'
     | '/scan'
@@ -175,7 +163,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRoute
   AuthRoute: typeof AuthRouteWithChildren
-  CtasRoute: typeof CtasRoute
   DashboardRoute: typeof DashboardRoute
   NutritionIntelligenceRoute: typeof NutritionIntelligenceRoute
   ScanRoute: typeof ScanRoute
@@ -213,13 +200,6 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/ctas': {
-      id: '/ctas'
-      path: '/ctas'
-      fullPath: '/ctas'
-      preLoaderRoute: typeof CtasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -288,7 +268,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRoute,
   AuthRoute: AuthRouteWithChildren,
-  CtasRoute: CtasRoute,
   DashboardRoute: DashboardRoute,
   NutritionIntelligenceRoute: NutritionIntelligenceRoute,
   ScanRoute: ScanRoute,

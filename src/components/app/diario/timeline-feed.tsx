@@ -74,11 +74,9 @@ export function TimelineFeed({
             {/* Vertical Line */}
             <div className="absolute left-3.5 md:left-[50%] top-0 bottom-0 w-[2px] bg-border transform -translate-x-1/2 md:-translate-x-[1px]" />
 
-            {timelineItems
-              .filter((item) => item.type !== "hydration")
-              .map((item, index) => {
-                const isEven = index % 2 === 0;
-                const showOnLeft = !isEven; // Zig-zag on desktop
+            {timelineItems.map((item, index) => {
+              const isEven = index % 2 === 0;
+              const showOnLeft = !isEven; // Zig-zag on desktop
 
                 return (
                   <React.Fragment key={item.id}>

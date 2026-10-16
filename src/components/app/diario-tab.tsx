@@ -2,8 +2,6 @@ import React, { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { BioStateCard } from "@/components/bio-state-card";
-import { ChevronRight, Droplet } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import {
   useDiarioTimeline,
   NutritionProBanner,
@@ -40,6 +38,13 @@ export function DiarioTab() {
     duration: number,
     intensity: "low" | "med" | "high",
     metPoints: number,
+    extra?: {
+      distance?: number;
+      notes?: string;
+      kcal?: number;
+      startTime?: string;
+      date?: string;
+    },
   ) => {
     const dayLabels = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
     const todayLabel = dayLabels[new Date().getDay()];
@@ -66,29 +71,36 @@ export function DiarioTab() {
     const newAct = {
       id: newActId,
       createdAt: now.toISOString(),
-      date: timeline.selectedTimelineDate || timeline.todayIso,
-      time: now.toLocaleTimeString("es-AR", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      }),
+      date: extra?.date || timeline.selectedTimelineDate || timeline.todayIso,
+      time:
+        extra?.startTime ||
+        now.toLocaleTimeString("es-AR", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        }),
       title: activityName,
       activityName: activityName,
       duration: duration,
       intensity: intensity,
       intensityLabel: intensityName,
       metPoints: metPoints,
-      subtitle: "Registro de Actividad",
+      subtitle: extra?.distance
+        ? `${extra.distance} km • Registro de Actividad`
+        : "Registro de Actividad",
       type: "activity",
       img: null,
-      kcal: 0,
-      tag: `${duration} min • ${intensityName}`,
-      coachFeedback: `Registraste ${duration} min de ${activityName} (intensidad ${intensityName}). ¡Sumaste +${metPoints} Pts MET a tu promedio de 7 días!`,
+      kcal: extra?.kcal || 0,
+      notes: extra?.notes,
+      tag: `${duration} min • ${intensityName}${extra?.distance ? ` • ${extra.distance} km` : ""}`,
+      coachFeedback: extra?.notes
+        ? `Registraste ${duration} min de ${activityName} (intensidad ${intensityName}). Nota: "${extra.notes}". ¡Sumaste +${metPoints} Pts MET a tu promedio de 7 días!`
+        : `Registraste ${duration} min de ${activityName} (intensidad ${intensityName}). ¡Sumaste +${metPoints} Pts MET a tu promedio de 7 días!`,
     };
     timeline.setUserTimelineItems((prev) => [newAct, ...prev]);
 
     toast.success(`✓ ${activityName} registrada (+${metPoints} Pts MET)`, {
-      description: `${duration} min • Intensidad ${intensityName} sumados a tu promedio de 7 días.`,
+      description: `${duration} min • Intensidad ${intensityName}${extra?.distance ? ` • ${extra.distance} km` : ""} sumados a tu promedio de 7 días.`,
       action: {
         label: "Deshacer",
         onClick: () => {
@@ -137,6 +149,47 @@ export function DiarioTab() {
     toast.success(`✓ Acceso validado en ${data.club}`);
   };
 
+  const handleSaveHydration = (level: number, details: any) => {
+    setActiveModal("none");
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+    const dateStr = timeline.selectedTimelineDate || timeline.todayIso;
+
+    const newHydrationId = `hydra-${Date.now()}`;
+    const newHydrationItem = {
+      id: newHydrationId,
+      createdAt: now.toISOString(),
+      date: dateStr,
+      time: timeStr,
+      type: "hydration",
+      title: "Check de Hidratación",
+      subtitle: `Nivel ${level} • ${details.state}`,
+      desc: details.advice,
+      armstrongLevel: level,
+      coachFeedback: `✓ Registro de hidratación: Nivel ${level} (${details.state}). ${details.advice}`,
+      tag: details.state,
+    };
+
+    timeline.setUserTimelineItems((prev) => [newHydrationItem, ...prev]);
+
+    toast.success(`💧 Hidratación registrada: Nivel ${level} (${details.state})`, {
+      description: details.advice,
+      action: {
+        label: "Deshacer",
+        onClick: () => {
+          if (typeof navigator !== "undefined" && navigator.vibrate) {
+            try {
+              navigator.vibrate([15, 30]);
+            } catch (_) {}
+          }
+          timeline.setUserTimelineItems((prev) => prev.filter((it) => it.id !== newHydrationId));
+          toast.info("Registro de hidratación deshecho");
+        },
+      },
+      duration: 5000,
+    });
+  };
+
   return (
     <div className="w-full max-w-full pb-20 transition-transform duration-300">
       {/* MAIN CENTERED CONTENT CONTAINER FOR AI COACH TIMELINE */}
@@ -175,38 +228,8 @@ export function DiarioTab() {
             />
           </div>
 
-          {/* Banners: Nutrition Intelligence Suite & Insights & CTAs Lab */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <NutritionProBanner onClick={() => navigate({ to: "/nutrition-intelligence" })} />
-            <div
-              onClick={() => navigate({ to: "/ctas" })}
-              className="rounded-3xl glass-smoked-interactive p-4 sm:p-5 cursor-pointer flex items-center justify-between gap-3 text-left group"
-            >
-              <div className="flex items-center gap-3.5 min-w-0">
-                <div className="w-10 h-10 rounded-2xl bg-sky-500/10 text-sky-500 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                  <Droplet className="w-5 h-5" />
-                </div>
-                <div className="min-w-0 space-y-0.5">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-foreground">Insights & CTAs Lab</span>
-                    <Badge
-                      variant="outline"
-                      className="text-[9px] font-black uppercase tracking-wider text-sky-600 dark:text-sky-400 bg-sky-500/10 border-sky-500/20 py-0 px-1.5 rounded-full"
-                    >
-                      MARKDOWN
-                    </Badge>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground truncate">
-                    Probá los CTAs y revelación progresiva en Markdown.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-1 text-xs font-bold text-muted-foreground group-hover:text-foreground shrink-0 pr-1">
-                <span className="hidden sm:inline">Probar</span>
-                <ChevronRight className="w-4 h-4" />
-              </div>
-            </div>
-          </div>
+          {/* Banner: Nutrition Intelligence Suite */}
+          <NutritionProBanner onClick={() => navigate({ to: "/nutrition-intelligence" })} />
 
           {/* Feed de la Línea de Tiempo */}
           <TimelineFeed
@@ -250,7 +273,9 @@ export function DiarioTab() {
         onSaveEditedTimelineItem={timeline.handleSaveEditedTimelineItem}
         onToggleSaveTimelineItem={timeline.handleToggleSaveTimelineItem}
         onSaveActivity={handleSaveActivity}
+        userWeight={timeline.userProfile?.weight || 70}
         onCheckinSuccess={handleCheckinSuccess}
+        onSaveHydration={handleSaveHydration}
       />
     </div>
   );

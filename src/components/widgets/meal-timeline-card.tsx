@@ -3,6 +3,7 @@ import { Utensils, Heart, Sparkles, Droplets, Clock, Plus, Flame } from "lucide-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { ArmstrongScaleBar } from "./hydration-check-card";
 
 export interface MealVector {
   label: string; // e.g. "Fibra", "Proteína", "Bajo Procesamiento"
@@ -200,9 +201,15 @@ export function MealTimelineCard({
 
         {/* Hidratación Armstrong integrada */}
         {armstrongLevel !== undefined && (
-          <div className="mt-2.5 flex items-center gap-2 text-xs text-muted-foreground">
-            <Droplets className="w-3.5 h-3.5 text-sky-500" />
-            <span>Escala Armstrong: Nivel {armstrongLevel}</span>
+          <div className="mt-3 pt-3 border-t border-border/50 space-y-1.5">
+            <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
+              <Droplets className="w-3.5 h-3.5 text-sky-500" />
+              <span>Escala Armstrong: Nivel {armstrongLevel}</span>
+            </div>
+            <ArmstrongScaleBar
+              selectedLevel={armstrongLevel}
+              pillHeightClass="h-8 sm:h-9"
+            />
           </div>
         )}
       </div>

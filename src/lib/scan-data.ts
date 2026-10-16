@@ -87,6 +87,60 @@ const EN_TO_ES_NUTRIENTS: Record<string, string> = {
   "very low": "Muy bajo",
 };
 
+/**
+ * Convierte un descriptor cualitativo de tabla (ej: "Complejos", "Magra y completa")
+ * en una etiqueta de badge autónoma y auto-explicativa (ej: "Carbohidratos complejos", "Proteína magra y completa").
+ */
+export function formatStandaloneBadgeLabel(category?: string, text?: string): string {
+  if (!text) return "";
+  const lower = text.trim().toLowerCase();
+  const cat = (category || "").trim().toLowerCase();
+
+  // Proteína
+  if (cat === "protein" || lower.includes("magra") || lower === "fuente vegetal") {
+    if (lower === "magra y completa") return "Proteína magra y completa";
+    if (lower === "magra") return "Proteína magra";
+    if (lower === "buena fuente") return "Buena fuente de proteína";
+    if (lower === "fuente vegetal") return "Proteína vegetal";
+    if (!lower.includes("proteí") && !lower.includes("protei")) {
+      return `Proteína ${text.toLowerCase()}`;
+    }
+  }
+
+  // Carbohidratos
+  if (
+    cat === "carbs" ||
+    cat === "carbohydrates" ||
+    cat === "grains" ||
+    lower === "complejos" ||
+    lower.includes("absorción rápida") ||
+    lower.includes("absorcion rapida")
+  ) {
+    if (lower === "complejos") return "Carbohidratos complejos";
+    if (lower.includes("absorción rápida") || lower.includes("absorcion rapida")) {
+      return "Carbohidratos de absorción rápida";
+    }
+    if (!lower.includes("carbo") && !lower.includes("carbs") && !lower.includes("grano")) {
+      return `Carbohidratos ${text.toLowerCase()}`;
+    }
+  }
+
+  // Fibra
+  if (cat === "fiber") {
+    if (lower === "buena fuente") return "Buena fuente de fibra";
+  }
+
+  // Grasas
+  if (cat === "fat") {
+    if (lower.startsWith("saludables (omega-3)")) return "Grasas Omega-3";
+    if (lower.startsWith("saludables (palta)")) return "Grasas de palta";
+    if (lower.startsWith("saludables (chía)") || lower.startsWith("saludables (chia)")) return "Grasas de chía";
+    if (lower === "saludables") return "Grasas saludables";
+  }
+
+  return text;
+}
+
 export function getMealNutrientRows(
   badges: NutritionVectorBadge[] = [],
   ingredients: MealIngredientItem[] = [],

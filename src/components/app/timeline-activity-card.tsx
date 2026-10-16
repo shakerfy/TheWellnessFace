@@ -5,10 +5,12 @@ import {
   Bookmark,
   Edit,
   Trash2,
+  Droplet,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { ArmstrongScaleBar } from "@/components/widgets/hydration-check-card";
 
 export interface TimelineActivityCardProps {
   item: any;
@@ -99,7 +101,7 @@ export function TimelineActivityCard({
             draggable={false}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none select-none"
           />
-          <div className="absolute top-3 right-3 z-10 h-8 flex items-center gap-1 bg-background/80 backdrop-blur-md px-2 rounded-full border border-border/60 shadow-xs">
+          <div className="absolute top-3 right-3 z-10 h-8 flex items-center gap-1 bg-white/50 dark:bg-black/60 backdrop-blur-xl px-2 rounded-full border border-white/40 dark:border-white/20 shadow-xs text-zinc-900 dark:text-white">
             <button
               type="button"
               onClick={(e) => {
@@ -110,7 +112,7 @@ export function TimelineActivityCard({
                 "p-1 transition cursor-pointer",
                 item.isSaved || item.saved
                   ? "text-foreground"
-                  : "text-muted-foreground hover:text-foreground",
+                  : "text-zinc-800 dark:text-zinc-100 hover:text-foreground",
               )}
               title={
                 item.isSaved || item.saved
@@ -131,7 +133,7 @@ export function TimelineActivityCard({
                 e.stopPropagation();
                 onEdit(item);
               }}
-              className="p-1 text-muted-foreground hover:text-foreground transition cursor-pointer"
+              className="p-1 text-zinc-800 dark:text-zinc-100 hover:text-foreground transition cursor-pointer"
               title="Editar registro"
             >
               <Edit className="w-3.5 h-3.5" />
@@ -142,7 +144,7 @@ export function TimelineActivityCard({
                 e.stopPropagation();
                 onDelete(item.id);
               }}
-              className="p-1 text-muted-foreground hover:text-rose-500 transition cursor-pointer"
+              className="p-1 text-zinc-800 dark:text-zinc-100 hover:text-rose-500 transition cursor-pointer"
               title="Eliminar registro"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -151,18 +153,11 @@ export function TimelineActivityCard({
         </div>
       )}
 
-      <CardHeader className="p-5 pb-3">
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-1.5 flex-1 min-w-0 text-left">
-            <CardTitle className="text-base sm:text-lg font-black leading-tight text-foreground">
-              {displayTitle}
-            </CardTitle>
-            {item.subtitle ? (
-              <CardDescription className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                {item.subtitle}
-              </CardDescription>
-            ) : null}
-          </div>
+      <CardHeader className="p-5 pb-2 space-y-1.5">
+        <div className="flex items-start justify-between gap-3">
+          <CardTitle className="text-base sm:text-lg font-black leading-tight text-foreground flex-1 min-w-0 text-left">
+            {displayTitle}
+          </CardTitle>
 
           {!item.img && (
             <div className="flex items-center gap-1 bg-secondary/80 backdrop-blur-md px-1.5 py-1 rounded-full border border-border/60 shadow-xs shrink-0">
@@ -216,6 +211,12 @@ export function TimelineActivityCard({
             </div>
           )}
         </div>
+
+        {item.subtitle ? (
+          <CardDescription className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground text-left">
+            {item.subtitle}
+          </CardDescription>
+        ) : null}
       </CardHeader>
 
       <CardContent className="px-5 pb-4 pt-0 space-y-3 text-left">
@@ -272,6 +273,19 @@ export function TimelineActivityCard({
                     <span>+{item.metPoints} Pts MET</span>
                   </Badge>
                 ) : null}
+              </div>
+            ) : item.type === "hydration" ? (
+              <div className="w-full space-y-2.5 pt-1">
+                {/* Escala Armstrong Visual Reflejando el Chequeo Escogido */}
+                <ArmstrongScaleBar
+                  selectedLevel={item.armstrongLevel || 5}
+                  pillHeightClass="h-9 sm:h-11"
+                />
+                {item.desc && (
+                  <p className="text-xs sm:text-[13px] text-muted-foreground leading-relaxed">
+                    {item.desc}
+                  </p>
+                )}
               </div>
             ) : (
               item.tag && (
